@@ -50,68 +50,91 @@
 
         <section class="content-section">
             <div class="container">
-                <div class="viz-container">
-                    <h2>U.S. Presidential Election Results by State</h2>
-                    <div class="viz-controls">
-                        <label for="yearSelect">Election Year:</label>
-                        <select id="yearSelect">
-                            <option value="2020">2020</option>
-                            <option value="2016">2016</option>
-                            <option value="2012">2012</option>
-                            <option value="2008">2008</option>
-                        </select>
-                        <button id="toggleAnimation" class="btn btn-secondary">
-                            <i class="fas fa-play"></i> Toggle Animation
-                        </button>
-                    </div>
-                    <div id="election-map"></div>
-                    <div class="viz-description">
-                        <h4>About This Visualization</h4>
+                <div class="content-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem;">
+                    
+                    <div class="content-card topic-card">
+                        <div class="topic-header">
+                            <div class="highlight-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6);">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <h3>Machine Learning & AI</h3>
+                        </div>
                         <p>
-                            This interactive map displays U.S. presidential election results by state across multiple election cycles.
-                            States are colored based on the winning party: blue for Democratic victories and red for Republican victories.
-                            The intensity of the color represents the margin of victory. Hover over states to see detailed results including
-                            vote counts, percentages, and electoral votes. Use the year selector to explore different election cycles
-                            and observe changing political landscapes over time.
+                            Explore interactive visualizations showcasing machine learning algorithms, neural networks, 
+                            and artificial intelligence applications across various domains.
                         </p>
-                        <p><strong>Data Source:</strong> Federal Election Commission and Associated Press</p>
-                        <p><strong>Technologies:</strong> D3.js, TopoJSON, HTML5, CSS3</p>
+                        <div class="topic-footer">
+                            <span class="project-count">Coming Soon</span>
+                            <a href="#" class="btn btn-primary">
+                                <i class="fas fa-arrow-right"></i> Explore
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="content-card topic-card">
+                        <div class="topic-header">
+                            <div class="highlight-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem; background: linear-gradient(135deg, #06b6d4, #3b82f6);">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3>Time Series Analysis</h3>
+                        </div>
+                        <p>
+                            Interactive time series visualizations revealing patterns, trends, and forecasts across 
+                            temporal data from various industries and research domains.
+                        </p>
+                        <div class="topic-footer">
+                            <span class="project-count">Coming Soon</span>
+                            <a href="#" class="btn btn-primary">
+                                <i class="fas fa-arrow-right"></i> Explore
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="content-card topic-card">
+                        <div class="topic-header">
+                            <div class="highlight-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem; background: linear-gradient(135deg, #10b981, #06b6d4);">
+                                <i class="fas fa-chart-area"></i>
+                            </div>
+                            <h3>Stock Market & Trading</h3>
+                        </div>
+                        <p>
+                            Financial market visualizations including price movements, trading patterns, portfolio 
+                            analysis, and risk management tools for informed investment decisions.
+                        </p>
+                        <div class="topic-footer">
+                            <span class="project-count">Coming Soon</span>
+                            <a href="#" class="btn btn-primary">
+                                <i class="fas fa-arrow-right"></i> Explore
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="content-card topic-card">
+                        <div class="topic-header">
+                            <div class="highlight-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem; background: linear-gradient(135deg, #8b5cf6, #ec4899);">
+                                <i class="fas fa-palette"></i>
+                            </div>
+                            <h3>Miscellaneous</h3>
+                        </div>
+                        <p>
+                            A collection of diverse visualization projects exploring social phenomena, scientific data, 
+                            geographic patterns, and experimental interactive design concepts.
+                        </p>
+                        <div class="topic-footer">
+                            <span class="project-count">Coming Soon</span>
+                            <a href="#" class="btn btn-primary">
+                                <i class="fas fa-arrow-right"></i> Explore
+                            </a>
+                        </div>
                     </div>
                 </div>
 
-                <div class="content-grid" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); margin-top: 4rem;">
-                    <div class="content-card">
-                        <h3><i class="fas fa-chart-line"></i> Economic Indicators Dashboard</h3>
-                        <p>
-                            An interactive dashboard visualizing key economic indicators including GDP growth, 
-                            unemployment rates, and inflation across different regions and time periods.
-                        </p>
-                        <p><small><em>Coming Soon</em></small></p>
-                    </div>
-                    <div class="content-card">
-                        <h3><i class="fas fa-network-wired"></i> Social Network Analysis</h3>
-                        <p>
-                            Dynamic network visualizations exploring social connections, influence patterns,
-                            and community structures in various online and offline networks.
-                        </p>
-                        <p><small><em>Coming Soon</em></small></p>
-                    </div>
-                    <div class="content-card">
-                        <h3><i class="fas fa-globe-americas"></i> Climate Data Explorer</h3>
-                        <p>
-                            Interactive maps and time series visualizations showing climate change patterns,
-                            temperature anomalies, and precipitation changes across different geographical regions.
-                        </p>
-                        <p><small><em>Coming Soon</em></small></p>
-                    </div>
-                    <div class="content-card">
-                        <h3><i class="fas fa-dna"></i> Genomic Data Visualization</h3>
-                        <p>
-                            Complex visualizations for genomic data analysis including phylogenetic trees,
-                            sequence alignments, and population genetics studies.
-                        </p>
-                        <p><small><em>Coming Soon</em></small></p>
-                    </div>
+                <div class="content-card" style="margin-top: 3rem; text-align: center; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border: none;">
+                    <h3>About These Visualizations</h3>
+                    <p>
+                        Interactive data visualizations will be organized by topic area. 
+                        Projects will be added as they are developed and ready for public viewing.
+                    </p>
                 </div>
             </div>
         </section>
@@ -129,6 +152,5 @@
     </footer>
 
     <script src="script.js"></script>
-    <script src="election-viz.js"></script>
 </body>
 </html>
