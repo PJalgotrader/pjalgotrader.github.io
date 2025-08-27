@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualizations - Pedram Jahangiry</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">Pedram Jahangiry</a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="visualizations.html" class="nav-link active">Visualizations</a>
+                </li>
+                <li class="nav-item">
+                    <a href="teaching.html" class="nav-link">Teaching</a>
+                </li>
+                <li class="nav-item">
+                    <a href="research.html" class="nav-link">Research</a>
+                </li>
+                <li class="nav-item">
+                    <a href="contact.html" class="nav-link">Contact</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Interactive Data Visualizations</h1>
+                <p>Exploring complex datasets through interactive and engaging visual narratives</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <div class="viz-container">
+                    <h2>U.S. Presidential Election Results by State</h2>
+                    <div class="viz-controls">
+                        <label for="yearSelect">Election Year:</label>
+                        <select id="yearSelect">
+                            <option value="2020">2020</option>
+                            <option value="2016">2016</option>
+                            <option value="2012">2012</option>
+                            <option value="2008">2008</option>
+                        </select>
+                        <button id="toggleAnimation" class="btn btn-secondary">
+                            <i class="fas fa-play"></i> Toggle Animation
+                        </button>
+                    </div>
+                    <div id="election-map"></div>
+                    <div class="viz-description">
+                        <h4>About This Visualization</h4>
+                        <p>
+                            This interactive map displays U.S. presidential election results by state across multiple election cycles.
+                            States are colored based on the winning party: blue for Democratic victories and red for Republican victories.
+                            The intensity of the color represents the margin of victory. Hover over states to see detailed results including
+                            vote counts, percentages, and electoral votes. Use the year selector to explore different election cycles
+                            and observe changing political landscapes over time.
+                        </p>
+                        <p><strong>Data Source:</strong> Federal Election Commission and Associated Press</p>
+                        <p><strong>Technologies:</strong> D3.js, TopoJSON, HTML5, CSS3</p>
+                    </div>
+                </div>
+
+                <div class="content-grid" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); margin-top: 4rem;">
+                    <div class="content-card">
+                        <h3><i class="fas fa-chart-line"></i> Economic Indicators Dashboard</h3>
+                        <p>
+                            An interactive dashboard visualizing key economic indicators including GDP growth, 
+                            unemployment rates, and inflation across different regions and time periods.
+                        </p>
+                        <p><small><em>Coming Soon</em></small></p>
+                    </div>
+                    <div class="content-card">
+                        <h3><i class="fas fa-network-wired"></i> Social Network Analysis</h3>
+                        <p>
+                            Dynamic network visualizations exploring social connections, influence patterns,
+                            and community structures in various online and offline networks.
+                        </p>
+                        <p><small><em>Coming Soon</em></small></p>
+                    </div>
+                    <div class="content-card">
+                        <h3><i class="fas fa-globe-americas"></i> Climate Data Explorer</h3>
+                        <p>
+                            Interactive maps and time series visualizations showing climate change patterns,
+                            temperature anomalies, and precipitation changes across different geographical regions.
+                        </p>
+                        <p><small><em>Coming Soon</em></small></p>
+                    </div>
+                    <div class="content-card">
+                        <h3><i class="fas fa-dna"></i> Genomic Data Visualization</h3>
+                        <p>
+                            Complex visualizations for genomic data analysis including phylogenetic trees,
+                            sequence alignments, and population genetics studies.
+                        </p>
+                        <p><small><em>Coming Soon</em></small></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Pedram Jahangiry. All rights reserved.</p>
+            <div class="social-links">
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                <a href="#" aria-label="Email"><i class="fas fa-envelope"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="election-viz.js"></script>
+</body>
+</html>
