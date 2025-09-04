@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Series Stationarity Visualizer</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .attribution {
+            text-align: center;
+            color: #888;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .header-links {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+        
+        .header-links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .header-links a:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-website {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-youtube {
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            box-shadow: 0 2px 10px rgba(255, 0, 0, 0.3);
+        }
+        
+        .btn-github {
+            background: linear-gradient(135deg, #333 0%, #000 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .description {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 20px;
+            border-radius: 15px;
+        }
+        
+        .usage-info {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .usage-info h3 {
+            color: #6a1b9a;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .usage-info div {
+            margin-bottom: 8px;
+            color: #4a148c;
+        }
+        
+        .chart-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .chart-title {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .chart-title h3 {
+            color: #1f2937;
+            font-size: 1.4em;
+            margin-bottom: 8px;
+        }
+        
+        .chart-title p {
+            color: #6b7280;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 120px;
+        }
+        
+        .control-group label {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .control-group input, .control-group select {
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 8px 16px;
+            font-size: 0.9em;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(252, 70, 107, 0.4);
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 350px;
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .series-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .series-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: #f3f4f6;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+        
+        .series-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        
+        .remove-btn:hover {
+            background: #fee2e2;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            max-width: 200px;
+        }
+        
+        .tooltip.visible {
+            opacity: 1;
+        }
+        
+        .tooltip-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+        
+        .tooltip-content {
+            font-size: 0.9em;
+            line-height: 1.3;
+        }
+        
+        .hover-line {
+            stroke: #666;
+            stroke-width: 1;
+            stroke-dasharray: 3,3;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .hover-circle {
+            fill: white;
+            stroke-width: 2;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .teaching-notes {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+        
+        .teaching-notes h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .teaching-notes ul {
+            color: #6c5002;
+            line-height: 1.6;
+        }
+        
+        .teaching-notes li {
+            margin-bottom: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .chart-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .controls {
+                justify-content: center;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Time Series Stationarity Visualizer</h1>
+        <p class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</p>
+        
+        <div class="header-links">
+            <a href="https://pjalgotrader.github.io/" target="_blank" class="btn-website">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5H8.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5h2.49zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4h2.355z"/>
+                </svg>
+                Website
+            </a>
+            <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" class="btn-youtube">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z"/>
+                </svg>
+                YouTube Channel
+            </a>
+            <a href="https://github.com/PJalgotrader/" target="_blank" class="btn-github">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub Profile
+            </a>
+        </div>
+        
+        <div class="description">
+            <p><strong>Explore conditional expectations E[X_t | X_(t-1), X_(t-2), ...] across different time series processes</strong></p>
+        </div>
+        
+        <div class="usage-info">
+            <h3>📋 Usage Guide</h3>
+            <div><strong>Add Series:</strong> Click "Add Series" to generate multiple realizations of each process</div>
+            <div><strong>Different Colors:</strong> Each series gets a unique color for easy identification</div>
+            <div><strong>Teaching Tool:</strong> Use to manually demonstrate conditional expectations for different time horizons</div>
+        </div>
+        
+        <!-- White Noise Section -->
+        <div class="chart-section" id="whiteNoiseSection">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <h3>1. White Noise Process</h3>
+                    <p>E[X_t | X_(t-1), X_(t-2), ...] = E[X_t] = μ (constant for all t) → STATIONARY</p>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Mean (μ)</label>
+                        <input type="number" id="whiteNoiseMean" value="0" step="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label>Variance (σ²)</label>
+                        <input type="number" id="whiteNoiseVariance" value="1" step="0.1" min="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label>Length</label>
+                        <input type="number" id="whiteNoiseLength" value="100" min="10" max="500">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="addWhiteNoise()">Add Series</button>
+                        <button class="btn-danger" onclick="clearWhiteNoise()">Clear All</button>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-container" id="whiteNoiseChart"></div>
+            <div class="series-list" id="whiteNoiseSeries"></div>
+        </div>
+        
+        <!-- Random Walk Section -->
+        <div class="chart-section" id="randomWalkSection">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <h3>2. Random Walk with Drift</h3>
+                    <p>E[X_t | X_(t-1), X_(t-2), ...] = X_(t-1) + δ (depends on past values) → NON-STATIONARY</p>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Drift (δ)</label>
+                        <input type="number" id="randomWalkDrift" value="0.1" step="0.01">
+                    </div>
+                    <div class="control-group">
+                        <label>Variance (σ²)</label>
+                        <input type="number" id="randomWalkVariance" value="1" step="0.1" min="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label>Initial Value</label>
+                        <input type="number" id="randomWalkInitial" value="0" step="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label>Length</label>
+                        <input type="number" id="randomWalkLength" value="100" min="10" max="500">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="addRandomWalk()">Add Series</button>
+                        <button class="btn-danger" onclick="clearRandomWalk()">Clear All</button>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-container" id="randomWalkChart"></div>
+            <div class="series-list" id="randomWalkSeries"></div>
+        </div>
+        
+        <!-- Cyclical Section -->
+        <div class="chart-section" id="cyclicalSection">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <h3>3. Cyclical/Seasonal Process</h3>
+                    <p>E[X_t | X_(t-1), X_(t-2), ...] = A·sin(ωt + φ) (time-varying pattern) → NON-STATIONARY</p>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Amplitude (A)</label>
+                        <input type="number" id="cyclicalAmplitude" value="2" step="0.1" min="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label>Frequency (ω)</label>
+                        <input type="number" id="cyclicalFrequency" value="0.1" step="0.01" min="0.01" max="0.5">
+                    </div>
+                    <div class="control-group">
+                        <label>Phase (φ)</label>
+                        <input type="number" id="cyclicalPhase" value="0" step="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label>Noise (σ)</label>
+                        <input type="number" id="cyclicalNoise" value="0.2" step="0.1" min="0">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="addCyclical()">Add Series</button>
+                        <button class="btn-danger" onclick="clearCyclical()">Clear All</button>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-container" id="cyclicalChart"></div>
+            <div class="series-list" id="cyclicalSeries"></div>
+        </div>
+        
+        <div class="teaching-notes">
+            <h3>🎓 Teaching Points</h3>
+            <ul>
+                <li><strong>White Noise:</strong> Conditional expectation is always μ regardless of conditioning set - perfectly stationary</li>
+                <li><strong>Random Walk:</strong> Conditional expectation depends on the most recent value - non-stationary</li>
+                <li><strong>Cyclical:</strong> Conditional expectation follows a predictable time-varying pattern - non-stationary but deterministic</li>
+                <li><strong>Multiple Series:</strong> Generate several realizations to show the consistency of these properties across different samples</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Tooltips for interactive charts -->
+    <div id="tooltip-whiteNoise" class="tooltip">
+        <div class="tooltip-title"></div>
+        <div class="tooltip-content"></div>
+    </div>
+    <div id="tooltip-randomWalk" class="tooltip">
+        <div class="tooltip-title"></div>
+        <div class="tooltip-content"></div>
+    </div>
+    <div id="tooltip-cyclical" class="tooltip">
+        <div class="tooltip-title"></div>
+        <div class="tooltip-content"></div>
+    </div>
+    
+    <script>
+        // Global data storage
+        const data = {
+            whiteNoise: [],
+            randomWalk: [],
+            cyclical: []
+        };
+        
+        let seriesCounter = 0;
+        
+        // Color palette
+        const colors = [
+            '#2563eb', '#dc2626', '#16a34a', '#ca8a04', '#9333ea', 
+            '#c2410c', '#0891b2', '#be185d', '#4338ca', '#059669',
+            '#7c2d12', '#b91c1c', '#166534', '#92400e', '#581c87',
+            '#0f766e', '#1e40af', '#be123c', '#7c3aed', '#ea580c'
+        ];
+        
+        function getRandomColor() {
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        // Generate random normal number using Box-Muller transform
+        function randomNormal() {
+            const u = Math.random();
+            const v = Math.random();
+            return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+        }
+        
+        // White Noise Functions
+        function addWhiteNoise() {
+            const mean = parseFloat(document.getElementById('whiteNoiseMean').value) || 0;
+            const variance = parseFloat(document.getElementById('whiteNoiseVariance').value) || 1;
+            const length = parseInt(document.getElementById('whiteNoiseLength').value) || 100;
+            
+            const std = Math.sqrt(variance);
+            const seriesData = [];
+            
+            for (let i = 0; i < length; i++) {
+                const value = mean + std * randomNormal();
+                seriesData.push({ t: i, value: parseFloat(value.toFixed(3)) });
+            }
+            
+            seriesCounter++;
+            const series = {
+                id: `wn_${seriesCounter}`,
+                data: seriesData,
+                color: getRandomColor(),
+                name: `Series ${data.whiteNoise.length + 1}`,
+                mean: mean
+            };
+            
+            data.whiteNoise.push(series);
+            updateChart('whiteNoise');
+        }
+        
+        function clearWhiteNoise() {
+            data.whiteNoise = [];
+            updateChart('whiteNoise');
+        }
+        
+        // Random Walk Functions
+        function addRandomWalk() {
+            const drift = parseFloat(document.getElementById('randomWalkDrift').value) || 0;
+            const variance = parseFloat(document.getElementById('randomWalkVariance').value) || 1;
+            const initial = parseFloat(document.getElementById('randomWalkInitial').value) || 0;
+            const length = parseInt(document.getElementById('randomWalkLength').value) || 100;
+            
+            const std = Math.sqrt(variance);
+            const seriesData = [];
+            let currentValue = initial;
+            
+            for (let i = 0; i < length; i++) {
+                if (i > 0) {
+                    currentValue += drift + std * randomNormal();
+                }
+                seriesData.push({ t: i, value: parseFloat(currentValue.toFixed(3)) });
+            }
+            
+            seriesCounter++;
+            const series = {
+                id: `rw_${seriesCounter}`,
+                data: seriesData,
+                color: getRandomColor(),
+                name: `Series ${data.randomWalk.length + 1}`
+            };
+            
+            data.randomWalk.push(series);
+            updateChart('randomWalk');
+        }
+        
+        function clearRandomWalk() {
+            data.randomWalk = [];
+            updateChart('randomWalk');
+        }
+        
+        // Cyclical Functions
+        function addCyclical() {
+            const amplitude = parseFloat(document.getElementById('cyclicalAmplitude').value) || 2;
+            const frequency = parseFloat(document.getElementById('cyclicalFrequency').value) || 0.1;
+            const phase = parseFloat(document.getElementById('cyclicalPhase').value) || 0;
+            const noise = parseFloat(document.getElementById('cyclicalNoise').value) || 0.2;
+            const length = 100; // Fixed length for cyclical
+            
+            const seriesData = [];
+            
+            for (let i = 0; i < length; i++) {
+                const cyclical = amplitude * Math.sin(2 * Math.PI * frequency * i + phase);
+                const value = cyclical + noise * randomNormal();
+                seriesData.push({ t: i, value: parseFloat(value.toFixed(3)) });
+            }
+            
+            seriesCounter++;
+            const series = {
+                id: `cy_${seriesCounter}`,
+                data: seriesData,
+                color: getRandomColor(),
+                name: `Series ${data.cyclical.length + 1}`
+            };
+            
+            data.cyclical.push(series);
+            updateChart('cyclical');
+        }
+        
+        function clearCyclical() {
+            data.cyclical = [];
+            updateChart('cyclical');
+        }
+        
+        // Chart Update Function with Interactive Tooltips
+        function updateChart(type) {
+            const container = d3.select(`#${type}Chart`);
+            container.selectAll('*').remove();
+            
+            const seriesData = data[type];
+            if (seriesData.length === 0) {
+                container.append('div')
+                    .style('display', 'flex')
+                    .style('align-items', 'center')
+                    .style('justify-content', 'center')
+                    .style('height', '100%')
+                    .style('color', '#6b7280')
+                    .html('<div style="text-align: center;"><p style="margin-bottom: 8px;">No series generated yet</p><p style="font-size: 0.9em;">Click "Add Series" to create a time series</p></div>');
+                updateSeriesList(type);
+                return;
+            }
+            
+            const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+            const width = container.node().offsetWidth - margin.left - margin.right;
+            const height = container.node().offsetHeight - margin.top - margin.bottom;
+            
+            const svg = container.append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom);
+                
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+            
+            // Get all data points and setup scales
+            const allData = seriesData.flatMap(series => series.data);
+            const maxT = d3.max(allData, d => d.t);
+            const [minY, maxY] = d3.extent(allData, d => d.value);
+            const yPadding = (maxY - minY) * 0.1;
+            
+            const xScale = d3.scaleLinear()
+                .domain([0, maxT])
+                .range([0, width]);
+                
+            const yScale = d3.scaleLinear()
+                .domain([minY - yPadding, maxY + yPadding])
+                .range([height, 0]);
+            
+            // Grid
+            g.selectAll('.grid-line-x')
+                .data(xScale.ticks(8))
+                .enter().append('line')
+                .attr('class', 'grid-line-x')
+                .attr('x1', d => xScale(d))
+                .attr('x2', d => xScale(d))
+                .attr('y1', 0)
+                .attr('y2', height)
+                .attr('stroke', '#e0e0e0')
+                .attr('stroke-dasharray', '2,2');
+                
+            g.selectAll('.grid-line-y')
+                .data(yScale.ticks(6))
+                .enter().append('line')
+                .attr('class', 'grid-line-y')
+                .attr('x1', 0)
+                .attr('x2', width)
+                .attr('y1', d => yScale(d))
+                .attr('y2', d => yScale(d))
+                .attr('stroke', '#e0e0e0')
+                .attr('stroke-dasharray', '2,2');
+            
+            // Axes
+            g.append('g')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(xScale))
+                .selectAll('text')
+                .style('font-size', '12px');
+                
+            g.append('g')
+                .call(d3.axisLeft(yScale))
+                .selectAll('text')
+                .style('font-size', '12px');
+            
+            // Reference line for white noise mean
+            if (type === 'whiteNoise' && seriesData.length > 0) {
+                const mean = seriesData[0].mean;
+                g.append('line')
+                    .attr('x1', 0)
+                    .attr('x2', width)
+                    .attr('y1', yScale(mean))
+                    .attr('y2', yScale(mean))
+                    .attr('stroke', '#16a34a')
+                    .attr('stroke-width', 2)
+                    .attr('stroke-dasharray', '5,5');
+                    
+                g.append('text')
+                    .attr('x', width - 10)
+                    .attr('y', yScale(mean) - 5)
+                    .attr('text-anchor', 'end')
+                    .style('font-size', '12px')
+                    .style('fill', '#16a34a')
+                    .text('Mean');
+            }
+            
+            // Draw lines
+            const line = d3.line()
+                .x(d => xScale(d.t))
+                .y(d => yScale(d.value))
+                .curve(d3.curveLinear);
+            
+            seriesData.forEach(series => {
+                g.append('path')
+                    .datum(series.data)
+                    .attr('fill', 'none')
+                    .attr('stroke', series.color)
+                    .attr('stroke-width', 2)
+                    .attr('d', line);
+            });
+            
+            // Interactive elements for tooltip - each chart has its own tooltip
+            const tooltip = d3.select(`#tooltip-${type}`);
+            
+            // Hide other tooltips when hovering over this chart
+            const allTooltips = d3.selectAll('.tooltip');
+            
+            // Add hover line
+            const hoverLine = g.append('line')
+                .attr('class', 'hover-line')
+                .attr('y1', 0)
+                .attr('y2', height);
+            
+            // Add hover circles for each series
+            const hoverCircles = g.selectAll('.hover-circle')
+                .data(seriesData)
+                .enter().append('circle')
+                .attr('class', 'hover-circle')
+                .attr('r', 4)
+                .attr('stroke', d => d.color);
+            
+            // Add invisible overlay for mouse events
+            g.append('rect')
+                .attr('width', width)
+                .attr('height', height)
+                .attr('fill', 'none')
+                .attr('pointer-events', 'all')
+                .on('mouseover', function() {
+                    // Hide all other tooltips
+                    allTooltips.classed('visible', false);
+                    
+                    hoverLine.style('opacity', 1);
+                    hoverCircles.style('opacity', 1);
+                })
+                .on('mouseout', function() {
+                    hoverLine.style('opacity', 0);
+                    hoverCircles.style('opacity', 0);
+                    tooltip.classed('visible', false);
+                })
+                .on('mousemove', function(event) {
+                    const [mouseX, mouseY] = d3.pointer(event);
+                    const t = xScale.invert(mouseX);
+                    
+                    // Find closest t value
+                    let closestT = Math.round(t);
+                    if (closestT < 0) closestT = 0;
+                    if (closestT > maxT) closestT = maxT;
+                    
+                    // Position hover line
+                    hoverLine.attr('x1', xScale(closestT)).attr('x2', xScale(closestT));
+                    
+                    // Position hover circles and collect tooltip data
+                    let tooltipContent = `<div class="tooltip-title">Time: ${closestT}</div><div class="tooltip-content">`;
+                    
+                    hoverCircles.each(function(series, i) {
+                        const dataPoint = series.data.find(d => d.t === closestT);
+                        if (dataPoint) {
+                            d3.select(this)
+                                .attr('cx', xScale(dataPoint.t))
+                                .attr('cy', yScale(dataPoint.value));
+                            
+                            tooltipContent += `<div style="margin-bottom: 2px;"><span style="color: ${series.color};">●</span> ${series.name}: ${dataPoint.value.toFixed(3)}</div>`;
+                        }
+                    });
+                    
+                    tooltipContent += '</div>';
+                    
+                    // Show and position tooltip using page coordinates
+                    const containerRect = container.node().getBoundingClientRect();
+                    
+                    tooltip
+                        .html(tooltipContent)
+                        .classed('visible', true)
+                        .style('left', (containerRect.left + mouseX + margin.left + 15) + 'px')
+                        .style('top', (containerRect.top + mouseY + margin.top + window.scrollY - 10) + 'px');
+                });
+            
+            updateSeriesList(type);
+        }
+        
+        // Update Series List
+        function updateSeriesList(type) {
+            const container = d3.select(`#${type}Series`);
+            container.selectAll('*').remove();
+            
+            const seriesData = data[type];
+            if (seriesData.length === 0) return;
+            
+            seriesData.forEach((series, index) => {
+                const badge = container.append('div')
+                    .attr('class', 'series-badge');
+                    
+                badge.append('div')
+                    .attr('class', 'series-color')
+                    .style('background-color', series.color);
+                    
+                badge.append('span')
+                    .text(series.name);
+                    
+                badge.append('button')
+                    .attr('class', 'remove-btn')
+                    .text('×')
+                    .on('click', () => removeSeries(type, index));
+            });
+        }
+        
+        // Remove Series
+        function removeSeries(type, index) {
+            data[type].splice(index, 1);
+            updateChart(type);
+        }
+        
+        // Initialize empty charts
+        window.addEventListener('load', function() {
+            updateChart('whiteNoise');
+            updateChart('randomWalk');
+            updateChart('cyclical');
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            setTimeout(() => {
+                updateChart('whiteNoise');
+                updateChart('randomWalk');
+                updateChart('cyclical');
+            }, 100);
+        });
+    </script>
+</body>
+</html>
