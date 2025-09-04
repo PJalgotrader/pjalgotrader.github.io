@@ -92,6 +92,53 @@ Uses D3.js for interactive data visualizations. The page loads D3.js from CDN an
 - Typography scales appropriately across devices
 - Touch-friendly interface elements
 
+## Interactive Visualizations Management
+
+### Interactive_tools Directory Structure
+The `Interactive_tools/` folder contains standalone HTML files for interactive educational visualizations:
+
+```
+Interactive_tools/
+├── random-walk-teaching-tool.html      # Random walk visualizer with CLT demonstration
+├── stationarity-visualizer.html        # Time series stationarity teaching tool
+└── [original].tsx                      # Original TSX files (kept for reference)
+```
+
+### Standalone HTML Approach
+**Design Philosophy**: All interactive tools are implemented as standalone HTML files to:
+- Maintain static site architecture (no build process required)
+- Ensure long-term reliability and independence from external services
+- Provide professional presentation integrated with the academic portfolio
+- Enable full customization and branding consistency
+
+### Visualization Features
+Each standalone visualization includes:
+- **D3.js integration** for interactive charts with hover tooltips
+- **Professional styling** matching the main site design
+- **Responsive design** for all device types
+- **Educational controls** for parameter adjustment
+- **Academic branding** with author attribution and site links
+- **Independent tooltip systems** for multi-chart interfaces
+
+### Converting Claude Artifacts to Standalone HTML
+When migrating visualizations from Claude artifacts:
+
+1. **Extract core functionality** from TSX/React components
+2. **Convert to vanilla JavaScript** using D3.js for charts
+3. **Implement standalone styling** using CSS (avoid framework dependencies)
+4. **Add interactive tooltips** with chart-specific positioning
+5. **Integrate branding** (header links, attribution, styling consistency)
+6. **Test responsiveness** across devices and screen sizes
+7. **Update visualizations.html** links to point to local files
+
+### Tooltip Implementation Details
+Interactive charts use D3.js with:
+- **Chart-specific tooltips** (`#tooltip-{chartType}`) to avoid cross-chart interference
+- **Hover lines and circles** for precise data point identification
+- **Real-time positioning** calculated relative to each chart container
+- **Multi-series support** showing all series values at the current time point
+- **Smooth show/hide animations** for professional user experience
+
 ## Content Management
 
 ### Adding New Pages
@@ -108,11 +155,15 @@ When creating new pages:
 - Test responsive behavior across breakpoints
 
 ### Interactive Tools
-Interactive visualizations should:
-- Load D3.js from the established CDN
-- Follow the existing styling patterns
-- Be responsive and touch-friendly
-- Include appropriate error handling
+When adding new interactive visualizations:
+- Create standalone HTML files in the `Interactive_tools/` directory
+- Use D3.js from the established CDN for charts and interactivity
+- Follow the existing styling patterns and responsive design principles
+- Implement chart-specific tooltips to avoid cross-chart interference
+- Include proper error handling and educational controls
+- Add academic branding (header links, attribution)
+- Update `visualizations.html` to link to the new local file
+- Test interactive features across different devices
 
 ## GitHub Pages Deployment
 
@@ -121,4 +172,6 @@ The site auto-deploys from the main branch to GitHub Pages. No special deploymen
 ### URL Structure
 - Primary domain: `https://pjalgotrader.github.io`
 - All pages accessible via direct URLs (e.g., `/teaching.html`)
+- Interactive tools accessible at `/Interactive_tools/[filename].html`
 - Static assets served from root directory
+- Links in `visualizations.html` point to local Interactive_tools files for reliability
