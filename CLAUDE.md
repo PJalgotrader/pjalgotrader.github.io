@@ -32,6 +32,7 @@ This is a pure static site with no build tools, package managers, or compilation
 - `teaching.html` - Course information and teaching materials
 - `projects.html` - Research projects and Analytics Solutions Center work
 - `contact.html` - Contact information and social links
+- `Interactive_tools/` - Directory containing standalone HTML visualizations
 
 ### Shared Components
 All pages follow a consistent structure:
