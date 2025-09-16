@@ -94,9 +94,55 @@
                             </p>
                         </div>
                         
+                        <div style="margin: 2rem 0 1rem 0; padding: 1.5rem; border-top: 1px solid #e5e7eb; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; border-left: 4px solid #0ea5e9;">
+                            <h4 style="margin: 0 0 1rem 0; color: #1f2937; font-size: 1.1rem; font-weight: 600;">
+                                <i class="fas fa-chart-line" style="color: #0ea5e9; margin-right: 0.5rem;"></i>
+                                Exponential Smoothing Methods
+                            </h4>
+                            <p style="margin: 0 0 1.5rem 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
+                                Interactive exploration of exponential smoothing techniques that progressively handle level, trend, and seasonal patterns in time series data.
+                            </p>
+                        
+                            <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #ffffff; border-radius: 8px; border-left: 4px solid #06b6d4; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
+                                    <a href="Interactive_tools/m3_ets/ses/ses_interactive_visualization.html" target="_blank" style="text-decoration: none; color: #06b6d4;">
+                                        <i class="fas fa-chart-line" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
+                                        Simple Exponential Smoothing (SES)
+                                    </a>
+                                </h4>
+                                <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
+                                    Master the fundamentals of exponential smoothing by exploring how the α parameter controls the trade-off between stability and responsiveness. Watch the weighted averaging process in action as SES creates flat forecasts, and discover why high α values (approaching 1) signal model inadequacy when data contains trends or seasonal patterns.
+                                </p>
+                            </div>
+                            
+                            <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #ffffff; border-radius: 8px; border-left: 4px solid #06b6d4; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
+                                    <a href="Interactive_tools/m3_ets/holt_linear_trend/holt_linear_trend_visualization.html" target="_blank" style="text-decoration: none; color: #06b6d4;">
+                                        <i class="fas fa-chart-line" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
+                                        Holt's Linear Trend Method
+                                    </a>
+                                </h4>
+                                <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
+                                    Advance beyond flat forecasts by decomposing time series into level and trend components. Experiment with dual smoothing parameters α and β* to understand how each component adapts independently, creating dynamic sloped forecasts that naturally extend trending patterns into the future.
+                                </p>
+                            </div>
+                            
+                            <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #ffffff; border-radius: 8px; border-left: 4px solid #06b6d4; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
+                                    <a href="Interactive_tools/m3_ets/holt_winter/holt_winters_visualization.html" target="_blank" style="text-decoration: none; color: #06b6d4;">
+                                        <i class="fas fa-chart-line" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
+                                        Holt-Winters Seasonal Method
+                                    </a>
+                                </h4>
+                                <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
+                                    Experience the complete forecasting framework with three-component decomposition of level, trend, and seasonality. Observe how the triple smoothing parameters α, β*, and γ work together to capture complex data patterns, producing sophisticated forecasts that maintain both trending behavior and cyclical seasonal patterns.
+                                </p>
+                            </div>
+                        </div>
+                        
                         <div class="topic-footer">
-                            <span class="project-count">2 Projects</span>
-                            <a href="#time-series" class="btn btn-primary">
+                            <span class="project-count">5 Projects</span>
+                            <a href="#" class="btn btn-primary" onclick="document.querySelector('.visualization-item').scrollIntoView({behavior: 'smooth'})">
                                 <i class="fas fa-arrow-right"></i> Explore
                             </a>
                         </div>
