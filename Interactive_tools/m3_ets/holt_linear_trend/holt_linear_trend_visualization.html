@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holt's Linear Trend Method - Interactive Learning Tool</title>
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js@2.27.0/dist/plotly.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+        
+        .equations-panel {
+            background: #f8f9fa;
+            padding: 25px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .equations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .equation-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .equation-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .equation {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            color: #333;
+            text-align: center;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .equation-description {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        
+        .controls-panel {
+            padding: 30px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .control-row {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 1.1em;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            background: #667eea;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            background: #667eea;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .value-display {
+            min-width: 70px;
+            padding: 8px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .visualization-panel {
+            padding: 30px;
+            background: white;
+        }
+        
+        .chart-container {
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .info-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .info-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .info-card .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .iteration-info {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .iteration-info h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .math-step {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+            overflow-x: auto;
+            font-size: 0.95em;
+        }
+        
+        .highlight {
+            background: #ffeb3b;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        .component-container {
+            margin-bottom: 20px;
+        }
+        
+        .trend-indicator {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 1.5em;
+        }
+        
+        .trend-up {
+            color: #28a745;
+        }
+        
+        .trend-down {
+            color: #dc3545;
+        }
+        
+        .trend-flat {
+            color: #ffc107;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .animating {
+            animation: pulse 0.5s ease-in-out;
+        }
+        
+        .comparison-box {
+            background: #e8f4fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .comparison-box h4 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Holt's Linear Trend Method</h1>
+            <p>Interactive Learning Tool - Understanding Level and Trend Components</p>
+        </div>
+        
+        <div class="equations-panel">
+            <div class="equations-grid">
+                <div class="equation-box">
+                    <h3>🎯 Forecast Equation</h3>
+                    <div class="equation">ŷ<sub>t+h|t</sub> = ℓ<sub>t</sub> + h·b<sub>t</sub></div>
+                    <div class="equation-description">
+                        Forecast = Level + (Horizon × Trend)
+                    </div>
+                </div>
+                
+                <div class="equation-box">
+                    <h3>📊 Level Equation</h3>
+                    <div class="equation">ℓ<sub>t</sub> = α·y<sub>t</sub> + (1-α)·(ℓ<sub>t-1</sub> + b<sub>t-1</sub>)</div>
+                    <div class="equation-description">
+                        Smooths between observation and one-step forecast
+                    </div>
+                </div>
+                
+                <div class="equation-box">
+                    <h3>📈 Trend Equation</h3>
+                    <div class="equation">b<sub>t</sub> = β*·(ℓ<sub>t</sub> - ℓ<sub>t-1</sub>) + (1-β*)·b<sub>t-1</sub></div>
+                    <div class="equation-description">
+                        Smooths the trend estimate
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="comparison-box">
+            <h4>🔍 Holt vs SES: The Key Difference</h4>
+            <p><strong>SES:</strong> Assumes data fluctuates around a constant level → Flat forecasts</p>
+            <p><strong>Holt:</strong> Adds a trend component that captures direction → Sloped forecasts that can follow upward/downward patterns!</p>
+        </div>
+        
+        <div class="controls-panel">
+            <div class="control-row">
+                <div class="control-group">
+                    <label for="alpha">Level Smoothing (α)</label>
+                    <div class="slider-container">
+                        <input type="range" id="alpha" min="0.01" max="0.99" step="0.01" value="0.3">
+                        <span class="value-display" id="alphaValue">0.30</span>
+                    </div>
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Weight for level updates
+                    </small>
+                </div>
+                
+                <div class="control-group">
+                    <label for="betaStar">Trend Smoothing (β*)</label>
+                    <div class="slider-container">
+                        <input type="range" id="betaStar" min="0" max="0.99" step="0.01" value="0.1">
+                        <span class="value-display" id="betaStarValue">0.10</span>
+                    </div>
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Weight for trend updates (0 = constant trend)
+                    </small>
+                </div>
+            </div>
+            
+            <div class="control-row">
+                <div class="control-group">
+                    <label for="l0">Initial Level (ℓ₀)</label>
+                    <div class="slider-container">
+                        <input type="range" id="l0" min="50" max="200" step="1" value="112">
+                        <span class="value-display" id="l0Value">112</span>
+                    </div>
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Starting level estimate
+                    </small>
+                </div>
+                
+                <div class="control-group">
+                    <label for="b0">Initial Trend (b₀)</label>
+                    <div class="slider-container">
+                        <input type="range" id="b0" min="-5" max="10" step="0.1" value="2">
+                        <span class="value-display" id="b0Value">2.0</span>
+                    </div>
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Starting trend estimate
+                    </small>
+                </div>
+                
+                <div class="control-group">
+                    <label for="speed">Animation Speed</label>
+                    <div class="slider-container">
+                        <input type="range" id="speed" min="100" max="2000" step="100" value="500">
+                        <span class="value-display" id="speedValue">500ms</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" onclick="startAnimation()">🎬 Start Animation</button>
+            <button class="btn-secondary" onclick="pauseAnimation()">⏸️ Pause</button>
+            <button class="btn-secondary" onclick="resetVisualization()">🔄 Reset</button>
+            <button class="btn-primary" onclick="showFullFit()">⚡ Show Complete Fit</button>
+        </div>
+        
+        <div class="visualization-panel">
+            <div class="iteration-info" id="iterationInfo" style="display: none;">
+                <h3>Current Iteration Details</h3>
+                <div id="iterationDetails"></div>
+            </div>
+            
+            <div class="chart-container">
+                <div id="mainChart"></div>
+            </div>
+            
+            <div class="component-container">
+                <div class="chart-container">
+                    <div id="levelChart"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <div id="trendChart"></div>
+                </div>
+            </div>
+            
+            <div class="info-cards">
+                <div class="info-card">
+                    <h4>Time Step</h4>
+                    <div class="value" id="currentStep">0</div>
+                </div>
+                <div class="info-card">
+                    <h4>Current Level</h4>
+                    <div class="value" id="currentLevel">-</div>
+                </div>
+                <div class="info-card">
+                    <h4>Current Trend</h4>
+                    <div class="value">
+                        <span id="currentTrend">-</span>
+                        <span id="trendIndicator" class="trend-indicator"></span>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <h4>Training RMSE</h4>
+                    <div class="value" id="trainRMSE">-</div>
+                </div>
+                <div class="info-card">
+                    <h4>Test RMSE</h4>
+                    <div class="value" id="testRMSE">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Airline passenger data (monthly from 1949 to 1960)
+        const airlineData = [
+            112, 118, 132, 129, 121, 135, 148, 148, 136, 119, 104, 118,
+            115, 126, 141, 135, 125, 149, 170, 170, 158, 133, 114, 140,
+            145, 150, 178, 163, 172, 178, 199, 199, 184, 162, 146, 166,
+            171, 180, 193, 181, 183, 218, 230, 242, 209, 191, 172, 194,
+            196, 196, 236, 235, 229, 243, 264, 272, 237, 211, 180, 201,
+            204, 188, 235, 227, 234, 264, 302, 293, 259, 229, 203, 229,
+            242, 233, 267, 269, 270, 315, 364, 347, 312, 274, 237, 278,
+            284, 277, 317, 313, 318, 374, 413, 405, 355, 306, 271, 306,
+            315, 301, 356, 348, 355, 422, 465, 467, 404, 347, 305, 336,
+            340, 318, 362, 348, 363, 435, 491, 505, 404, 359, 310, 337,
+            360, 342, 406, 396, 420, 472, 548, 559, 463, 407, 362, 405,
+            417, 391, 419, 461, 472, 535, 622, 606, 508, 461, 390, 432
+        ];
+        
+        // Create time index
+        const timeIndex = Array.from({length: airlineData.length}, (_, i) => i + 1);
+        
+        // Split data into train and test (80/20 split)
+        const splitIndex = Math.floor(airlineData.length * 0.8);
+        const trainData = airlineData.slice(0, splitIndex);
+        const testData = airlineData.slice(splitIndex);
+        const trainTime = timeIndex.slice(0, splitIndex);
+        const testTime = timeIndex.slice(splitIndex);
+        
+        // Global variables for animation
+        let animationId = null;
+        let currentIteration = 0;
+        let levels = [];
+        let trends = [];
+        let forecasts = [];
+        let alpha = 0.3;
+        let betaStar = 0.1;
+        let l0 = 112;
+        let b0 = 2;
+        
+        // Initialize controls
+        document.getElementById('alpha').addEventListener('input', function(e) {
+            alpha = parseFloat(e.target.value);
+            document.getElementById('alphaValue').textContent = alpha.toFixed(2);
+            if (currentIteration > 0) {
+                resetVisualization();
+            }
+        });
+        
+        document.getElementById('betaStar').addEventListener('input', function(e) {
+            betaStar = parseFloat(e.target.value);
+            document.getElementById('betaStarValue').textContent = betaStar.toFixed(2);
+            if (currentIteration > 0) {
+                resetVisualization();
+            }
+        });
+        
+        document.getElementById('l0').addEventListener('input', function(e) {
+            l0 = parseFloat(e.target.value);
+            document.getElementById('l0Value').textContent = l0;
+            if (currentIteration > 0) {
+                resetVisualization();
+            }
+        });
+        
+        document.getElementById('b0').addEventListener('input', function(e) {
+            b0 = parseFloat(e.target.value);
+            document.getElementById('b0Value').textContent = b0.toFixed(1);
+            if (currentIteration > 0) {
+                resetVisualization();
+            }
+        });
+        
+        document.getElementById('speed').addEventListener('input', function(e) {
+            document.getElementById('speedValue').textContent = e.target.value + 'ms';
+        });
+        
+        function calculateHolt(data, alpha, betaStar, l0, b0) {
+            let levels = [l0];
+            let trends = [b0];
+            let forecasts = [];
+            
+            for (let t = 0; t < data.length; t++) {
+                // Forecast for time t is previous level + previous trend
+                forecasts.push(levels[levels.length - 1] + trends[trends.length - 1]);
+                
+                // Update level
+                const newLevel = alpha * data[t] + (1 - alpha) * (levels[levels.length - 1] + trends[trends.length - 1]);
+                
+                // Update trend
+                const newTrend = betaStar * (newLevel - levels[levels.length - 1]) + (1 - betaStar) * trends[trends.length - 1];
+                
+                levels.push(newLevel);
+                trends.push(newTrend);
+            }
+            
+            return { levels, trends, forecasts };
+        }
+        
+        function animateStep() {
+            if (currentIteration >= trainData.length) {
+                // Start forecasting phase
+                if (currentIteration < trainData.length + testData.length) {
+                    updateTestForecast();
+                } else {
+                    pauseAnimation();
+                    showMetrics();
+                }
+                return;
+            }
+            
+            const y_t = trainData[currentIteration];
+            
+            // Get previous level and trend
+            let l_prev, b_prev;
+            if (currentIteration === 0) {
+                l_prev = l0;
+                b_prev = b0;
+            } else {
+                l_prev = levels[currentIteration - 1];
+                b_prev = trends[currentIteration - 1];
+            }
+            
+            // Calculate forecast BEFORE updating (using previous level and trend)
+            const forecast = l_prev + b_prev;
+            forecasts.push(forecast);
+            
+            // NOW update level after observing y_t
+            const l_t = alpha * y_t + (1 - alpha) * (l_prev + b_prev);
+            
+            // Update trend
+            const b_t = betaStar * (l_t - l_prev) + (1 - betaStar) * b_prev;
+            
+            levels.push(l_t);
+            trends.push(b_t);
+            
+            // Update charts AFTER adding the data
+            updateCharts();
+            
+            // Update iteration info
+            updateIterationInfo(currentIteration, y_t, l_prev, b_prev, l_t, b_t, forecast);
+            
+            // Update info cards
+            updateInfoCards(currentIteration + 1, l_t, b_t);
+            
+            currentIteration++;
+            
+            const speed = parseInt(document.getElementById('speed').value);
+            animationId = setTimeout(animateStep, speed);
+        }
+        
+        function updateIterationInfo(t, y_t, l_prev, b_prev, l_t, b_t, forecast) {
+            const info = document.getElementById('iterationInfo');
+            const details = document.getElementById('iterationDetails');
+            
+            info.style.display = 'block';
+            info.classList.add('animating');
+            
+            details.innerHTML = `
+                <div class="math-step">
+                    <strong>Time t = ${t + 1}</strong>, Actual value y<sub>${t + 1}</sub> = ${y_t}
+                </div>
+                <div class="math-step">
+                    <strong>Step 1 - Forecast:</strong> ŷ<sub>${t + 1}|${t}</sub> = ℓ<sub>${t}</sub> + b<sub>${t}</sub> = ${l_prev.toFixed(1)} + ${b_prev.toFixed(1)} = <span class="highlight">${forecast.toFixed(1)}</span>
+                </div>
+                <div class="math-step">
+                    <strong>Step 2 - Update Level:</strong> ℓ<sub>${t + 1}</sub> = α·y<sub>${t + 1}</sub> + (1-α)·(ℓ<sub>${t}</sub> + b<sub>${t}</sub>)
+                </div>
+                <div class="math-step">
+                    ℓ<sub>${t + 1}</sub> = ${alpha.toFixed(2)} × ${y_t} + ${(1 - alpha).toFixed(2)} × (${l_prev.toFixed(1)} + ${b_prev.toFixed(1)})
+                </div>
+                <div class="math-step">
+                    ℓ<sub>${t + 1}</sub> = ${(alpha * y_t).toFixed(1)} + ${((1 - alpha) * (l_prev + b_prev)).toFixed(1)} = <span class="highlight">${l_t.toFixed(1)}</span>
+                </div>
+                <div class="math-step">
+                    <strong>Step 3 - Update Trend:</strong> b<sub>${t + 1}</sub> = β*·(ℓ<sub>${t + 1}</sub> - ℓ<sub>${t}</sub>) + (1-β*)·b<sub>${t}</sub>
+                </div>
+                <div class="math-step">
+                    b<sub>${t + 1}</sub> = ${betaStar.toFixed(2)} × (${l_t.toFixed(1)} - ${l_prev.toFixed(1)}) + ${(1 - betaStar).toFixed(2)} × ${b_prev.toFixed(1)}
+                </div>
+                <div class="math-step">
+                    b<sub>${t + 1}</sub> = ${(betaStar * (l_t - l_prev)).toFixed(2)} + ${((1 - betaStar) * b_prev).toFixed(2)} = <span class="highlight">${b_t.toFixed(2)}</span>
+                </div>
+                <div class="math-step">
+                    <strong>Next Forecast:</strong> ŷ<sub>${t + 2}|${t + 1}</sub> = ℓ<sub>${t + 1}</sub> + b<sub>${t + 1}</sub> = ${l_t.toFixed(1)} + ${b_t.toFixed(2)} = ${(l_t + b_t).toFixed(1)}
+                </div>
+            `;
+            
+            setTimeout(() => info.classList.remove('animating'), 500);
+        }
+        
+        function updateTestForecast() {
+            const testIndex = currentIteration - trainData.length;
+            const lastLevel = levels[levels.length - 1];
+            const lastTrend = trends[trends.length - 1];
+            
+            // For Holt's method, forecast h steps ahead uses: l_t + h * b_t
+            const h = testIndex + 1;
+            const forecast = lastLevel + h * lastTrend;
+            forecasts.push(forecast);
+            
+            updateCharts();
+            
+            document.getElementById('currentStep').textContent = currentIteration + 1;
+            currentIteration++;
+            
+            const speed = parseInt(document.getElementById('speed').value);
+            animationId = setTimeout(animateStep, speed);
+        }
+        
+        function updateInfoCards(step, level, trend) {
+            document.getElementById('currentStep').textContent = step;
+            document.getElementById('currentLevel').textContent = level.toFixed(1);
+            document.getElementById('currentTrend').textContent = trend.toFixed(2);
+            
+            // Update trend indicator
+            const indicator = document.getElementById('trendIndicator');
+            if (trend > 0.5) {
+                indicator.textContent = '↗';
+                indicator.className = 'trend-indicator trend-up';
+            } else if (trend < -0.5) {
+                indicator.textContent = '↘';
+                indicator.className = 'trend-indicator trend-down';
+            } else {
+                indicator.textContent = '→';
+                indicator.className = 'trend-indicator trend-flat';
+            }
+        }
+        
+        function updateCharts() {
+            // Show forecasts and components based on what's been calculated
+            const trainForecastsToShow = forecasts.slice(0, Math.min(forecasts.length, trainData.length));
+            const testForecastsToShow = forecasts.slice(trainData.length);
+            const levelsToShow = levels;
+            const trendsToShow = trends;
+            
+            // Main chart
+            const traces = [
+                {
+                    x: trainTime,
+                    y: trainData,
+                    mode: 'lines+markers',
+                    name: 'Training Data',
+                    line: { color: 'blue', width: 2 },
+                    marker: { size: 4 }
+                },
+                {
+                    x: testTime,
+                    y: testData,
+                    mode: 'lines+markers',
+                    name: 'Test Data',
+                    line: { color: 'lightblue', width: 2, dash: 'dash' },
+                    marker: { size: 4 }
+                },
+                {
+                    x: trainTime.slice(0, trainForecastsToShow.length),
+                    y: trainForecastsToShow,
+                    mode: 'lines+markers',
+                    name: 'Fitted Values',
+                    line: { color: 'red', width: 2 },
+                    marker: { size: 6, symbol: 'circle-open' }
+                }
+            ];
+            
+            if (testForecastsToShow.length > 0) {
+                traces.push({
+                    x: testTime.slice(0, testForecastsToShow.length),
+                    y: testForecastsToShow,
+                    mode: 'lines+markers',
+                    name: 'Forecasts (with trend!)',
+                    line: { color: 'orange', width: 2 },
+                    marker: { size: 6, symbol: 'square-open' }
+                });
+            }
+            
+            const layout1 = {
+                title: 'Airline Passengers - Holt Linear Trend Method',
+                xaxis: { title: 'Time (Months)' },
+                yaxis: { title: 'Number of Passengers' },
+                showlegend: true,
+                height: 400,
+                hovermode: 'x'
+            };
+            
+            Plotly.newPlot('mainChart', traces, layout1);
+            
+            // Level evolution chart - show only level component including initial value
+            const levelXValues = levelsToShow.length > 0 ? [0, ...trainTime.slice(0, levelsToShow.length)] : [0];
+            const levelYValues = levelsToShow.length > 0 ? [l0, ...levelsToShow] : [l0];
+            
+            const levelTrace = {
+                x: levelXValues,
+                y: levelYValues,
+                mode: 'lines+markers',
+                name: 'Level Component (ℓ_t)',
+                line: { color: 'purple', width: 3 },
+                marker: { size: 8, color: 'purple' },
+                fill: 'tonexty',
+                fillcolor: 'rgba(147, 112, 219, 0.1)'
+            };
+            
+            const layout2 = {
+                title: 'Level Component Evolution (ℓ_t)',
+                xaxis: { title: 'Time (Months)' },
+                yaxis: { title: 'Level Value' },
+                showlegend: true,
+                height: 400,
+                annotations: []
+            };
+            
+            // Add annotation for initial value
+            layout2.annotations.push({
+                x: 0,
+                y: l0,
+                xref: 'x',
+                yref: 'y',
+                text: `ℓ₀ = ${l0.toFixed(1)}`,
+                showarrow: true,
+                arrowhead: 7,
+                ax: -40,
+                ay: 40,
+                bgcolor: 'purple',
+                bordercolor: 'purple',
+                borderwidth: 2,
+                font: { color: 'white' }
+            });
+            
+            // Add annotation for current value if we have data
+            if (levelsToShow.length > 0) {
+                layout2.annotations.push({
+                    x: trainTime[levelsToShow.length - 1],
+                    y: levelsToShow[levelsToShow.length - 1],
+                    xref: 'x',
+                    yref: 'y',
+                    text: `ℓ_${levelsToShow.length} = ${levelsToShow[levelsToShow.length - 1].toFixed(1)}`,
+                    showarrow: true,
+                    arrowhead: 7,
+                    ax: -50,
+                    ay: -40,
+                    bgcolor: 'purple',
+                    bordercolor: 'purple',
+                    borderwidth: 2,
+                    font: { color: 'white' }
+                });
+            }
+            
+            Plotly.newPlot('levelChart', [levelTrace], layout2);
+            
+            // Trend evolution chart - including initial value
+            const trendXValues = trendsToShow.length > 0 ? [0, ...trainTime.slice(0, trendsToShow.length)] : [0];
+            const trendYValues = trendsToShow.length > 0 ? [b0, ...trendsToShow] : [b0];
+            
+            const trendTrace = {
+                x: trendXValues,
+                y: trendYValues,
+                mode: 'lines+markers',
+                name: 'Trend Component (b_t)',
+                line: { color: 'green', width: 3 },
+                marker: { size: 8, color: 'green' },
+                fill: 'tozeroy',
+                fillcolor: 'rgba(76, 175, 80, 0.1)'
+            };
+            
+            const layout3 = {
+                title: 'Trend Component Evolution (b_t)',
+                xaxis: { title: 'Time (Months)' },
+                yaxis: { title: 'Trend Value', zeroline: true, zerolinewidth: 2, zerolinecolor: 'gray' },
+                showlegend: true,
+                height: 400,
+                shapes: [{
+                    type: 'line',
+                    x0: 0,
+                    x1: trainData.length,
+                    y0: 0,
+                    y1: 0,
+                    line: { color: 'gray', width: 2, dash: 'dash' }
+                }],
+                annotations: []
+            };
+            
+            // Add annotation for initial value
+            layout3.annotations.push({
+                x: 0,
+                y: b0,
+                xref: 'x',
+                yref: 'y',
+                text: `b₀ = ${b0.toFixed(2)}`,
+                showarrow: true,
+                arrowhead: 7,
+                ax: 40,
+                ay: -40,
+                bgcolor: 'green',
+                bordercolor: 'green',
+                borderwidth: 2,
+                font: { color: 'white' }
+            });
+            
+            // Add annotation for current value if we have data
+            if (trendsToShow.length > 0) {
+                layout3.annotations.push({
+                    x: trainTime[trendsToShow.length - 1],
+                    y: trendsToShow[trendsToShow.length - 1],
+                    xref: 'x',
+                    yref: 'y',
+                    text: `b_${trendsToShow.length} = ${trendsToShow[trendsToShow.length - 1].toFixed(2)}`,
+                    showarrow: true,
+                    arrowhead: 7,
+                    ax: 50,
+                    ay: -40,
+                    bgcolor: 'green',
+                    bordercolor: 'green',
+                    borderwidth: 2,
+                    font: { color: 'white' }
+                });
+            }
+            
+            Plotly.newPlot('trendChart', [trendTrace], layout3);
+            
+            // Calculate and display metrics
+            if (trainForecastsToShow.length > 0) {
+                const trainErrors = trainForecastsToShow.map((f, i) => Math.pow(trainData[i] - f, 2));
+                const trainRMSE = Math.sqrt(trainErrors.reduce((a, b) => a + b, 0) / trainErrors.length);
+                document.getElementById('trainRMSE').textContent = trainRMSE.toFixed(1);
+            }
+            
+            if (testForecastsToShow.length > 0) {
+                const testErrors = testForecastsToShow.map((f, i) => Math.pow(testData[i] - f, 2));
+                const testRMSE = Math.sqrt(testErrors.reduce((a, b) => a + b, 0) / testErrors.length);
+                document.getElementById('testRMSE').textContent = testRMSE.toFixed(1);
+            }
+        }
+        
+        function startAnimation() {
+            if (animationId) {
+                pauseAnimation();
+            }
+            if (currentIteration === 0 || currentIteration >= trainData.length + testData.length) {
+                resetVisualization();
+            }
+            animateStep();
+        }
+        
+        function pauseAnimation() {
+            if (animationId) {
+                clearTimeout(animationId);
+                animationId = null;
+            }
+        }
+        
+        function resetVisualization() {
+            pauseAnimation();
+            currentIteration = 0;
+            levels = [];
+            trends = [];
+            forecasts = [];
+            document.getElementById('currentStep').textContent = '0';
+            document.getElementById('currentLevel').textContent = '-';
+            document.getElementById('currentTrend').textContent = '-';
+            document.getElementById('trendIndicator').textContent = '';
+            document.getElementById('trainRMSE').textContent = '-';
+            document.getElementById('testRMSE').textContent = '-';
+            document.getElementById('iterationInfo').style.display = 'none';
+            initializeCharts();
+        }
+        
+        function showFullFit() {
+            pauseAnimation();
+            resetVisualization();
+            
+            // Clear existing arrays
+            levels = [];
+            trends = [];
+            forecasts = [];
+            
+            // Initialize with starting values
+            let currentLevel = l0;
+            let currentTrend = b0;
+            
+            // Calculate full fit for training data
+            for (let t = 0; t < trainData.length; t++) {
+                const y_t = trainData[t];
+                
+                // Forecast for time t uses level and trend from t-1
+                forecasts.push(currentLevel + currentTrend);
+                
+                // Update level after observing y_t
+                const newLevel = alpha * y_t + (1 - alpha) * (currentLevel + currentTrend);
+                
+                // Update trend
+                const newTrend = betaStar * (newLevel - currentLevel) + (1 - betaStar) * currentTrend;
+                
+                levels.push(newLevel);
+                trends.push(newTrend);
+                
+                currentLevel = newLevel;
+                currentTrend = newTrend;
+            }
+            
+            // Add test forecasts with trend
+            const lastLevel = levels[levels.length - 1];
+            const lastTrend = trends[trends.length - 1];
+            for (let h = 1; h <= testData.length; h++) {
+                forecasts.push(lastLevel + h * lastTrend);
+            }
+            
+            currentIteration = trainData.length + testData.length;
+            updateCharts();
+            showMetrics();
+            updateInfoCards(trainData.length, lastLevel, lastTrend);
+        }
+        
+        function showMetrics() {
+            const trainForecasts = forecasts.slice(0, trainData.length);
+            const testForecasts = forecasts.slice(trainData.length);
+            
+            if (trainForecasts.length > 0) {
+                const trainErrors = trainForecasts.map((f, i) => Math.pow(trainData[i] - f, 2));
+                const trainRMSE = Math.sqrt(trainErrors.reduce((a, b) => a + b, 0) / trainErrors.length);
+                document.getElementById('trainRMSE').textContent = trainRMSE.toFixed(1);
+            }
+            
+            if (testForecasts.length > 0) {
+                const testErrors = testForecasts.map((f, i) => Math.pow(testData[i] - f, 2));
+                const testRMSE = Math.sqrt(testErrors.reduce((a, b) => a + b, 0) / testErrors.length);
+                document.getElementById('testRMSE').textContent = testRMSE.toFixed(1);
+            }
+        }
+        
+        function initializeCharts() {
+            // Initial empty charts
+            const traces1 = [
+                {
+                    x: trainTime,
+                    y: trainData,
+                    mode: 'lines+markers',
+                    name: 'Training Data',
+                    line: { color: 'blue', width: 2 },
+                    marker: { size: 4 }
+                },
+                {
+                    x: testTime,
+                    y: testData,
+                    mode: 'lines+markers',
+                    name: 'Test Data',
+                    line: { color: 'lightblue', width: 2, dash: 'dash' },
+                    marker: { size: 4 }
+                }
+            ];
+            
+            const layout1 = {
+                title: 'Airline Passengers - Holt Linear Trend Method',
+                xaxis: { title: 'Time (Months)' },
+                yaxis: { title: 'Number of Passengers' },
+                showlegend: true,
+                height: 400
+            };
+            
+            Plotly.newPlot('mainChart', traces1, layout1);
+            
+            // Show initial level l_0
+            const levelTrace = {
+                x: [0],
+                y: [l0],
+                mode: 'markers',
+                name: 'Level Component (ℓ_t)',
+                marker: { size: 10, color: 'purple' }
+            };
+            
+            const layout2 = {
+                title: 'Level Component Evolution (ℓ_t)',
+                xaxis: { title: 'Time (Months)', range: [-1, trainData.length] },
+                yaxis: { title: 'Level Value' },
+                showlegend: true,
+                height: 400,
+                annotations: [{
+                    x: 0,
+                    y: l0,
+                    xref: 'x',
+                    yref: 'y',
+                    text: `ℓ₀ = ${l0.toFixed(1)}`,
+                    showarrow: true,
+                    arrowhead: 7,
+                    ax: -40,
+                    ay: 40,
+                    bgcolor: 'purple',
+                    bordercolor: 'purple',
+                    borderwidth: 2,
+                    font: { color: 'white' }
+                }]
+            };
+            
+            Plotly.newPlot('levelChart', [levelTrace], layout2);
+            
+            // Show initial trend b_0
+            const trendTrace = {
+                x: [0],
+                y: [b0],
+                mode: 'markers',
+                name: 'Trend Component (b_t)',
+                marker: { size: 10, color: 'green' }
+            };
+            
+            const layout3 = {
+                title: 'Trend Component Evolution (b_t)',
+                xaxis: { title: 'Time (Months)', range: [-1, trainData.length] },
+                yaxis: { title: 'Trend Value' },
+                showlegend: true,
+                height: 400,
+                shapes: [{
+                    type: 'line',
+                    x0: -1,
+                    x1: trainData.length,
+                    y0: 0,
+                    y1: 0,
+                    line: { color: 'gray', width: 2, dash: 'dash' }
+                }],
+                annotations: [{
+                    x: 0,
+                    y: b0,
+                    xref: 'x',
+                    yref: 'y',
+                    text: `b₀ = ${b0.toFixed(2)}`,
+                    showarrow: true,
+                    arrowhead: 7,
+                    ax: 40,
+                    ay: -40,
+                    bgcolor: 'green',
+                    bordercolor: 'green',
+                    borderwidth: 2,
+                    font: { color: 'white' }
+                }]
+            };
+            
+            Plotly.newPlot('trendChart', [trendTrace], layout3);
+        }
+        
+        // Initialize on load
+        initializeCharts();
+    </script>
+</body>
+</html>
