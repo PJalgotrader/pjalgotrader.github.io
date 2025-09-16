@@ -70,6 +70,7 @@ Key functions in `script.js`:
 - Google Fonts (Inter font family)
 - Font Awesome 6.0.0 for icons
 - D3.js v7 for data visualizations (visualizations.html only)
+- Plotly.js v2.27.0 for exponential smoothing visualizations (m3_ets directory)
 
 ### Image Assets
 - `images/pedram.jpg` - Profile photo used on homepage
@@ -101,6 +102,16 @@ The `Interactive_tools/` folder contains standalone HTML files for interactive e
 Interactive_tools/
 ├── random-walk-teaching-tool.html      # Random walk visualizer with CLT demonstration
 ├── stationarity-visualizer.html        # Time series stationarity teaching tool
+├── m3_ets/                             # Exponential smoothing methods directory
+│   ├── ses/
+│   │   ├── ses_interactive_visualization.html    # Simple Exponential Smoothing
+│   │   └── ses_explain.txt                       # Teaching notes and parameter guide
+│   ├── holt_linear_trend/
+│   │   ├── holt_linear_trend_visualization.html  # Holt's Linear Trend Method
+│   │   └── holt_linear_explanation.txt           # Teaching notes and parameter guide
+│   └── holt_winter/
+│       ├── holt_winters_visualization.html       # Holt-Winters Seasonal Method
+│       └── holt_winter_explain.txt               # Teaching notes and parameter guide
 └── [original].tsx                      # Original TSX files (kept for reference)
 ```
 
@@ -139,6 +150,80 @@ Interactive charts use D3.js with:
 - **Multi-series support** showing all series values at the current time point
 - **Smooth show/hide animations** for professional user experience
 
+## Exponential Smoothing Teaching Suite (m3_ets)
+
+### Overview
+The `m3_ets/` directory contains a comprehensive suite of three interactive visualizations for teaching exponential smoothing methods progressively:
+
+1. **Simple Exponential Smoothing (SES)** - Level-only smoothing
+2. **Holt's Linear Trend Method** - Level + Trend components  
+3. **Holt-Winters Seasonal Method** - Level + Trend + Seasonal components
+
+### Educational Design Philosophy
+- **Progressive Complexity**: Students learn SES → Holt → Holt-Winters to understand how each method builds upon the previous
+- **Parameter Focus**: Each visualization emphasizes understanding α, β*, and γ parameters through interactive controls
+- **Mathematical Transparency**: Step-by-step calculations shown during animation to demystify the algorithms
+- **Real Data**: Uses classic airline passenger dataset to demonstrate model limitations and appropriate applications
+
+### Technical Implementation
+
+#### Visualization Technology
+- **Plotly.js v2.27.0** for interactive charts with professional quality
+- **Vanilla JavaScript** for educational controls and step-by-step animation
+- **Consistent Styling** across all three methods for seamless learning progression
+- **Responsive Design** ensuring accessibility across all devices
+
+#### Key Features Per Visualization
+
+**Simple Exponential Smoothing (SES)**:
+- Interactive α parameter control (0.01 to 0.99)
+- Real-time level evolution chart starting from ℓ₀ at time 0
+- Step-by-step animation showing forecast equation: ŷ_{t+h|t} = ℓ_t
+- Educational insights on when α approaches 1.0 (model inadequacy signal)
+- Parameter guide explaining stability vs responsiveness trade-offs
+
+**Holt's Linear Trend Method**:
+- Dual parameter controls: α (level) and β* (trend)
+- Multi-chart display: main forecast + level evolution + trend evolution
+- Demonstrates forecast equation: ŷ_{t+h|t} = ℓ_t + h·b_t
+- Shows component independence and initialization effects
+- Parameter combinations guide (high α + low β*, etc.)
+
+**Holt-Winters Seasonal Method**:
+- Triple parameter controls: α (level), β* (trend), γ (seasonal)
+- Four-chart interface: main forecast + level + trend + seasonal factors
+- Complete forecast equation: ŷ_{t+h|t} = ℓ_t + h·b_t + s_{t+h-m(k+1)}
+- Deseasonalization process visualization
+- Seasonal pattern evolution and adaptation controls
+
+#### Consistent Header Branding
+All visualizations include standardized academic branding:
+- **Attribution**: "Created by Dr. Pedram Jahangiry | Enhanced with Claude"
+- **Navigation Links**: Website, YouTube Channel, GitHub Profile with hover effects
+- **Professional Styling**: Gradient backgrounds, consistent color schemes
+- **Academic Integration**: Links back to main portfolio site
+
+#### Interactive Parameter Guides
+Each visualization includes comprehensive parameter education sections:
+- **Color-coded explanations** for different parameter ranges
+- **Mathematical intuition** behind exponential weighting
+- **Practical implications** of parameter choices
+- **Warning signals** for inappropriate model selection
+- **Visual examples** of parameter effects on forecasting behavior
+
+### Educational Impact
+- **Hands-on Learning**: Students manipulate parameters and immediately see effects
+- **Mathematical Understanding**: Equations come alive through step-by-step animation
+- **Model Selection Skills**: Clear demonstration of when each method is appropriate
+- **Parameter Tuning Intuition**: Understanding trade-offs between stability and responsiveness
+- **Professional Presentation**: Publication-quality visualizations suitable for academic use
+
+### File Organization
+Each method maintains consistent structure:
+- **HTML Visualization**: Complete standalone educational tool
+- **Text Guide**: Detailed teaching notes and parameter explanations
+- **Consistent Naming**: Clear file naming for easy navigation and maintenance
+
 ## Content Management
 
 ### Adding New Pages
@@ -156,14 +241,18 @@ When creating new pages:
 
 ### Interactive Tools
 When adding new interactive visualizations:
-- Create standalone HTML files in the `Interactive_tools/` directory
-- Use D3.js from the established CDN for charts and interactivity
+- Create standalone HTML files in the `Interactive_tools/` directory or appropriate subdirectory
+- Use D3.js or Plotly.js from established CDNs based on visualization complexity
+  - **D3.js v7**: For custom interactive charts with advanced tooltip systems
+  - **Plotly.js v2.27.0**: For professional statistical visualizations with multiple chart types
 - Follow the existing styling patterns and responsive design principles
-- Implement chart-specific tooltips to avoid cross-chart interference
-- Include proper error handling and educational controls
-- Add academic branding (header links, attribution)
-- Update `visualizations.html` to link to the new local file
-- Test interactive features across different devices
+- Implement consistent header branding with attribution and navigation links
+- Include comprehensive parameter guides with educational content
+- Add proper error handling and educational controls
+- Update `visualizations.html` to link to the new local file with appropriate descriptions
+- Test interactive features and responsiveness across different devices
+- For educational visualizations, include step-by-step animations and mathematical transparency
+- Organize complex visualization suites in subdirectories (e.g., `m3_ets/` for exponential smoothing)
 
 ## GitHub Pages Deployment
 
