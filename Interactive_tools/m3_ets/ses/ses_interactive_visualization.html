@@ -811,27 +811,36 @@
             
             Plotly.newPlot('mainChart', traces1, layout1);
             
-            // Show initial level ℓ₀ in level chart
+            // Show initial level l_0 (copying exact approach from Holt)
             const levelTrace = {
                 x: [0],
                 y: [l0],
                 mode: 'markers',
-                name: 'Level ℓ₀',
-                marker: { 
-                    color: 'red', 
-                    size: 8,
-                    symbol: 'circle'
-                },
-                text: [`ℓ₀ = ${l0}`],
-                textposition: 'top center'
+                name: 'Level Component (ℓ_t)',
+                marker: { size: 10, color: 'purple' }
             };
             
             const layout2 = {
-                title: 'Evolution of Level Component (ℓ_t)',
-                xaxis: { title: 'Time (Months)' },
+                title: 'Level Component Evolution (ℓ_t)',
+                xaxis: { title: 'Time (Months)', range: [-1, trainData.length] },
                 yaxis: { title: 'Level Value' },
                 showlegend: true,
-                height: 300
+                height: 300,
+                annotations: [{
+                    x: 0,
+                    y: l0,
+                    xref: 'x',
+                    yref: 'y',
+                    text: `ℓ_0 = ${l0.toFixed(1)}`,
+                    showarrow: true,
+                    arrowhead: 7,
+                    ax: 0,
+                    ay: -30,
+                    bgcolor: 'purple',
+                    bordercolor: 'purple',
+                    borderwidth: 2,
+                    font: { color: 'white' }
+                }]
             };
             
             Plotly.newPlot('levelChart', [levelTrace], layout2);
