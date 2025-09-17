@@ -515,17 +515,18 @@
                 }
                 return;
             }
-            
-            const y_t = trainData[currentIteration];
-            const l_prev = currentIteration === 0 ? l0 : levels[currentIteration - 1];
-            
-            // The forecast for time t was made at time t-1 using l_{t-1}
-            if (currentIteration === 0) {
-                forecasts.push(l0);  // First forecast uses l0
-            } else {
-                forecasts.push(levels[currentIteration - 1]);  // Forecast uses previous level
+
+            // Initialize levels with l0 if this is the first call
+            if (currentIteration === 0 && levels.length === 0) {
+                levels = [l0];
             }
-            
+
+            const y_t = trainData[currentIteration];
+            const l_prev = levels[currentIteration];  // Get the previous level from the levels array
+
+            // The forecast for time t was made at time t-1 using l_{t-1}
+            forecasts.push(l_prev);  // Forecast uses previous level
+
             // Now calculate the new level after observing y_t
             const l_t = alpha * y_t + (1 - alpha) * l_prev;
             levels.push(l_t);
@@ -593,7 +594,7 @@
         function updateCharts() {
             const trainForecastsToShow = forecasts.slice(0, Math.min(currentIteration + 1, trainData.length));
             const testForecastsToShow = forecasts.slice(trainData.length, currentIteration + 1);
-            const levelsToShow = levels.slice(0, Math.min(currentIteration + 1, trainData.length + 1));
+            const levelsToShow = levels.slice(0, Math.min(currentIteration + 2, levels.length));  // Include l0 and all calculated levels
             
             // Main chart
             const traces = [
@@ -646,7 +647,8 @@
             Plotly.newPlot('mainChart', traces, layout1);
             
             // Level evolution chart - show levels starting from time 0
-            const levelTimeAxis = [0, ...trainTime.slice(0, levelsToShow.length - 1)];
+            // Create time axis: 0 for l0, then 1, 2, 3, etc. for l1, l2, l3...
+            const levelTimeAxis = Array.from({length: levelsToShow.length}, (_, i) => i);
             const levelTrace = {
                 x: levelTimeAxis,
                 y: levelsToShow,
@@ -657,7 +659,7 @@
                 fill: 'tonexty',
                 fillcolor: 'rgba(147, 112, 219, 0.1)'
             };
-            
+
             const layout2 = {
                 title: 'Evolution of Level Component (ℓ_t)',
                 xaxis: { title: 'Time (Months)' },
@@ -669,7 +671,7 @@
                     y: levelsToShow[levelsToShow.length - 1],
                     xref: 'x',
                     yref: 'y',
-                    text: `ℓ_${levelsToShow.length - 1} = ${levelsToShow[levelsToShow.length - 1].toFixed(1)}`,
+                    text: `ℓ_${levelTimeAxis[levelTimeAxis.length - 1]} = ${levelsToShow[levelsToShow.length - 1].toFixed(1)}`,
                     showarrow: true,
                     arrowhead: 7,
                     ax: -50,
@@ -717,7 +719,7 @@
         function resetVisualization() {
             pauseAnimation();
             currentIteration = 0;
-            levels = [];
+            levels = [l0];  // Initialize with l0
             forecasts = [];
             document.getElementById('currentStep').textContent = '0';
             document.getElementById('currentLevel').textContent = '-';
@@ -730,23 +732,20 @@
         function showFullFit() {
             pauseAnimation();
             resetVisualization();
-            
-            // Clear existing arrays
-            levels = [];
+
+            // Initialize with l0
+            levels = [l0];
             forecasts = [];
-            
+
             // Calculate full fit for training data
-            let currentLevel = l0;
-            
             for (let t = 0; t < trainData.length; t++) {
                 // Forecast for time t uses the level from t-1
-                forecasts.push(currentLevel);
-                
+                forecasts.push(levels[t]);
+
                 // Calculate new level after observing y_t
                 const y_t = trainData[t];
-                const newLevel = alpha * y_t + (1 - alpha) * currentLevel;
+                const newLevel = alpha * y_t + (1 - alpha) * levels[t];
                 levels.push(newLevel);
-                currentLevel = newLevel;
             }
             
             // Add test forecasts (all are the last level)
@@ -777,7 +776,7 @@
             }
             
             document.getElementById('currentStep').textContent = currentIteration;
-            document.getElementById('currentLevel').textContent = levels[levels.length - 1].toFixed(1);
+            document.getElementById('currentLevel').textContent = levels[levels.length - 1] ? levels[levels.length - 1].toFixed(1) : l0.toFixed(1);
         }
         
         function initializeCharts() {
