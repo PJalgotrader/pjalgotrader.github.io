@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SARIMA Interactive Visualization - Airline Passengers</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/arima@4.0.0/dist/browser.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .attribution {
+            text-align: center;
+            color: #888;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .header-links {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .header-links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .header-links a:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-website {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-website:hover {
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-youtube {
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            box-shadow: 0 2px 10px rgba(255, 0, 0, 0.3);
+        }
+
+        .btn-youtube:hover {
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.5);
+        }
+
+        .btn-github {
+            background: linear-gradient(135deg, #333 0%, #000 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-github:hover {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .value-display {
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+            margin-top: 5px;
+            font-size: 1.1em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .info-panel {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .info-panel h3 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .info-panel p {
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .equation {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            margin: 15px 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .highlight {
+            background: #ffeb3b;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .parameter-guide {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .param-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .param-box h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .param-box ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 SARIMA Model Interactive Visualization</h1>
+        <p class="subtitle">Seasonal ARIMA with Classic Airline Passenger Dataset</p>
+        <p class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</p>
+
+        <div class="header-links">
+            <a href="https://pjalgotrader.github.io/" target="_blank" class="btn-website">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5H8.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5h2.49zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4h2.355z"/>
+                </svg>
+                Website
+            </a>
+            <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" class="btn-youtube">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z"/>
+                </svg>
+                YouTube Channel
+            </a>
+            <a href="https://github.com/PJalgotrader/" target="_blank" class="btn-github">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub Profile
+            </a>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="p">p (ar order)</label>
+                <input type="range" id="p" min="0" max="3" value="1" step="1">
+                <div class="value-display" id="p-value">1</div>
+            </div>
+
+            <div class="control-group">
+                <label for="d">d (differencing)</label>
+                <input type="range" id="d" min="0" max="2" value="1" step="1">
+                <div class="value-display" id="d-value">1</div>
+            </div>
+
+            <div class="control-group">
+                <label for="q">q (ma order)</label>
+                <input type="range" id="q" min="0" max="3" value="0" step="1">
+                <div class="value-display" id="q-value">0</div>
+            </div>
+
+            <div class="control-group">
+                <label for="P">P (seasonal ar)</label>
+                <input type="range" id="P" min="0" max="2" value="0" step="1">
+                <div class="value-display" id="P-value">0</div>
+            </div>
+
+            <div class="control-group">
+                <label for="D">D (seasonal diff)</label>
+                <input type="range" id="D" min="0" max="2" value="1" step="1">
+                <div class="value-display" id="D-value">1</div>
+            </div>
+
+            <div class="control-group">
+                <label for="Q">Q (seasonal ma)</label>
+                <input type="range" id="Q" min="0" max="2" value="0" step="1">
+                <div class="value-display" id="Q-value">0</div>
+            </div>
+
+            <div class="control-group">
+                <label for="m">m (Season Period)</label>
+                <input type="range" id="m" min="4" max="12" value="12" step="1">
+                <div class="value-display" id="m-value">12 (Monthly)</div>
+            </div>
+
+            <div class="control-group">
+                <label for="forecast">Forecast Horizon</label>
+                <input type="range" id="forecast" min="12" max="60" value="36" step="6">
+                <div class="value-display" id="forecast-value">36</div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" onclick="updateModel()">🔄 Update Model</button>
+            <button class="btn-secondary" onclick="resetToOptimal()">⭐ Reset to Optimal SARIMA(1,1,0)(0,1,0)₁₂</button>
+        </div>
+
+        <div id="model-info" style="text-align: center; margin-bottom: 20px; font-size: 1.2em; font-weight: bold; color: #667eea;">
+            Current Model: SARIMA(1,1,0)(0,1,0)₁₂
+        </div>
+
+        <div class="chart-container">
+            <div id="mainChart"></div>
+        </div>
+
+        <div class="info-panel">
+            <h3>📚 Understanding SARIMA Models</h3>
+
+            <div class="equation">
+                SARIMA(p,d,q)(P,D,Q)ₘ
+            </div>
+
+            <p>
+                <strong>SARIMA</strong> (Seasonal ARIMA) extends ARIMA by adding seasonal components to capture repeating patterns at fixed intervals (like monthly or quarterly seasonality).
+            </p>
+
+            <div class="parameter-guide">
+                <div class="param-box">
+                    <h4>Non-Seasonal Parameters (p,d,q)</h4>
+                    <ul>
+                        <li><strong>p:</strong> AR order - captures short-term autocorrelation</li>
+                        <li><strong>d:</strong> Differencing degree - removes trend</li>
+                        <li><strong>q:</strong> MA order - models error terms</li>
+                    </ul>
+                </div>
+
+                <div class="param-box">
+                    <h4>Seasonal Parameters (P,D,Q)ₘ</h4>
+                    <ul>
+                        <li><strong>P:</strong> Seasonal AR - relates current to m periods ago</li>
+                        <li><strong>D:</strong> Seasonal differencing - removes seasonal trend</li>
+                        <li><strong>Q:</strong> Seasonal MA - seasonal error structure</li>
+                        <li><strong>m:</strong> Season length (12 for monthly, 4 for quarterly)</li>
+                    </ul>
+                </div>
+
+                <div class="param-box">
+                    <h4>Airline Passenger Dataset</h4>
+                    <ul>
+                        <li><strong>Period:</strong> Monthly, Jan 1949 - Dec 1960 (144 observations)</li>
+                        <li><strong>Pattern:</strong> Clear upward trend + strong yearly seasonality</li>
+                        <li><strong>Optimal Model:</strong> SARIMA(1,1,0)(0,1,0)₁₂</li>
+                        <li><strong>Features:</strong> Parsimonious model with differencing handling both trend and seasonality</li>
+                    </ul>
+                </div>
+
+                <div class="param-box">
+                    <h4>Model Selection Tips</h4>
+                    <ul>
+                        <li>Use ACF/PACF plots to identify p and q</li>
+                        <li>Apply differencing (d,D) until series is stationary</li>
+                        <li>Set m to match your data frequency (12 for monthly)</li>
+                        <li>Compare models using AIC, AICc, or BIC criteria</li>
+                    </ul>
+                </div>
+            </div>
+
+            <p style="margin-top: 20px;">
+                <span class="highlight">Educational Insight:</span> The optimal model SARIMA(1,1,0)(0,1,0)₁₂ uses:
+                <br>• <strong>d=1</strong> to remove the trend through first differencing
+                <br>• <strong>D=1</strong> to remove seasonal pattern through seasonal differencing
+                <br>• <strong>p=1</strong> for short-term AR(1) autocorrelation
+                <br>• <strong>P=0, Q=0</strong> meaning seasonal differencing alone handles seasonality without additional AR/MA terms
+                <br>• This is a parsimonious model that captures both trend and seasonality efficiently
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Classic Airline Passenger Data (1949-1960, monthly)
+        const airlineData = [
+            112, 118, 132, 129, 121, 135, 148, 148, 136, 119, 104, 118,
+            115, 126, 141, 135, 125, 149, 170, 170, 158, 133, 114, 140,
+            145, 150, 178, 163, 172, 178, 199, 199, 184, 162, 146, 166,
+            171, 180, 193, 181, 183, 218, 230, 242, 209, 191, 172, 194,
+            196, 196, 236, 235, 229, 243, 264, 272, 237, 211, 180, 201,
+            204, 188, 235, 227, 234, 264, 302, 293, 259, 229, 203, 229,
+            242, 233, 267, 269, 270, 315, 364, 347, 312, 274, 237, 278,
+            284, 277, 317, 313, 318, 374, 413, 405, 355, 306, 271, 306,
+            315, 301, 356, 348, 355, 422, 465, 467, 404, 347, 305, 336,
+            340, 318, 362, 348, 363, 435, 491, 505, 404, 359, 310, 337,
+            360, 342, 406, 396, 420, 472, 548, 559, 463, 407, 362, 405,
+            417, 391, 419, 461, 472, 535, 622, 606, 508, 461, 390, 432
+        ];
+
+        const dates = [];
+        let startYear = 1949;
+        let startMonth = 0;
+        for (let i = 0; i < airlineData.length; i++) {
+            const year = startYear + Math.floor((startMonth + i) / 12);
+            const month = (startMonth + i) % 12;
+            dates.push(new Date(year, month, 1));
+        }
+
+        // Initialize value displays
+        function initializeControls() {
+            const controls = ['p', 'd', 'q', 'P', 'D', 'Q', 'm', 'forecast'];
+            controls.forEach(id => {
+                const input = document.getElementById(id);
+                const display = document.getElementById(id + '-value');
+                input.addEventListener('input', (e) => {
+                    let value = e.target.value;
+                    if (id === 'm') {
+                        const periods = {4: 'Quarterly', 12: 'Monthly'};
+                        display.textContent = `${value} (${periods[value] || 'Custom'})`;
+                    } else {
+                        display.textContent = value;
+                    }
+                });
+            });
+        }
+
+        initializeControls();
+
+        // Educational SARIMA approximation showing parameter effects
+        function simulateSARIMA(data, p, d, q, P, D, Q, m, horizon) {
+            console.log(`Simulating SARIMA(${p},${d},${q})(${P},${D},${Q})_${m}`);
+
+            const lastValue = data[data.length - 1];
+            const recentData = data.slice(-Math.max(m * 3, 36));
+
+            // Calculate base trend based on d
+            let trendRate = 0;
+            if (d === 0) {
+                // No differencing: flat forecast
+                trendRate = 0;
+            } else if (d === 1) {
+                // First difference: linear trend
+                const window = Math.min(24, data.length);
+                trendRate = (data[data.length - 1] - data[data.length - window]) / (window - 1);
+            } else {
+                // Second difference: smoother trend
+                const window = Math.min(36, data.length);
+                trendRate = (data[data.length - 1] - data[data.length - window]) / (window - 1) * 0.7;
+            }
+
+            // Extract seasonal pattern from last complete cycle
+            const lastSeasonalCycle = data.slice(-m);
+            const overallMean = data.slice(-m * 3).reduce((a, b) => a + b, 0) / (m * 3);
+
+            // Calculate seasonal indices (deviation from mean)
+            const seasonalIndices = lastSeasonalCycle.map(val => val - overallMean);
+
+            // Calculate seasonal growth rate if D > 0
+            const seasonalGrowthRates = [];
+            if (D > 0) {
+                for (let i = 0; i < m; i++) {
+                    if (data.length >= 2 * m + i) {
+                        const currentSeason = data[data.length - m + i];
+                        const previousSeason = data[data.length - 2 * m + i];
+                        seasonalGrowthRates.push((currentSeason - previousSeason) / 12);
+                    } else {
+                        seasonalGrowthRates.push(0);
+                    }
+                }
+            }
+
+            // Generate forecasts
+            const forecasts = [];
+
+            for (let h = 1; h <= horizon; h++) {
+                let forecast = lastValue;
+
+                // 1. Add trend component (controlled by d)
+                if (d > 0) {
+                    forecast += trendRate * h;
+                }
+
+                // 2. Add seasonal component
+                const seasonIdx = (data.length - 1 + h) % m;
+                let seasonalComponent = 0;
+
+                if (D === 0 && P === 0 && Q === 0) {
+                    // No seasonal terms: seasonal pattern decays
+                    seasonalComponent = seasonalIndices[seasonIdx] * Math.exp(-h / (m * 2));
+                } else {
+                    // With seasonal terms: pattern persists
+                    seasonalComponent = seasonalIndices[seasonIdx];
+
+                    // D adds seasonal growth
+                    if (D > 0) {
+                        seasonalComponent += seasonalGrowthRates[seasonIdx] * h * 0.8;
+                    }
+
+                    // P amplifies seasonal pattern
+                    if (P > 0) {
+                        seasonalComponent *= (1 + P * 0.15);
+                    }
+
+                    // Q smooths seasonal effects
+                    if (Q > 0) {
+                        seasonalComponent *= (1 - Q * 0.08);
+                    }
+                }
+
+                forecast += seasonalComponent;
+
+                // 3. Add AR effect (p)
+                if (p > 0) {
+                    // Recent short-term deviations
+                    const recentChange = data[data.length - 1] - data[data.length - 2];
+                    forecast += recentChange * p * 0.15 * Math.exp(-h / 6);
+                }
+
+                // 4. MA smoothing effect (q)
+                if (q > 0) {
+                    // MA smooths by dampening forecast deviations
+                    const deviation = forecast - lastValue;
+                    forecast = lastValue + deviation * (1 - q * 0.08);
+                }
+
+                // Ensure reasonable bounds
+                forecast = Math.max(forecast, lastValue * 0.5);
+                forecast = Math.min(forecast, lastValue * 2.5);
+
+                forecasts.push(forecast);
+            }
+
+            return forecasts;
+        }
+
+        function updateModel() {
+            const p = parseInt(document.getElementById('p').value);
+            const d = parseInt(document.getElementById('d').value);
+            const q = parseInt(document.getElementById('q').value);
+            const P = parseInt(document.getElementById('P').value);
+            const D = parseInt(document.getElementById('D').value);
+            const Q = parseInt(document.getElementById('Q').value);
+            const m = parseInt(document.getElementById('m').value);
+            const horizon = parseInt(document.getElementById('forecast').value);
+
+            // Update model info
+            document.getElementById('model-info').textContent =
+                `Current Model: SARIMA(${p},${d},${q})(${P},${D},${Q})₁₂`;
+
+            // Generate forecasts
+            const forecasts = simulateSARIMA(airlineData, p, d, q, P, D, Q, m, horizon);
+
+            // Create forecast dates
+            const lastDate = dates[dates.length - 1];
+            const forecastDates = [];
+            for (let i = 1; i <= horizon; i++) {
+                const date = new Date(lastDate);
+                date.setMonth(date.getMonth() + i);
+                forecastDates.push(date);
+            }
+
+            // Plot
+            const trace1 = {
+                x: dates,
+                y: airlineData,
+                mode: 'lines+markers',
+                name: 'Actual Passengers',
+                line: {color: '#667eea', width: 3},
+                marker: {size: 4}
+            };
+
+            const trace2 = {
+                x: forecastDates,
+                y: forecasts,
+                mode: 'lines+markers',
+                name: 'SARIMA Forecast',
+                line: {color: '#f5576c', width: 3, dash: 'dash'},
+                marker: {size: 5}
+            };
+
+            const layout = {
+                title: {
+                    text: `Airline Passengers: SARIMA(${p},${d},${q})(${P},${D},${Q})₁₂ Forecast`,
+                    font: {size: 20, color: '#667eea'}
+                },
+                xaxis: {
+                    title: 'Date',
+                    gridcolor: '#e0e0e0'
+                },
+                yaxis: {
+                    title: 'Number of Passengers (thousands)',
+                    gridcolor: '#e0e0e0'
+                },
+                hovermode: 'x unified',
+                plot_bgcolor: '#f8f9fa',
+                paper_bgcolor: 'white',
+                height: 500
+            };
+
+            Plotly.newPlot('mainChart', [trace1, trace2], layout, {responsive: true});
+        }
+
+        function resetToOptimal() {
+            document.getElementById('p').value = 1;
+            document.getElementById('d').value = 1;
+            document.getElementById('q').value = 0;
+            document.getElementById('P').value = 0;
+            document.getElementById('D').value = 1;
+            document.getElementById('Q').value = 0;
+            document.getElementById('m').value = 12;
+            document.getElementById('forecast').value = 36;
+
+            // Update displays
+            document.getElementById('p-value').textContent = '1';
+            document.getElementById('d-value').textContent = '1';
+            document.getElementById('q-value').textContent = '0';
+            document.getElementById('P-value').textContent = '0';
+            document.getElementById('D-value').textContent = '1';
+            document.getElementById('Q-value').textContent = '0';
+            document.getElementById('m-value').textContent = '12 (Monthly)';
+            document.getElementById('forecast-value').textContent = '36';
+
+            updateModel();
+        }
+
+        // Initial render with optimal model
+        updateModel();
+    </script>
+</body>
+</html>

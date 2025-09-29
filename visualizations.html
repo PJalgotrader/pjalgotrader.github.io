@@ -160,10 +160,22 @@
                                     Understand the fundamental building blocks of ARIMA models through interactive AR(1) and MA(1) visualizations. Compare how autoregressive models use past values versus moving average models using past errors for forecasting. Experiment with parameters to observe stationarity conditions, autocorrelation patterns, and the distinct forecasting behaviors of each model type.
                                 </p>
                             </div>
+
+                            <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #ffffff; border-radius: 8px; border-left: 4px solid #06b6d4; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
+                                    <a href="Interactive_tools/m4_arima/sarima-visualization.html" target="_blank" style="text-decoration: none; color: #06b6d4;">
+                                        <i class="fas fa-chart-line" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
+                                        SARIMA Model Visualization (Airline Passengers)
+                                    </a>
+                                </h4>
+                                <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
+                                    Explore Seasonal ARIMA models using the classic airline passenger dataset (1949-1960). Interactively adjust both non-seasonal (p,d,q) and seasonal (P,D,Q)ₘ parameters to understand how SARIMA captures trend and seasonality. Observe how the optimal model SARIMA(2,1,0)(1,1,1)₁₂ handles monthly patterns and forecast future passenger numbers with confidence intervals.
+                                </p>
+                            </div>
                         </div>
 
                         <div class="topic-footer">
-                            <span class="project-count">6 Projects</span>
+                            <span class="project-count">7 Projects</span>
                             <a href="#" class="btn btn-primary" onclick="document.querySelector('.visualization-item').scrollIntoView({behavior: 'smooth'})">
                                 <i class="fas fa-arrow-right"></i> Explore
                             </a>
