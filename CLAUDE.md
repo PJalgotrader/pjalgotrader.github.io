@@ -112,6 +112,9 @@ Interactive_tools/
 │   └── holt_winter/
 │       ├── holt_winters_visualization.html       # Holt-Winters Seasonal Method
 │       └── holt_winter_explain.txt               # Teaching notes and parameter guide
+├── m4_arima/                           # ARIMA models directory
+│   ├── ar-ma-visualization.html                  # AR(1) & MA(1) Models Interactive Visualization
+│   └── sarima-visualization.html                 # SARIMA Model with Airline Passenger Data
 └── [original].tsx                      # Original TSX files (kept for reference)
 ```
 
@@ -223,6 +226,76 @@ Each method maintains consistent structure:
 - **HTML Visualization**: Complete standalone educational tool
 - **Text Guide**: Detailed teaching notes and parameter explanations
 - **Consistent Naming**: Clear file naming for easy navigation and maintenance
+
+## ARIMA Models Suite (m4_arima)
+
+### Overview
+The `m4_arima/` directory contains interactive visualizations for teaching ARIMA (AutoRegressive Integrated Moving Average) models, the foundation of modern time series forecasting:
+
+1. **AR(1) & MA(1) Models** - Building blocks of ARIMA
+2. **SARIMA Model** - Seasonal ARIMA with airline passenger data
+
+### Educational Design Philosophy
+- **Progressive Learning**: Students learn AR and MA components before SARIMA
+- **Parameter Focus**: Interactive controls for all ARIMA parameters (p,d,q) and seasonal parameters (P,D,Q,m)
+- **Real Data Examples**: Classic datasets demonstrating appropriate model applications
+- **Mathematical Transparency**: Clear equations and forecasting logic
+
+### Technical Implementation
+
+#### Visualization Technology
+- **Plotly.js v2.27.0** for professional interactive charts
+- **Vanilla JavaScript** with educational approximations of SARIMA forecasting
+- **Custom Canvas rendering** for AR/MA visualizations
+- **Responsive Design** ensuring accessibility across all devices
+
+#### Key Features Per Visualization
+
+**AR(1) & MA(1) Models Visualization**:
+- Interactive parameter controls for φ (phi) and θ (theta)
+- Dual-model comparison showing AR uses past values vs MA uses past errors
+- Real-time forecast generation with adjustable horizon
+- Educational insights on stationarity and invertibility conditions
+- Visual demonstration of how forecasts decay to mean differently
+
+**SARIMA Model Visualization (Airline Passengers)**:
+- Classic airline passenger dataset (1949-1960, 144 monthly observations)
+- Full SARIMA parameter controls: (p,d,q)(P,D,Q)ₘ
+- Default to optimal model: **SARIMA(1,1,0)(0,1,0)₁₂**
+- Interactive demonstration of:
+  - **d**: Regular differencing for trend removal
+  - **D**: Seasonal differencing for seasonality removal
+  - **p**: AR(1) short-term autocorrelation
+  - **P, Q**: Seasonal AR/MA effects
+- Forecast horizon adjustable from 12-60 months
+- Real-time model notation display
+
+#### Educational Parameter Effects
+The SARIMA visualization demonstrates:
+- **d=0**: Flat forecast (no trend projection)
+- **d=1**: Linear trend continuation (optimal)
+- **d=2**: Smoother trend
+- **D=0**: Seasonal pattern decays over time
+- **D=1**: Seasonal growth continues (optimal)
+- **P>0**: Amplifies seasonal peaks/troughs
+- **Q>0**: Smooths seasonal fluctuations
+- **p>0**: Adds short-term AR "momentum"
+- **q>0**: Overall forecast smoothing
+
+#### Optimal Model Explanation
+**SARIMA(1,1,0)(0,1,0)₁₂** is optimal for airline data because:
+- **Parsimonious**: Uses minimal parameters (principle of parsimony)
+- **d=1**: First differencing removes upward trend
+- **D=1**: Seasonal differencing removes 12-month cycles
+- **p=1**: Captures short-term autocorrelation
+- **P=0, Q=0**: Seasonal differencing alone handles seasonality efficiently
+
+### Consistent Header Branding
+All ARIMA visualizations include standardized academic branding:
+- **Attribution**: "Created by Dr. Pedram Jahangiry | Enhanced with Claude"
+- **Navigation Links**: Website, YouTube Channel, GitHub Profile with hover effects
+- **Professional Styling**: Purple gradient backgrounds, consistent color schemes
+- **Academic Integration**: Links back to main portfolio site
 
 ## Content Management
 
