@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decision Tree Regression for Time Series | Dr. Pedram Jahangiry</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header .attribution {
+            font-size: 1.1em;
+            margin: 15px 0;
+            opacity: 0.95;
+        }
+
+        .header .links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .header .links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .header .links a:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .intro {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .intro h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .intro p {
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 1.05em;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #764ba2;
+            transform: scale(1.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .value-display {
+            min-width: 50px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .chart-container {
+            margin-bottom: 40px;
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .explanation {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .explanation h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .explanation ul {
+            margin-left: 20px;
+            line-height: 1.8;
+            color: #856404;
+        }
+
+        .explanation li {
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .control-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .value-display {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Decision Tree Regression for Time Series</h1>
+        <div class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</div>
+        <div class="links">
+            <a href="https://pjalgotrader.github.io" target="_blank">🏠 Website</a>
+            <a href="https://www.youtube.com/channel/UCNDElcuuyX-2pSatVBDpJJQ" target="_blank">📺 YouTube Channel</a>
+            <a href="https://github.com/PJalgotrader" target="_blank">💻 GitHub</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="intro">
+            <h2>Understanding Decision Tree Regression for Forecasting</h2>
+            <p>
+                This visualization demonstrates how Decision Trees work for time series forecasting using the classic
+                airline passenger dataset. The model uses <strong>lagged features</strong> (Lag_1 and Lag_2) to predict
+                future passenger counts.
+            </p>
+            <p>
+                <strong>Key Concept:</strong> Decision Trees partition the feature space using recursive splits.
+                Each split creates a boundary that divides the data into regions with similar target values.
+                The final prediction in each region is the average of all training points in that region.
+            </p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Tree Depth (max_depth): Controls model complexity</label>
+                <div class="control-row">
+                    <input type="range" id="depthSlider" min="1" max="10" value="2" step="1">
+                    <span class="value-display" id="depthValue">2</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Forecast Horizon (h): Number of months to forecast into the future</label>
+                <div class="control-row">
+                    <input type="range" id="horizonSlider" min="1" max="36" value="12" step="1">
+                    <span class="value-display" id="horizonValue">12</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Decision Tree Structure</div>
+            <div id="treeVisualization" style="overflow-x: auto;"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Feature Space: Lag_1 vs Lag_2 with Decision Boundaries</div>
+            <div id="scatterPlot"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Time Series: Actual vs Predicted Passengers</div>
+            <div id="timeseriesPlot"></div>
+        </div>
+
+        <div class="explanation">
+            <h3>Why Decision Trees Struggle with Time Series Forecasting</h3>
+            <ul>
+                <li><strong>No Explicit Trend/Seasonality Modeling:</strong> Trees partition based on feature values, not temporal patterns</li>
+                <li><strong>Constant Predictions:</strong> Each leaf node outputs a constant value (average of training points)</li>
+                <li><strong>Extrapolation Limitations:</strong> Cannot predict beyond the range of training data</li>
+                <li><strong>Recursive Error Accumulation:</strong> When forecasting multiple steps ahead, prediction errors compound</li>
+                <li><strong>Solutions:</strong> Feature engineering (more lags, time indicators), data transformation (log, differencing), or hybrid approaches combining trees with traditional time series methods</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Airline passenger data (1949-1960)
+        const passengerData = [
+            112, 118, 132, 129, 121, 135, 148, 148, 136, 119, 104, 118,
+            115, 126, 141, 135, 125, 149, 170, 170, 158, 133, 114, 140,
+            145, 150, 178, 163, 172, 178, 199, 199, 184, 162, 146, 166,
+            171, 180, 193, 181, 183, 218, 230, 242, 209, 191, 172, 194,
+            196, 196, 236, 235, 229, 243, 264, 272, 237, 211, 180, 201,
+            204, 188, 235, 227, 234, 264, 302, 293, 259, 229, 203, 229,
+            242, 233, 267, 269, 270, 315, 364, 347, 312, 274, 237, 278,
+            284, 277, 317, 313, 318, 374, 413, 405, 355, 306, 271, 306,
+            315, 301, 356, 348, 355, 422, 465, 467, 404, 347, 305, 336,
+            340, 318, 362, 348, 363, 435, 491, 505, 404, 359, 310, 337,
+            360, 342, 406, 396, 420, 472, 548, 559, 463, 407, 362, 405,
+            417, 391, 419, 461, 472, 535, 622, 606, 508, 461, 390, 432
+        ];
+
+        // Create lagged features
+        function createLaggedData() {
+            const data = [];
+            for (let i = 2; i < passengerData.length; i++) {
+                data.push({
+                    lag1: passengerData[i - 1],
+                    lag2: passengerData[i - 2],
+                    target: passengerData[i],
+                    month: i
+                });
+            }
+            return data;
+        }
+
+        const laggedData = createLaggedData();
+
+        // Simple Decision Tree implementation
+        class SimpleDecisionTree {
+            constructor(maxDepth) {
+                this.maxDepth = maxDepth;
+                this.tree = null;
+            }
+
+            fit(data) {
+                this.tree = this.buildTree(data, 0);
+            }
+
+            buildTree(data, depth) {
+                if (depth >= this.maxDepth || data.length < 2) {
+                    const avg = data.reduce((sum, d) => sum + d.target, 0) / data.length;
+                    return { value: avg, isLeaf: true };
+                }
+
+                const bestSplit = this.findBestSplit(data);
+                if (!bestSplit) {
+                    const avg = data.reduce((sum, d) => sum + d.target, 0) / data.length;
+                    return { value: avg, isLeaf: true };
+                }
+
+                const leftData = data.filter(d => d[bestSplit.feature] <= bestSplit.threshold);
+                const rightData = data.filter(d => d[bestSplit.feature] > bestSplit.threshold);
+
+                return {
+                    feature: bestSplit.feature,
+                    threshold: bestSplit.threshold,
+                    left: this.buildTree(leftData, depth + 1),
+                    right: this.buildTree(rightData, depth + 1),
+                    isLeaf: false
+                };
+            }
+
+            findBestSplit(data) {
+                let bestSplit = null;
+                let bestVariance = Infinity;
+
+                const features = ['lag1', 'lag2'];
+
+                for (const feature of features) {
+                    const values = [...new Set(data.map(d => d[feature]))].sort((a, b) => a - b);
+
+                    for (let i = 0; i < values.length - 1; i++) {
+                        const threshold = (values[i] + values[i + 1]) / 2;
+                        const leftData = data.filter(d => d[feature] <= threshold);
+                        const rightData = data.filter(d => d[feature] > threshold);
+
+                        if (leftData.length === 0 || rightData.length === 0) continue;
+
+                        const leftVar = this.variance(leftData);
+                        const rightVar = this.variance(rightData);
+                        const weightedVar = (leftData.length * leftVar + rightData.length * rightVar) / data.length;
+
+                        if (weightedVar < bestVariance) {
+                            bestVariance = weightedVar;
+                            bestSplit = { feature, threshold };
+                        }
+                    }
+                }
+
+                return bestSplit;
+            }
+
+            variance(data) {
+                const mean = data.reduce((sum, d) => sum + d.target, 0) / data.length;
+                return data.reduce((sum, d) => sum + Math.pow(d.target - mean, 2), 0) / data.length;
+            }
+
+            predict(lag1, lag2) {
+                return this.predictNode(this.tree, lag1, lag2);
+            }
+
+            predictNode(node, lag1, lag2) {
+                if (node.isLeaf) return node.value;
+
+                const value = node.feature === 'lag1' ? lag1 : lag2;
+                return value <= node.threshold
+                    ? this.predictNode(node.left, lag1, lag2)
+                    : this.predictNode(node.right, lag1, lag2);
+            }
+
+            getSplits() {
+                const splits = [];
+                this.collectSplits(this.tree, splits);
+                return splits;
+            }
+
+            collectSplits(node, splits) {
+                if (node.isLeaf) return;
+                splits.push({ feature: node.feature, threshold: node.threshold });
+                this.collectSplits(node.left, splits);
+                this.collectSplits(node.right, splits);
+            }
+        }
+
+        let currentModel = null;
+
+        function updateVisualization() {
+            const depth = parseInt(document.getElementById('depthSlider').value);
+
+            currentModel = new SimpleDecisionTree(depth);
+            currentModel.fit(laggedData);
+
+            updateTreeVisualization();
+            updateScatterPlot();
+            updateTimeseriesPlot();
+        }
+
+        function updateTreeVisualization() {
+            const container = document.getElementById('treeVisualization');
+            container.innerHTML = '';
+
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', '400');
+            svg.style.minWidth = '600px';
+
+            const nodePositions = [];
+            const edges = [];
+
+            function calculatePositions(node, x, y, width, depth = 0) {
+                if (!node) return;
+
+                nodePositions.push({ node, x, y, depth });
+
+                if (!node.isLeaf) {
+                    const childY = y + 80;
+                    const childWidth = width / 2;
+                    const leftX = x - width / 4;
+                    const rightX = x + width / 4;
+
+                    edges.push({ x1: x, y1: y + 20, x2: leftX, y2: childY - 20 });
+                    edges.push({ x1: x, y1: y + 20, x2: rightX, y2: childY - 20 });
+
+                    calculatePositions(node.left, leftX, childY, childWidth, depth + 1);
+                    calculatePositions(node.right, rightX, childY, childWidth, depth + 1);
+                }
+            }
+
+            calculatePositions(currentModel.tree, 400, 40, 600);
+
+            // Draw edges
+            edges.forEach(edge => {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', edge.x1);
+                line.setAttribute('y1', edge.y1);
+                line.setAttribute('x2', edge.x2);
+                line.setAttribute('y2', edge.y2);
+                line.setAttribute('stroke', '#667eea');
+                line.setAttribute('stroke-width', '2');
+                svg.appendChild(line);
+            });
+
+            // Draw nodes
+            nodePositions.forEach(({ node, x, y }) => {
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', x - 60);
+                rect.setAttribute('y', y - 20);
+                rect.setAttribute('width', '120');
+                rect.setAttribute('height', '40');
+                rect.setAttribute('fill', node.isLeaf ? '#d1fae5' : '#dbeafe');
+                rect.setAttribute('stroke', node.isLeaf ? '#10b981' : '#667eea');
+                rect.setAttribute('stroke-width', '2');
+                rect.setAttribute('rx', '5');
+                g.appendChild(rect);
+
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', x);
+                text.setAttribute('y', y);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('dominant-baseline', 'middle');
+                text.setAttribute('font-size', '11');
+                text.setAttribute('font-weight', '600');
+                text.setAttribute('fill', '#333');
+
+                if (node.isLeaf) {
+                    text.textContent = `Pred: ${node.value.toFixed(1)}`;
+                } else {
+                    const featureName = node.feature === 'lag1' ? 'Lag_1' : 'Lag_2';
+                    text.textContent = `${featureName} ≤ ${node.threshold.toFixed(1)}?`;
+                }
+
+                g.appendChild(text);
+                svg.appendChild(g);
+            });
+
+            container.appendChild(svg);
+        }
+
+        function forecastFuture(steps) {
+            const lastData = laggedData[laggedData.length - 1];
+            let lag1 = lastData.target;
+            let lag2 = lastData.lag1;
+
+            const forecasts = [];
+
+            for (let i = 0; i < steps; i++) {
+                const prediction = currentModel.predict(lag1, lag2);
+                forecasts.push(prediction);
+
+                // Update lags for next iteration
+                lag2 = lag1;
+                lag1 = prediction;
+            }
+
+            return forecasts;
+        }
+
+        function updateScatterPlot() {
+            const lag1Values = laggedData.map(d => d.lag1);
+            const lag2Values = laggedData.map(d => d.lag2);
+            const targetValues = laggedData.map(d => d.target);
+
+            // Create scatter plot
+            const scatterTrace = {
+                x: lag1Values,
+                y: lag2Values,
+                mode: 'markers',
+                type: 'scatter',
+                marker: {
+                    size: 8,
+                    color: targetValues,
+                    colorscale: 'Viridis',
+                    showscale: true,
+                    colorbar: {
+                        title: 'Passengers'
+                    }
+                },
+                name: 'Data Points',
+                text: targetValues.map(v => `Passengers: ${v}`),
+                hovertemplate: 'Lag_1: %{x}<br>Lag_2: %{y}<br>%{text}<extra></extra>'
+            };
+
+            const traces = [scatterTrace];
+
+            // Add decision boundaries for Decision Tree
+            const splits = currentModel.getSplits();
+
+            const lag1Splits = splits.filter(s => s.feature === 'lag1');
+            const lag2Splits = splits.filter(s => s.feature === 'lag2');
+
+            lag1Splits.forEach((split, idx) => {
+                traces.push({
+                    x: [split.threshold, split.threshold],
+                    y: [Math.min(...lag2Values) - 20, Math.max(...lag2Values) + 20],
+                    mode: 'lines',
+                    line: { color: 'red', width: 2, dash: 'dash' },
+                    name: `Lag_1 Split ${idx + 1}`,
+                    showlegend: idx === 0
+                });
+            });
+
+            lag2Splits.forEach((split, idx) => {
+                traces.push({
+                    x: [Math.min(...lag1Values) - 20, Math.max(...lag1Values) + 20],
+                    y: [split.threshold, split.threshold],
+                    mode: 'lines',
+                    line: { color: 'blue', width: 2, dash: 'dash' },
+                    name: `Lag_2 Split ${idx + 1}`,
+                    showlegend: idx === 0
+                });
+            });
+
+            const layout = {
+                xaxis: { title: 'Lag_1 (Previous Month Passengers)' },
+                yaxis: { title: 'Lag_2 (Two Months Ago Passengers)' },
+                hovermode: 'closest',
+                height: 500,
+                margin: { t: 20, b: 60, l: 60, r: 20 }
+            };
+
+            Plotly.newPlot('scatterPlot', traces, layout, { responsive: true });
+        }
+
+        function updateTimeseriesPlot() {
+            const predictions = laggedData.map(d => currentModel.predict(d.lag1, d.lag2));
+            const horizon = parseInt(document.getElementById('horizonSlider').value);
+            const futurePredictions = forecastFuture(horizon);
+
+            const months = Array.from({ length: laggedData.length }, (_, i) => `Month ${i + 3}`);
+            const futureMonths = Array.from({ length: horizon }, (_, i) => `Month ${laggedData.length + i + 3}`);
+
+            const actualTrace = {
+                x: months,
+                y: laggedData.map(d => d.target),
+                mode: 'lines',
+                name: 'Actual',
+                line: { color: '#667eea', width: 2 }
+            };
+
+            const predictedTrace = {
+                x: months,
+                y: predictions,
+                mode: 'lines',
+                name: 'In-Sample Predicted',
+                line: { color: '#f093fb', width: 2, dash: 'dash' }
+            };
+
+            const forecastTrace = {
+                x: futureMonths,
+                y: futurePredictions,
+                mode: 'lines',
+                name: `${horizon}-Step Forecast`,
+                line: { color: '#ef4444', width: 2, dash: 'dot' }
+            };
+
+            const traces = [actualTrace, predictedTrace, forecastTrace];
+
+            const layout = {
+                xaxis: {
+                    title: 'Time Period',
+                    tickangle: -45
+                },
+                yaxis: { title: 'Number of Passengers' },
+                hovermode: 'x unified',
+                height: 450,
+                margin: { t: 20, b: 80, l: 60, r: 20 },
+                showlegend: true,
+                legend: { x: 0.02, y: 0.98 }
+            };
+
+            Plotly.newPlot('timeseriesPlot', traces, layout, { responsive: true });
+        }
+
+        // Event listeners
+        document.getElementById('depthSlider').addEventListener('input', function() {
+            document.getElementById('depthValue').textContent = this.value;
+            updateVisualization();
+        });
+
+        document.getElementById('horizonSlider').addEventListener('input', function() {
+            document.getElementById('horizonValue').textContent = this.value;
+            updateTimeseriesPlot();
+        });
+
+        // Initial visualization
+        updateVisualization();
+    </script>
+</body>
+</html>
