@@ -299,6 +299,68 @@ All ARIMA visualizations include standardized academic branding:
 - **Professional Styling**: Purple gradient backgrounds, consistent color schemes
 - **Academic Integration**: Links back to main portfolio site
 
+## Machine Learning Models Suite (m5_ml)
+
+### Overview
+The `m5_ml/` directory contains interactive visualizations for teaching machine learning models applied to time series forecasting:
+
+1. **Decision Tree Regression** - Understanding how tree-based models partition feature space for forecasting
+
+### Educational Design Philosophy
+- **Visual Understanding**: Interactive tree structure visualization showing decision nodes and leaf predictions
+- **Feature Space Exploration**: 2D scatter plot with decision boundaries to visualize how trees partition data
+- **Multi-step Forecasting**: Demonstrates recursive forecasting and its limitations with tree-based models
+- **Parameter Sensitivity**: Interactive controls for tree depth and forecast horizon
+
+### Technical Implementation
+
+#### Visualization Technology
+- **Plotly.js v2.27.0** for interactive scatter plots and time series charts
+- **SVG rendering** for custom tree structure visualization
+- **Vanilla JavaScript** with custom Decision Tree implementation from scratch
+- **Responsive Design** with dynamic tree sizing based on depth
+
+#### Key Features
+
+**Decision Tree Regression Visualization**:
+- **Interactive tree depth control** (1-10 levels) to explore model complexity
+- **Forecast horizon control** (1-36 months) for multi-step ahead predictions
+- **Tree structure visualization** with interactive hover tooltips showing:
+  - Decision nodes: Split conditions and feature descriptions
+  - Leaf nodes: Final predictions with detailed explanations
+  - Visual feedback on hover (brightening and border highlighting)
+- **Feature space plot** showing Lag_1 vs Lag_2 with decision boundaries:
+  - Red dashed lines for Lag_1 splits (vertical boundaries)
+  - Blue dashed lines for Lag_2 splits (horizontal boundaries)
+  - Color-coded scatter points by passenger count
+- **Time series forecast plot** displaying:
+  - Actual historical data (blue solid line)
+  - In-sample predictions (pink dashed line)
+  - Future forecasts (red dotted line)
+- **Dynamic tree sizing**: Automatically adjusts node size, spacing, and font for deeper trees
+
+#### Educational Insights
+The visualization demonstrates key limitations of Decision Trees for time series:
+- **Constant leaf predictions**: Each region outputs a single average value
+- **No trend extrapolation**: Cannot predict beyond training data range
+- **Flat long-term forecasts**: Recursive predictions converge to constant values
+- **Feature engineering needs**: Requires careful lag selection and data transformation
+
+#### Interactive Tooltip System
+- **Fixed positioning** tooltips that follow mouse cursor
+- **Node-specific information**:
+  - Decision nodes: Split threshold, feature description, branch directions
+  - Leaf nodes: Prediction value with explanation of averaging process
+- **Visual feedback**: Nodes brighten on hover with thicker borders
+- **High z-index** (10000) ensures tooltips always visible
+
+### Consistent Header Branding
+All ML visualizations include standardized academic branding:
+- **Attribution**: "Created by Dr. Pedram Jahangiry | Enhanced with Claude"
+- **Navigation Links**: SVG icons with gradient buttons for Website (purple), YouTube (red), GitHub (black)
+- **Professional Styling**: Purple gradient backgrounds, consistent color schemes
+- **Academic Integration**: Links back to main portfolio site
+
 ## Content Management
 
 ### Adding New Pages
