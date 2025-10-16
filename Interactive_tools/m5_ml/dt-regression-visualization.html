@@ -430,13 +430,32 @@
             const container = document.getElementById('treeVisualization');
             container.innerHTML = '';
 
-            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svg.setAttribute('width', '100%');
-            svg.setAttribute('height', '400');
-            svg.style.minWidth = '600px';
-
             const nodePositions = [];
             const edges = [];
+
+            // First, calculate tree depth to adjust spacing
+            function getTreeDepth(node, depth = 0) {
+                if (!node || node.isLeaf) return depth;
+                return Math.max(getTreeDepth(node.left, depth + 1), getTreeDepth(node.right, depth + 1));
+            }
+
+            const treeDepth = getTreeDepth(currentModel.tree);
+
+            // Dynamic sizing based on tree depth
+            const baseWidth = 1200;
+            const svgWidth = Math.max(baseWidth, baseWidth * Math.pow(1.3, treeDepth - 3));
+            const verticalSpacing = Math.max(60, 100 - treeDepth * 5); // Reduce spacing for deeper trees
+            const nodeWidth = Math.max(80, 120 - treeDepth * 5); // Smaller nodes for deeper trees
+            const nodeHeight = 40;
+            const fontSize = Math.max(9, 11 - treeDepth * 0.3);
+
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            const svgHeight = (treeDepth + 1) * verticalSpacing + 40;
+            svg.setAttribute('width', svgWidth);
+            svg.setAttribute('height', svgHeight);
+            svg.setAttribute('viewBox', `0 0 ${svgWidth} ${svgHeight}`);
+            svg.style.maxWidth = '100%';
+            svg.style.height = 'auto';
 
             function calculatePositions(node, x, y, width, depth = 0) {
                 if (!node) return;
@@ -444,20 +463,20 @@
                 nodePositions.push({ node, x, y, depth });
 
                 if (!node.isLeaf) {
-                    const childY = y + 80;
+                    const childY = y + verticalSpacing;
                     const childWidth = width / 2;
                     const leftX = x - width / 4;
                     const rightX = x + width / 4;
 
-                    edges.push({ x1: x, y1: y + 20, x2: leftX, y2: childY - 20 });
-                    edges.push({ x1: x, y1: y + 20, x2: rightX, y2: childY - 20 });
+                    edges.push({ x1: x, y1: y + nodeHeight/2, x2: leftX, y2: childY - nodeHeight/2 });
+                    edges.push({ x1: x, y1: y + nodeHeight/2, x2: rightX, y2: childY - nodeHeight/2 });
 
                     calculatePositions(node.left, leftX, childY, childWidth, depth + 1);
                     calculatePositions(node.right, rightX, childY, childWidth, depth + 1);
                 }
             }
 
-            calculatePositions(currentModel.tree, 400, 40, 600);
+            calculatePositions(currentModel.tree, svgWidth / 2, 40, svgWidth * 0.8);
 
             // Draw edges
             edges.forEach(edge => {
@@ -476,10 +495,10 @@
                 const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
                 const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                rect.setAttribute('x', x - 60);
-                rect.setAttribute('y', y - 20);
-                rect.setAttribute('width', '120');
-                rect.setAttribute('height', '40');
+                rect.setAttribute('x', x - nodeWidth/2);
+                rect.setAttribute('y', y - nodeHeight/2);
+                rect.setAttribute('width', nodeWidth);
+                rect.setAttribute('height', nodeHeight);
                 rect.setAttribute('fill', node.isLeaf ? '#d1fae5' : '#dbeafe');
                 rect.setAttribute('stroke', node.isLeaf ? '#10b981' : '#667eea');
                 rect.setAttribute('stroke-width', '2');
@@ -491,7 +510,7 @@
                 text.setAttribute('y', y);
                 text.setAttribute('text-anchor', 'middle');
                 text.setAttribute('dominant-baseline', 'middle');
-                text.setAttribute('font-size', '11');
+                text.setAttribute('font-size', fontSize);
                 text.setAttribute('font-weight', '600');
                 text.setAttribute('fill', '#333');
 
