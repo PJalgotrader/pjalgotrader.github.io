@@ -115,6 +115,8 @@ Interactive_tools/
 ├── m4_arima/                           # ARIMA models directory
 │   ├── ar-ma-visualization.html                  # AR(1) & MA(1) Models Interactive Visualization
 │   └── sarima-visualization.html                 # SARIMA Model with Airline Passenger Data
+├── m5_ml/                              # Machine Learning models directory
+│   ├── dt-regression-visualization.html          # Decision Tree Regression for Time Series
 └── [original].tsx                      # Original TSX files (kept for reference)
 ```
 
