@@ -361,6 +361,128 @@ All ML visualizations include standardized academic branding:
 - **Professional Styling**: Purple gradient backgrounds, consistent color schemes
 - **Academic Integration**: Links back to main portfolio site
 
+## Deep Learning Models Suite (m6_dl)
+
+### Overview
+The `m6_dl/` directory contains interactive visualizations for teaching deep neural networks (DNNs) applied to time series forecasting:
+
+1. **DNN Time Series Forecasting** - Understanding how deep neural networks learn complex nonlinear patterns in sequential data
+
+### Educational Design Philosophy
+- **Architecture Exploration**: Interactive controls to configure network depth, width, and activation functions
+- **Visual Network Representation**: Beautiful SVG-based neural network diagrams showing nodes and connections
+- **Comparative Analysis**: Side-by-side comparison of DNN vs Linear Regression benchmark performance
+- **Feature Importance**: Understanding which lagged features matter most through weight analysis
+- **Training Transparency**: Live loss curve visualization showing model convergence in real-time
+
+### Technical Implementation
+
+#### Visualization Technology
+- **TensorFlow.js v4.11.0** for building and training neural networks entirely in the browser
+- **Plotly.js v2.27.0** for interactive loss curves and time series charts
+- **Custom SVG rendering** for neural network architecture visualization
+- **Vanilla JavaScript** with custom Linear Regression implementation for benchmarking
+- **Fully client-side**: No backend required, all training happens in the browser
+
+#### Key Features
+
+**DNN Time Series Visualization**:
+- **Comprehensive Parameter Controls**:
+  - Number of lags (1-12): Controls input feature dimensionality
+  - Forecast horizon (1-36 months): Multi-step ahead predictions
+  - Number of hidden layers (1-4): Network depth configuration
+  - Neurons per layer (4-128): Individual sliders for each layer width
+  - Hidden layer activation: ReLU, Tanh, or Linear
+  - Output layer activation: Linear or ReLU
+  - Training epochs (50-500): User-controllable training duration
+  - Optimizer: Adam (fixed) with MSE loss
+
+- **Four Interactive Visualizations**:
+  1. **Training Loss Curve**:
+     - Shows training and validation loss over epochs
+     - Live updates during training (every 10th epoch or proportionally)
+     - Logarithmic scale for better visibility
+     - Demonstrates convergence behavior
+
+  2. **Neural Network Architecture Diagram**:
+     - Beautiful SVG visualization with colored nodes by layer type
+     - Green nodes for input layer, purple for hidden layers, red for output
+     - Semi-transparent connection lines between all layers
+     - Interactive hover effects (nodes enlarge on mouseover)
+     - Smart rendering for large networks (shows up to 10 nodes per layer with ellipsis for larger)
+     - Layer labels and neuron counts displayed below each column
+     - Intelligent connection sampling for visual clarity with many neurons
+
+  3. **Feature Importance (First Layer Weights)**:
+     - Bar chart showing average absolute weights for each lag feature
+     - Identifies which historical time steps are most influential
+     - Helps understand temporal dependencies learned by the model
+
+  4. **Time Series Predictions**:
+     - Comprehensive multi-series plot showing:
+       - Actual training data (blue solid line)
+       - Actual test data (black solid line)
+       - DNN training predictions (purple dashed line)
+       - DNN test predictions (red dashed line)
+       - Linear Regression training predictions (gray dotted line)
+       - Linear Regression test predictions (darker gray dotted line)
+       - Future forecasts beyond test set (green dotted line)
+     - Clear visual comparison of DNN vs benchmark performance
+
+- **Performance Metrics Display**:
+  - **Training Set Metrics**: MSE, RMSE, MAE for both DNN and Linear Regression
+  - **Test Set Metrics**: MSE, RMSE, MAE for both DNN and Linear Regression
+  - **Color-coded highlighting**: Better performing model shown in green
+  - **Real-time updates**: Metrics computed and displayed after each training run
+
+#### Data Configuration
+- **Dataset**: Classic airline passenger data (1949-1960, 144 months total)
+- **Training Set**: First 120 months (1949-1958)
+- **Test Set**: Last 24 months (1959-1960)
+- **Validation Split**: 10% of training data used for validation during training
+- **All data embedded in JavaScript**: No external dependencies or API calls required
+
+#### Neural Network Architecture Details
+- **Sequential model** with configurable depth (1-4 hidden layers)
+- **Dense layers** with user-selectable activation functions
+- **Adam optimizer** with default learning rate
+- **Mean Squared Error (MSE)** loss function
+- **Batch size**: 16 samples
+- **Early convergence monitoring** through validation loss tracking
+
+#### Educational Insights
+The visualization demonstrates critical concepts for DNNs in time series:
+- **When DNNs outperform linear models**: Nonlinear patterns, feature interactions
+- **Architecture trade-offs**: Depth vs width, complexity vs interpretability
+- **Activation function impact**: ReLU (piecewise linear), Tanh (smooth nonlinear), Linear (no transformation)
+- **Overfitting detection**: Comparing training vs validation loss curves
+- **Training duration effects**: How more epochs improve learning but may overfit
+- **Feature engineering importance**: Impact of lag selection on model performance
+- **Recursive forecasting behavior**: How multi-step predictions propagate errors
+
+#### User Workflow
+1. User adjusts network architecture parameters (layers, neurons, activations)
+2. User sets number of lags and training epochs
+3. User clicks "Train Model" button
+4. Model trains with live loss updates (~2-10 seconds depending on epochs)
+5. All four visualizations update automatically
+6. User compares DNN vs Linear Regression metrics
+7. User iterates to explore different configurations
+
+### Consistent Header Branding
+All deep learning visualizations include standardized academic branding:
+- **Attribution**: "Created by Dr. Pedram Jahangiry | Enhanced with Claude"
+- **Navigation Links**: SVG icons with gradient buttons for Website (purple), YouTube (red), GitHub (black)
+- **Professional Styling**: Purple gradient backgrounds, consistent color schemes
+- **Academic Integration**: Links back to main portfolio site
+
+### File Organization
+```
+m6_dl/
+├── dnn-timeseries-visualization.html    # Complete standalone DNN visualization
+└── Module6_DNN_intuition.ipynb         # Supporting Jupyter notebook with Python examples
+```
+
 ## Content Management
 
 ### Adding New Pages
