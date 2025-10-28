@@ -416,6 +416,7 @@
                     <select id="hiddenActivationSelect">
                         <option value="relu" selected>ReLU</option>
                         <option value="tanh">Tanh</option>
+                        <option value="linear">Linear</option>
                     </select>
                 </div>
 
@@ -425,6 +426,14 @@
                         <option value="linear" selected>Linear</option>
                         <option value="relu">ReLU</option>
                     </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Training Epochs</label>
+                    <div class="control-row">
+                        <input type="range" id="epochsSlider" min="50" max="500" value="200" step="50">
+                        <span class="value-display" id="epochsValue">200</span>
+                    </div>
                 </div>
             </div>
 
@@ -524,7 +533,8 @@
                 <li><strong>Feature Interactions:</strong> Hidden layers can learn interactions between different lag features automatically</li>
                 <li><strong>Sufficient Data:</strong> DNNs need more training data than linear models to avoid overfitting</li>
                 <li><strong>Overfitting Risk:</strong> Too many layers/neurons can lead to memorizing training data rather than learning generalizable patterns</li>
-                <li><strong>Activation Functions:</strong> ReLU enables learning of piecewise linear functions; Tanh provides smooth nonlinearities</li>
+                <li><strong>Activation Functions:</strong> ReLU enables learning of piecewise linear functions; Tanh provides smooth nonlinearities; Linear activation means no transformation (useful for comparison)</li>
+                <li><strong>Training Duration:</strong> More epochs allow the model to learn better but may lead to overfitting if too many</li>
                 <li><strong>Interpretability Trade-off:</strong> While DNNs may provide better predictions, they are less interpretable than linear models or traditional time series methods like ARIMA</li>
             </ul>
         </div>
@@ -809,8 +819,10 @@
 
             lossHistory = [];
 
+            const numEpochs = parseInt(document.getElementById('epochsSlider').value);
+
             await currentModel.fit(trainXTensor, trainYTensor, {
-                epochs: 100,
+                epochs: numEpochs,
                 batchSize: 16,
                 validationSplit: 0.1,
                 callbacks: {
@@ -822,7 +834,8 @@
                         });
 
                         // Update loss plot every 10 epochs
-                        if ((epoch + 1) % 10 === 0 || epoch === 0) {
+                        const updateInterval = Math.max(10, Math.floor(numEpochs / 10));
+                        if ((epoch + 1) % updateInterval === 0 || epoch === 0) {
                             updateLossPlot();
                         }
                     }
@@ -948,7 +961,7 @@
             Plotly.newPlot('lossPlot', traces, layout, { responsive: true });
         }
 
-        // Update architecture plot
+        // Update architecture plot - draw neural network diagram
         function updateArchitecturePlot(numLags, numLayers) {
             const neurons = [];
             for (let i = 0; i < numLayers; i++) {
@@ -958,27 +971,155 @@
             const layers = [numLags, ...neurons, 1];
             const layerNames = ['Input', ...Array(numLayers).fill(0).map((_, i) => `Hidden ${i+1}`), 'Output'];
 
-            const trace = {
-                x: layerNames,
-                y: layers,
-                type: 'bar',
-                marker: {
-                    color: layers.map((_, i) =>
-                        i === 0 ? '#10b981' : i === layers.length - 1 ? '#ef4444' : '#667eea'
-                    )
-                },
-                text: layers.map(l => `${l} neurons`),
-                textposition: 'outside'
-            };
+            const container = document.getElementById('architecturePlot');
+            container.innerHTML = '';
 
-            const layout = {
-                xaxis: { title: 'Layer' },
-                yaxis: { title: 'Number of Neurons' },
-                height: 400,
-                margin: { t: 20, b: 60, l: 60, r: 20 }
-            };
+            // Set up SVG dimensions
+            const svgWidth = Math.min(1200, container.offsetWidth || 1200);
+            const svgHeight = 500;
+            const layerSpacing = svgWidth / (layers.length + 1);
+            const nodeRadius = 12;
+            const maxNodesToShow = 10; // Maximum nodes to display per layer
 
-            Plotly.newPlot('architecturePlot', [trace], layout, { responsive: true });
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', svgHeight);
+            svg.setAttribute('viewBox', `0 0 ${svgWidth} ${svgHeight}`);
+            svg.style.maxWidth = '100%';
+
+            // Calculate positions for each node
+            const nodePositions = [];
+            layers.forEach((numNeurons, layerIdx) => {
+                const layerNodes = [];
+                const x = layerSpacing * (layerIdx + 1);
+
+                // If too many neurons, show subset with ellipsis
+                const nodesToShow = Math.min(numNeurons, maxNodesToShow);
+                const showEllipsis = numNeurons > maxNodesToShow;
+                const verticalSpacing = Math.min(40, (svgHeight - 100) / nodesToShow);
+                const startY = (svgHeight - (nodesToShow - 1) * verticalSpacing) / 2;
+
+                for (let i = 0; i < nodesToShow; i++) {
+                    // If showing ellipsis, skip middle nodes
+                    if (showEllipsis && i === Math.floor(nodesToShow / 2)) {
+                        layerNodes.push({ x, y: startY + i * verticalSpacing, isEllipsis: true });
+                    } else {
+                        layerNodes.push({ x, y: startY + i * verticalSpacing, isEllipsis: false });
+                    }
+                }
+
+                nodePositions.push(layerNodes);
+            });
+
+            // Draw connections between layers
+            const connectionGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            connectionGroup.setAttribute('opacity', '0.3');
+
+            for (let layerIdx = 0; layerIdx < nodePositions.length - 1; layerIdx++) {
+                const currentLayer = nodePositions[layerIdx];
+                const nextLayer = nodePositions[layerIdx + 1];
+
+                // Only draw connections for non-ellipsis nodes
+                currentLayer.forEach((fromNode, fromIdx) => {
+                    if (!fromNode.isEllipsis) {
+                        nextLayer.forEach((toNode, toIdx) => {
+                            if (!toNode.isEllipsis) {
+                                // Limit connections for visual clarity when many neurons
+                                const shouldDraw = layers[layerIdx] <= maxNodesToShow ||
+                                                   layers[layerIdx + 1] <= maxNodesToShow ||
+                                                   Math.random() < 0.3;
+
+                                if (shouldDraw) {
+                                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                                    line.setAttribute('x1', fromNode.x);
+                                    line.setAttribute('y1', fromNode.y);
+                                    line.setAttribute('x2', toNode.x);
+                                    line.setAttribute('y2', toNode.y);
+                                    line.setAttribute('stroke', '#667eea');
+                                    line.setAttribute('stroke-width', '1');
+                                    connectionGroup.appendChild(line);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+
+            svg.appendChild(connectionGroup);
+
+            // Draw nodes
+            nodePositions.forEach((layerNodes, layerIdx) => {
+                const numNeurons = layers[layerIdx];
+                const layerName = layerNames[layerIdx];
+
+                // Determine node color
+                let nodeColor;
+                if (layerIdx === 0) nodeColor = '#10b981'; // Input - green
+                else if (layerIdx === layers.length - 1) nodeColor = '#ef4444'; // Output - red
+                else nodeColor = '#667eea'; // Hidden - purple
+
+                layerNodes.forEach((node, nodeIdx) => {
+                    if (node.isEllipsis) {
+                        // Draw ellipsis for skipped nodes
+                        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        text.setAttribute('x', node.x);
+                        text.setAttribute('y', node.y);
+                        text.setAttribute('text-anchor', 'middle');
+                        text.setAttribute('dominant-baseline', 'middle');
+                        text.setAttribute('font-size', '20');
+                        text.setAttribute('fill', '#999');
+                        text.textContent = '⋮';
+                        svg.appendChild(text);
+                    } else {
+                        // Draw regular node
+                        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        circle.setAttribute('cx', node.x);
+                        circle.setAttribute('cy', node.y);
+                        circle.setAttribute('r', nodeRadius);
+                        circle.setAttribute('fill', nodeColor);
+                        circle.setAttribute('stroke', 'white');
+                        circle.setAttribute('stroke-width', '2');
+                        circle.style.cursor = 'pointer';
+
+                        // Add hover effect
+                        circle.addEventListener('mouseenter', function() {
+                            this.setAttribute('r', nodeRadius * 1.3);
+                            this.setAttribute('stroke-width', '3');
+                        });
+
+                        circle.addEventListener('mouseleave', function() {
+                            this.setAttribute('r', nodeRadius);
+                            this.setAttribute('stroke-width', '2');
+                        });
+
+                        svg.appendChild(circle);
+                    }
+                });
+
+                // Add layer label
+                const labelY = svgHeight - 40;
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', layerSpacing * (layerIdx + 1));
+                label.setAttribute('y', labelY);
+                label.setAttribute('text-anchor', 'middle');
+                label.setAttribute('font-size', '14');
+                label.setAttribute('font-weight', '600');
+                label.setAttribute('fill', '#333');
+                label.textContent = layerName;
+                svg.appendChild(label);
+
+                // Add neuron count
+                const countLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                countLabel.setAttribute('x', layerSpacing * (layerIdx + 1));
+                countLabel.setAttribute('y', labelY + 20);
+                countLabel.setAttribute('text-anchor', 'middle');
+                countLabel.setAttribute('font-size', '12');
+                countLabel.setAttribute('fill', '#666');
+                countLabel.textContent = `${numNeurons} neuron${numNeurons > 1 ? 's' : ''}`;
+                svg.appendChild(countLabel);
+            });
+
+            container.appendChild(svg);
         }
 
         // Update feature importance plot
@@ -1120,6 +1261,10 @@
 
         document.getElementById('horizonSlider').addEventListener('input', function() {
             document.getElementById('horizonValue').textContent = this.value;
+        });
+
+        document.getElementById('epochsSlider').addEventListener('input', function() {
+            document.getElementById('epochsValue').textContent = this.value;
         });
 
         document.getElementById('numLayersSelect').addEventListener('change', updateNeuronControls);
