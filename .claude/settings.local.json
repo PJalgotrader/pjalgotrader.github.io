@@ -3,7 +3,8 @@
     "allow": [
       "WebFetch(domain:claude.ai)",
       "WebSearch",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(start \"\" \"E:\\Github\\pjalgotrader.github.io\\Interactive_tools\\m6_dl\\dnn-timeseries-visualization.html\")"
     ],
     "deny": [],
     "ask": []

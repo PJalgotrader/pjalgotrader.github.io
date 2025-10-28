@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Neural Networks for Time Series | Dr. Pedram Jahangiry</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header .attribution {
+            font-size: 1.1em;
+            margin: 15px 0;
+            opacity: 0.95;
+        }
+
+        .header .links {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .header .links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .header .links a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-website {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .btn-youtube {
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+        }
+
+        .btn-github {
+            background: linear-gradient(135deg, #333, #000);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .intro {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .intro h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .intro p {
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 0;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #764ba2;
+            transform: scale(1.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .value-display {
+            min-width: 50px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        select:hover, select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .train-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .train-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .train-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .chart-container {
+            margin-bottom: 40px;
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .metric-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .metric-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .metric-value {
+            color: #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .metric-value.better {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .explanation {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .explanation h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .explanation ul {
+            margin-left: 20px;
+            line-height: 1.8;
+            color: #856404;
+        }
+
+        .explanation li {
+            margin-bottom: 8px;
+        }
+
+        .status-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .status-message.training {
+            background: #dbeafe;
+            color: #1e40af;
+            display: block;
+        }
+
+        .status-message.complete {
+            background: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .control-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .value-display {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Deep Neural Networks for Time Series Forecasting</h1>
+        <div class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</div>
+        <div class="links">
+            <a href="https://pjalgotrader.github.io/" target="_blank" class="btn-website">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5H8.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5h2.49zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4h2.355z"/>
+                </svg>
+                Website
+            </a>
+            <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" class="btn-youtube">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z"/>
+                </svg>
+                YouTube Channel
+            </a>
+            <a href="https://github.com/PJalgotrader/" target="_blank" class="btn-github">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub Profile
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="intro">
+            <h2>Understanding Deep Neural Networks for Time Series</h2>
+            <p>
+                This visualization demonstrates how Deep Neural Networks (DNNs) learn patterns in time series data using the classic airline passenger dataset (1949-1960). DNNs use <strong>multiple layers of neurons</strong> to capture complex nonlinear relationships between lagged values and future predictions.
+            </p>
+            <p>
+                <strong>Key Concept:</strong> Unlike linear models, DNNs can learn nonlinear transformations through activation functions (ReLU, tanh). Each hidden layer learns increasingly abstract features. The model is trained using backpropagation with the Adam optimizer to minimize Mean Squared Error (MSE).
+            </p>
+            <p>
+                <strong>Benchmark:</strong> We compare DNN performance against Linear Regression to understand when the added complexity provides value.
+            </p>
+        </div>
+
+        <div class="controls">
+            <h3 style="margin-bottom: 20px; color: #667eea;">Model Configuration</h3>
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label>Number of Lags (Input Features)</label>
+                    <div class="control-row">
+                        <input type="range" id="lagsSlider" min="1" max="12" value="2" step="1">
+                        <span class="value-display" id="lagsValue">2</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Forecast Horizon (months ahead)</label>
+                    <div class="control-row">
+                        <input type="range" id="horizonSlider" min="1" max="36" value="12" step="1">
+                        <span class="value-display" id="horizonValue">12</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Number of Hidden Layers</label>
+                    <select id="numLayersSelect">
+                        <option value="1">1 Layer</option>
+                        <option value="2" selected>2 Layers</option>
+                        <option value="3">3 Layers</option>
+                        <option value="4">4 Layers</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Hidden Layer Activation</label>
+                    <select id="hiddenActivationSelect">
+                        <option value="relu" selected>ReLU</option>
+                        <option value="tanh">Tanh</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Output Layer Activation</label>
+                    <select id="outputActivationSelect">
+                        <option value="linear" selected>Linear</option>
+                        <option value="relu">ReLU</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="neuronControls" style="margin-top: 20px;">
+                <h4 style="margin-bottom: 15px; color: #555;">Neurons per Layer</h4>
+                <div class="controls-grid" id="neuronControlsGrid"></div>
+            </div>
+
+            <button class="train-button" id="trainButton">Train Model</button>
+            <div id="statusMessage" class="status-message"></div>
+        </div>
+
+        <div class="metrics-grid" id="metricsContainer" style="display: none;">
+            <div class="metric-card">
+                <h3>Training Set Performance</h3>
+                <div class="metric-row">
+                    <span class="metric-label">DNN MSE:</span>
+                    <span class="metric-value" id="dnnTrainMSE">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">DNN RMSE:</span>
+                    <span class="metric-value" id="dnnTrainRMSE">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">DNN MAE:</span>
+                    <span class="metric-value" id="dnnTrainMAE">-</span>
+                </div>
+                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ddd;">
+                <div class="metric-row">
+                    <span class="metric-label">LR MSE:</span>
+                    <span class="metric-value" id="lrTrainMSE">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">LR RMSE:</span>
+                    <span class="metric-value" id="lrTrainRMSE">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">LR MAE:</span>
+                    <span class="metric-value" id="lrTrainMAE">-</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>Test Set Performance</h3>
+                <div class="metric-row">
+                    <span class="metric-label">DNN MSE:</span>
+                    <span class="metric-value" id="dnnTestMSE">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">DNN RMSE:</span>
+                    <span class="metric-value" id="dnnTestRMSE">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">DNN MAE:</span>
+                    <span class="metric-value" id="dnnTestMAE">-</span>
+                </div>
+                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ddd;">
+                <div class="metric-row">
+                    <span class="metric-label">LR MSE:</span>
+                    <span class="metric-value" id="lrTestMSE">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">LR RMSE:</span>
+                    <span class="metric-value" id="lrTestRMSE">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">LR MAE:</span>
+                    <span class="metric-value" id="lrTestMAE">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Training Loss Curve</div>
+            <div id="lossPlot"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Model Architecture</div>
+            <div id="architecturePlot"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Feature Importance (First Layer Weights)</div>
+            <div id="featureImportancePlot"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Time Series: Actual vs Predicted Passengers</div>
+            <div id="timeseriesPlot"></div>
+        </div>
+
+        <div class="explanation">
+            <h3>When Do DNNs Outperform Linear Models for Time Series?</h3>
+            <ul>
+                <li><strong>Nonlinear Patterns:</strong> DNNs excel when relationships between lags and future values are nonlinear (e.g., exponential growth, complex seasonality)</li>
+                <li><strong>Feature Interactions:</strong> Hidden layers can learn interactions between different lag features automatically</li>
+                <li><strong>Sufficient Data:</strong> DNNs need more training data than linear models to avoid overfitting</li>
+                <li><strong>Overfitting Risk:</strong> Too many layers/neurons can lead to memorizing training data rather than learning generalizable patterns</li>
+                <li><strong>Activation Functions:</strong> ReLU enables learning of piecewise linear functions; Tanh provides smooth nonlinearities</li>
+                <li><strong>Interpretability Trade-off:</strong> While DNNs may provide better predictions, they are less interpretable than linear models or traditional time series methods like ARIMA</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Airline passenger data (1949-1960, 144 months)
+        const passengerData = [
+            112, 118, 132, 129, 121, 135, 148, 148, 136, 119, 104, 118,
+            115, 126, 141, 135, 125, 149, 170, 170, 158, 133, 114, 140,
+            145, 150, 178, 163, 172, 178, 199, 199, 184, 162, 146, 166,
+            171, 180, 193, 181, 183, 218, 230, 242, 209, 191, 172, 194,
+            196, 196, 236, 235, 229, 243, 264, 272, 237, 211, 180, 201,
+            204, 188, 235, 227, 234, 264, 302, 293, 259, 229, 203, 229,
+            242, 233, 267, 269, 270, 315, 364, 347, 312, 274, 237, 278,
+            284, 277, 317, 313, 318, 374, 413, 405, 355, 306, 271, 306,
+            315, 301, 356, 348, 355, 422, 465, 467, 404, 347, 305, 336,
+            340, 318, 362, 348, 363, 435, 491, 505, 404, 359, 310, 337,
+            360, 342, 406, 396, 420, 472, 548, 559, 463, 407, 362, 405,
+            417, 391, 419, 461, 472, 535, 622, 606, 508, 461, 390, 432
+        ];
+
+        const testPeriod = 24;
+        const trainPeriod = passengerData.length - testPeriod;
+
+        let currentModel = null;
+        let lossHistory = [];
+        let isTraining = false;
+
+        // Initialize neuron controls
+        function updateNeuronControls() {
+            const numLayers = parseInt(document.getElementById('numLayersSelect').value);
+            const grid = document.getElementById('neuronControlsGrid');
+            grid.innerHTML = '';
+
+            const defaultNeurons = [64, 32, 16, 8];
+
+            for (let i = 0; i < numLayers; i++) {
+                const controlGroup = document.createElement('div');
+                controlGroup.className = 'control-group';
+
+                const label = document.createElement('label');
+                label.textContent = `Layer ${i + 1} Neurons`;
+
+                const controlRow = document.createElement('div');
+                controlRow.className = 'control-row';
+
+                const slider = document.createElement('input');
+                slider.type = 'range';
+                slider.id = `neuronsLayer${i}`;
+                slider.min = '4';
+                slider.max = '128';
+                slider.value = defaultNeurons[i] || 16;
+                slider.step = '4';
+
+                const valueDisplay = document.createElement('span');
+                valueDisplay.className = 'value-display';
+                valueDisplay.id = `neuronsLayer${i}Value`;
+                valueDisplay.textContent = slider.value;
+
+                slider.addEventListener('input', function() {
+                    valueDisplay.textContent = this.value;
+                });
+
+                controlRow.appendChild(slider);
+                controlRow.appendChild(valueDisplay);
+                controlGroup.appendChild(label);
+                controlGroup.appendChild(controlRow);
+                grid.appendChild(controlGroup);
+            }
+        }
+
+        // Create lagged features
+        function createLaggedData(numLags) {
+            const X = [];
+            const y = [];
+
+            for (let i = numLags; i < passengerData.length; i++) {
+                const features = [];
+                for (let j = numLags; j > 0; j--) {
+                    features.push(passengerData[i - j]);
+                }
+                X.push(features);
+                y.push(passengerData[i]);
+            }
+
+            return { X, y };
+        }
+
+        // Split data into train and test
+        function splitData(X, y) {
+            const trainX = X.slice(0, -testPeriod);
+            const trainY = y.slice(0, -testPeriod);
+            const testX = X.slice(-testPeriod);
+            const testY = y.slice(-testPeriod);
+
+            return { trainX, trainY, testX, testY };
+        }
+
+        // Calculate metrics
+        function calculateMetrics(actual, predicted) {
+            const n = actual.length;
+            let mse = 0, mae = 0;
+
+            for (let i = 0; i < n; i++) {
+                const error = actual[i] - predicted[i];
+                mse += error * error;
+                mae += Math.abs(error);
+            }
+
+            mse /= n;
+            mae /= n;
+            const rmse = Math.sqrt(mse);
+
+            return { mse, rmse, mae };
+        }
+
+        // Simple Linear Regression implementation
+        class LinearRegression {
+            constructor() {
+                this.weights = null;
+                this.bias = null;
+            }
+
+            fit(X, y) {
+                const n = X.length;
+                const numFeatures = X[0].length;
+
+                // Add bias term to X
+                const X_with_bias = X.map(row => [1, ...row]);
+
+                // Normal equation: theta = (X^T X)^(-1) X^T y
+                const XT = this.transpose(X_with_bias);
+                const XTX = this.matrixMultiply(XT, X_with_bias);
+                const XTX_inv = this.inverse(XTX);
+                const XTy = this.matrixVectorMultiply(XT, y);
+                const theta = this.matrixVectorMultiply(XTX_inv, XTy);
+
+                this.bias = theta[0];
+                this.weights = theta.slice(1);
+            }
+
+            predict(X) {
+                return X.map(row => {
+                    let sum = this.bias;
+                    for (let i = 0; i < this.weights.length; i++) {
+                        sum += this.weights[i] * row[i];
+                    }
+                    return sum;
+                });
+            }
+
+            transpose(matrix) {
+                return matrix[0].map((_, colIndex) => matrix.map(row => row[colIndex]));
+            }
+
+            matrixMultiply(A, B) {
+                const result = [];
+                for (let i = 0; i < A.length; i++) {
+                    result[i] = [];
+                    for (let j = 0; j < B[0].length; j++) {
+                        let sum = 0;
+                        for (let k = 0; k < A[0].length; k++) {
+                            sum += A[i][k] * B[k][j];
+                        }
+                        result[i][j] = sum;
+                    }
+                }
+                return result;
+            }
+
+            matrixVectorMultiply(A, v) {
+                return A.map(row => row.reduce((sum, val, i) => sum + val * v[i], 0));
+            }
+
+            inverse(matrix) {
+                const n = matrix.length;
+                const identity = Array(n).fill(0).map((_, i) =>
+                    Array(n).fill(0).map((_, j) => i === j ? 1 : 0)
+                );
+
+                const augmented = matrix.map((row, i) => [...row, ...identity[i]]);
+
+                // Gauss-Jordan elimination
+                for (let i = 0; i < n; i++) {
+                    let maxRow = i;
+                    for (let j = i + 1; j < n; j++) {
+                        if (Math.abs(augmented[j][i]) > Math.abs(augmented[maxRow][i])) {
+                            maxRow = j;
+                        }
+                    }
+                    [augmented[i], augmented[maxRow]] = [augmented[maxRow], augmented[i]];
+
+                    const pivot = augmented[i][i];
+                    for (let j = 0; j < 2 * n; j++) {
+                        augmented[i][j] /= pivot;
+                    }
+
+                    for (let j = 0; j < n; j++) {
+                        if (j !== i) {
+                            const factor = augmented[j][i];
+                            for (let k = 0; k < 2 * n; k++) {
+                                augmented[j][k] -= factor * augmented[i][k];
+                            }
+                        }
+                    }
+                }
+
+                return augmented.map(row => row.slice(n));
+            }
+        }
+
+        // Build DNN model
+        function buildModel(numLags, numLayers, hiddenActivation, outputActivation) {
+            const model = tf.sequential();
+
+            // Get neuron counts for each layer
+            const neurons = [];
+            for (let i = 0; i < numLayers; i++) {
+                neurons.push(parseInt(document.getElementById(`neuronsLayer${i}`).value));
+            }
+
+            // Add hidden layers
+            for (let i = 0; i < numLayers; i++) {
+                if (i === 0) {
+                    model.add(tf.layers.dense({
+                        units: neurons[i],
+                        activation: hiddenActivation,
+                        inputShape: [numLags]
+                    }));
+                } else {
+                    model.add(tf.layers.dense({
+                        units: neurons[i],
+                        activation: hiddenActivation
+                    }));
+                }
+            }
+
+            // Add output layer
+            model.add(tf.layers.dense({
+                units: 1,
+                activation: outputActivation
+            }));
+
+            model.compile({
+                optimizer: 'adam',
+                loss: 'meanSquaredError'
+            });
+
+            return model;
+        }
+
+        // Train model with live loss updates
+        async function trainModel() {
+            if (isTraining) return;
+            isTraining = true;
+
+            const trainButton = document.getElementById('trainButton');
+            const statusMessage = document.getElementById('statusMessage');
+            trainButton.disabled = true;
+            statusMessage.className = 'status-message training';
+            statusMessage.textContent = 'Training model... Please wait';
+
+            // Get parameters
+            const numLags = parseInt(document.getElementById('lagsSlider').value);
+            const numLayers = parseInt(document.getElementById('numLayersSelect').value);
+            const hiddenActivation = document.getElementById('hiddenActivationSelect').value;
+            const outputActivation = document.getElementById('outputActivationSelect').value;
+
+            // Prepare data
+            const { X, y } = createLaggedData(numLags);
+            const { trainX, trainY, testX, testY } = splitData(X, y);
+
+            // Convert to tensors
+            const trainXTensor = tf.tensor2d(trainX);
+            const trainYTensor = tf.tensor2d(trainY, [trainY.length, 1]);
+            const testXTensor = tf.tensor2d(testX);
+            const testYTensor = tf.tensor2d(testY, [testY.length, 1]);
+
+            // Build and train DNN
+            currentModel = buildModel(numLags, numLayers, hiddenActivation, outputActivation);
+
+            lossHistory = [];
+
+            await currentModel.fit(trainXTensor, trainYTensor, {
+                epochs: 100,
+                batchSize: 16,
+                validationSplit: 0.1,
+                callbacks: {
+                    onEpochEnd: (epoch, logs) => {
+                        lossHistory.push({
+                            epoch: epoch + 1,
+                            loss: logs.loss,
+                            valLoss: logs.val_loss
+                        });
+
+                        // Update loss plot every 10 epochs
+                        if ((epoch + 1) % 10 === 0 || epoch === 0) {
+                            updateLossPlot();
+                        }
+                    }
+                }
+            });
+
+            // Get DNN predictions
+            const dnnTrainPred = await currentModel.predict(trainXTensor).array();
+            const dnnTestPred = await currentModel.predict(testXTensor).array();
+            const dnnTrainPredFlat = dnnTrainPred.map(x => x[0]);
+            const dnnTestPredFlat = dnnTestPred.map(x => x[0]);
+
+            // Train Linear Regression
+            const lr = new LinearRegression();
+            lr.fit(trainX, trainY);
+            const lrTrainPred = lr.predict(trainX);
+            const lrTestPred = lr.predict(testX);
+
+            // Calculate metrics
+            const dnnTrainMetrics = calculateMetrics(trainY, dnnTrainPredFlat);
+            const dnnTestMetrics = calculateMetrics(testY, dnnTestPredFlat);
+            const lrTrainMetrics = calculateMetrics(trainY, lrTrainPred);
+            const lrTestMetrics = calculateMetrics(testY, lrTestPred);
+
+            // Update metrics display
+            updateMetrics(dnnTrainMetrics, dnnTestMetrics, lrTrainMetrics, lrTestMetrics);
+
+            // Update visualizations
+            updateLossPlot();
+            updateArchitecturePlot(numLags, numLayers);
+            await updateFeatureImportancePlot(numLags);
+            updateTimeseriesPlot(trainY, testY, dnnTrainPredFlat, dnnTestPredFlat, lrTrainPred, lrTestPred, numLags);
+
+            // Cleanup tensors
+            trainXTensor.dispose();
+            trainYTensor.dispose();
+            testXTensor.dispose();
+            testYTensor.dispose();
+
+            statusMessage.className = 'status-message complete';
+            statusMessage.textContent = 'Training complete! Explore the results below.';
+            trainButton.disabled = false;
+            isTraining = false;
+
+            document.getElementById('metricsContainer').style.display = 'grid';
+        }
+
+        // Update metrics display
+        function updateMetrics(dnnTrain, dnnTest, lrTrain, lrTest) {
+            // Training metrics
+            document.getElementById('dnnTrainMSE').textContent = dnnTrain.mse.toFixed(2);
+            document.getElementById('dnnTrainRMSE').textContent = dnnTrain.rmse.toFixed(2);
+            document.getElementById('dnnTrainMAE').textContent = dnnTrain.mae.toFixed(2);
+            document.getElementById('lrTrainMSE').textContent = lrTrain.mse.toFixed(2);
+            document.getElementById('lrTrainRMSE').textContent = lrTrain.rmse.toFixed(2);
+            document.getElementById('lrTrainMAE').textContent = lrTrain.mae.toFixed(2);
+
+            // Test metrics
+            document.getElementById('dnnTestMSE').textContent = dnnTest.mse.toFixed(2);
+            document.getElementById('dnnTestRMSE').textContent = dnnTest.rmse.toFixed(2);
+            document.getElementById('dnnTestMAE').textContent = dnnTest.mae.toFixed(2);
+            document.getElementById('lrTestMSE').textContent = lrTest.mse.toFixed(2);
+            document.getElementById('lrTestRMSE').textContent = lrTest.rmse.toFixed(2);
+            document.getElementById('lrTestMAE').textContent = lrTest.mae.toFixed(2);
+
+            // Highlight better model
+            ['MSE', 'RMSE', 'MAE'].forEach(metric => {
+                const dnnTrainEl = document.getElementById(`dnnTrain${metric}`);
+                const lrTrainEl = document.getElementById(`lrTrain${metric}`);
+                const dnnTestEl = document.getElementById(`dnnTest${metric}`);
+                const lrTestEl = document.getElementById(`lrTest${metric}`);
+
+                dnnTrainEl.classList.remove('better');
+                lrTrainEl.classList.remove('better');
+                dnnTestEl.classList.remove('better');
+                lrTestEl.classList.remove('better');
+
+                if (parseFloat(dnnTrainEl.textContent) < parseFloat(lrTrainEl.textContent)) {
+                    dnnTrainEl.classList.add('better');
+                } else {
+                    lrTrainEl.classList.add('better');
+                }
+
+                if (parseFloat(dnnTestEl.textContent) < parseFloat(lrTestEl.textContent)) {
+                    dnnTestEl.classList.add('better');
+                } else {
+                    lrTestEl.classList.add('better');
+                }
+            });
+        }
+
+        // Update loss plot
+        function updateLossPlot() {
+            const epochs = lossHistory.map(h => h.epoch);
+            const trainLoss = lossHistory.map(h => h.loss);
+            const valLoss = lossHistory.map(h => h.valLoss);
+
+            const traces = [
+                {
+                    x: epochs,
+                    y: trainLoss,
+                    mode: 'lines',
+                    name: 'Training Loss',
+                    line: { color: '#667eea', width: 2 }
+                },
+                {
+                    x: epochs,
+                    y: valLoss,
+                    mode: 'lines',
+                    name: 'Validation Loss',
+                    line: { color: '#f093fb', width: 2 }
+                }
+            ];
+
+            const layout = {
+                xaxis: { title: 'Epoch' },
+                yaxis: { title: 'Mean Squared Error', type: 'log' },
+                hovermode: 'x unified',
+                height: 400,
+                margin: { t: 20, b: 60, l: 60, r: 20 }
+            };
+
+            Plotly.newPlot('lossPlot', traces, layout, { responsive: true });
+        }
+
+        // Update architecture plot
+        function updateArchitecturePlot(numLags, numLayers) {
+            const neurons = [];
+            for (let i = 0; i < numLayers; i++) {
+                neurons.push(parseInt(document.getElementById(`neuronsLayer${i}`).value));
+            }
+
+            const layers = [numLags, ...neurons, 1];
+            const layerNames = ['Input', ...Array(numLayers).fill(0).map((_, i) => `Hidden ${i+1}`), 'Output'];
+
+            const trace = {
+                x: layerNames,
+                y: layers,
+                type: 'bar',
+                marker: {
+                    color: layers.map((_, i) =>
+                        i === 0 ? '#10b981' : i === layers.length - 1 ? '#ef4444' : '#667eea'
+                    )
+                },
+                text: layers.map(l => `${l} neurons`),
+                textposition: 'outside'
+            };
+
+            const layout = {
+                xaxis: { title: 'Layer' },
+                yaxis: { title: 'Number of Neurons' },
+                height: 400,
+                margin: { t: 20, b: 60, l: 60, r: 20 }
+            };
+
+            Plotly.newPlot('architecturePlot', [trace], layout, { responsive: true });
+        }
+
+        // Update feature importance plot
+        async function updateFeatureImportancePlot(numLags) {
+            const firstLayer = currentModel.layers[0];
+            const weights = await firstLayer.getWeights()[0].array();
+
+            // Average absolute weights for each input feature
+            const importance = [];
+            for (let i = 0; i < numLags; i++) {
+                let sum = 0;
+                for (let j = 0; j < weights[i].length; j++) {
+                    sum += Math.abs(weights[i][j]);
+                }
+                importance.push(sum / weights[i].length);
+            }
+
+            const lagLabels = Array.from({ length: numLags }, (_, i) => `Lag ${i + 1}`);
+
+            const trace = {
+                x: lagLabels,
+                y: importance,
+                type: 'bar',
+                marker: { color: '#764ba2' },
+                text: importance.map(v => v.toFixed(3)),
+                textposition: 'outside'
+            };
+
+            const layout = {
+                xaxis: { title: 'Lag Feature' },
+                yaxis: { title: 'Average Absolute Weight' },
+                height: 400,
+                margin: { t: 20, b: 60, l: 60, r: 20 }
+            };
+
+            Plotly.newPlot('featureImportancePlot', [trace], layout, { responsive: true });
+        }
+
+        // Recursive forecasting
+        async function forecastFuture(horizon, numLags) {
+            const recentData = passengerData.slice(-numLags);
+            const forecasts = [];
+
+            for (let h = 0; h < horizon; h++) {
+                const input = tf.tensor2d([recentData.slice(-numLags)]);
+                const prediction = await currentModel.predict(input).array();
+                const predValue = prediction[0][0];
+                forecasts.push(predValue);
+                recentData.push(predValue);
+                input.dispose();
+            }
+
+            return forecasts;
+        }
+
+        // Update timeseries plot
+        function updateTimeseriesPlot(trainY, testY, dnnTrainPred, dnnTestPred, lrTrainPred, lrTestPred, numLags) {
+            const horizon = parseInt(document.getElementById('horizonSlider').value);
+
+            // Get future forecasts (async operation handled in training function)
+            forecastFuture(horizon, numLags).then(futurePred => {
+                const trainMonths = Array.from({ length: trainY.length }, (_, i) => `Month ${i + numLags + 1}`);
+                const testMonths = Array.from({ length: testY.length }, (_, i) => `Month ${trainY.length + i + numLags + 1}`);
+                const futureMonths = Array.from({ length: horizon }, (_, i) => `Month ${trainY.length + testY.length + i + numLags + 1}`);
+
+                const traces = [
+                    {
+                        x: trainMonths,
+                        y: trainY,
+                        mode: 'lines',
+                        name: 'Train Actual',
+                        line: { color: '#667eea', width: 3 }
+                    },
+                    {
+                        x: testMonths,
+                        y: testY,
+                        mode: 'lines',
+                        name: 'Test Actual',
+                        line: { color: '#333', width: 3 }
+                    },
+                    {
+                        x: trainMonths,
+                        y: dnnTrainPred,
+                        mode: 'lines',
+                        name: 'DNN Train Pred',
+                        line: { color: '#764ba2', width: 2, dash: 'dash' }
+                    },
+                    {
+                        x: testMonths,
+                        y: dnnTestPred,
+                        mode: 'lines',
+                        name: 'DNN Test Pred',
+                        line: { color: '#ef4444', width: 2, dash: 'dash' }
+                    },
+                    {
+                        x: trainMonths,
+                        y: lrTrainPred,
+                        mode: 'lines',
+                        name: 'LR Train Pred',
+                        line: { color: '#999', width: 2, dash: 'dot' }
+                    },
+                    {
+                        x: testMonths,
+                        y: lrTestPred,
+                        mode: 'lines',
+                        name: 'LR Test Pred',
+                        line: { color: '#666', width: 2, dash: 'dot' }
+                    },
+                    {
+                        x: futureMonths,
+                        y: futurePred,
+                        mode: 'lines',
+                        name: `${horizon}-Month Forecast`,
+                        line: { color: '#10b981', width: 2, dash: 'dot' }
+                    }
+                ];
+
+                const layout = {
+                    xaxis: {
+                        title: 'Time Period',
+                        tickangle: -45
+                    },
+                    yaxis: { title: 'Number of Passengers' },
+                    hovermode: 'x unified',
+                    height: 500,
+                    margin: { t: 20, b: 100, l: 60, r: 20 },
+                    showlegend: true,
+                    legend: { x: 0.02, y: 0.98 }
+                };
+
+                Plotly.newPlot('timeseriesPlot', traces, layout, { responsive: true });
+            });
+        }
+
+        // Event listeners
+        document.getElementById('lagsSlider').addEventListener('input', function() {
+            document.getElementById('lagsValue').textContent = this.value;
+        });
+
+        document.getElementById('horizonSlider').addEventListener('input', function() {
+            document.getElementById('horizonValue').textContent = this.value;
+        });
+
+        document.getElementById('numLayersSelect').addEventListener('change', updateNeuronControls);
+
+        document.getElementById('trainButton').addEventListener('click', trainModel);
+
+        // Initialize
+        updateNeuronControls();
+    </script>
+</body>
+</html>
