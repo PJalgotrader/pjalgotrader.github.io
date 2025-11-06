@@ -510,28 +510,42 @@ The `m7_rnn/` directory contains interactive visualizations comparing Recurrent 
 #### Key Features
 
 **RNN vs DNN Comparison Visualization**:
-- **Interactive Preprocessing Toggle**: Switch between raw data and stationary data (log + differencing)
-- **Comprehensive Parameter Controls**:
-  - Number of lags (3-24): Controls input sequence length
-  - Training epochs (50-300): User-controllable training duration
-  - RNN units (8-64): SimpleRNN layer size configuration
-  - DNN hidden layers (2 layers, 8-64 units each): Feedforward network architecture
+- **Detailed Educational Explanation**: "What's Going On? Is RNN Failing?" section explaining:
+  - DNNs and Feature Representation (independent features, pattern mapping, no temporal dynamics)
+  - RNNs and Sequential Data (sequential processing, need for stationarity)
+  - Conclusion on model choice and preprocessing dependencies
 
-- **Three Interactive Visualizations**:
-  1. **Training Loss Curves**:
+- **Separated Configuration Controls**:
+  - **Shared Configuration**: Data preprocessing toggle (raw vs log + differencing), training epochs (50-300)
+  - **DNN Configuration** (blue section):
+    - Number of lags / Input features (3-24): Treats lags as independent features
+    - Hidden Layer 1 units (8-64)
+    - Hidden Layer 2 units (8-64)
+  - **RNN Configuration** (orange section):
+    - Sequence length / Memory window (3-24): How far back RNN looks
+    - RNN units / Memory depth (8-64): Capacity of hidden state memory
+
+- **Four Interactive Visualizations**:
+  1. **Model Architecture Summary Tables**:
+     - Side-by-side DNN and RNN architecture displays
+     - Shows each layer type, output shape, and parameter count
+     - Total trainable parameters highlighted
+     - Helps understand model complexity differences
+
+  2. **Training Loss Curves**:
      - DNN training and validation loss (blue solid/dashed lines)
      - RNN training and validation loss (orange solid/dashed lines)
      - Logarithmic scale for better visibility
      - Side-by-side convergence comparison
 
-  2. **Time Series Predictions Comparison**:
-     - Training data (gray line)
-     - Actual test data (black line with markers)
-     - DNN predictions (blue dotted line with square markers)
-     - RNN predictions (orange dotted line with diamond markers)
-     - Clear visual comparison of both models' forecast accuracy
+  3. **Time Series Predictions Comparison**:
+     - Training data (gray solid line)
+     - Actual test data (black solid line)
+     - DNN predictions (blue solid line)
+     - RNN predictions (orange solid line)
+     - Clean, readable solid lines for clarity
 
-  3. **Performance Metrics Cards**:
+  4. **Performance Metrics Cards**:
      - DNN metrics: MAPE, RMSE, training time
      - RNN metrics: MAPE, RMSE, training time
      - Winner card: Highlights best-performing model
@@ -562,9 +576,11 @@ The `m7_rnn/` directory contains interactive visualizations comparing Recurrent 
 
 #### Educational Insights
 The visualization demonstrates critical concepts for comparing RNN vs DNN:
-- **DNNs treat lags as independent features**: Work well on raw data by learning patterns from absolute values
-- **RNNs process sequences temporally**: Expect temporal dependencies, struggle with non-stationary data
-- **Preprocessing transforms RNN performance**: Log + differencing makes data stationary, enabling RNN to excel
+- **DNN architecture treats lags as independent features**: Uses 12 separate input features (lags), learning patterns from absolute values without sequential understanding
+- **RNN architecture processes sequences temporally**: Uses sequence length of 12 timesteps with memory units that maintain hidden state across the sequence
+- **Memory window vs memory depth**: Sequence length controls how far back to look; RNN units control the capacity of the temporal memory
+- **Preprocessing transforms RNN performance**: Log + differencing makes data stationary, enabling RNN to excel at capturing temporal patterns
+- **Model summaries reveal complexity**: Parameter count comparisons show how different architectures scale with configuration changes
 - **Architecture choice vs preprocessing**: Sometimes proper preprocessing matters more than architecture complexity
 - **Trade-offs**: DNNs are simpler and work out-of-the-box, RNNs require more careful preparation but capture sequential nature
 - **Real-world lesson**: Understanding your data and model requirements is crucial for success
@@ -576,14 +592,20 @@ The visualization demonstrates critical concepts for comparing RNN vs DNN:
 - **Conclusion**: Architecture selection must consider data characteristics and preprocessing requirements
 
 #### User Workflow
-1. User starts with default settings (raw data, 12 lags, 100 epochs)
-2. User clicks "Train Both Models" to train DNN and RNN simultaneously
-3. Observe DNN outperforming RNN on raw data
-4. User toggles preprocessing to "Log + Differencing"
-5. User clicks "Train Both Models" again
-6. Observe RNN performance dramatically improving, often matching/exceeding DNN
-7. User experiments with different lags, epochs, and architecture sizes
-8. User compares loss curves and metrics to understand convergence behavior
+1. User starts with default settings (raw data, both models use 12 lags/sequence length, 100 epochs)
+2. User reviews the educational explanation about DNN vs RNN differences
+3. User clicks "Train Both Models" to train DNN and RNN simultaneously
+4. **Observe model summaries** showing architecture details and parameter counts
+5. Observe DNN outperforming RNN on raw data (via metrics and plots)
+6. User toggles preprocessing to "Log + Differencing"
+7. User clicks "Train Both Models" again
+8. Observe RNN performance dramatically improving, often matching/exceeding DNN
+9. User experiments with different configurations:
+   - Adjust DNN lags (input features) independently
+   - Adjust RNN sequence length (memory window) independently
+   - Modify hidden layer sizes and RNN units
+   - Compare training times and parameter counts
+10. User compares loss curves, predictions, and metrics to understand convergence behavior and model trade-offs
 
 ### Consistent Header Branding
 All RNN visualizations include standardized academic branding:
