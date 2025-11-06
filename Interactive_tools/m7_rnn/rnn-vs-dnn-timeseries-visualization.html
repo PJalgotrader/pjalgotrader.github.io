@@ -456,60 +456,91 @@
         <div class="controls">
             <h2 style="margin-bottom: 20px; color: #667eea;">Configuration</h2>
 
-            <div class="controls-grid">
-                <div class="control-group">
-                    <label>Data Preprocessing</label>
-                    <div class="preprocessing-toggle">
-                        <span style="font-weight: 600; color: #555;">Raw Data</span>
-                        <div class="toggle-switch" id="preprocessToggle" onclick="togglePreprocessing()">
-                            <div class="toggle-slider"></div>
+            <!-- Shared Configuration -->
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #555; font-size: 1em; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
+                    🔧 Shared Configuration
+                </h3>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label>Data Preprocessing</label>
+                        <div class="preprocessing-toggle">
+                            <span style="font-weight: 600; color: #555;">Raw Data</span>
+                            <div class="toggle-switch" id="preprocessToggle" onclick="togglePreprocessing()">
+                                <div class="toggle-slider"></div>
+                            </div>
+                            <span style="font-weight: 600; color: #667eea;">Log + Differencing</span>
                         </div>
-                        <span style="font-weight: 600; color: #667eea;">Log + Differencing</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Training Epochs</label>
+                        <div class="control-row">
+                            <input type="range" id="epochs" min="50" max="300" step="50" value="100"
+                                   oninput="document.getElementById('epochsValue').textContent = this.value">
+                            <span class="value-display" id="epochsValue">100</span>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="control-group">
-                    <label>Number of Lags (Input Features)</label>
-                    <div class="control-row">
-                        <input type="range" id="numLags" min="3" max="24" value="12"
-                               oninput="document.getElementById('numLagsValue').textContent = this.value">
-                        <span class="value-display" id="numLagsValue">12</span>
+            <!-- DNN Configuration -->
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #3b82f6; font-size: 1em; margin-bottom: 15px; border-bottom: 2px solid #3b82f6; padding-bottom: 8px;">
+                    🔷 DNN Configuration
+                </h3>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label>Number of Lags (Input Features)</label>
+                        <div class="control-row">
+                            <input type="range" id="dnnLags" min="3" max="24" value="12"
+                                   oninput="document.getElementById('dnnLagsValue').textContent = this.value">
+                            <span class="value-display" id="dnnLagsValue">12</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Hidden Layer 1 Units</label>
+                        <div class="control-row">
+                            <input type="range" id="dnnLayer1" min="8" max="64" step="8" value="32"
+                                   oninput="document.getElementById('dnnLayer1Value').textContent = this.value">
+                            <span class="value-display" id="dnnLayer1Value">32</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Hidden Layer 2 Units</label>
+                        <div class="control-row">
+                            <input type="range" id="dnnLayer2" min="8" max="64" step="8" value="16"
+                                   oninput="document.getElementById('dnnLayer2Value').textContent = this.value">
+                            <span class="value-display" id="dnnLayer2Value">16</span>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="control-group">
-                    <label>Training Epochs</label>
-                    <div class="control-row">
-                        <input type="range" id="epochs" min="50" max="300" step="50" value="100"
-                               oninput="document.getElementById('epochsValue').textContent = this.value">
-                        <span class="value-display" id="epochsValue">100</span>
+            <!-- RNN Configuration -->
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #f97316; font-size: 1em; margin-bottom: 15px; border-bottom: 2px solid #f97316; padding-bottom: 8px;">
+                    🔶 RNN Configuration
+                </h3>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label>Sequence Length (Memory Window)</label>
+                        <div class="control-row">
+                            <input type="range" id="rnnSeqLength" min="3" max="24" value="12"
+                                   oninput="document.getElementById('rnnSeqLengthValue').textContent = this.value">
+                            <span class="value-display" id="rnnSeqLengthValue">12</span>
+                        </div>
                     </div>
-                </div>
 
-                <div class="control-group">
-                    <label>RNN Units</label>
-                    <div class="control-row">
-                        <input type="range" id="rnnUnits" min="8" max="64" step="8" value="16"
-                               oninput="document.getElementById('rnnUnitsValue').textContent = this.value">
-                        <span class="value-display" id="rnnUnitsValue">16</span>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label>DNN Hidden Layer 1</label>
-                    <div class="control-row">
-                        <input type="range" id="dnnLayer1" min="8" max="64" step="8" value="32"
-                               oninput="document.getElementById('dnnLayer1Value').textContent = this.value">
-                        <span class="value-display" id="dnnLayer1Value">32</span>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label>DNN Hidden Layer 2</label>
-                    <div class="control-row">
-                        <input type="range" id="dnnLayer2" min="8" max="64" step="8" value="16"
-                               oninput="document.getElementById('dnnLayer2Value').textContent = this.value">
-                        <span class="value-display" id="dnnLayer2Value">16</span>
+                    <div class="control-group">
+                        <label>RNN Units (Memory Depth)</label>
+                        <div class="control-row">
+                            <input type="range" id="rnnUnits" min="8" max="64" step="8" value="16"
+                                   oninput="document.getElementById('rnnUnitsValue').textContent = this.value">
+                            <span class="value-display" id="rnnUnitsValue">16</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -750,7 +781,8 @@
 
             try {
                 // Get parameters
-                const numLags = parseInt(document.getElementById('numLags').value);
+                const dnnLags = parseInt(document.getElementById('dnnLags').value);
+                const rnnSeqLength = parseInt(document.getElementById('rnnSeqLength').value);
                 const epochs = parseInt(document.getElementById('epochs').value);
                 const rnnUnits = parseInt(document.getElementById('rnnUnits').value);
                 const dnnLayer1 = parseInt(document.getElementById('dnnLayer1').value);
@@ -768,33 +800,33 @@
                 const testSize = 12;
                 const trainSize = processedData.length - testSize;
 
-                const { X, Y } = createSequences(processedData, numLags);
+                // Create sequences for DNN (using dnnLags)
+                const { X: XDNN, Y: YDNN } = createSequences(processedData, dnnLags);
+                const XTrainDNN_data = XDNN.slice(0, trainSize - dnnLags);
+                const YTrainDNN_data = YDNN.slice(0, trainSize - dnnLags);
+                const XTestDNN_data = XDNN.slice(trainSize - dnnLags);
+                const YTestDNN_data = YDNN.slice(trainSize - dnnLags);
 
-                const XTrain = X.slice(0, trainSize - numLags);
-                const YTrain = Y.slice(0, trainSize - numLags);
-                const XTest = X.slice(trainSize - numLags);
-                const YTest = Y.slice(trainSize - numLags);
-
-                // Store for later use
-                trainData = {
-                    XTrain, YTrain, XTest, YTest,
-                    trainSize, testSize, numLags,
-                    originalData, processedData
-                };
+                // Create sequences for RNN (using rnnSeqLength)
+                const { X: XRNN, Y: YRNN } = createSequences(processedData, rnnSeqLength);
+                const XTrainRNN_data = XRNN.slice(0, trainSize - rnnSeqLength);
+                const YTrainRNN_data = YRNN.slice(0, trainSize - rnnSeqLength);
+                const XTestRNN_data = XRNN.slice(trainSize - rnnSeqLength);
+                const YTestRNN_data = YRNN.slice(trainSize - rnnSeqLength);
 
                 // Train DNN
                 statusMsg.innerHTML = '<div class="status-message info">🔄 Training DNN model...</div>';
                 const startDNN = Date.now();
 
-                const XTrainDNN = tf.tensor2d(XTrain);
-                const YTrainDNN = tf.tensor2d(YTrain, [YTrain.length, 1]);
-                const XTestDNN = tf.tensor2d(XTest);
+                const XTrainDNN = tf.tensor2d(XTrainDNN_data);
+                const YTrainDNN = tf.tensor2d(YTrainDNN_data, [YTrainDNN_data.length, 1]);
+                const XTestDNN = tf.tensor2d(XTestDNN_data);
 
-                modelDNN = buildDNNModel(numLags, dnnLayer1, dnnLayer2);
+                modelDNN = buildDNNModel(dnnLags, dnnLayer1, dnnLayer2);
                 const historyDNN = await modelDNN.fit(XTrainDNN, YTrainDNN, {
                     epochs: epochs,
                     batchSize: 16,
-                    validationData: [XTestDNN, tf.tensor2d(YTest, [YTest.length, 1])],
+                    validationData: [XTestDNN, tf.tensor2d(YTestDNN_data, [YTestDNN_data.length, 1])],
                     verbose: 0
                 });
 
@@ -804,15 +836,15 @@
                 statusMsg.innerHTML = '<div class="status-message info">🔄 Training RNN model...</div>';
                 const startRNN = Date.now();
 
-                const XTrainRNN = tf.tensor3d(XTrain.map(x => x.map(v => [v])));
-                const YTrainRNN = tf.tensor2d(YTrain, [YTrain.length, 1]);
-                const XTestRNN = tf.tensor3d(XTest.map(x => x.map(v => [v])));
+                const XTrainRNN = tf.tensor3d(XTrainRNN_data.map(x => x.map(v => [v])));
+                const YTrainRNN = tf.tensor2d(YTrainRNN_data, [YTrainRNN_data.length, 1]);
+                const XTestRNN = tf.tensor3d(XTestRNN_data.map(x => x.map(v => [v])));
 
-                modelRNN = buildRNNModel(numLags, rnnUnits);
+                modelRNN = buildRNNModel(rnnSeqLength, rnnUnits);
                 const historyRNN = await modelRNN.fit(XTrainRNN, YTrainRNN, {
                     epochs: epochs,
                     batchSize: 16,
-                    validationData: [XTestRNN, tf.tensor2d(YTest, [YTest.length, 1])],
+                    validationData: [XTestRNN, tf.tensor2d(YTestRNN_data, [YTestRNN_data.length, 1])],
                     verbose: 0
                 });
 
@@ -826,24 +858,32 @@
                 const predRNN = modelRNN.predict(XTestRNN).arraySync().map(x => x[0]);
 
                 // Convert back to original scale if needed
-                let actualTest = YTest;
+                // Use the test data from whichever model has more test samples (they might differ if lags differ)
+                const actualTestDNN = YTestDNN_data;
+                const actualTestRNN = YTestRNN_data;
                 let finalPredDNN = predDNN;
                 let finalPredRNN = predRNN;
+                let actualTest = actualTestDNN; // Use DNN test data for plotting (should be similar)
 
                 if (usePreprocessing) {
                     const testStartIdx = trainSize;
-                    actualTest = originalData.slice(testStartIdx, testStartIdx + testSize);
+                    actualTest = originalData.slice(testStartIdx, testStartIdx + Math.min(YTestDNN_data.length, YTestRNN_data.length));
                     finalPredDNN = invertPreprocessing(predDNN, originalData, testStartIdx - 1);
                     finalPredRNN = invertPreprocessing(predRNN, originalData, testStartIdx - 1);
                 } else {
-                    actualTest = originalData.slice(trainSize, trainSize + testSize);
+                    actualTest = originalData.slice(trainSize, trainSize + Math.min(YTestDNN_data.length, YTestRNN_data.length));
                 }
 
-                // Calculate metrics
-                const mapeDNN = calculateMAPE(actualTest, finalPredDNN);
-                const mapeRNN = calculateMAPE(actualTest, finalPredRNN);
-                const rmseDNN = calculateRMSE(actualTest, finalPredDNN);
-                const rmseRNN = calculateRMSE(actualTest, finalPredRNN);
+                // Calculate metrics (trim to minimum length for fair comparison)
+                const minLength = Math.min(finalPredDNN.length, finalPredRNN.length, actualTest.length);
+                const actualTestTrimmed = actualTest.slice(0, minLength);
+                const predDNNTrimmed = finalPredDNN.slice(0, minLength);
+                const predRNNTrimmed = finalPredRNN.slice(0, minLength);
+
+                const mapeDNN = calculateMAPE(actualTestTrimmed, predDNNTrimmed);
+                const mapeRNN = calculateMAPE(actualTestTrimmed, predRNNTrimmed);
+                const rmseDNN = calculateRMSE(actualTestTrimmed, predDNNTrimmed);
+                const rmseRNN = calculateRMSE(actualTestTrimmed, predRNNTrimmed);
 
                 // Display metrics
                 document.getElementById('dnnMAPE').textContent = mapeDNN + '%';
@@ -870,14 +910,14 @@
                 // Plot loss curves
                 plotLossCurves(historyDNN.history, historyRNN.history);
 
-                // Plot forecasts
-                plotForecasts(originalData, trainSize, actualTest, finalPredDNN, finalPredRNN);
+                // Plot forecasts (using trimmed data for fair comparison)
+                plotForecasts(originalData, trainSize, actualTestTrimmed, predDNNTrimmed, predRNNTrimmed);
 
                 // Show results
                 results.style.display = 'block';
                 statusMsg.innerHTML = '<div class="status-message success">✅ Training complete! Check out the results below.</div>';
 
-                // Cleanup
+                // Cleanup tensors
                 XTrainDNN.dispose();
                 YTrainDNN.dispose();
                 XTestDNN.dispose();
