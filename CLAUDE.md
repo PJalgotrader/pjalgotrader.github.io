@@ -117,6 +117,10 @@ Interactive_tools/
 │   └── sarima-visualization.html                 # SARIMA Model with Airline Passenger Data
 ├── m5_ml/                              # Machine Learning models directory
 │   ├── dt-regression-visualization.html          # Decision Tree Regression for Time Series
+├── m6_dl/                              # Deep Learning models directory
+│   └── dnn-timeseries-visualization.html         # DNN Time Series Forecasting
+├── m7_rnn/                             # Recurrent Neural Networks directory
+│   └── rnn-vs-dnn-timeseries-visualization.html  # RNN vs DNN Comparison for Time Series
 └── [original].tsx                      # Original TSX files (kept for reference)
 ```
 
@@ -479,8 +483,119 @@ All deep learning visualizations include standardized academic branding:
 ### File Organization
 ```
 m6_dl/
-├── dnn-timeseries-visualization.html    # Complete standalone DNN visualization
-└── Module6_DNN_intuition.ipynb         # Supporting Jupyter notebook with Python examples
+└── dnn-timeseries-visualization.html    # Complete standalone DNN visualization
+```
+
+## Recurrent Neural Networks Suite (m7_rnn)
+
+### Overview
+The `m7_rnn/` directory contains interactive visualizations comparing Recurrent Neural Networks (RNNs) and Dense Neural Networks (DNNs) for time series forecasting:
+
+1. **RNN vs DNN Comparison** - Understanding how data preprocessing requirements differ between architectures
+
+### Educational Design Philosophy
+- **Comparative Learning**: Side-by-side training and evaluation of RNN vs DNN architectures
+- **Preprocessing Awareness**: Interactive toggle demonstrating the critical impact of data preprocessing on RNN performance
+- **Architecture Understanding**: Visual comparison showing when DNNs excel vs when RNNs shine
+- **Real-time Training**: Live loss curves and metrics to observe model convergence behavior
+
+### Technical Implementation
+
+#### Visualization Technology
+- **TensorFlow.js v4.11.0** for building and training both RNN and DNN models in the browser
+- **Plotly.js v2.27.0** for interactive loss curves and time series forecast charts
+- **Vanilla JavaScript** with custom preprocessing functions (log transformation + differencing)
+- **Fully client-side**: No backend required, all training and comparison happens in the browser
+
+#### Key Features
+
+**RNN vs DNN Comparison Visualization**:
+- **Interactive Preprocessing Toggle**: Switch between raw data and stationary data (log + differencing)
+- **Comprehensive Parameter Controls**:
+  - Number of lags (3-24): Controls input sequence length
+  - Training epochs (50-300): User-controllable training duration
+  - RNN units (8-64): SimpleRNN layer size configuration
+  - DNN hidden layers (2 layers, 8-64 units each): Feedforward network architecture
+
+- **Three Interactive Visualizations**:
+  1. **Training Loss Curves**:
+     - DNN training and validation loss (blue solid/dashed lines)
+     - RNN training and validation loss (orange solid/dashed lines)
+     - Logarithmic scale for better visibility
+     - Side-by-side convergence comparison
+
+  2. **Time Series Predictions Comparison**:
+     - Training data (gray line)
+     - Actual test data (black line with markers)
+     - DNN predictions (blue dotted line with square markers)
+     - RNN predictions (orange dotted line with diamond markers)
+     - Clear visual comparison of both models' forecast accuracy
+
+  3. **Performance Metrics Cards**:
+     - DNN metrics: MAPE, RMSE, training time
+     - RNN metrics: MAPE, RMSE, training time
+     - Winner card: Highlights best-performing model
+     - Color-coded highlighting (green for better values)
+
+#### Data Configuration
+- **Dataset**: Classic airline passenger data (1949-1960, 144 months total)
+- **Training Set**: First 120 months (dynamically adjusted based on lags)
+- **Test Set**: Last 12 months for out-of-sample evaluation
+- **Preprocessing Pipeline**:
+  - Log transformation: `log(x)` to stabilize variance
+  - First-order differencing: `x[t] - x[t-1]` to remove trend
+  - Inverse transformation: Automatically reverts predictions to original scale
+
+#### Model Architecture Details
+- **DNN Architecture**:
+  - Input layer: Accepts numLags features (flattened sequence)
+  - Hidden layer 1: User-configurable units (8-64) with ReLU activation
+  - Hidden layer 2: User-configurable units (8-64) with ReLU activation
+  - Output layer: Single linear unit
+  - Optimizer: Adam with MSE loss
+
+- **RNN Architecture**:
+  - SimpleRNN layer: User-configurable units (8-64), returnSequences=false
+  - Input shape: [numLags, 1] (sequence of univariate values)
+  - Output layer: Single linear unit
+  - Optimizer: Adam with MSE loss
+
+#### Educational Insights
+The visualization demonstrates critical concepts for comparing RNN vs DNN:
+- **DNNs treat lags as independent features**: Work well on raw data by learning patterns from absolute values
+- **RNNs process sequences temporally**: Expect temporal dependencies, struggle with non-stationary data
+- **Preprocessing transforms RNN performance**: Log + differencing makes data stationary, enabling RNN to excel
+- **Architecture choice vs preprocessing**: Sometimes proper preprocessing matters more than architecture complexity
+- **Trade-offs**: DNNs are simpler and work out-of-the-box, RNNs require more careful preparation but capture sequential nature
+- **Real-world lesson**: Understanding your data and model requirements is crucial for success
+
+#### Key Learning Outcome
+**The visualization's main educational message**:
+- With **raw data**: DNN typically outperforms RNN (DNNs handle levels well)
+- With **stationary data** (log + differencing): RNN matches or exceeds DNN (RNNs capture temporal patterns effectively)
+- **Conclusion**: Architecture selection must consider data characteristics and preprocessing requirements
+
+#### User Workflow
+1. User starts with default settings (raw data, 12 lags, 100 epochs)
+2. User clicks "Train Both Models" to train DNN and RNN simultaneously
+3. Observe DNN outperforming RNN on raw data
+4. User toggles preprocessing to "Log + Differencing"
+5. User clicks "Train Both Models" again
+6. Observe RNN performance dramatically improving, often matching/exceeding DNN
+7. User experiments with different lags, epochs, and architecture sizes
+8. User compares loss curves and metrics to understand convergence behavior
+
+### Consistent Header Branding
+All RNN visualizations include standardized academic branding:
+- **Attribution**: "Created by Dr. Pedram Jahangiry | Enhanced with Claude"
+- **Navigation Links**: SVG icons with gradient buttons for Website (purple), YouTube (red), GitHub (black)
+- **Professional Styling**: Purple gradient backgrounds, consistent color schemes
+- **Academic Integration**: Links back to main portfolio site
+
+### File Organization
+```
+m7_rnn/
+└── rnn-vs-dnn-timeseries-visualization.html    # Complete standalone RNN vs DNN comparison
 ```
 
 ## Content Management
