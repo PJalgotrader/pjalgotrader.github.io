@@ -421,6 +421,38 @@
             </p>
         </div>
 
+        <div class="explanation" style="margin-bottom: 30px;">
+            <h3>🤔 What's Going On? Is RNN Failing?</h3>
+            <p style="line-height: 1.8; color: #856404; margin-bottom: 15px;">
+                Note that the Dense Neural Network (DNN) model works well on the unprocessed airline passenger data,
+                even without preprocessing steps like differencing or logarithmic transformation, while the Recurrent Neural
+                Network (RNN) requires these preprocessing steps to perform effectively.
+            </p>
+            <p style="line-height: 1.8; color: #856404; margin-bottom: 15px;">
+                This can be attributed to several factors related to the nature of DNNs and how they process information compared to RNNs:
+            </p>
+
+            <h4 style="color: #856404; margin: 15px 0 10px 0;">📊 DNNs and Feature Representation</h4>
+            <ul style="line-height: 1.8; color: #856404;">
+                <li><strong>Independent Features:</strong> Treat lags as independent features, capturing trend and seasonality without understanding sequential data.</li>
+                <li><strong>Pattern Mapping:</strong> Learn patterns from raw data without requiring stationarity.</li>
+                <li><strong>No Temporal Dynamics:</strong> Perform well if input-output relationships are straightforward, even without sequential understanding.</li>
+            </ul>
+
+            <h4 style="color: #856404; margin: 15px 0 10px 0;">🔄 RNNs and Sequential Data</h4>
+            <ul style="line-height: 1.8; color: #856404;">
+                <li><strong>Sequential Processing:</strong> Capture temporal dependencies but can struggle with non-stationary data.</li>
+                <li><strong>Need for Stationarity:</strong> Preprocessing (e.g., differencing) helps reveal patterns by stabilizing mean and variance.</li>
+            </ul>
+
+            <h4 style="color: #856404; margin: 15px 0 10px 0;">💡 Conclusion</h4>
+            <ul style="line-height: 1.8; color: #856404;">
+                <li>DNNs excel with raw data by leveraging absolute lag values.</li>
+                <li>RNNs require preprocessing to focus on temporal relationships effectively.</li>
+                <li>Model choice and preprocessing depend on data characteristics and forecasting goals.</li>
+            </ul>
+        </div>
+
         <div class="controls">
             <h2 style="margin-bottom: 20px; color: #667eea;">Configuration</h2>
 
@@ -534,6 +566,24 @@
             </div>
 
             <div class="chart-container">
+                <div class="chart-title">Model Architectures</div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h3>🔷 DNN Architecture</h3>
+                        <div id="dnnSummary" style="font-family: 'Courier New', monospace; font-size: 0.85em; color: #333; line-height: 1.6;">
+                            <!-- DNN summary will be inserted here -->
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>🔶 RNN Architecture</h3>
+                        <div id="rnnSummary" style="font-family: 'Courier New', monospace; font-size: 0.85em; color: #333; line-height: 1.6;">
+                            <!-- RNN summary will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
                 <div class="chart-title">Training Loss Curves</div>
                 <div id="lossChart"></div>
             </div>
@@ -637,6 +687,42 @@
             return model;
         }
 
+        function generateModelSummary(model, modelType) {
+            let summary = '';
+            let totalParams = 0;
+
+            summary += '<div style="border-bottom: 2px solid #667eea; padding-bottom: 8px; margin-bottom: 10px; font-weight: 600;">Layer (type) → Output Shape → Params</div>';
+
+            model.layers.forEach((layer, idx) => {
+                const layerName = layer.name;
+                const layerType = layer.getClassName();
+                const outputShape = layer.outputShape;
+                const params = layer.countParams();
+                totalParams += params;
+
+                const shapeStr = Array.isArray(outputShape) ?
+                    `[${outputShape.filter(x => x !== null).join(', ')}]` :
+                    outputShape;
+
+                summary += `<div style="padding: 5px 0; border-bottom: 1px solid #e5e7eb;">`;
+                summary += `<strong>${layerType}</strong><br/>`;
+                summary += `Shape: ${shapeStr}<br/>`;
+                summary += `Params: ${params.toLocaleString()}`;
+                summary += `</div>`;
+            });
+
+            summary += `<div style="margin-top: 10px; padding-top: 10px; border-top: 2px solid #667eea; font-weight: 600; color: #667eea;">`;
+            summary += `Total Parameters: ${totalParams.toLocaleString()}`;
+            summary += `</div>`;
+
+            return summary;
+        }
+
+        function displayModelSummaries(modelDNN, modelRNN) {
+            document.getElementById('dnnSummary').innerHTML = generateModelSummary(modelDNN, 'DNN');
+            document.getElementById('rnnSummary').innerHTML = generateModelSummary(modelRNN, 'RNN');
+        }
+
         function calculateMAPE(actual, predicted) {
             let sum = 0;
             for (let i = 0; i < actual.length; i++) {
@@ -731,6 +817,9 @@
                 });
 
                 const timeRNN = ((Date.now() - startRNN) / 1000).toFixed(1);
+
+                // Display model summaries
+                displayModelSummaries(modelDNN, modelRNN);
 
                 // Make predictions
                 const predDNN = modelDNN.predict(XTestDNN).arraySync().map(x => x[0]);
@@ -867,27 +956,24 @@
                 x: testIndices,
                 y: actualTest,
                 name: 'Actual Test Data',
-                mode: 'lines+markers',
-                line: { color: '#1e293b', width: 3 },
-                marker: { size: 6 }
+                mode: 'lines',
+                line: { color: '#1e293b', width: 3 }
             };
 
             const tracePredDNN = {
                 x: testIndices,
                 y: predDNN,
                 name: 'DNN Predictions',
-                mode: 'lines+markers',
-                line: { color: '#3b82f6', width: 2, dash: 'dot' },
-                marker: { size: 6, symbol: 'square' }
+                mode: 'lines',
+                line: { color: '#3b82f6', width: 3 }
             };
 
             const tracePredRNN = {
                 x: testIndices,
                 y: predRNN,
                 name: 'RNN Predictions',
-                mode: 'lines+markers',
-                line: { color: '#f97316', width: 2, dash: 'dot' },
-                marker: { size: 6, symbol: 'diamond' }
+                mode: 'lines',
+                line: { color: '#f97316', width: 3 }
             };
 
             const layout = {
