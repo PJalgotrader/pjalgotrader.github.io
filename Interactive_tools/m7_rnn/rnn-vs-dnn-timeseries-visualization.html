@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RNN vs DNN for Time Series | Dr. Pedram Jahangiry</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header .attribution {
+            font-size: 1.1em;
+            margin: 15px 0;
+            opacity: 0.95;
+        }
+
+        .header .links {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .header .links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .header .links a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-website {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .btn-youtube {
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+        }
+
+        .btn-github {
+            background: linear-gradient(135deg, #333, #000);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .intro {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .intro h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .intro p {
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 0;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #764ba2;
+            transform: scale(1.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .value-display {
+            min-width: 50px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        select:hover, select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .preprocessing-toggle {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #667eea;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .train-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .train-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .train-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .chart-container {
+            margin-bottom: 40px;
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .metric-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .metric-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .metric-value {
+            color: #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .metric-value.better {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .explanation {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .explanation h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .explanation ul {
+            margin-left: 20px;
+            line-height: 1.8;
+            color: #856404;
+        }
+
+        .explanation li {
+            margin-bottom: 8px;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .status-message.info {
+            background: #cfe2ff;
+            color: #084298;
+            border: 1px solid #b6d4fe;
+        }
+
+        .status-message.success {
+            background: #d1e7dd;
+            color: #0f5132;
+            border: 1px solid #badbcc;
+        }
+
+        .status-message.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffecb5;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧠 RNN vs DNN for Time Series Forecasting</h1>
+        <p class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</p>
+        <div class="links">
+            <a href="https://pjalgotrader.github.io" class="btn-website">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Website
+            </a>
+            <a href="https://www.youtube.com/@pedramjahangiry" class="btn-youtube" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+                YouTube
+            </a>
+            <a href="https://github.com/PJalgotrader" class="btn-github" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="intro">
+            <h2>Understanding RNN vs DNN for Time Series</h2>
+            <p>
+                This interactive visualization demonstrates a critical concept in time series forecasting:
+                <strong>Dense Neural Networks (DNNs) can work well on raw time series data by treating lags as independent features,
+                while Recurrent Neural Networks (RNNs) require data preprocessing to effectively capture temporal patterns.</strong>
+            </p>
+            <p>
+                Using the classic airline passenger dataset, you'll see how DNNs achieve good performance on raw data,
+                while RNNs initially struggle but excel after log transformation and differencing (making data stationary).
+            </p>
+            <p>
+                <strong>Key Learning:</strong> Model choice matters, but so does understanding what preprocessing each architecture needs!
+            </p>
+        </div>
+
+        <div class="controls">
+            <h2 style="margin-bottom: 20px; color: #667eea;">Configuration</h2>
+
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label>Data Preprocessing</label>
+                    <div class="preprocessing-toggle">
+                        <span style="font-weight: 600; color: #555;">Raw Data</span>
+                        <div class="toggle-switch" id="preprocessToggle" onclick="togglePreprocessing()">
+                            <div class="toggle-slider"></div>
+                        </div>
+                        <span style="font-weight: 600; color: #667eea;">Log + Differencing</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Number of Lags (Input Features)</label>
+                    <div class="control-row">
+                        <input type="range" id="numLags" min="3" max="24" value="12"
+                               oninput="document.getElementById('numLagsValue').textContent = this.value">
+                        <span class="value-display" id="numLagsValue">12</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Training Epochs</label>
+                    <div class="control-row">
+                        <input type="range" id="epochs" min="50" max="300" step="50" value="100"
+                               oninput="document.getElementById('epochsValue').textContent = this.value">
+                        <span class="value-display" id="epochsValue">100</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>RNN Units</label>
+                    <div class="control-row">
+                        <input type="range" id="rnnUnits" min="8" max="64" step="8" value="16"
+                               oninput="document.getElementById('rnnUnitsValue').textContent = this.value">
+                        <span class="value-display" id="rnnUnitsValue">16</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>DNN Hidden Layer 1</label>
+                    <div class="control-row">
+                        <input type="range" id="dnnLayer1" min="8" max="64" step="8" value="32"
+                               oninput="document.getElementById('dnnLayer1Value').textContent = this.value">
+                        <span class="value-display" id="dnnLayer1Value">32</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>DNN Hidden Layer 2</label>
+                    <div class="control-row">
+                        <input type="range" id="dnnLayer2" min="8" max="64" step="8" value="16"
+                               oninput="document.getElementById('dnnLayer2Value').textContent = this.value">
+                        <span class="value-display" id="dnnLayer2Value">16</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="train-button" id="trainBtn" onclick="trainModels()">
+                🚀 Train Both Models
+            </button>
+
+            <div id="statusMessage"></div>
+        </div>
+
+        <div id="results" style="display: none;">
+            <h2 style="margin-bottom: 20px; color: #667eea;">Results</h2>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>🔷 DNN Performance</h3>
+                    <div class="metric-row">
+                        <span class="metric-label">Test MAPE:</span>
+                        <span class="metric-value" id="dnnMAPE">-</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Test RMSE:</span>
+                        <span class="metric-value" id="dnnRMSE">-</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Training Time:</span>
+                        <span class="metric-value" id="dnnTime">-</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <h3>🔶 RNN Performance</h3>
+                    <div class="metric-row">
+                        <span class="metric-label">Test MAPE:</span>
+                        <span class="metric-value" id="rnnMAPE">-</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Test RMSE:</span>
+                        <span class="metric-value" id="rnnRMSE">-</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Training Time:</span>
+                        <span class="metric-value" id="rnnTime">-</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <h3>🏆 Winner</h3>
+                    <div id="winnerText" style="font-size: 1.2em; text-align: center; padding: 20px 0; color: #667eea; font-weight: 600;">
+                        -
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Training Loss Curves</div>
+                <div id="lossChart"></div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Time Series Predictions Comparison</div>
+                <div id="forecastChart"></div>
+            </div>
+
+            <div class="explanation">
+                <h3>🎓 Key Insights</h3>
+                <ul>
+                    <li><strong>DNNs treat each lag as an independent feature</strong>, so they can learn patterns directly from absolute values (levels). This works well even without preprocessing.</li>
+                    <li><strong>RNNs process sequences temporally</strong>, expecting to learn from changes and patterns over time. Non-stationary data (with trends/seasonality) confuses the sequential learning process.</li>
+                    <li><strong>Preprocessing (log + differencing) makes data stationary</strong> by removing trends and stabilizing variance, which helps RNNs focus on temporal dependencies rather than absolute levels.</li>
+                    <li><strong>After preprocessing, RNNs can match or exceed DNN performance</strong> because they properly capture the sequential nature of time series data.</li>
+                    <li><strong>Trade-off:</strong> DNNs are simpler and work out-of-the-box, while RNNs require more careful data preparation but offer better sequence modeling capabilities.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Airline passenger data (1949-1960)
+        const airlineData = [
+            112, 118, 132, 129, 121, 135, 148, 148, 136, 119, 104, 118,
+            115, 126, 141, 135, 125, 149, 170, 170, 158, 133, 114, 140,
+            145, 150, 178, 163, 172, 178, 199, 199, 184, 162, 146, 166,
+            171, 180, 193, 181, 183, 218, 230, 242, 209, 191, 172, 194,
+            196, 196, 236, 235, 229, 243, 264, 272, 237, 211, 180, 201,
+            204, 188, 235, 227, 234, 264, 302, 293, 259, 229, 203, 229,
+            242, 233, 267, 269, 270, 315, 364, 347, 312, 274, 237, 278,
+            284, 277, 317, 313, 318, 374, 413, 405, 355, 306, 271, 306,
+            315, 301, 356, 348, 355, 422, 465, 467, 404, 347, 305, 336,
+            340, 318, 362, 348, 363, 435, 491, 505, 404, 359, 310, 337,
+            360, 342, 406, 396, 420, 472, 548, 559, 463, 407, 362, 405,
+            417, 391, 419, 461, 472, 535, 622, 606, 508, 461, 390, 432
+        ];
+
+        let usePreprocessing = false;
+        let modelDNN = null;
+        let modelRNN = null;
+        let trainData = {};
+
+        function togglePreprocessing() {
+            const toggle = document.getElementById('preprocessToggle');
+            toggle.classList.toggle('active');
+            usePreprocessing = !usePreprocessing;
+        }
+
+        function createSequences(data, numLags) {
+            const X = [];
+            const Y = [];
+            for (let i = numLags; i < data.length; i++) {
+                X.push(data.slice(i - numLags, i));
+                Y.push(data[i]);
+            }
+            return { X, Y };
+        }
+
+        function preprocessData(data) {
+            // Log transformation
+            const logData = data.map(x => Math.log(x));
+            // Differencing
+            const diffData = [];
+            for (let i = 1; i < logData.length; i++) {
+                diffData.push(logData[i] - logData[i-1]);
+            }
+            return { logData, diffData };
+        }
+
+        function invertPreprocessing(predictions, originalData, startIdx) {
+            // Un-difference and un-log
+            const result = [];
+            for (let i = 0; i < predictions.length; i++) {
+                const prevLog = Math.log(originalData[startIdx + i]);
+                const currentLog = prevLog + predictions[i];
+                result.push(Math.exp(currentLog));
+            }
+            return result;
+        }
+
+        function buildDNNModel(inputShape, layer1Units, layer2Units) {
+            const model = tf.sequential();
+            model.add(tf.layers.dense({ inputShape: [inputShape], units: layer1Units, activation: 'relu' }));
+            model.add(tf.layers.dense({ units: layer2Units, activation: 'relu' }));
+            model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
+            model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
+            return model;
+        }
+
+        function buildRNNModel(inputShape, rnnUnits) {
+            const model = tf.sequential();
+            model.add(tf.layers.simpleRNN({
+                inputShape: [inputShape, 1],
+                units: rnnUnits,
+                returnSequences: false
+            }));
+            model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
+            model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
+            return model;
+        }
+
+        function calculateMAPE(actual, predicted) {
+            let sum = 0;
+            for (let i = 0; i < actual.length; i++) {
+                sum += Math.abs((actual[i] - predicted[i]) / actual[i]);
+            }
+            return (sum / actual.length * 100).toFixed(2);
+        }
+
+        function calculateRMSE(actual, predicted) {
+            let sum = 0;
+            for (let i = 0; i < actual.length; i++) {
+                sum += Math.pow(actual[i] - predicted[i], 2);
+            }
+            return Math.sqrt(sum / actual.length).toFixed(2);
+        }
+
+        async function trainModels() {
+            const trainBtn = document.getElementById('trainBtn');
+            const statusMsg = document.getElementById('statusMessage');
+            const results = document.getElementById('results');
+
+            trainBtn.disabled = true;
+            results.style.display = 'none';
+            statusMsg.innerHTML = '<div class="status-message info">🔄 Training models... This may take a minute.</div>';
+
+            try {
+                // Get parameters
+                const numLags = parseInt(document.getElementById('numLags').value);
+                const epochs = parseInt(document.getElementById('epochs').value);
+                const rnnUnits = parseInt(document.getElementById('rnnUnits').value);
+                const dnnLayer1 = parseInt(document.getElementById('dnnLayer1').value);
+                const dnnLayer2 = parseInt(document.getElementById('dnnLayer2').value);
+
+                // Prepare data
+                let processedData = airlineData;
+                let originalData = [...airlineData];
+
+                if (usePreprocessing) {
+                    const { diffData } = preprocessData(airlineData);
+                    processedData = diffData;
+                }
+
+                const testSize = 12;
+                const trainSize = processedData.length - testSize;
+
+                const { X, Y } = createSequences(processedData, numLags);
+
+                const XTrain = X.slice(0, trainSize - numLags);
+                const YTrain = Y.slice(0, trainSize - numLags);
+                const XTest = X.slice(trainSize - numLags);
+                const YTest = Y.slice(trainSize - numLags);
+
+                // Store for later use
+                trainData = {
+                    XTrain, YTrain, XTest, YTest,
+                    trainSize, testSize, numLags,
+                    originalData, processedData
+                };
+
+                // Train DNN
+                statusMsg.innerHTML = '<div class="status-message info">🔄 Training DNN model...</div>';
+                const startDNN = Date.now();
+
+                const XTrainDNN = tf.tensor2d(XTrain);
+                const YTrainDNN = tf.tensor2d(YTrain, [YTrain.length, 1]);
+                const XTestDNN = tf.tensor2d(XTest);
+
+                modelDNN = buildDNNModel(numLags, dnnLayer1, dnnLayer2);
+                const historyDNN = await modelDNN.fit(XTrainDNN, YTrainDNN, {
+                    epochs: epochs,
+                    batchSize: 16,
+                    validationData: [XTestDNN, tf.tensor2d(YTest, [YTest.length, 1])],
+                    verbose: 0
+                });
+
+                const timeDNN = ((Date.now() - startDNN) / 1000).toFixed(1);
+
+                // Train RNN
+                statusMsg.innerHTML = '<div class="status-message info">🔄 Training RNN model...</div>';
+                const startRNN = Date.now();
+
+                const XTrainRNN = tf.tensor3d(XTrain.map(x => x.map(v => [v])));
+                const YTrainRNN = tf.tensor2d(YTrain, [YTrain.length, 1]);
+                const XTestRNN = tf.tensor3d(XTest.map(x => x.map(v => [v])));
+
+                modelRNN = buildRNNModel(numLags, rnnUnits);
+                const historyRNN = await modelRNN.fit(XTrainRNN, YTrainRNN, {
+                    epochs: epochs,
+                    batchSize: 16,
+                    validationData: [XTestRNN, tf.tensor2d(YTest, [YTest.length, 1])],
+                    verbose: 0
+                });
+
+                const timeRNN = ((Date.now() - startRNN) / 1000).toFixed(1);
+
+                // Make predictions
+                const predDNN = modelDNN.predict(XTestDNN).arraySync().map(x => x[0]);
+                const predRNN = modelRNN.predict(XTestRNN).arraySync().map(x => x[0]);
+
+                // Convert back to original scale if needed
+                let actualTest = YTest;
+                let finalPredDNN = predDNN;
+                let finalPredRNN = predRNN;
+
+                if (usePreprocessing) {
+                    const testStartIdx = trainSize;
+                    actualTest = originalData.slice(testStartIdx, testStartIdx + testSize);
+                    finalPredDNN = invertPreprocessing(predDNN, originalData, testStartIdx - 1);
+                    finalPredRNN = invertPreprocessing(predRNN, originalData, testStartIdx - 1);
+                } else {
+                    actualTest = originalData.slice(trainSize, trainSize + testSize);
+                }
+
+                // Calculate metrics
+                const mapeDNN = calculateMAPE(actualTest, finalPredDNN);
+                const mapeRNN = calculateMAPE(actualTest, finalPredRNN);
+                const rmseDNN = calculateRMSE(actualTest, finalPredDNN);
+                const rmseRNN = calculateRMSE(actualTest, finalPredRNN);
+
+                // Display metrics
+                document.getElementById('dnnMAPE').textContent = mapeDNN + '%';
+                document.getElementById('dnnRMSE').textContent = rmseDNN;
+                document.getElementById('dnnTime').textContent = timeDNN + 's';
+                document.getElementById('rnnMAPE').textContent = mapeRNN + '%';
+                document.getElementById('rnnRMSE').textContent = rmseRNN;
+                document.getElementById('rnnTime').textContent = timeRNN + 's';
+
+                // Determine winner
+                const winner = parseFloat(mapeDNN) < parseFloat(mapeRNN) ? 'DNN' : 'RNN';
+                const winnerEmoji = winner === 'DNN' ? '🔷' : '🔶';
+                document.getElementById('winnerText').innerHTML = `${winnerEmoji} ${winner} wins with ${winner === 'DNN' ? mapeDNN : mapeRNN}% MAPE`;
+
+                // Highlight better values
+                if (parseFloat(mapeDNN) < parseFloat(mapeRNN)) {
+                    document.getElementById('dnnMAPE').classList.add('better');
+                    document.getElementById('rnnMAPE').classList.remove('better');
+                } else {
+                    document.getElementById('rnnMAPE').classList.add('better');
+                    document.getElementById('dnnMAPE').classList.remove('better');
+                }
+
+                // Plot loss curves
+                plotLossCurves(historyDNN.history, historyRNN.history);
+
+                // Plot forecasts
+                plotForecasts(originalData, trainSize, actualTest, finalPredDNN, finalPredRNN);
+
+                // Show results
+                results.style.display = 'block';
+                statusMsg.innerHTML = '<div class="status-message success">✅ Training complete! Check out the results below.</div>';
+
+                // Cleanup
+                XTrainDNN.dispose();
+                YTrainDNN.dispose();
+                XTestDNN.dispose();
+                XTrainRNN.dispose();
+                YTrainRNN.dispose();
+                XTestRNN.dispose();
+
+            } catch (error) {
+                console.error('Training error:', error);
+                statusMsg.innerHTML = `<div class="status-message warning">⚠️ Error: ${error.message}</div>`;
+            } finally {
+                trainBtn.disabled = false;
+            }
+        }
+
+        function plotLossCurves(historyDNN, historyRNN) {
+            const epochsDNN = historyDNN.loss.map((_, i) => i + 1);
+            const epochsRNN = historyRNN.loss.map((_, i) => i + 1);
+
+            const traceDNNTrain = {
+                x: epochsDNN,
+                y: historyDNN.loss,
+                name: 'DNN Training Loss',
+                mode: 'lines',
+                line: { color: '#3b82f6', width: 2 }
+            };
+
+            const traceDNNVal = {
+                x: epochsDNN,
+                y: historyDNN.val_loss,
+                name: 'DNN Validation Loss',
+                mode: 'lines',
+                line: { color: '#3b82f6', width: 2, dash: 'dash' }
+            };
+
+            const traceRNNTrain = {
+                x: epochsRNN,
+                y: historyRNN.loss,
+                name: 'RNN Training Loss',
+                mode: 'lines',
+                line: { color: '#f97316', width: 2 }
+            };
+
+            const traceRNNVal = {
+                x: epochsRNN,
+                y: historyRNN.val_loss,
+                name: 'RNN Validation Loss',
+                mode: 'lines',
+                line: { color: '#f97316', width: 2, dash: 'dash' }
+            };
+
+            const layout = {
+                xaxis: { title: 'Epoch' },
+                yaxis: { title: 'Loss (MSE)', type: 'log' },
+                hovermode: 'x unified',
+                showlegend: true,
+                legend: { x: 0.7, y: 1 }
+            };
+
+            Plotly.newPlot('lossChart', [traceDNNTrain, traceDNNVal, traceRNNTrain, traceRNNVal], layout, { responsive: true });
+        }
+
+        function plotForecasts(originalData, trainSize, actualTest, predDNN, predRNN) {
+            const allIndices = Array.from({ length: originalData.length }, (_, i) => i + 1);
+            const testIndices = Array.from({ length: actualTest.length }, (_, i) => trainSize + i + 1);
+
+            const traceActualAll = {
+                x: allIndices.slice(0, trainSize),
+                y: originalData.slice(0, trainSize),
+                name: 'Training Data',
+                mode: 'lines',
+                line: { color: '#94a3b8', width: 2 }
+            };
+
+            const traceActualTest = {
+                x: testIndices,
+                y: actualTest,
+                name: 'Actual Test Data',
+                mode: 'lines+markers',
+                line: { color: '#1e293b', width: 3 },
+                marker: { size: 6 }
+            };
+
+            const tracePredDNN = {
+                x: testIndices,
+                y: predDNN,
+                name: 'DNN Predictions',
+                mode: 'lines+markers',
+                line: { color: '#3b82f6', width: 2, dash: 'dot' },
+                marker: { size: 6, symbol: 'square' }
+            };
+
+            const tracePredRNN = {
+                x: testIndices,
+                y: predRNN,
+                name: 'RNN Predictions',
+                mode: 'lines+markers',
+                line: { color: '#f97316', width: 2, dash: 'dot' },
+                marker: { size: 6, symbol: 'diamond' }
+            };
+
+            const layout = {
+                xaxis: { title: 'Time (Months)' },
+                yaxis: { title: 'Number of Passengers' },
+                hovermode: 'x unified',
+                showlegend: true,
+                legend: { x: 0.01, y: 0.99 }
+            };
+
+            Plotly.newPlot('forecastChart', [traceActualAll, traceActualTest, tracePredDNN, tracePredRNN], layout, { responsive: true });
+        }
+    </script>
+</body>
+</html>
