@@ -337,7 +337,7 @@
 
             <div class="control-group">
                 <label for="m">m (Season Period)</label>
-                <input type="range" id="m" min="4" max="12" value="12" step="1">
+                <input type="range" id="m" min="0" max="12" value="12" step="1">
                 <div class="value-display" id="m-value">12 (Monthly)</div>
             </div>
 
@@ -459,7 +459,7 @@
                 input.addEventListener('input', (e) => {
                     let value = e.target.value;
                     if (id === 'm') {
-                        const periods = {4: 'Quarterly', 12: 'Monthly'};
+                        const periods = {0: 'No Seasonality', 4: 'Quarterly', 12: 'Monthly'};
                         display.textContent = `${value} (${periods[value] || 'Custom'})`;
                     } else {
                         display.textContent = value;
@@ -475,7 +475,14 @@
             console.log(`Simulating SARIMA(${p},${d},${q})(${P},${D},${Q})_${m}`);
 
             const lastValue = data[data.length - 1];
-            const recentData = data.slice(-Math.max(m * 3, 36));
+            const dataMean = data.reduce((a, b) => a + b, 0) / data.length;
+
+            // Special case: SARIMA(0,0,0)(0,0,0) = white noise, flat forecast at the mean
+            if (p === 0 && d === 0 && q === 0 && P === 0 && D === 0 && Q === 0) {
+                return Array(horizon).fill(dataMean);
+            }
+
+            const recentData = data.slice(-Math.max(m > 0 ? m * 3 : 36, 36));
 
             // Calculate base trend based on d
             let trendRate = 0;
@@ -492,23 +499,28 @@
                 trendRate = (data[data.length - 1] - data[data.length - window]) / (window - 1) * 0.7;
             }
 
-            // Extract seasonal pattern from last complete cycle
-            const lastSeasonalCycle = data.slice(-m);
-            const overallMean = data.slice(-m * 3).reduce((a, b) => a + b, 0) / (m * 3);
-
-            // Calculate seasonal indices (deviation from mean)
-            const seasonalIndices = lastSeasonalCycle.map(val => val - overallMean);
-
-            // Calculate seasonal growth rate if D > 0
+            // Extract seasonal pattern (only if m > 0)
+            let seasonalIndices = [];
+            let overallMean = 0;
             const seasonalGrowthRates = [];
-            if (D > 0) {
-                for (let i = 0; i < m; i++) {
-                    if (data.length >= 2 * m + i) {
-                        const currentSeason = data[data.length - m + i];
-                        const previousSeason = data[data.length - 2 * m + i];
-                        seasonalGrowthRates.push((currentSeason - previousSeason) / 12);
-                    } else {
-                        seasonalGrowthRates.push(0);
+
+            if (m > 0) {
+                const lastSeasonalCycle = data.slice(-m);
+                overallMean = data.slice(-m * 3).reduce((a, b) => a + b, 0) / (m * 3);
+
+                // Calculate seasonal indices (deviation from mean)
+                seasonalIndices = lastSeasonalCycle.map(val => val - overallMean);
+
+                // Calculate seasonal growth rate if D > 0
+                if (D > 0) {
+                    for (let i = 0; i < m; i++) {
+                        if (data.length >= 2 * m + i) {
+                            const currentSeason = data[data.length - m + i];
+                            const previousSeason = data[data.length - 2 * m + i];
+                            seasonalGrowthRates.push((currentSeason - previousSeason) / 12);
+                        } else {
+                            seasonalGrowthRates.push(0);
+                        }
                     }
                 }
             }
@@ -524,34 +536,36 @@
                     forecast += trendRate * h;
                 }
 
-                // 2. Add seasonal component
-                const seasonIdx = (data.length - 1 + h) % m;
-                let seasonalComponent = 0;
+                // 2. Add seasonal component (only if m > 0)
+                if (m > 0) {
+                    const seasonIdx = (data.length - 1 + h) % m;
+                    let seasonalComponent = 0;
 
-                if (D === 0 && P === 0 && Q === 0) {
-                    // No seasonal terms: seasonal pattern decays
-                    seasonalComponent = seasonalIndices[seasonIdx] * Math.exp(-h / (m * 2));
-                } else {
-                    // With seasonal terms: pattern persists
-                    seasonalComponent = seasonalIndices[seasonIdx];
+                    if (D === 0 && P === 0 && Q === 0) {
+                        // No seasonal terms: seasonal pattern decays
+                        seasonalComponent = seasonalIndices[seasonIdx] * Math.exp(-h / (m * 2));
+                    } else {
+                        // With seasonal terms: pattern persists
+                        seasonalComponent = seasonalIndices[seasonIdx];
 
-                    // D adds seasonal growth
-                    if (D > 0) {
-                        seasonalComponent += seasonalGrowthRates[seasonIdx] * h * 0.8;
+                        // D adds seasonal growth
+                        if (D > 0) {
+                            seasonalComponent += seasonalGrowthRates[seasonIdx] * h * 0.8;
+                        }
+
+                        // P amplifies seasonal pattern
+                        if (P > 0) {
+                            seasonalComponent *= (1 + P * 0.15);
+                        }
+
+                        // Q smooths seasonal effects
+                        if (Q > 0) {
+                            seasonalComponent *= (1 - Q * 0.08);
+                        }
                     }
 
-                    // P amplifies seasonal pattern
-                    if (P > 0) {
-                        seasonalComponent *= (1 + P * 0.15);
-                    }
-
-                    // Q smooths seasonal effects
-                    if (Q > 0) {
-                        seasonalComponent *= (1 - Q * 0.08);
-                    }
+                    forecast += seasonalComponent;
                 }
-
-                forecast += seasonalComponent;
 
                 // 3. Add AR effect (p)
                 if (p > 0) {
@@ -588,8 +602,9 @@
             const horizon = parseInt(document.getElementById('forecast').value);
 
             // Update model info
-            document.getElementById('model-info').textContent =
-                `Current Model: SARIMA(${p},${d},${q})(${P},${D},${Q})₁₂`;
+            const mSubscript = m > 0 ? `₍${m}₎` : '';
+            document.getElementById('model-info').innerHTML =
+                `Current Model: SARIMA(${p},${d},${q})(${P},${D},${Q})<sub>${m}</sub>`;
 
             // Generate forecasts
             const forecasts = simulateSARIMA(airlineData, p, d, q, P, D, Q, m, horizon);
@@ -624,7 +639,7 @@
 
             const layout = {
                 title: {
-                    text: `Airline Passengers: SARIMA(${p},${d},${q})(${P},${D},${Q})₁₂ Forecast`,
+                    text: `Airline Passengers: SARIMA(${p},${d},${q})(${P},${D},${Q})<sub>${m}</sub> Forecast`,
                     font: {size: 20, color: '#667eea'}
                 },
                 xaxis: {
