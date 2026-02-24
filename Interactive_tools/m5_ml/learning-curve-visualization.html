@@ -160,11 +160,6 @@
             <input type="range" id="degree-slider" min="0" max="4" value="2" />
             <span class="val" id="degree-val">2</span>
         </div>
-        <div class="control-group">
-            <label>Noise Level:</label>
-            <input type="range" id="noise-slider" min="1" max="5" value="3" step="1" />
-            <span class="val" id="noise-val">3</span>
-        </div>
         <button class="btn btn-run" id="btn-compute">Generate Learning Curves</button>
     </div>
 
@@ -251,7 +246,7 @@ function randn() {
 // Generate a large pool of data
 const POOL_SIZE = 200;
 let dataPool = [];
-let noiseSd = 3.0;
+const noiseSd = 2.0;
 
 function generatePool() {
     dataPool = [];
@@ -327,9 +322,9 @@ function mse(yTrue, yPred) {
 // LEARNING CURVE COMPUTATION
 // ============================================================
 function computeLearningCurve(deg) {
-    // Use first 180 as available training pool, last 20 as fixed test set
-    const trainPool = dataPool.slice(0, 180);
-    const testSet = dataPool.slice(180);
+    // Use first 140 as available training pool, last 60 as fixed test set (30%)
+    const trainPool = dataPool.slice(0, 140);
+    const testSet = dataPool.slice(140);
     const testX = testSet.map(d => d.x);
     const testXN = normalizeX(testX);
     const testY = testSet.map(d => d.y);
@@ -337,12 +332,12 @@ function computeLearningCurve(deg) {
     // Training sizes to evaluate
     const sizes = [];
     const minSize = Math.max(deg + 2, 20);
-    for (let s = minSize; s <= 180; s += 3) sizes.push(s);
-    if (sizes[sizes.length - 1] !== 180) sizes.push(180);
+    for (let s = minSize; s <= 140; s += 3) sizes.push(s);
+    if (sizes[sizes.length - 1] !== 140) sizes.push(140);
 
     const trainErrors = [];
     const valErrors = [];
-    const MC = 20; // Monte Carlo repetitions per size
+    const MC = 50; // Monte Carlo repetitions per size
 
     for (const size of sizes) {
         let trainErrSum = 0, valErrSum = 0;
@@ -378,19 +373,12 @@ function computeLearningCurve(deg) {
 // ============================================================
 const degreeSlider = document.getElementById('degree-slider');
 const degreeVal = document.getElementById('degree-val');
-const noiseSlider = document.getElementById('noise-slider');
-const noiseVal = document.getElementById('noise-val');
-
 let currentDegree = 2;
 
 degreeSlider.addEventListener('input', () => {
     currentDegree = parseInt(degreeSlider.value);
     degreeVal.textContent = currentDegree;
     updateComplexityBar();
-});
-
-noiseSlider.addEventListener('input', () => {
-    noiseVal.textContent = noiseSlider.value;
 });
 
 function updateComplexityBar() {
@@ -442,13 +430,16 @@ function updateDiagnosis(trainErrors, valErrors) {
                 <div class="diag-action">This is the sweet spot — good balance of bias and variance.</div>
             </div>`;
     } else {
+        const absGap = Math.abs(gap);
+        const gapDesc = gap > 0
+            ? `validation error (${finalVal.toFixed(1)}) is higher than training error (${finalTrain.toFixed(1)})`
+            : `training error (${finalTrain.toFixed(1)}) and validation error (${finalVal.toFixed(1)}) are close, but the model uses unnecessary complexity`;
         el.style.background = 'linear-gradient(135deg, #fee2e2, #fecaca)';
         el.innerHTML = `
             <span class="diag-tag" style="background:#dc2626;">High Variance</span>
             <div class="diag-text">
-                <strong>Large gap between training and validation</strong> — training error is low
-                (${finalTrain.toFixed(1)}) but validation error is noticeably higher (${finalVal.toFixed(1)}).
-                The model memorizes training data rather than learning the true pattern.
+                <strong>Overfitting risk</strong> — ${gapDesc}.
+                Extra polynomial terms fit noise rather than the true pattern.
                 <div class="diag-action">Remedy: Collect more data, reduce complexity, or add regularization.</div>
             </div>`;
     }
@@ -516,7 +507,7 @@ function renderLearningCurve(sizes, trainErrors, valErrors) {
 
     Plotly.react('chart-lc', traces, {
         margin: {t: 10, r: 30, b: 50, l: 60},
-        xaxis: {title: 'Training Set Size', gridcolor: '#f1f5f9', range: [0, 190]},
+        xaxis: {title: 'Training Set Size', gridcolor: '#f1f5f9', range: [0, 150]},
         yaxis: {title: 'Mean Squared Error', range: [0, yMax], gridcolor: '#f1f5f9'},
         legend: {x: 0.5, y: 0.99, bgcolor: 'rgba(255,255,255,0.9)', font: {size: 10}},
         plot_bgcolor: 'white', paper_bgcolor: 'white',
@@ -527,7 +518,7 @@ function renderLearningCurve(sizes, trainErrors, valErrors) {
 
 function renderFitChart() {
     // Fit on full training data and show
-    const trainData = dataPool.slice(0, 180);
+    const trainData = dataPool.slice(0, 140);
     const sx = trainData.map(d => d.x);
     const sxn = normalizeX(sx);
     const sy = trainData.map(d => d.y);
@@ -543,7 +534,7 @@ function renderFitChart() {
     const traces = [
         {
             x: sx, y: sy,
-            mode: 'markers', name: 'Training Data (180)',
+            mode: 'markers', name: 'Training Data (140)',
             marker: {size: 5, color: '#94a3b8', opacity: 0.5}
         },
         {
@@ -559,10 +550,10 @@ function renderFitChart() {
     ];
 
     // Also show test data
-    const testData = dataPool.slice(180);
+    const testData = dataPool.slice(140);
     traces.push({
         x: testData.map(d => d.x), y: testData.map(d => d.y),
-        mode: 'markers', name: 'Test Data (20)',
+        mode: 'markers', name: 'Test Data (60)',
         marker: {size: 7, color: '#059669', symbol: 'diamond', opacity: 0.7,
                  line: {color: 'white', width: 1}}
     });
@@ -586,8 +577,6 @@ async function computeAndRender() {
     btn.disabled = true;
     btn.textContent = 'Computing...';
 
-    // Update noise
-    noiseSd = parseFloat(noiseSlider.value);
     generatePool();
 
     // Small delay to let UI update
@@ -616,7 +605,6 @@ async function computeAndRender() {
 // INIT
 // ============================================================
 updateComplexityBar();
-noiseSd = 3.0;
 generatePool();
 
 // Auto-run on load
