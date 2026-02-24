@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Curves Interactive Tool | Dr. Pedram Jahangiry</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .header { text-align: center; color: white; padding: 30px 20px 20px; margin-bottom: 25px; }
+        .header h1 { font-size: 2.4em; margin-bottom: 8px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .header .subtitle { font-size: 1.15em; opacity: 0.9; margin-bottom: 5px; }
+        .header .attribution { font-size: 1.05em; margin: 12px 0; opacity: 0.95; }
+        .header .links { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+        .header .links a {
+            display: inline-flex; align-items: center; gap: 8px; color: white;
+            text-decoration: none; padding: 9px 18px; border-radius: 8px;
+            transition: all 0.3s ease; font-size: 0.88em; font-weight: 600;
+        }
+        .header .links a:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .btn-website { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .btn-youtube { background: linear-gradient(135deg, #ff0000, #cc0000); }
+        .btn-github { background: linear-gradient(135deg, #333, #000); }
+
+        .container {
+            max-width: 1300px; margin: 0 auto; background: white;
+            border-radius: 20px; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .intro {
+            border-radius: 12px; padding: 20px 24px; margin-bottom: 20px;
+            border-left: 5px solid #667eea; background: linear-gradient(135deg, #f0f4ff, #e8ecff);
+        }
+        .intro h3 { color: #4338ca; margin-bottom: 8px; font-size: 1.1em; }
+        .intro p { color: #475569; line-height: 1.65; font-size: 0.92em; }
+
+        .controls {
+            display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+            margin-bottom: 18px; padding: 18px 20px; background: #f8fafc; border-radius: 12px;
+        }
+        .control-group { display: flex; align-items: center; gap: 8px; }
+        .control-group label { font-weight: 600; color: #334155; font-size: 0.9em; white-space: nowrap; }
+        .control-group input[type="range"] { width: 130px; cursor: pointer; }
+        .val { font-weight: 700; color: #667eea; min-width: 28px; text-align: center; font-size: 1em; }
+        .btn {
+            padding: 10px 22px; border: none; border-radius: 8px; font-size: 0.9em;
+            font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-family: inherit;
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-run { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+
+        /* Diagnosis card */
+        .diagnosis {
+            padding: 16px 22px; border-radius: 12px; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 14px; transition: all 0.4s ease;
+        }
+        .diagnosis .diag-tag {
+            padding: 6px 16px; border-radius: 6px; font-weight: 700;
+            font-size: 0.85em; color: white; white-space: nowrap;
+        }
+        .diagnosis .diag-text { color: #334155; font-size: 0.9em; line-height: 1.6; }
+        .diagnosis .diag-text strong { color: #1e293b; }
+        .diagnosis .diag-action {
+            margin-top: 6px; font-size: 0.85em; color: #475569;
+            padding: 6px 12px; background: rgba(255,255,255,0.6); border-radius: 6px;
+            display: inline-block;
+        }
+
+        /* Charts */
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .chart-box { border: 2px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+        .chart-box .chart-title {
+            padding: 9px 16px; font-weight: 700; font-size: 0.88em; color: #334155;
+            background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+        }
+
+        /* Complexity indicator */
+        .complexity-indicator {
+            display: flex; justify-content: center; gap: 0; margin-bottom: 18px;
+        }
+        .cx-step {
+            flex: 1; padding: 10px 8px; text-align: center; font-size: 0.78em;
+            font-weight: 600; transition: all 0.3s ease; cursor: default;
+            border: 2px solid #e2e8f0; position: relative;
+        }
+        .cx-step:first-child { border-radius: 8px 0 0 8px; }
+        .cx-step:last-child { border-radius: 0 8px 8px 0; }
+        .cx-step .cx-label { color: #64748b; }
+        .cx-step .cx-desc { color: #94a3b8; font-size: 0.9em; margin-top: 2px; }
+        .cx-step.active { z-index: 1; transform: scaleY(1.05); }
+
+        /* Key insight boxes */
+        .insights-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+        .insight-box {
+            padding: 14px 18px; border-radius: 10px; border: 2px solid #e2e8f0;
+        }
+        .insight-box h4 { font-size: 0.88em; margin-bottom: 6px; }
+        .insight-box p { font-size: 0.82em; color: #475569; line-height: 1.5; }
+
+        @media (max-width: 900px) {
+            .header h1 { font-size: 1.5em; }
+            .container { padding: 18px; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .controls { flex-direction: column; align-items: stretch; gap: 10px; }
+            .insights-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>The Learning Curve</h1>
+    <div class="subtitle">Module 5 — Machine Learning for Time Series Forecasting</div>
+    <div class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</div>
+    <div class="links">
+        <a href="https://pjalgotrader.github.io" class="btn-website">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            Website
+        </a>
+        <a href="https://www.youtube.com/@pedramjahangiry" class="btn-youtube">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.8zM9.6 15.6V8.4L16 12l-6.4 3.6z"/></svg>
+            YouTube
+        </a>
+        <a href="https://github.com/pjalgotrader" class="btn-github">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12c0 5.3 3.4 9.8 8.2 11.4.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 24 12C24 5.4 18.6 0 12 0z"/></svg>
+            GitHub
+        </a>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="intro">
+        <h3>Do We Need to Collect More Data?</h3>
+        <p>
+            A <strong>learning curve</strong> plots model performance (error) against <strong>training set size</strong>.
+            As we add more training data, the <span style="color:#2563eb;font-weight:600;">training error</span>
+            typically <em>increases</em> (harder to fit more points perfectly) while the
+            <span style="color:#059669;font-weight:600;">validation error</span> typically <em>decreases</em>
+            (more data = better generalization).
+        </p>
+        <p style="margin-top:8px;">
+            The <strong>gap</strong> between the two curves tells you everything:
+            a <strong>small gap at high error</strong> = high bias (underfitting),
+            a <strong>large gap</strong> = high variance (overfitting),
+            and <strong>both curves converging at low error</strong> = just right.
+        </p>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <div class="control-group">
+            <label>Model Complexity (Polynomial Degree):</label>
+            <input type="range" id="degree-slider" min="0" max="4" value="2" />
+            <span class="val" id="degree-val">2</span>
+        </div>
+        <div class="control-group">
+            <label>Noise Level:</label>
+            <input type="range" id="noise-slider" min="1" max="5" value="3" step="1" />
+            <span class="val" id="noise-val">3</span>
+        </div>
+        <button class="btn btn-run" id="btn-compute">Generate Learning Curves</button>
+    </div>
+
+    <!-- Complexity bar -->
+    <div class="complexity-indicator" id="cx-indicator">
+        <div class="cx-step" data-deg="0">
+            <div class="cx-label">Degree 0</div>
+            <div class="cx-desc">Constant</div>
+        </div>
+        <div class="cx-step" data-deg="1">
+            <div class="cx-label">Degree 1</div>
+            <div class="cx-desc">Linear</div>
+        </div>
+        <div class="cx-step active" data-deg="2">
+            <div class="cx-label">Degree 2</div>
+            <div class="cx-desc">Quadratic</div>
+        </div>
+        <div class="cx-step" data-deg="3">
+            <div class="cx-label">Degree 3</div>
+            <div class="cx-desc">Cubic</div>
+        </div>
+        <div class="cx-step" data-deg="4">
+            <div class="cx-label">Degree 4</div>
+            <div class="cx-desc">Quartic</div>
+        </div>
+    </div>
+
+    <!-- Diagnosis -->
+    <div class="diagnosis" id="diagnosis"></div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+        <div class="chart-box">
+            <div class="chart-title">Learning Curve — Error vs Training Set Size</div>
+            <div id="chart-lc" style="height:440px;"></div>
+        </div>
+        <div class="chart-box">
+            <div class="chart-title">Current Model Fit (Full Training Data)</div>
+            <div id="chart-fit" style="height:440px;"></div>
+        </div>
+    </div>
+
+    <!-- Key insights -->
+    <div class="insights-row">
+        <div class="insight-box" style="border-color:#2563eb;">
+            <h4 style="color:#2563eb;">High Bias (Underfitting)</h4>
+            <p>
+                Both curves converge to a <strong>high error</strong>.
+                The gap between them is <strong>small</strong>.
+                Adding more data <strong>won't help</strong> — the model is too simple.
+                <strong>Fix:</strong> increase model complexity, add features.
+            </p>
+        </div>
+        <div class="insight-box" style="border-color:#dc2626;">
+            <h4 style="color:#dc2626;">High Variance (Overfitting)</h4>
+            <p>
+                Training error is <strong>low</strong> but validation error is <strong>high</strong>.
+                The gap between them is <strong>large</strong>.
+                Adding more data <strong>can help</strong> — it gives the model less room to memorize.
+                <strong>Fix:</strong> more data, reduce complexity, regularize.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ============================================================
+// TRUE FUNCTION & DATA GENERATION
+// ============================================================
+const X_MIN = -3, X_MAX = 3;
+
+function trueF(x) {
+    return 0.8 * x * x - 0.5 * x + 2;
+}
+
+function randn() {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
+// Generate a large pool of data
+const POOL_SIZE = 200;
+let dataPool = [];
+let noiseSd = 3.0;
+
+function generatePool() {
+    dataPool = [];
+    for (let i = 0; i < POOL_SIZE; i++) {
+        const x = X_MIN + (X_MAX - X_MIN) * Math.random();
+        const y = trueF(x) + noiseSd * randn();
+        dataPool.push({x, y});
+    }
+    // Sort by x for nice visualization
+    // Shuffle before train/test split so test isn't concentrated in one region
+    dataPool.sort(() => Math.random() - 0.5);
+}
+
+// ============================================================
+// POLYNOMIAL FITTING (normalized x)
+// ============================================================
+function normalizeX(xArr) {
+    return xArr.map(x => (x - X_MIN) / (X_MAX - X_MIN));
+}
+
+function fitPoly(xNorm, yArr, deg) {
+    const n = xNorm.length;
+    const p = deg + 1;
+    const XtX = Array.from({length: p}, () => new Float64Array(p));
+    const XtY = new Float64Array(p);
+    for (let i = 0; i < n; i++) {
+        const row = new Float64Array(p);
+        row[0] = 1;
+        for (let d = 1; d < p; d++) row[d] = row[d-1] * xNorm[i];
+        for (let j = 0; j < p; j++) {
+            XtY[j] += row[j] * yArr[i];
+            for (let k = j; k < p; k++) XtX[j][k] += row[j] * row[k];
+        }
+    }
+    for (let j = 0; j < p; j++)
+        for (let k = 0; k < j; k++) XtX[j][k] = XtX[k][j];
+    for (let j = 0; j < p; j++) XtX[j][j] += 1e-10;
+    const A = XtX.map(r => Array.from(r));
+    const b = Array.from(XtY);
+    for (let col = 0; col < p; col++) {
+        let maxV = Math.abs(A[col][col]), maxR = col;
+        for (let r = col+1; r < p; r++) if (Math.abs(A[r][col]) > maxV) { maxV = Math.abs(A[r][col]); maxR = r; }
+        [A[col], A[maxR]] = [A[maxR], A[col]];
+        [b[col], b[maxR]] = [b[maxR], b[col]];
+        for (let r = col+1; r < p; r++) {
+            const f = A[r][col] / A[col][col];
+            for (let k = col; k < p; k++) A[r][k] -= f * A[col][k];
+            b[r] -= f * b[col];
+        }
+    }
+    const coeffs = new Float64Array(p);
+    for (let i = p-1; i >= 0; i--) {
+        let s = b[i];
+        for (let j = i+1; j < p; j++) s -= A[i][j] * coeffs[j];
+        coeffs[i] = s / A[i][i];
+    }
+    return Array.from(coeffs);
+}
+
+function evalPoly(coeffs, xNorm) {
+    let y = 0, xp = 1;
+    for (let d = 0; d < coeffs.length; d++) { y += coeffs[d] * xp; xp *= xNorm; }
+    return y;
+}
+
+function mse(yTrue, yPred) {
+    let s = 0;
+    for (let i = 0; i < yTrue.length; i++) { const e = yTrue[i] - yPred[i]; s += e * e; }
+    return s / yTrue.length;
+}
+
+// ============================================================
+// LEARNING CURVE COMPUTATION
+// ============================================================
+function computeLearningCurve(deg) {
+    // Use first 180 as available training pool, last 20 as fixed test set
+    const trainPool = dataPool.slice(0, 180);
+    const testSet = dataPool.slice(180);
+    const testX = testSet.map(d => d.x);
+    const testXN = normalizeX(testX);
+    const testY = testSet.map(d => d.y);
+
+    // Training sizes to evaluate
+    const sizes = [];
+    const minSize = Math.max(deg + 2, 20);
+    for (let s = minSize; s <= 180; s += 3) sizes.push(s);
+    if (sizes[sizes.length - 1] !== 180) sizes.push(180);
+
+    const trainErrors = [];
+    const valErrors = [];
+    const MC = 20; // Monte Carlo repetitions per size
+
+    for (const size of sizes) {
+        let trainErrSum = 0, valErrSum = 0;
+
+        for (let rep = 0; rep < MC; rep++) {
+            // Random subset of trainPool
+            const shuffled = [...trainPool].sort(() => Math.random() - 0.5);
+            const subset = shuffled.slice(0, size);
+            const sx = subset.map(d => d.x);
+            const sxn = normalizeX(sx);
+            const sy = subset.map(d => d.y);
+
+            const coeffs = fitPoly(sxn, sy, deg);
+
+            // Training error
+            const trainPred = sxn.map(xn => evalPoly(coeffs, xn));
+            trainErrSum += mse(sy, trainPred);
+
+            // Validation error (on fixed test set)
+            const valPred = testXN.map(xn => evalPoly(coeffs, xn));
+            valErrSum += mse(testY, valPred);
+        }
+
+        trainErrors.push(trainErrSum / MC);
+        valErrors.push(valErrSum / MC);
+    }
+
+    return {sizes, trainErrors, valErrors};
+}
+
+// ============================================================
+// CONTROLS
+// ============================================================
+const degreeSlider = document.getElementById('degree-slider');
+const degreeVal = document.getElementById('degree-val');
+const noiseSlider = document.getElementById('noise-slider');
+const noiseVal = document.getElementById('noise-val');
+
+let currentDegree = 2;
+
+degreeSlider.addEventListener('input', () => {
+    currentDegree = parseInt(degreeSlider.value);
+    degreeVal.textContent = currentDegree;
+    updateComplexityBar();
+});
+
+noiseSlider.addEventListener('input', () => {
+    noiseVal.textContent = noiseSlider.value;
+});
+
+function updateComplexityBar() {
+    document.querySelectorAll('.cx-step').forEach(el => {
+        const d = parseInt(el.dataset.deg);
+        el.classList.toggle('active', d === currentDegree);
+        if (d < currentDegree) {
+            el.style.background = '#dbeafe'; el.style.borderColor = '#93c5fd';
+        } else if (d === currentDegree) {
+            if (d <= 1) { el.style.background = '#bfdbfe'; el.style.borderColor = '#2563eb'; }
+            else if (d === 2) { el.style.background = '#bbf7d0'; el.style.borderColor = '#059669'; }
+            else { el.style.background = '#fecaca'; el.style.borderColor = '#dc2626'; }
+        } else {
+            el.style.background = '#f8fafc'; el.style.borderColor = '#e2e8f0';
+        }
+    });
+}
+
+// ============================================================
+// DIAGNOSIS
+// ============================================================
+function updateDiagnosis(trainErrors, valErrors) {
+    const el = document.getElementById('diagnosis');
+    const finalTrain = trainErrors[trainErrors.length - 1];
+    const finalVal = valErrors[valErrors.length - 1];
+    const gap = finalVal - finalTrain;
+    const benchmark = noiseSd * noiseSd; // irreducible error
+
+    if (currentDegree <= 1) {
+        el.style.background = 'linear-gradient(135deg, #dbeafe, #bfdbfe)';
+        el.innerHTML = `
+            <span class="diag-tag" style="background:#2563eb;">High Bias</span>
+            <div class="diag-text">
+                <strong>Both curves converge to high error</strong> — the gap is small (${gap.toFixed(1)}) but
+                both training (${finalTrain.toFixed(1)}) and validation (${finalVal.toFixed(1)}) error are well above
+                the irreducible noise (${benchmark.toFixed(1)}).
+                The model is <strong>too simple</strong> to capture the true pattern.
+                <div class="diag-action">Remedy: Increase model complexity or add features. More data won't help much.</div>
+            </div>`;
+    } else if (currentDegree === 2) {
+        el.style.background = 'linear-gradient(135deg, #dcfce7, #bbf7d0)';
+        el.innerHTML = `
+            <span class="diag-tag" style="background:#059669;">Just Right</span>
+            <div class="diag-text">
+                <strong>Both curves converge to low error near the noise floor</strong>.
+                Training error (${finalTrain.toFixed(1)}) and validation error (${finalVal.toFixed(1)}) are close
+                to the irreducible noise (${benchmark.toFixed(1)}).
+                The model captures the true pattern without overfitting.
+                <div class="diag-action">This is the sweet spot — good balance of bias and variance.</div>
+            </div>`;
+    } else {
+        el.style.background = 'linear-gradient(135deg, #fee2e2, #fecaca)';
+        el.innerHTML = `
+            <span class="diag-tag" style="background:#dc2626;">High Variance</span>
+            <div class="diag-text">
+                <strong>Large gap between training and validation</strong> — training error is low
+                (${finalTrain.toFixed(1)}) but validation error is noticeably higher (${finalVal.toFixed(1)}).
+                The model memorizes training data rather than learning the true pattern.
+                <div class="diag-action">Remedy: Collect more data, reduce complexity, or add regularization.</div>
+            </div>`;
+    }
+}
+
+// ============================================================
+// RENDER CHARTS
+// ============================================================
+function renderLearningCurve(sizes, trainErrors, valErrors) {
+    const benchmark = noiseSd * noiseSd;
+
+    const traces = [
+        {
+            x: sizes, y: trainErrors,
+            mode: 'lines+markers', name: 'Training Error',
+            line: {color: '#2563eb', width: 3},
+            marker: {size: 5},
+            fill: 'tonexty',
+            fillcolor: 'rgba(37,99,235,0.0)' // invisible fill, we add the gap fill next
+        },
+        {
+            x: sizes, y: valErrors,
+            mode: 'lines+markers', name: 'Validation Error',
+            line: {color: '#059669', width: 3},
+            marker: {size: 5}
+        },
+        // Benchmark line
+        {
+            x: [sizes[0], sizes[sizes.length - 1]],
+            y: [benchmark, benchmark],
+            mode: 'lines', name: 'Irreducible Noise (σ²)',
+            line: {color: '#dc2626', width: 2, dash: 'dash'}
+        }
+    ];
+
+    // Gap shading between curves
+    const gapX = [...sizes, ...sizes.slice().reverse()];
+    const gapY = [...valErrors, ...trainErrors.slice().reverse()];
+    traces.splice(0, 0, {
+        x: gapX, y: gapY,
+        fill: 'toself',
+        fillcolor: 'rgba(239,68,68,0.1)',
+        line: {color: 'transparent'},
+        name: 'Gap (Variance indicator)',
+        showlegend: true,
+        hoverinfo: 'skip'
+    });
+
+    // Annotation for the gap at the end
+    const lastIdx = sizes.length - 1;
+    const gapVal = valErrors[lastIdx] - trainErrors[lastIdx];
+
+    // Dynamic cap: 85th percentile of all error values
+    const allErrors = [...trainErrors, ...valErrors].sort((a, b) => a - b);
+    const p85 = allErrors[Math.floor(allErrors.length * 0.85)];
+    const yMax = Math.max(p85 * 1.15, benchmark * 2); // at least 2x noise floor
+
+    const annotations = [{
+        x: sizes[lastIdx], y: (valErrors[lastIdx] + trainErrors[lastIdx]) / 2,
+        text: `Gap: ${gapVal.toFixed(1)}`,
+        showarrow: true, arrowhead: 0, ax: 40, ay: 0,
+        font: {size: 11, color: '#dc2626', weight: 'bold'},
+        bgcolor: 'rgba(255,255,255,0.8)', bordercolor: '#dc2626', borderwidth: 1
+    }];
+
+    Plotly.react('chart-lc', traces, {
+        margin: {t: 10, r: 30, b: 50, l: 60},
+        xaxis: {title: 'Training Set Size', gridcolor: '#f1f5f9', range: [0, 190]},
+        yaxis: {title: 'Mean Squared Error', range: [0, yMax], gridcolor: '#f1f5f9'},
+        legend: {x: 0.5, y: 0.99, bgcolor: 'rgba(255,255,255,0.9)', font: {size: 10}},
+        plot_bgcolor: 'white', paper_bgcolor: 'white',
+        annotations: annotations,
+        hovermode: 'x unified'
+    }, {responsive: true, displayModeBar: false});
+}
+
+function renderFitChart() {
+    // Fit on full training data and show
+    const trainData = dataPool.slice(0, 180);
+    const sx = trainData.map(d => d.x);
+    const sxn = normalizeX(sx);
+    const sy = trainData.map(d => d.y);
+    const coeffs = fitPoly(sxn, sy, currentDegree);
+
+    // Smooth prediction curve
+    const plotX = [];
+    for (let i = 0; i < 100; i++) plotX.push(X_MIN + (X_MAX - X_MIN) * i / 99);
+    const plotXN = normalizeX(plotX);
+    const plotYPred = plotXN.map(xn => evalPoly(coeffs, xn));
+    const plotYTrue = plotX.map(trueF);
+
+    const traces = [
+        {
+            x: sx, y: sy,
+            mode: 'markers', name: 'Training Data (180)',
+            marker: {size: 5, color: '#94a3b8', opacity: 0.5}
+        },
+        {
+            x: plotX, y: plotYTrue,
+            mode: 'lines', name: 'True Function',
+            line: {color: '#000', width: 2.5, dash: 'dash'}
+        },
+        {
+            x: plotX, y: plotYPred,
+            mode: 'lines', name: `Fitted (degree ${currentDegree})`,
+            line: {color: '#667eea', width: 3}
+        }
+    ];
+
+    // Also show test data
+    const testData = dataPool.slice(180);
+    traces.push({
+        x: testData.map(d => d.x), y: testData.map(d => d.y),
+        mode: 'markers', name: 'Test Data (20)',
+        marker: {size: 7, color: '#059669', symbol: 'diamond', opacity: 0.7,
+                 line: {color: 'white', width: 1}}
+    });
+
+    Plotly.react('chart-fit', traces, {
+        margin: {t: 10, r: 20, b: 50, l: 50},
+        xaxis: {title: 'x', range: [X_MIN - 0.3, X_MAX + 0.3], gridcolor: '#f1f5f9'},
+        yaxis: {title: 'y', range: [-8, 18], gridcolor: '#f1f5f9'},
+        legend: {x: 0.01, y: 0.99, bgcolor: 'rgba(255,255,255,0.9)', font: {size: 10}},
+        plot_bgcolor: 'white', paper_bgcolor: 'white'
+    }, {responsive: true, displayModeBar: false});
+}
+
+// ============================================================
+// MAIN — GENERATE & ANIMATE
+// ============================================================
+document.getElementById('btn-compute').addEventListener('click', computeAndRender);
+
+async function computeAndRender() {
+    const btn = document.getElementById('btn-compute');
+    btn.disabled = true;
+    btn.textContent = 'Computing...';
+
+    // Update noise
+    noiseSd = parseFloat(noiseSlider.value);
+    generatePool();
+
+    // Small delay to let UI update
+    await new Promise(r => setTimeout(r, 50));
+
+    const {sizes, trainErrors, valErrors} = computeLearningCurve(currentDegree);
+
+    // Animate the curves building up
+    for (let i = 3; i <= sizes.length; i++) {
+        const partialSizes = sizes.slice(0, i);
+        const partialTrain = trainErrors.slice(0, i);
+        const partialVal = valErrors.slice(0, i);
+        renderLearningCurve(partialSizes, partialTrain, partialVal);
+        if (i < sizes.length && i % 3 === 0) await new Promise(r => setTimeout(r, 30));
+    }
+
+    renderLearningCurve(sizes, trainErrors, valErrors);
+    renderFitChart();
+    updateDiagnosis(trainErrors, valErrors);
+
+    btn.disabled = false;
+    btn.textContent = 'Generate Learning Curves';
+}
+
+// ============================================================
+// INIT
+// ============================================================
+updateComplexityBar();
+noiseSd = 3.0;
+generatePool();
+
+// Auto-run on load
+computeAndRender();
+</script>
+
+</body>
+</html>
