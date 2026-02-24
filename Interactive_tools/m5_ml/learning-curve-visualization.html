@@ -157,8 +157,8 @@
     <div class="controls">
         <div class="control-group">
             <label>Model Complexity (Polynomial Degree):</label>
-            <input type="range" id="degree-slider" min="0" max="4" value="2" />
-            <span class="val" id="degree-val">2</span>
+            <input type="range" id="degree-slider" min="0" max="5" value="3" />
+            <span class="val" id="degree-val">3</span>
         </div>
         <button class="btn btn-run" id="btn-compute">Generate Learning Curves</button>
     </div>
@@ -173,17 +173,21 @@
             <div class="cx-label">Degree 1</div>
             <div class="cx-desc">Linear</div>
         </div>
-        <div class="cx-step active" data-deg="2">
+        <div class="cx-step" data-deg="2">
             <div class="cx-label">Degree 2</div>
             <div class="cx-desc">Quadratic</div>
         </div>
-        <div class="cx-step" data-deg="3">
+        <div class="cx-step active" data-deg="3">
             <div class="cx-label">Degree 3</div>
-            <div class="cx-desc">Cubic</div>
+            <div class="cx-desc">Cubic ✓</div>
         </div>
         <div class="cx-step" data-deg="4">
             <div class="cx-label">Degree 4</div>
             <div class="cx-desc">Quartic</div>
+        </div>
+        <div class="cx-step" data-deg="5">
+            <div class="cx-label">Degree 5</div>
+            <div class="cx-desc">Quintic</div>
         </div>
     </div>
 
@@ -233,7 +237,7 @@
 const X_MIN = -3, X_MAX = 3;
 
 function trueF(x) {
-    return 0.8 * x * x - 0.5 * x + 2;
+    return 0.15 * x * x * x - 0.5 * x * x + 0.3 * x + 3;
 }
 
 function randn() {
@@ -323,8 +327,8 @@ function mse(yTrue, yPred) {
 // ============================================================
 function computeLearningCurve(deg) {
     // Use first 140 as available training pool, last 60 as fixed test set (30%)
-    const trainPool = dataPool.slice(0, 140);
-    const testSet = dataPool.slice(140);
+    const trainPool = dataPool.slice(0, 160);
+    const testSet = dataPool.slice(160);
     const testX = testSet.map(d => d.x);
     const testXN = normalizeX(testX);
     const testY = testSet.map(d => d.y);
@@ -332,8 +336,8 @@ function computeLearningCurve(deg) {
     // Training sizes to evaluate
     const sizes = [];
     const minSize = Math.max(deg + 2, 20);
-    for (let s = minSize; s <= 140; s += 3) sizes.push(s);
-    if (sizes[sizes.length - 1] !== 140) sizes.push(140);
+    for (let s = minSize; s <= 160; s += 3) sizes.push(s);
+    if (sizes[sizes.length - 1] !== 160) sizes.push(160);
 
     const trainErrors = [];
     const valErrors = [];
@@ -365,7 +369,12 @@ function computeLearningCurve(deg) {
         valErrors.push(valErrSum / MC);
     }
 
-    return {sizes, trainErrors, valErrors};
+    // Common sense benchmark: predict the mean of training pool
+    const poolY = trainPool.map(d => d.y);
+    const yMean = poolY.reduce((a, b) => a + b, 0) / poolY.length;
+    const benchmarkMSE = mse(testY, testY.map(() => yMean));
+
+    return {sizes, trainErrors, valErrors, benchmarkMSE};
 }
 
 // ============================================================
@@ -373,7 +382,7 @@ function computeLearningCurve(deg) {
 // ============================================================
 const degreeSlider = document.getElementById('degree-slider');
 const degreeVal = document.getElementById('degree-val');
-let currentDegree = 2;
+let currentDegree = 3;
 
 degreeSlider.addEventListener('input', () => {
     currentDegree = parseInt(degreeSlider.value);
@@ -388,8 +397,8 @@ function updateComplexityBar() {
         if (d < currentDegree) {
             el.style.background = '#dbeafe'; el.style.borderColor = '#93c5fd';
         } else if (d === currentDegree) {
-            if (d <= 1) { el.style.background = '#bfdbfe'; el.style.borderColor = '#2563eb'; }
-            else if (d === 2) { el.style.background = '#bbf7d0'; el.style.borderColor = '#059669'; }
+            if (d <= 2) { el.style.background = '#bfdbfe'; el.style.borderColor = '#2563eb'; }
+            else if (d === 3) { el.style.background = '#bbf7d0'; el.style.borderColor = '#059669'; }
             else { el.style.background = '#fecaca'; el.style.borderColor = '#dc2626'; }
         } else {
             el.style.background = '#f8fafc'; el.style.borderColor = '#e2e8f0';
@@ -400,32 +409,31 @@ function updateComplexityBar() {
 // ============================================================
 // DIAGNOSIS
 // ============================================================
-function updateDiagnosis(trainErrors, valErrors) {
+function updateDiagnosis(trainErrors, valErrors, benchmarkMSE) {
     const el = document.getElementById('diagnosis');
     const finalTrain = trainErrors[trainErrors.length - 1];
     const finalVal = valErrors[valErrors.length - 1];
     const gap = finalVal - finalTrain;
-    const benchmark = noiseSd * noiseSd; // irreducible error
 
-    if (currentDegree <= 1) {
+    if (currentDegree <= 2) {
         el.style.background = 'linear-gradient(135deg, #dbeafe, #bfdbfe)';
         el.innerHTML = `
             <span class="diag-tag" style="background:#2563eb;">High Bias</span>
             <div class="diag-text">
                 <strong>Both curves converge to high error</strong> — the gap is small (${gap.toFixed(1)}) but
-                both training (${finalTrain.toFixed(1)}) and validation (${finalVal.toFixed(1)}) error are well above
-                the irreducible noise (${benchmark.toFixed(1)}).
+                both training (${finalTrain.toFixed(1)}) and validation (${finalVal.toFixed(1)}) error remain close to
+                the benchmark (${benchmarkMSE.toFixed(1)}).
                 The model is <strong>too simple</strong> to capture the true pattern.
                 <div class="diag-action">Remedy: Increase model complexity or add features. More data won't help much.</div>
             </div>`;
-    } else if (currentDegree === 2) {
+    } else if (currentDegree === 3) {
         el.style.background = 'linear-gradient(135deg, #dcfce7, #bbf7d0)';
         el.innerHTML = `
             <span class="diag-tag" style="background:#059669;">Just Right</span>
             <div class="diag-text">
-                <strong>Both curves converge to low error near the noise floor</strong>.
-                Training error (${finalTrain.toFixed(1)}) and validation error (${finalVal.toFixed(1)}) are close
-                to the irreducible noise (${benchmark.toFixed(1)}).
+                <strong>Both curves converge to low error well below the benchmark</strong>.
+                Training error (${finalTrain.toFixed(1)}) and validation error (${finalVal.toFixed(1)}) are far below
+                the predict-the-mean benchmark (${benchmarkMSE.toFixed(1)}).
                 The model captures the true pattern without overfitting.
                 <div class="diag-action">This is the sweet spot — good balance of bias and variance.</div>
             </div>`;
@@ -448,9 +456,7 @@ function updateDiagnosis(trainErrors, valErrors) {
 // ============================================================
 // RENDER CHARTS
 // ============================================================
-function renderLearningCurve(sizes, trainErrors, valErrors) {
-    const benchmark = noiseSd * noiseSd;
-
+function renderLearningCurve(sizes, trainErrors, valErrors, benchmarkMSE) {
     const traces = [
         {
             x: sizes, y: trainErrors,
@@ -466,11 +472,11 @@ function renderLearningCurve(sizes, trainErrors, valErrors) {
             line: {color: '#059669', width: 3},
             marker: {size: 5}
         },
-        // Benchmark line
+        // Common sense benchmark: predict the mean
         {
             x: [sizes[0], sizes[sizes.length - 1]],
-            y: [benchmark, benchmark],
-            mode: 'lines', name: 'Irreducible Noise (σ²)',
+            y: [benchmarkMSE, benchmarkMSE],
+            mode: 'lines', name: 'Benchmark (Predict ȳ)',
             line: {color: '#dc2626', width: 2, dash: 'dash'}
         }
     ];
@@ -495,7 +501,7 @@ function renderLearningCurve(sizes, trainErrors, valErrors) {
     // Dynamic cap: 85th percentile of all error values
     const allErrors = [...trainErrors, ...valErrors].sort((a, b) => a - b);
     const p85 = allErrors[Math.floor(allErrors.length * 0.85)];
-    const yMax = Math.max(p85 * 1.15, benchmark * 2); // at least 2x noise floor
+    const yMax = Math.max(p85 * 1.15, benchmarkMSE * 1.3); // at least 1.3x benchmark
 
     const annotations = [{
         x: sizes[lastIdx], y: (valErrors[lastIdx] + trainErrors[lastIdx]) / 2,
@@ -507,7 +513,7 @@ function renderLearningCurve(sizes, trainErrors, valErrors) {
 
     Plotly.react('chart-lc', traces, {
         margin: {t: 10, r: 30, b: 50, l: 60},
-        xaxis: {title: 'Training Set Size', gridcolor: '#f1f5f9', range: [0, 150]},
+        xaxis: {title: 'Training Set Size', gridcolor: '#f1f5f9', range: [0, 170]},
         yaxis: {title: 'Mean Squared Error', range: [0, yMax], gridcolor: '#f1f5f9'},
         legend: {x: 0.5, y: 0.99, bgcolor: 'rgba(255,255,255,0.9)', font: {size: 10}},
         plot_bgcolor: 'white', paper_bgcolor: 'white',
@@ -518,7 +524,7 @@ function renderLearningCurve(sizes, trainErrors, valErrors) {
 
 function renderFitChart() {
     // Fit on full training data and show
-    const trainData = dataPool.slice(0, 140);
+    const trainData = dataPool.slice(0, 160);
     const sx = trainData.map(d => d.x);
     const sxn = normalizeX(sx);
     const sy = trainData.map(d => d.y);
@@ -534,7 +540,7 @@ function renderFitChart() {
     const traces = [
         {
             x: sx, y: sy,
-            mode: 'markers', name: 'Training Data (140)',
+            mode: 'markers', name: 'Training Data (160)',
             marker: {size: 5, color: '#94a3b8', opacity: 0.5}
         },
         {
@@ -550,10 +556,10 @@ function renderFitChart() {
     ];
 
     // Also show test data
-    const testData = dataPool.slice(140);
+    const testData = dataPool.slice(160);
     traces.push({
         x: testData.map(d => d.x), y: testData.map(d => d.y),
-        mode: 'markers', name: 'Test Data (60)',
+        mode: 'markers', name: 'Test Data (40)',
         marker: {size: 7, color: '#059669', symbol: 'diamond', opacity: 0.7,
                  line: {color: 'white', width: 1}}
     });
@@ -582,20 +588,20 @@ async function computeAndRender() {
     // Small delay to let UI update
     await new Promise(r => setTimeout(r, 50));
 
-    const {sizes, trainErrors, valErrors} = computeLearningCurve(currentDegree);
+    const {sizes, trainErrors, valErrors, benchmarkMSE} = computeLearningCurve(currentDegree);
 
     // Animate the curves building up
     for (let i = 3; i <= sizes.length; i++) {
         const partialSizes = sizes.slice(0, i);
         const partialTrain = trainErrors.slice(0, i);
         const partialVal = valErrors.slice(0, i);
-        renderLearningCurve(partialSizes, partialTrain, partialVal);
+        renderLearningCurve(partialSizes, partialTrain, partialVal, benchmarkMSE);
         if (i < sizes.length && i % 3 === 0) await new Promise(r => setTimeout(r, 30));
     }
 
-    renderLearningCurve(sizes, trainErrors, valErrors);
+    renderLearningCurve(sizes, trainErrors, valErrors, benchmarkMSE);
     renderFitChart();
-    updateDiagnosis(trainErrors, valErrors);
+    updateDiagnosis(trainErrors, valErrors, benchmarkMSE);
 
     btn.disabled = false;
     btn.textContent = 'Generate Learning Curves';
