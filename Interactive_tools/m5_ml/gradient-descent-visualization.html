@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradient Descent Interactive Tool | Dr. Pedram Jahangiry</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 30px 20px 20px;
+            margin-bottom: 25px;
+        }
+        .header h1 { font-size: 2.4em; margin-bottom: 8px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .header .subtitle { font-size: 1.15em; opacity: 0.9; margin-bottom: 5px; }
+        .header .attribution { font-size: 1.05em; margin: 12px 0; opacity: 0.95; }
+        .header .links { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+        .header .links a {
+            display: inline-flex; align-items: center; gap: 8px; color: white;
+            text-decoration: none; padding: 9px 18px; border-radius: 8px;
+            transition: all 0.3s ease; font-size: 0.88em; font-weight: 600;
+        }
+        .header .links a:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .btn-website { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .btn-youtube { background: linear-gradient(135deg, #ff0000, #cc0000); }
+        .btn-github { background: linear-gradient(135deg, #333, #000); }
+
+        .container {
+            max-width: 1350px; margin: 0 auto; background: white;
+            border-radius: 20px; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 3px solid #e2e8f0; }
+        .tab-btn {
+            padding: 13px 28px; border: none; background: none; font-size: 1.02em;
+            font-weight: 600; color: #94a3b8; cursor: pointer;
+            border-bottom: 3px solid transparent; margin-bottom: -3px;
+            transition: all 0.3s ease; font-family: inherit;
+        }
+        .tab-btn:hover { color: #64748b; }
+        .tab-btn.active { color: #667eea; border-bottom-color: #667eea; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Intro */
+        .intro {
+            border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; border-left: 5px solid #667eea;
+            background: linear-gradient(135deg, #f0f4ff, #e8ecff);
+        }
+        .intro h3 { color: #4338ca; margin-bottom: 8px; font-size: 1.1em; }
+        .intro p { color: #475569; line-height: 1.65; font-size: 0.92em; }
+
+        /* Equation box */
+        .eq-box {
+            background: #f8fafc; border-radius: 10px; padding: 14px 20px; margin-bottom: 18px;
+            border: 2px solid #e2e8f0; text-align: center;
+        }
+        .eq-box .eq-main {
+            font-family: 'Courier New', monospace; font-size: 1.05em; color: #334155;
+        }
+        .eq-box .eq-label { font-size: 0.8em; color: #94a3b8; margin-top: 4px; }
+
+        /* Controls */
+        .controls {
+            display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+            margin-bottom: 18px; padding: 16px 20px; background: #f8fafc; border-radius: 12px;
+        }
+        .control-group { display: flex; align-items: center; gap: 8px; }
+        .control-group label { font-weight: 600; color: #334155; font-size: 0.9em; white-space: nowrap; }
+        .control-group input[type="range"] { width: 120px; cursor: pointer; }
+        .control-group select {
+            padding: 7px 10px; border: 2px solid #cbd5e1; border-radius: 8px;
+            font-size: 0.9em; font-family: inherit; background: white; cursor: pointer;
+        }
+        .val { font-weight: 700; color: #667eea; min-width: 40px; text-align: center; font-size: 0.95em; }
+
+        .btn {
+            padding: 9px 20px; border: none; border-radius: 8px; font-size: 0.88em;
+            font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-family: inherit;
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-run { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .btn-step { background: linear-gradient(135deg, #059669, #047857); color: white; }
+        .btn-reset { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+
+        /* Charts grid */
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .chart-box { border: 2px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+        .chart-box .chart-title {
+            padding: 9px 16px; font-weight: 700; font-size: 0.88em; color: #334155;
+            background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+        }
+
+        /* Status cards */
+        .status-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+        .status-card {
+            padding: 12px; border-radius: 10px; text-align: center; border: 2px solid #e2e8f0;
+        }
+        .status-card .s-label {
+            font-size: 0.72em; font-weight: 600; color: #64748b;
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+        }
+        .status-card .s-value { font-size: 1.3em; font-weight: 800; }
+        .sc-iter { border-color: #667eea; } .sc-iter .s-value { color: #667eea; }
+        .sc-w { border-color: #059669; } .sc-w .s-value { color: #059669; }
+        .sc-b { border-color: #d97706; } .sc-b .s-value { color: #d97706; }
+        .sc-loss { border-color: #dc2626; } .sc-loss .s-value { color: #dc2626; }
+
+        /* LR indicator */
+        .lr-indicator {
+            padding: 10px 16px; border-radius: 8px; margin-bottom: 16px;
+            font-size: 0.88em; display: flex; align-items: center; gap: 10px;
+            transition: all 0.4s ease;
+        }
+        .lr-indicator .lr-tag {
+            padding: 4px 12px; border-radius: 5px; font-weight: 700;
+            font-size: 0.82em; color: white;
+        }
+        .lr-indicator .lr-desc { color: #475569; }
+
+        @media (max-width: 900px) {
+            .header h1 { font-size: 1.5em; }
+            .container { padding: 18px; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .status-row { grid-template-columns: repeat(2, 1fr); }
+            .controls { flex-direction: column; align-items: stretch; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Gradient Descent & SGD</h1>
+    <div class="subtitle">Module 5 — Machine Learning for Time Series Forecasting</div>
+    <div class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</div>
+    <div class="links">
+        <a href="https://pjalgotrader.github.io" class="btn-website">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            Website
+        </a>
+        <a href="https://www.youtube.com/@pedramjahangiry" class="btn-youtube">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.8zM9.6 15.6V8.4L16 12l-6.4 3.6z"/></svg>
+            YouTube
+        </a>
+        <a href="https://github.com/pjalgotrader" class="btn-github">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12c0 5.3 3.4 9.8 8.2 11.4.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 24 12C24 5.4 18.6 0 12 0z"/></svg>
+            GitHub
+        </a>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="gd">Batch Gradient Descent</button>
+        <button class="tab-btn" data-tab="sgd">Stochastic Gradient Descent</button>
+    </div>
+
+    <!-- ==================== GRADIENT DESCENT ==================== -->
+    <div class="tab-content active" id="tab-gd">
+        <div class="intro">
+            <h3>Batch Gradient Descent</h3>
+            <p>
+                We have a simple linear model: <strong>y&#x0302; = w&middot;x + b</strong>. The goal is to find the
+                slope <strong>w</strong> and intercept <strong>b</strong> that minimize the
+                <strong>Mean Squared Error (MSE)</strong> over all training data.
+                Gradient descent starts at a random point and iteratively updates both parameters by moving in the direction
+                of the <strong>negative gradient</strong> — the steepest descent on the loss surface.
+            </p>
+            <p style="margin-top:8px;">
+                Each step uses the <strong>entire dataset</strong> to compute the gradient.
+                The path is smooth and direct, but can be slow for large datasets.
+            </p>
+        </div>
+
+        <div class="eq-box">
+            <div class="eq-main">
+                &theta;<sub>j</sub> := &theta;<sub>j</sub> &minus;
+                <span style="color:#dc2626;">&alpha;</span> &middot;
+                <span style="color:#2563eb;">&part;J(&theta;) / &part;&theta;<sub>j</sub></span>
+            </div>
+            <div class="eq-label">
+                &theta;<sub>j</sub> = parameter (w or b) &nbsp;|&nbsp;
+                <span style="color:#dc2626;">&alpha;</span> = learning rate &nbsp;|&nbsp;
+                <span style="color:#2563eb;">gradient</span> = direction of steepest ascent
+            </div>
+        </div>
+
+        <div class="controls" id="gd-controls">
+            <div class="control-group">
+                <label>Learning Rate (&alpha;):</label>
+                <input type="range" id="gd-lr" min="0" max="5" value="2" step="1" />
+                <span class="val" id="gd-lr-val">0.05</span>
+            </div>
+            <div class="control-group">
+                <label>Start:</label>
+                <select id="gd-start">
+                    <option value="tl">Top-Left</option>
+                    <option value="tr">Top-Right</option>
+                    <option value="bl">Bottom-Left</option>
+                    <option value="br" selected>Bottom-Right</option>
+                    <option value="random">Random</option>
+                </select>
+            </div>
+            <button class="btn btn-run" id="gd-btn-run">Run (50 steps)</button>
+            <button class="btn btn-step" id="gd-btn-step">Single Step</button>
+            <button class="btn btn-reset" id="gd-btn-reset">Reset</button>
+        </div>
+
+        <div class="lr-indicator" id="gd-lr-indicator"></div>
+
+        <div class="status-row" id="gd-status">
+            <div class="status-card sc-iter">
+                <div class="s-label">Iteration</div>
+                <div class="s-value" id="gd-iter">0</div>
+            </div>
+            <div class="status-card sc-w">
+                <div class="s-label">Slope (w)</div>
+                <div class="s-value" id="gd-w">—</div>
+            </div>
+            <div class="status-card sc-b">
+                <div class="s-label">Intercept (b)</div>
+                <div class="s-value" id="gd-b">—</div>
+            </div>
+            <div class="status-card sc-loss">
+                <div class="s-label">MSE Loss</div>
+                <div class="s-value" id="gd-loss">—</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-box">
+                <div class="chart-title">Loss Surface — MSE(w, b)</div>
+                <div id="gd-contour" style="height:420px;"></div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Data & Current Fit</div>
+                <div id="gd-fit" style="height:420px;"></div>
+            </div>
+        </div>
+        <div class="charts-grid">
+            <div class="chart-box">
+                <div class="chart-title">Loss Over Iterations</div>
+                <div id="gd-losscurve" style="height:280px;"></div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Parameter Trajectories</div>
+                <div id="gd-params" style="height:280px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SGD ==================== -->
+    <div class="tab-content" id="tab-sgd">
+        <div class="intro">
+            <h3>Stochastic Gradient Descent (SGD)</h3>
+            <p>
+                Instead of computing the gradient over <strong>all N data points</strong> each step,
+                SGD picks a <strong>single random sample</strong> (or a small mini-batch) and uses only that
+                to estimate the gradient. This makes each step much faster, but the path is
+                <strong>noisy and zigzags</strong> toward the optimum instead of following a smooth curve.
+            </p>
+            <p style="margin-top:8px;">
+                The noise can actually be helpful — it can escape shallow local minima in complex loss
+                landscapes. For our simple linear MSE, the noise is just noise, but the speed advantage
+                is dramatic on large datasets.
+            </p>
+        </div>
+
+        <div class="eq-box">
+            <div class="eq-main">
+                &theta;<sub>j</sub> := &theta;<sub>j</sub> &minus;
+                <span style="color:#dc2626;">&alpha;</span> &middot;
+                <span style="color:#8b5cf6;">&part;J<sub>i</sub>(&theta;) / &part;&theta;<sub>j</sub></span>
+            </div>
+            <div class="eq-label">
+                Same update rule, but <span style="color:#8b5cf6;">J<sub>i</sub></span> = loss on a
+                <strong>single random sample</strong> instead of the full dataset
+            </div>
+        </div>
+
+        <div class="controls" id="sgd-controls">
+            <div class="control-group">
+                <label>Learning Rate (&alpha;):</label>
+                <input type="range" id="sgd-lr" min="0" max="5" value="2" step="1" />
+                <span class="val" id="sgd-lr-val">0.05</span>
+            </div>
+            <div class="control-group">
+                <label>Start:</label>
+                <select id="sgd-start">
+                    <option value="tl">Top-Left</option>
+                    <option value="tr">Top-Right</option>
+                    <option value="bl">Bottom-Left</option>
+                    <option value="br" selected>Bottom-Right</option>
+                    <option value="random">Random</option>
+                </select>
+            </div>
+            <button class="btn btn-run" id="sgd-btn-run" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);">Run (100 steps)</button>
+            <button class="btn btn-step" id="sgd-btn-step">Single Step</button>
+            <button class="btn btn-reset" id="sgd-btn-reset">Reset</button>
+        </div>
+
+        <div class="lr-indicator" id="sgd-lr-indicator"></div>
+
+        <div class="status-row" id="sgd-status">
+            <div class="status-card sc-iter">
+                <div class="s-label">Iteration</div>
+                <div class="s-value" id="sgd-iter">0</div>
+            </div>
+            <div class="status-card sc-w">
+                <div class="s-label">Slope (w)</div>
+                <div class="s-value" id="sgd-w">—</div>
+            </div>
+            <div class="status-card sc-b">
+                <div class="s-label">Intercept (b)</div>
+                <div class="s-value" id="sgd-b">—</div>
+            </div>
+            <div class="status-card sc-loss">
+                <div class="s-label">MSE Loss</div>
+                <div class="s-value" id="sgd-loss">—</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-box">
+                <div class="chart-title">Loss Surface — SGD Path (noisy!)</div>
+                <div id="sgd-contour" style="height:420px;"></div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Data & Current Fit <span id="sgd-sample-label" style="color:#8b5cf6;font-size:0.85em;"></span></div>
+                <div id="sgd-fit" style="height:420px;"></div>
+            </div>
+        </div>
+        <div class="charts-grid">
+            <div class="chart-box">
+                <div class="chart-title">Loss Over Iterations</div>
+                <div id="sgd-losscurve" style="height:280px;"></div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Parameter Trajectories</div>
+                <div id="sgd-params" style="height:280px;"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ============================================================
+// SHARED DATA — simple linear dataset y = 2x + 1 + noise
+// ============================================================
+const DATA_X = [-2.5, -2.0, -1.5, -1.2, -0.8, -0.3, 0.0, 0.4, 0.9, 1.2, 1.6, 2.0, 2.3, 2.7, 3.0];
+const DATA_Y = [-3.8, -2.5, -1.9, -1.0, -0.2, 0.9, 1.3, 2.1, 2.5, 3.8, 4.0, 5.2, 5.8, 6.1, 7.3];
+const N = DATA_X.length;
+
+// Optimal values (analytically: w≈2.0, b≈1.0 approx)
+const W_OPT = (() => {
+    let sx=0, sy=0, sxy=0, sx2=0;
+    for (let i=0; i<N; i++) { sx+=DATA_X[i]; sy+=DATA_Y[i]; sxy+=DATA_X[i]*DATA_Y[i]; sx2+=DATA_X[i]*DATA_X[i]; }
+    return (N*sxy - sx*sy) / (N*sx2 - sx*sx);
+})();
+const B_OPT = (() => {
+    let sx=0, sy=0;
+    for (let i=0; i<N; i++) { sx+=DATA_X[i]; sy+=DATA_Y[i]; }
+    return (sy - W_OPT*sx) / N;
+})();
+
+// Learning rate options
+const LR_OPTIONS = [0.001, 0.01, 0.05, 0.1, 0.3, 0.5];
+const LR_LABELS = ['0.001', '0.01', '0.05', '0.1', '0.3', '0.5'];
+
+// ============================================================
+// MSE & GRADIENTS
+// ============================================================
+function mse(w, b) {
+    let s = 0;
+    for (let i = 0; i < N; i++) { const e = DATA_Y[i] - (w * DATA_X[i] + b); s += e * e; }
+    return s / N;
+}
+
+function gradFull(w, b) {
+    // Gradient of MSE w.r.t. w and b using ALL data
+    let dw = 0, db = 0;
+    for (let i = 0; i < N; i++) {
+        const e = (w * DATA_X[i] + b) - DATA_Y[i];
+        dw += 2 * e * DATA_X[i] / N;
+        db += 2 * e / N;
+    }
+    return {dw, db};
+}
+
+function gradSingle(w, b, idx) {
+    // Gradient of MSE for a SINGLE sample
+    const e = (w * DATA_X[idx] + b) - DATA_Y[idx];
+    return { dw: 2 * e * DATA_X[idx], db: 2 * e, idx };
+}
+
+// ============================================================
+// CONTOUR SURFACE (pre-compute once)
+// ============================================================
+const W_RANGE = [-1, 5], B_RANGE = [-4, 5];
+const GRID_N = 60;
+
+function buildContourData() {
+    const wVals = [], bVals = [];
+    for (let i = 0; i < GRID_N; i++) {
+        wVals.push(W_RANGE[0] + (W_RANGE[1] - W_RANGE[0]) * i / (GRID_N - 1));
+        bVals.push(B_RANGE[0] + (B_RANGE[1] - B_RANGE[0]) * i / (GRID_N - 1));
+    }
+    const z = [];
+    for (let j = 0; j < GRID_N; j++) {
+        const row = [];
+        for (let i = 0; i < GRID_N; i++) {
+            row.push(mse(wVals[i], bVals[j]));
+        }
+        z.push(row);
+    }
+    return {wVals, bVals, z};
+}
+
+const contourData = buildContourData();
+
+// ============================================================
+// START POSITIONS
+// ============================================================
+function getStart(choice) {
+    switch (choice) {
+        case 'tl': return {w: -0.5, b: 4.0};
+        case 'tr': return {w: 4.5, b: 4.0};
+        case 'bl': return {w: -0.5, b: -3.0};
+        case 'br': return {w: 4.5, b: -3.0};
+        case 'random': return {w: W_RANGE[0] + Math.random()*(W_RANGE[1]-W_RANGE[0]),
+                               b: B_RANGE[0] + Math.random()*(B_RANGE[1]-B_RANGE[0])};
+    }
+}
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+});
+
+// ============================================================
+// LR INDICATOR
+// ============================================================
+function updateLRIndicator(prefix, lrIdx) {
+    const el = document.getElementById(prefix + '-lr-indicator');
+    const lr = LR_OPTIONS[lrIdx];
+    if (lr <= 0.01) {
+        el.style.background = 'linear-gradient(135deg, #dbeafe, #bfdbfe)';
+        el.innerHTML = '<span class="lr-tag" style="background:#2563eb;">Too Low</span>' +
+            '<span class="lr-desc">A small learning rate requires many updates before reaching the minimum.</span>';
+    } else if (lr <= 0.1) {
+        el.style.background = 'linear-gradient(135deg, #dcfce7, #bbf7d0)';
+        el.innerHTML = '<span class="lr-tag" style="background:#059669;">Just Right</span>' +
+            '<span class="lr-desc">The optimal learning rate swiftly reaches the minimum point.</span>';
+    } else {
+        el.style.background = 'linear-gradient(135deg, #fee2e2, #fecaca)';
+        el.innerHTML = '<span class="lr-tag" style="background:#dc2626;">Too High</span>' +
+            '<span class="lr-desc">Too large causes drastic updates which can lead to divergent behavior!</span>';
+    }
+}
+
+// ============================================================
+// GRADIENT DESCENT ENGINE
+// ============================================================
+function createEngine(prefix, isSGD) {
+    let path = [];       // [{w, b, loss, sampleIdx?}]
+    let animTimer = null;
+
+    const lrSlider = document.getElementById(prefix + '-lr');
+    const lrVal = document.getElementById(prefix + '-lr-val');
+    const startSelect = document.getElementById(prefix + '-start');
+
+    lrSlider.addEventListener('input', () => {
+        lrVal.textContent = LR_LABELS[lrSlider.value];
+        updateLRIndicator(prefix, parseInt(lrSlider.value));
+    });
+
+    function getLR() { return LR_OPTIONS[parseInt(lrSlider.value)]; }
+
+    function reset() {
+        if (animTimer) { clearInterval(animTimer); animTimer = null; }
+        const start = getStart(startSelect.value);
+        path = [{w: start.w, b: start.b, loss: mse(start.w, start.b), sampleIdx: -1}];
+        updateStatus();
+        renderAll();
+        enableButtons(true);
+    }
+
+    function step() {
+        const cur = path[path.length - 1];
+        const lr = getLR();
+        let grad, sampleIdx = -1;
+
+        if (isSGD) {
+            sampleIdx = Math.floor(Math.random() * N);
+            grad = gradSingle(cur.w, cur.b, sampleIdx);
+        } else {
+            grad = gradFull(cur.w, cur.b);
+        }
+
+        let newW = cur.w - lr * grad.dw;
+        let newB = cur.b - lr * grad.db;
+
+        // Clamp to prevent explosion
+        newW = Math.max(W_RANGE[0] - 2, Math.min(W_RANGE[1] + 2, newW));
+        newB = Math.max(B_RANGE[0] - 2, Math.min(B_RANGE[1] + 2, newB));
+
+        path.push({w: newW, b: newB, loss: mse(newW, newB), sampleIdx});
+        updateStatus();
+        renderAll();
+    }
+
+    function run(nSteps) {
+        enableButtons(false);
+        let i = 0;
+        animTimer = setInterval(() => {
+            step();
+            i++;
+            if (i >= nSteps) {
+                clearInterval(animTimer);
+                animTimer = null;
+                enableButtons(true);
+            }
+        }, isSGD ? 40 : 60);
+    }
+
+    function enableButtons(on) {
+        document.getElementById(prefix + '-btn-run').disabled = !on;
+        document.getElementById(prefix + '-btn-step').disabled = !on;
+    }
+
+    function updateStatus() {
+        const cur = path[path.length - 1];
+        document.getElementById(prefix + '-iter').textContent = path.length - 1;
+        document.getElementById(prefix + '-w').textContent = cur.w.toFixed(3);
+        document.getElementById(prefix + '-b').textContent = cur.b.toFixed(3);
+        document.getElementById(prefix + '-loss').textContent = cur.loss.toFixed(4);
+    }
+
+    function renderAll() {
+        renderContour();
+        renderFit();
+        renderLossCurve();
+        renderParamCurve();
+    }
+
+    function renderContour() {
+        const ws = path.map(p => p.w);
+        const bs = path.map(p => p.b);
+
+        const traces = [
+            {
+                x: contourData.wVals, y: contourData.bVals, z: contourData.z,
+                type: 'contour',
+                colorscale: 'YlOrRd',
+                contours: { start: 0, end: 40, size: 2 },
+                showscale: false,
+                hoverinfo: 'skip',
+                line: { width: 0.5 }
+            },
+            // Path line
+            {
+                x: ws, y: bs,
+                mode: 'lines+markers', name: 'Path',
+                line: { color: isSGD ? '#8b5cf6' : '#2563eb', width: 2 },
+                marker: { size: 3, color: isSGD ? '#8b5cf6' : '#2563eb' },
+                hoverinfo: 'skip'
+            },
+            // Start point
+            {
+                x: [ws[0]], y: [bs[0]],
+                mode: 'markers', name: 'Start',
+                marker: { size: 12, color: '#ef4444', symbol: 'diamond',
+                          line: {color: 'white', width: 2} }
+            },
+            // Current point
+            {
+                x: [ws[ws.length-1]], y: [bs[bs.length-1]],
+                mode: 'markers', name: 'Current',
+                marker: { size: 12, color: isSGD ? '#8b5cf6' : '#2563eb',
+                          symbol: 'circle', line: {color: 'white', width: 2} }
+            },
+            // Optimal point
+            {
+                x: [W_OPT], y: [B_OPT],
+                mode: 'markers', name: 'Optimal',
+                marker: { size: 14, color: '#059669', symbol: 'star',
+                          line: {color: 'white', width: 2} }
+            }
+        ];
+
+        Plotly.react(prefix + '-contour', traces, {
+            margin: {t: 10, r: 20, b: 50, l: 55},
+            xaxis: { title: 'w (slope)', range: W_RANGE, gridcolor: '#f1f5f9' },
+            yaxis: { title: 'b (intercept)', range: B_RANGE, gridcolor: '#f1f5f9' },
+            legend: { x: 0.01, y: 0.99, bgcolor: 'rgba(255,255,255,0.85)', font: {size: 10} },
+            plot_bgcolor: 'white', paper_bgcolor: 'white'
+        }, {responsive: true, displayModeBar: false});
+    }
+
+    function renderFit() {
+        const cur = path[path.length - 1];
+        const xLine = [-3, 4];
+        const yLine = xLine.map(x => cur.w * x + cur.b);
+        const yOpt = xLine.map(x => W_OPT * x + B_OPT);
+
+        const traces = [
+            // Data points
+            {
+                x: DATA_X, y: DATA_Y,
+                mode: 'markers', name: 'Training Data',
+                marker: { size: 9, color: '#475569', line: {color: 'white', width: 1.5} }
+            },
+            // Optimal fit
+            {
+                x: xLine, y: yOpt,
+                mode: 'lines', name: 'Optimal Fit',
+                line: { color: '#059669', width: 2, dash: 'dash' }
+            },
+            // Current fit
+            {
+                x: xLine, y: yLine,
+                mode: 'lines', name: 'Current Fit',
+                line: { color: isSGD ? '#8b5cf6' : '#2563eb', width: 3 }
+            }
+        ];
+
+        // For SGD, highlight the sample used this step
+        if (isSGD && cur.sampleIdx >= 0) {
+            traces.push({
+                x: [DATA_X[cur.sampleIdx]], y: [DATA_Y[cur.sampleIdx]],
+                mode: 'markers', name: 'Used Sample',
+                marker: { size: 16, color: 'rgba(139,92,246,0.3)', symbol: 'circle',
+                          line: {color: '#8b5cf6', width: 3} }
+            });
+            document.getElementById('sgd-sample-label').textContent =
+                `— using sample #${cur.sampleIdx + 1}`;
+        }
+
+        Plotly.react(prefix + '-fit', traces, {
+            margin: {t: 10, r: 20, b: 50, l: 50},
+            xaxis: { title: 'x', range: [-3.5, 4], gridcolor: '#f1f5f9' },
+            yaxis: { title: 'y', range: [-6, 10], gridcolor: '#f1f5f9' },
+            legend: { x: 0.01, y: 0.99, bgcolor: 'rgba(255,255,255,0.85)', font: {size: 10} },
+            plot_bgcolor: 'white', paper_bgcolor: 'white'
+        }, {responsive: true, displayModeBar: false});
+    }
+
+    function renderLossCurve() {
+        const losses = path.map(p => p.loss);
+        const iters = losses.map((_, i) => i);
+
+        Plotly.react(prefix + '-losscurve', [{
+            x: iters, y: losses,
+            mode: 'lines',
+            line: { color: '#dc2626', width: 2 },
+            fill: 'tozeroy',
+            fillcolor: 'rgba(220,38,38,0.08)',
+            name: 'MSE Loss'
+        }], {
+            margin: {t: 10, r: 20, b: 40, l: 55},
+            xaxis: { title: 'Iteration', gridcolor: '#f1f5f9' },
+            yaxis: { title: 'MSE', rangemode: 'tozero', gridcolor: '#f1f5f9' },
+            showlegend: false,
+            plot_bgcolor: 'white', paper_bgcolor: 'white'
+        }, {responsive: true, displayModeBar: false});
+    }
+
+    function renderParamCurve() {
+        const iters = path.map((_, i) => i);
+        const ws = path.map(p => p.w);
+        const bs = path.map(p => p.b);
+
+        Plotly.react(prefix + '-params', [
+            {
+                x: iters, y: ws,
+                mode: 'lines', name: 'w (slope)',
+                line: { color: '#059669', width: 2 }
+            },
+            {
+                x: iters, y: bs,
+                mode: 'lines', name: 'b (intercept)',
+                line: { color: '#d97706', width: 2 }
+            },
+            // Optimal lines
+            {
+                x: [0, Math.max(iters.length - 1, 1)], y: [W_OPT, W_OPT],
+                mode: 'lines', name: 'w optimal',
+                line: { color: '#059669', width: 1.5, dash: 'dot' },
+                showlegend: false
+            },
+            {
+                x: [0, Math.max(iters.length - 1, 1)], y: [B_OPT, B_OPT],
+                mode: 'lines', name: 'b optimal',
+                line: { color: '#d97706', width: 1.5, dash: 'dot' },
+                showlegend: false
+            }
+        ], {
+            margin: {t: 10, r: 20, b: 40, l: 55},
+            xaxis: { title: 'Iteration', gridcolor: '#f1f5f9' },
+            yaxis: { title: 'Value', gridcolor: '#f1f5f9' },
+            legend: { x: 0.7, y: 0.99, bgcolor: 'rgba(255,255,255,0.85)', font: {size: 10} },
+            plot_bgcolor: 'white', paper_bgcolor: 'white'
+        }, {responsive: true, displayModeBar: false});
+    }
+
+    // Wire up buttons
+    document.getElementById(prefix + '-btn-run').addEventListener('click', () => run(isSGD ? 100 : 50));
+    document.getElementById(prefix + '-btn-step').addEventListener('click', step);
+    document.getElementById(prefix + '-btn-reset').addEventListener('click', reset);
+
+    // Init
+    updateLRIndicator(prefix, parseInt(lrSlider.value));
+    reset();
+}
+
+// ============================================================
+// INIT BOTH ENGINES
+// ============================================================
+createEngine('gd', false);
+createEngine('sgd', true);
+</script>
+
+</body>
+</html>
