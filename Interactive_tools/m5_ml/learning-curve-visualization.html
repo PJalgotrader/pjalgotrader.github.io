@@ -326,53 +326,67 @@ function mse(yTrue, yPred) {
 // LEARNING CURVE COMPUTATION
 // ============================================================
 function computeLearningCurve(deg) {
-    // Use first 140 as available training pool, last 60 as fixed test set (30%)
-    const trainPool = dataPool.slice(0, 160);
-    const testSet = dataPool.slice(160);
-    const testX = testSet.map(d => d.x);
-    const testXN = normalizeX(testX);
-    const testY = testSet.map(d => d.y);
+    const K = 5; // K-Fold CV
 
-    // Training sizes to evaluate
+    // Training sizes to evaluate (use all 200 data points now)
     const sizes = [];
     const minSize = Math.max(deg + 2, 20);
-    for (let s = minSize; s <= 160; s += 3) sizes.push(s);
-    if (sizes[sizes.length - 1] !== 160) sizes.push(160);
+    for (let s = minSize; s <= 200; s += 4) sizes.push(s);
+    if (sizes[sizes.length - 1] !== 200) sizes.push(200);
 
     const trainErrors = [];
     const valErrors = [];
-    const MC = 50; // Monte Carlo repetitions per size
+    const MC = 30; // Monte Carlo repetitions per size
 
     for (const size of sizes) {
         let trainErrSum = 0, valErrSum = 0;
+        let count = 0;
 
         for (let rep = 0; rep < MC; rep++) {
-            // Random subset of trainPool
-            const shuffled = [...trainPool].sort(() => Math.random() - 0.5);
+            // Random subset of dataPool of this size
+            const shuffled = [...dataPool].sort(() => Math.random() - 0.5);
             const subset = shuffled.slice(0, size);
-            const sx = subset.map(d => d.x);
-            const sxn = normalizeX(sx);
-            const sy = subset.map(d => d.y);
 
-            const coeffs = fitPoly(sxn, sy, deg);
+            // K-Fold CV on this subset
+            const foldSize = Math.floor(size / K);
+            if (foldSize < 2) continue; // skip if folds too small
 
-            // Training error
-            const trainPred = sxn.map(xn => evalPoly(coeffs, xn));
-            trainErrSum += mse(sy, trainPred);
+            for (let k = 0; k < K; k++) {
+                const valStart = k * foldSize;
+                const valEnd = (k === K - 1) ? size : valStart + foldSize;
+                const valFold = subset.slice(valStart, valEnd);
+                const trainFold = [...subset.slice(0, valStart), ...subset.slice(valEnd)];
 
-            // Validation error (on fixed test set)
-            const valPred = testXN.map(xn => evalPoly(coeffs, xn));
-            valErrSum += mse(testY, valPred);
+                if (trainFold.length < deg + 1) continue;
+
+                const tx = trainFold.map(d => d.x);
+                const txn = normalizeX(tx);
+                const ty = trainFold.map(d => d.y);
+                const vx = valFold.map(d => d.x);
+                const vxn = normalizeX(vx);
+                const vy = valFold.map(d => d.y);
+
+                const coeffs = fitPoly(txn, ty, deg);
+
+                // Training error (on training fold)
+                const trainPred = txn.map(xn => evalPoly(coeffs, xn));
+                trainErrSum += mse(ty, trainPred);
+
+                // CV validation error (on held-out fold)
+                const valPred = vxn.map(xn => evalPoly(coeffs, xn));
+                valErrSum += mse(vy, valPred);
+                count++;
+            }
         }
 
-        trainErrors.push(trainErrSum / MC);
-        valErrors.push(valErrSum / MC);
+        trainErrors.push(trainErrSum / count);
+        valErrors.push(valErrSum / count);
     }
 
-    // Common sense benchmark: predict the mean of training pool
-    const poolY = trainPool.map(d => d.y);
-    const yMean = poolY.reduce((a, b) => a + b, 0) / poolY.length;
-    const benchmarkMSE = mse(testY, testY.map(() => yMean));
+    // Common sense benchmark: predict the mean → MSE = variance of y
+    const allY = dataPool.map(d => d.y);
+    const yMean = allY.reduce((a, b) => a + b, 0) / allY.length;
+    const benchmarkMSE = allY.reduce((s, y) => s + (y - yMean) ** 2, 0) / allY.length;
 
     return {sizes, trainErrors, valErrors, benchmarkMSE};
 }
@@ -468,7 +482,7 @@ function renderLearningCurve(sizes, trainErrors, valErrors, benchmarkMSE) {
         },
         {
             x: sizes, y: valErrors,
-            mode: 'lines+markers', name: 'Validation Error',
+            mode: 'lines+markers', name: 'CV Score (Validation)',
             line: {color: '#059669', width: 3},
             marker: {size: 5}
         },
@@ -513,7 +527,7 @@ function renderLearningCurve(sizes, trainErrors, valErrors, benchmarkMSE) {
 
     Plotly.react('chart-lc', traces, {
         margin: {t: 10, r: 30, b: 50, l: 60},
-        xaxis: {title: 'Training Set Size', gridcolor: '#f1f5f9', range: [0, 170]},
+        xaxis: {title: 'Training Set Size', gridcolor: '#f1f5f9', range: [0, 210]},
         yaxis: {title: 'Mean Squared Error', range: [0, yMax], gridcolor: '#f1f5f9'},
         legend: {x: 0.5, y: 0.99, bgcolor: 'rgba(255,255,255,0.9)', font: {size: 10}},
         plot_bgcolor: 'white', paper_bgcolor: 'white',
@@ -524,10 +538,9 @@ function renderLearningCurve(sizes, trainErrors, valErrors, benchmarkMSE) {
 
 function renderFitChart() {
     // Fit on full training data and show
-    const trainData = dataPool.slice(0, 160);
-    const sx = trainData.map(d => d.x);
+    const sx = dataPool.map(d => d.x);
     const sxn = normalizeX(sx);
-    const sy = trainData.map(d => d.y);
+    const sy = dataPool.map(d => d.y);
     const coeffs = fitPoly(sxn, sy, currentDegree);
 
     // Smooth prediction curve
@@ -540,7 +553,7 @@ function renderFitChart() {
     const traces = [
         {
             x: sx, y: sy,
-            mode: 'markers', name: 'Training Data (160)',
+            mode: 'markers', name: 'Data (200)',
             marker: {size: 5, color: '#94a3b8', opacity: 0.5}
         },
         {
@@ -554,15 +567,6 @@ function renderFitChart() {
             line: {color: '#667eea', width: 3}
         }
     ];
-
-    // Also show test data
-    const testData = dataPool.slice(160);
-    traces.push({
-        x: testData.map(d => d.x), y: testData.map(d => d.y),
-        mode: 'markers', name: 'Test Data (40)',
-        marker: {size: 7, color: '#059669', symbol: 'diamond', opacity: 0.7,
-                 line: {color: 'white', width: 1}}
-    });
 
     Plotly.react('chart-fit', traces, {
         margin: {t: 10, r: 20, b: 50, l: 50},
