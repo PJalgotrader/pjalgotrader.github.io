@@ -201,7 +201,7 @@
             <div id="chart-lc" style="height:440px;"></div>
         </div>
         <div class="chart-box">
-            <div class="chart-title">Current Model Fit (Full Training Data)</div>
+            <div class="chart-title">Current Model Fit (One CV Fold)</div>
             <div id="chart-fit" style="height:440px;"></div>
         </div>
     </div>
@@ -248,7 +248,7 @@ function randn() {
 }
 
 // Generate a large pool of data
-const POOL_SIZE = 200;
+const POOL_SIZE = 100;
 let dataPool = [];
 const noiseSd = 2.0;
 
@@ -492,6 +492,13 @@ function renderLearningCurve(sizes, trainErrors, valErrors, benchmarkMSE) {
             y: [benchmarkMSE, benchmarkMSE],
             mode: 'lines', name: 'Benchmark (Predict ȳ)',
             line: {color: '#dc2626', width: 2, dash: 'dash'}
+        },
+        // Irreducible error floor
+        {
+            x: [sizes[0], sizes[sizes.length - 1]],
+            y: [noiseSd * noiseSd, noiseSd * noiseSd],
+            mode: 'lines', name: 'Irreducible Error (σ²)',
+            line: {color: '#f59e0b', width: 2, dash: 'dot'}
         }
     ];
 
@@ -537,11 +544,17 @@ function renderLearningCurve(sizes, trainErrors, valErrors, benchmarkMSE) {
 }
 
 function renderFitChart() {
-    // Fit on full training data and show
-    const sx = dataPool.map(d => d.x);
-    const sxn = normalizeX(sx);
-    const sy = dataPool.map(d => d.y);
-    const coeffs = fitPoly(sxn, sy, currentDegree);
+    // Simulate one 5-fold CV split: train on 4 folds, highlight 1 validation fold
+    const K = 5;
+    const shuffled = [...dataPool].sort(() => Math.random() - 0.5);
+    const foldSize = Math.floor(shuffled.length / K);
+    const valFold = shuffled.slice(0, foldSize);
+    const trainFold = shuffled.slice(foldSize);
+
+    const tx = trainFold.map(d => d.x);
+    const txn = normalizeX(tx);
+    const ty = trainFold.map(d => d.y);
+    const coeffs = fitPoly(txn, ty, currentDegree);
 
     // Smooth prediction curve
     const plotX = [];
@@ -552,9 +565,15 @@ function renderFitChart() {
 
     const traces = [
         {
-            x: sx, y: sy,
-            mode: 'markers', name: 'Data (200)',
+            x: tx, y: ty,
+            mode: 'markers', name: `Training Fold (${trainFold.length})`,
             marker: {size: 5, color: '#94a3b8', opacity: 0.5}
+        },
+        {
+            x: valFold.map(d => d.x), y: valFold.map(d => d.y),
+            mode: 'markers', name: `Validation Fold (${valFold.length})`,
+            marker: {size: 8, color: '#059669', symbol: 'diamond', opacity: 0.8,
+                     line: {color: 'white', width: 1}}
         },
         {
             x: plotX, y: plotYTrue,
