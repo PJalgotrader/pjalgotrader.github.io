@@ -331,8 +331,8 @@ function computeLearningCurve(deg) {
     // Training sizes to evaluate (use all 200 data points now)
     const sizes = [];
     const minSize = Math.max(deg + 2, 20);
-    for (let s = minSize; s <= 200; s += 4) sizes.push(s);
-    if (sizes[sizes.length - 1] !== 200) sizes.push(200);
+    for (let s = minSize; s <= 100; s += 2) sizes.push(s);
+    if (sizes[sizes.length - 1] !== 100) sizes.push(100);
 
     const trainErrors = [];
     const valErrors = [];
@@ -534,7 +534,7 @@ function renderLearningCurve(sizes, trainErrors, valErrors, benchmarkMSE) {
 
     Plotly.react('chart-lc', traces, {
         margin: {t: 10, r: 30, b: 50, l: 60},
-        xaxis: {title: 'Training Set Size', gridcolor: '#f1f5f9', range: [0, 210]},
+        xaxis: {title: 'Training Set Size', gridcolor: '#f1f5f9', range: [0, 110]},
         yaxis: {title: 'Mean Squared Error', range: [0, yMax], gridcolor: '#f1f5f9'},
         legend: {x: 0.5, y: 0.99, bgcolor: 'rgba(255,255,255,0.9)', font: {size: 10}},
         plot_bgcolor: 'white', paper_bgcolor: 'white',
