@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Series Bootstrapping | Dr. Pedram Jahangiry</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header .subtitle { font-size: 1.2em; opacity: 0.9; margin-bottom: 5px; }
+        .header .attribution { font-size: 1.1em; margin: 15px 0; opacity: 0.95; }
+
+        .header .links {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .header .links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .header .links a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-website { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .btn-youtube { background: linear-gradient(135deg, #ff0000, #cc0000); }
+        .btn-github { background: linear-gradient(135deg, #333, #000); }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #e2e8f0;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 14px 24px;
+            border: none;
+            background: none;
+            font-size: 1em;
+            font-weight: 600;
+            color: #94a3b8;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -3px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover { color: #64748b; }
+        .tab-btn.active { color: #667eea; border-bottom-color: #667eea; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Intro & boxes */
+        .intro {
+            background: linear-gradient(135deg, #f0f4ff, #e8ecff);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 28px;
+            border-left: 5px solid #667eea;
+        }
+
+        .intro h3 { color: #4338ca; margin-bottom: 10px; font-size: 1.15em; }
+        .intro p, .intro ul { color: #475569; line-height: 1.7; font-size: 0.95em; }
+        .intro ul { margin-top: 8px; padding-left: 20px; }
+        .intro li { margin-bottom: 4px; }
+
+        .intro .formula {
+            font-family: 'Courier New', monospace;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #4338ca;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fff7ed, #ffedd5);
+            border-left: 5px solid #f59e0b;
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin-bottom: 28px;
+        }
+
+        .warning-box h4 { color: #b45309; margin-bottom: 6px; font-size: 1em; }
+        .warning-box p { color: #78350f; font-size: 0.9em; line-height: 1.6; }
+
+        .key-insight {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border-left: 5px solid #10b981;
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin-top: 24px;
+        }
+
+        .key-insight h4 { color: #065f46; margin-bottom: 6px; font-size: 1em; }
+        .key-insight p { color: #064e3b; font-size: 0.9em; line-height: 1.6; }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.95em;
+        }
+
+        .control-group select, .control-group input[type="range"] {
+            padding: 8px 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-family: inherit;
+            background: white;
+            cursor: pointer;
+        }
+
+        .control-group select:focus, .control-group input[type="range"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .control-group .val {
+            font-weight: 700;
+            color: #667eea;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .btn-run {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-run:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        }
+
+        .btn-run:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* Stats */
+        .stats-panel {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 130px;
+            background: linear-gradient(135deg, #f0f4ff, #e8ecff);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-card .stat-value { font-size: 1.6em; font-weight: 700; color: #4338ca; }
+        .stat-card .stat-label { font-size: 0.78em; color: #64748b; margin-top: 4px; font-weight: 500; }
+
+        /* Chart */
+        .chart-container { margin: 20px 0; border-radius: 12px; overflow: hidden; }
+
+        /* Block viz */
+        .block-viz { margin: 20px 0; overflow-x: auto; }
+
+        /* Comparison table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.88em;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #475569;
+        }
+
+        .comparison-table tr:nth-child(even) { background: #f8fafc; }
+        .comparison-table .check { color: #10b981; font-weight: 700; }
+        .comparison-table .cross { color: #ef4444; font-weight: 700; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 20px; }
+            .header h1 { font-size: 1.8em; }
+            .controls { flex-direction: column; align-items: flex-start; }
+            .stats-panel { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Time Series Bootstrapping</h1>
+        <p class="subtitle">MBB, CBB, Stationary Bootstrap & Parametric ARIMA Bootstrap</p>
+        <p class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</p>
+        <div class="links">
+            <a href="https://pjalgotrader.github.io" class="btn-website">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                Website
+            </a>
+            <a href="https://www.youtube.com/@pedramjahangiry" class="btn-youtube">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                YouTube
+            </a>
+            <a href="https://github.com/PJalgotrader" class="btn-github">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="warning-box">
+            <h4>&#9888; Why Not Standard (i.i.d.) Bootstrap?</h4>
+            <p>
+                Standard bootstrap draws observations independently with replacement &mdash; this <strong>destroys the
+                temporal dependence structure</strong> that defines time series data. Autocorrelations, trends, and
+                seasonal patterns would be completely lost. Time series bootstrapping must preserve the local
+                dependence by resampling in <strong>blocks</strong> or through <strong>model-based</strong> approaches.
+            </p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('mbb')">Moving Block (MBB)</button>
+            <button class="tab-btn" onclick="switchTab('cbb')">Circular Block (CBB)</button>
+            <button class="tab-btn" onclick="switchTab('sb')">Stationary (SB)</button>
+            <button class="tab-btn" onclick="switchTab('parametric')">Parametric (ARIMA)</button>
+        </div>
+
+        <!-- ============ TAB 1: MBB ============ -->
+        <div id="tab-mbb" class="tab-content active">
+            <div class="intro">
+                <h3>Moving Block Bootstrap (MBB)</h3>
+                <p>
+                    The MBB (Kunsch, 1989; Liu &amp; Singh, 1992) samples <strong>overlapping blocks of fixed size
+                    <em>m</em></strong> from the original series. Each block preserves the local dependence structure
+                    within it. Blocks are drawn uniformly from the <span class="formula">T &minus; m + 1</span>
+                    possible starting positions, then concatenated and trimmed to length T.
+                </p>
+                <ul>
+                    <li><strong>Block library:</strong> B<sub>i</sub> = [y<sub>i</sub>, y<sub>i+1</sub>, ..., y<sub>i+m&minus;1</sub>] for i = 1, ..., T&minus;m+1</li>
+                    <li><strong>Draw</strong> k = &lceil;T/m&rceil; blocks uniformly with replacement</li>
+                    <li><strong>Concatenate</strong> and trim to length T</li>
+                </ul>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Block size (m):</label>
+                    <input type="range" id="mbb-block" min="3" max="36" value="12" oninput="document.getElementById('mbb-block-val').textContent=this.value">
+                    <span class="val" id="mbb-block-val">12</span>
+                </div>
+                <div class="control-group">
+                    <label>Bootstrap samples:</label>
+                    <input type="range" id="mbb-B" min="3" max="20" value="5" oninput="document.getElementById('mbb-B-val').textContent=this.value">
+                    <span class="val" id="mbb-B-val">5</span>
+                </div>
+                <button class="btn-run" onclick="runMBB()">&#9654; Generate</button>
+            </div>
+
+            <div class="stats-panel" id="mbb-stats"></div>
+            <div class="chart-container" id="mbb-chart" style="height: 420px;"></div>
+            <div class="block-viz" id="mbb-block-viz"></div>
+
+            <div class="key-insight">
+                <h4>Key Insight &mdash; Edge Bias</h4>
+                <p>
+                    Observations near the boundaries (y<sub>1</sub> and y<sub>T</sub>) appear in fewer possible blocks
+                    than observations in the middle. For example, y<sub>1</sub> only appears in B<sub>1</sub>, while
+                    a middle observation y<sub>t</sub> appears in up to <em>m</em> different blocks. This creates an
+                    <strong>edge bias</strong> where boundary observations are undersampled &mdash; a limitation
+                    addressed by CBB.
+                </p>
+            </div>
+        </div>
+
+        <!-- ============ TAB 2: CBB ============ -->
+        <div id="tab-cbb" class="tab-content">
+            <div class="intro">
+                <h3>Circular Block Bootstrap (CBB)</h3>
+                <p>
+                    The CBB (Politis &amp; Romano, 1992) wraps the series into a <strong>circle</strong> so that
+                    y<sub>T+1</sub> = y<sub>1</sub>, y<sub>T+2</sub> = y<sub>2</sub>, etc. This creates exactly
+                    <span class="formula">T</span> possible blocks of any size m (vs. T&minus;m+1 for MBB), ensuring
+                    <strong>all observations are sampled with equal probability</strong>.
+                </p>
+                <ul>
+                    <li><strong>Circular extension:</strong> y<sub>t</sub><sup>circ</sup> = y<sub>((t&minus;1) mod T) + 1</sub></li>
+                    <li><strong>Block library:</strong> T blocks (all starting positions valid)</li>
+                    <li><strong>Eliminates edge bias:</strong> every observation appears in exactly <em>m</em> blocks</li>
+                </ul>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Block size (m):</label>
+                    <input type="range" id="cbb-block" min="3" max="36" value="12" oninput="document.getElementById('cbb-block-val').textContent=this.value">
+                    <span class="val" id="cbb-block-val">12</span>
+                </div>
+                <div class="control-group">
+                    <label>Bootstrap samples:</label>
+                    <input type="range" id="cbb-B" min="3" max="20" value="5" oninput="document.getElementById('cbb-B-val').textContent=this.value">
+                    <span class="val" id="cbb-B-val">5</span>
+                </div>
+                <button class="btn-run" onclick="runCBB()">&#9654; Generate</button>
+            </div>
+
+            <div class="stats-panel" id="cbb-stats"></div>
+            <div class="chart-container" id="cbb-chart" style="height: 420px;"></div>
+            <div class="block-viz" id="cbb-block-viz"></div>
+
+            <div class="key-insight">
+                <h4>Key Insight &mdash; Circular Wrap</h4>
+                <p>
+                    By connecting y<sub>T</sub> back to y<sub>1</sub>, the CBB ensures that observations near the
+                    series boundaries have equal representation. This eliminates the edge bias of MBB. The trade-off
+                    is that <strong>the wrap-around junction is artificial</strong> &mdash; the connection from the
+                    end back to the start may not reflect genuine temporal dynamics, especially for non-seasonal data.
+                </p>
+            </div>
+        </div>
+
+        <!-- ============ TAB 3: STATIONARY BOOTSTRAP ============ -->
+        <div id="tab-sb" class="tab-content">
+            <div class="intro">
+                <h3>Stationary Bootstrap (SB)</h3>
+                <p>
+                    The SB (Politis &amp; Romano, 1994) uses <strong>random block lengths</strong> drawn from a
+                    Geometric(<em>p</em>) distribution with mean block length <span class="formula">1/p</span>.
+                    At each step, with probability <em>p</em> a new random block begins, and with probability
+                    1&minus;<em>p</em> the current block continues (with circular wrapping).
+                </p>
+                <ul>
+                    <li><strong>Block length:</strong> L ~ Geometric(p), so E[L] = 1/p</li>
+                    <li><strong>The resampled series is itself stationary</strong> (unique property!)</li>
+                    <li><strong>No edge bias:</strong> all observations equally likely at any position</li>
+                    <li><strong>Less sensitive</strong> to the choice of mean block length than MBB/CBB are to fixed m</li>
+                </ul>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Mean block length (1/p):</label>
+                    <input type="range" id="sb-mean" min="3" max="36" value="12" oninput="document.getElementById('sb-mean-val').textContent=this.value">
+                    <span class="val" id="sb-mean-val">12</span>
+                </div>
+                <div class="control-group">
+                    <label>Bootstrap samples:</label>
+                    <input type="range" id="sb-B" min="3" max="20" value="5" oninput="document.getElementById('sb-B-val').textContent=this.value">
+                    <span class="val" id="sb-B-val">5</span>
+                </div>
+                <button class="btn-run" onclick="runSB()">&#9654; Generate</button>
+            </div>
+
+            <div class="stats-panel" id="sb-stats"></div>
+            <div class="chart-container" id="sb-chart" style="height: 420px;"></div>
+            <div class="block-viz" id="sb-block-viz"></div>
+
+            <div class="key-insight">
+                <h4>Key Insight &mdash; Stationarity Preservation</h4>
+                <p>
+                    The SB is the <strong>only non-parametric block bootstrap that produces a stationary resampled series</strong>
+                    when the original is stationary. The random block lengths drawn from a memoryless Geometric distribution
+                    ensure no systematic position-dependent sampling patterns. MBB and CBB bootstrap distributions are
+                    <em>not</em> stationary even when applied to stationary data.
+                </p>
+            </div>
+        </div>
+
+        <!-- ============ TAB 4: PARAMETRIC ARIMA ============ -->
+        <div id="tab-parametric" class="tab-content">
+            <div class="intro">
+                <h3>Parametric Bootstrap &mdash; ARIMA(1,1,1)</h3>
+                <p>
+                    The parametric bootstrap fits a model to the data, extracts the residuals (which should be
+                    approximately i.i.d.), resamples the residuals with replacement, and feeds them through the
+                    fitted model to generate new bootstrap paths. This is <strong>model-based</strong> rather than
+                    block-based.
+                </p>
+                <ul>
+                    <li><strong>Step 1:</strong> Fit ARIMA(1,1,1) to airline passenger data (on log-transformed series)</li>
+                    <li><strong>Step 2:</strong> Extract residuals &epsilon;&#770;<sub>t</sub> and center them</li>
+                    <li><strong>Step 3:</strong> Resample residuals with replacement &rarr; &epsilon;*<sub>t</sub></li>
+                    <li><strong>Step 4:</strong> Reconstruct: w*<sub>t</sub> = c + &phi;&middot;w*<sub>t&minus;1</sub> + &epsilon;*<sub>t</sub> + &theta;&middot;&epsilon;*<sub>t&minus;1</sub></li>
+                    <li><strong>Step 5:</strong> Integrate back: y*<sub>t</sub> = y*<sub>t&minus;1</sub> + w*<sub>t</sub>, then exp() to undo log</li>
+                </ul>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Bootstrap samples:</label>
+                    <input type="range" id="arima-B" min="3" max="20" value="5" oninput="document.getElementById('arima-B-val').textContent=this.value">
+                    <span class="val" id="arima-B-val">5</span>
+                </div>
+                <button class="btn-run" onclick="runARIMA()">&#9654; Generate</button>
+            </div>
+
+            <div class="stats-panel" id="arima-stats"></div>
+            <div class="chart-container" id="arima-chart" style="height: 420px;"></div>
+            <div class="chart-container" id="arima-resid-chart" style="height: 300px;"></div>
+
+            <div class="key-insight">
+                <h4>Key Insight &mdash; Model Dependence</h4>
+                <p>
+                    The parametric bootstrap is the <strong>most efficient when the model is correctly specified</strong>
+                    &mdash; it generates smooth, model-consistent paths without block-boundary discontinuities. However,
+                    if the ARIMA model is misspecified, the bootstrap paths will not faithfully represent the true data
+                    generating process. Block methods (MBB, CBB, SB) are <strong>model-free</strong> and don't suffer
+                    from this risk, making them more robust but less efficient.
+                </p>
+            </div>
+        </div>
+
+        <!-- ============ COMPARISON TABLE ============ -->
+        <h3 style="margin-top: 36px; color: #1e293b;">Comparison of Methods</h3>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Property</th>
+                    <th>MBB</th>
+                    <th>CBB</th>
+                    <th>Stationary Bootstrap</th>
+                    <th>Parametric (ARIMA)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Block length</td>
+                    <td>Fixed m</td>
+                    <td>Fixed m</td>
+                    <td>Random ~ Geom(p)</td>
+                    <td>N/A (model-based)</td>
+                </tr>
+                <tr>
+                    <td>Possible blocks</td>
+                    <td>T &minus; m + 1</td>
+                    <td>T</td>
+                    <td>Random</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>Edge bias</td>
+                    <td class="cross">Yes</td>
+                    <td class="check">No</td>
+                    <td class="check">No</td>
+                    <td class="check">No</td>
+                </tr>
+                <tr>
+                    <td>Resampled series stationary</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                    <td class="check">Yes</td>
+                    <td class="check">Yes (if model correct)</td>
+                </tr>
+                <tr>
+                    <td>Equal obs. probability</td>
+                    <td class="cross">No</td>
+                    <td class="check">Yes</td>
+                    <td class="check">Yes</td>
+                    <td class="check">Yes</td>
+                </tr>
+                <tr>
+                    <td>Model-free</td>
+                    <td class="check">Yes</td>
+                    <td class="check">Yes</td>
+                    <td class="check">Yes</td>
+                    <td class="cross">No</td>
+                </tr>
+                <tr>
+                    <td>Block boundary artifacts</td>
+                    <td class="cross">Yes</td>
+                    <td class="cross">Yes</td>
+                    <td class="cross">Yes (smoothed)</td>
+                    <td class="check">No</td>
+                </tr>
+                <tr>
+                    <td>Can generate forecasts</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                    <td class="check">Yes</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+    // ================== AIRLINE PASSENGER DATA ==================
+    const AIRLINE_DATA = [
+        112,118,132,129,121,135,148,148,136,119,104,118,
+        115,126,141,135,125,149,170,170,158,133,114,140,
+        145,150,178,163,172,178,199,199,184,162,146,166,
+        171,180,193,181,183,218,230,242,209,191,172,194,
+        196,196,236,235,229,243,264,272,237,211,180,201,
+        204,188,235,227,234,264,302,293,259,229,203,229,
+        242,233,267,269,270,315,364,347,312,274,237,278,
+        284,277,317,313,318,374,413,405,355,306,271,306,
+        315,301,356,348,355,422,465,467,404,347,305,336,
+        340,318,362,348,363,435,491,505,404,359,310,337,
+        360,342,406,396,420,472,548,559,463,407,362,405,
+        417,391,419,461,472,535,622,606,508,461,390,432
+    ];
+
+    const MONTHS = [];
+    for (let y = 1949; y <= 1960; y++) {
+        for (let m = 1; m <= 12; m++) {
+            MONTHS.push(y + '-' + String(m).padStart(2, '0'));
+        }
+    }
+
+    const T = AIRLINE_DATA.length;
+    const BOOT_COLORS = [
+        'rgba(239, 68, 68, 0.5)', 'rgba(59, 130, 246, 0.5)', 'rgba(16, 185, 129, 0.5)',
+        'rgba(245, 158, 11, 0.5)', 'rgba(139, 92, 246, 0.5)', 'rgba(236, 72, 153, 0.5)',
+        'rgba(20, 184, 166, 0.5)', 'rgba(249, 115, 22, 0.5)', 'rgba(99, 102, 241, 0.5)',
+        'rgba(132, 204, 22, 0.5)', 'rgba(217, 70, 239, 0.5)', 'rgba(6, 182, 212, 0.5)',
+        'rgba(234, 88, 12, 0.5)', 'rgba(168, 85, 247, 0.5)', 'rgba(34, 197, 94, 0.5)',
+        'rgba(244, 63, 94, 0.5)', 'rgba(56, 189, 248, 0.5)', 'rgba(251, 146, 60, 0.5)',
+        'rgba(192, 132, 252, 0.5)', 'rgba(74, 222, 128, 0.5)'
+    ];
+
+    // ================== TAB SWITCHING ==================
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById('tab-' + tab).classList.add('active');
+        const tabs = ['mbb', 'cbb', 'sb', 'parametric'];
+        document.querySelectorAll('.tab-btn')[tabs.indexOf(tab)].classList.add('active');
+    }
+
+    // ================== MBB ==================
+    function mbbBootstrap(series, blockSize, B) {
+        const n = series.length;
+        const numBlocks = n - blockSize + 1;
+        const results = [];
+        const blockStarts = []; // Track which blocks were used for each sample
+
+        for (let b = 0; b < B; b++) {
+            const sample = [];
+            const starts = [];
+            while (sample.length < n) {
+                const startIdx = Math.floor(Math.random() * numBlocks);
+                starts.push(startIdx);
+                for (let j = 0; j < blockSize && sample.length < n; j++) {
+                    sample.push(series[startIdx + j]);
+                }
+            }
+            results.push(sample);
+            blockStarts.push(starts);
+        }
+        return { results, blockStarts };
+    }
+
+    function runMBB() {
+        const blockSize = +document.getElementById('mbb-block').value;
+        const B = +document.getElementById('mbb-B').value;
+        const numPossibleBlocks = T - blockSize + 1;
+        const numBlocksPerSample = Math.ceil(T / blockSize);
+
+        // Stats
+        document.getElementById('mbb-stats').innerHTML = `
+            <div class="stat-card"><div class="stat-value">${T}</div><div class="stat-label">Series length (T)</div></div>
+            <div class="stat-card"><div class="stat-value">${blockSize}</div><div class="stat-label">Block size (m)</div></div>
+            <div class="stat-card"><div class="stat-value">${numPossibleBlocks}</div><div class="stat-label">Possible blocks (T&minus;m+1)</div></div>
+            <div class="stat-card"><div class="stat-value">${numBlocksPerSample}</div><div class="stat-label">Blocks drawn (&lceil;T/m&rceil;)</div></div>
+        `;
+
+        const { results, blockStarts } = mbbBootstrap(AIRLINE_DATA, blockSize, B);
+        plotBootstrapResults('mbb-chart', results, 'Moving Block Bootstrap (MBB)');
+        drawBlockDiagram('mbb-block-viz', blockStarts[0], blockSize, T, false);
+    }
+
+    // ================== CBB ==================
+    function cbbBootstrap(series, blockSize, B) {
+        const n = series.length;
+        const results = [];
+        const blockStarts = [];
+
+        for (let b = 0; b < B; b++) {
+            const sample = [];
+            const starts = [];
+            while (sample.length < n) {
+                const startIdx = Math.floor(Math.random() * n); // All T positions valid
+                starts.push(startIdx);
+                for (let j = 0; j < blockSize && sample.length < n; j++) {
+                    sample.push(series[(startIdx + j) % n]); // Circular wrap
+                }
+            }
+            results.push(sample);
+            blockStarts.push(starts);
+        }
+        return { results, blockStarts };
+    }
+
+    function runCBB() {
+        const blockSize = +document.getElementById('cbb-block').value;
+        const B = +document.getElementById('cbb-B').value;
+        const numBlocksPerSample = Math.ceil(T / blockSize);
+
+        document.getElementById('cbb-stats').innerHTML = `
+            <div class="stat-card"><div class="stat-value">${T}</div><div class="stat-label">Series length (T)</div></div>
+            <div class="stat-card"><div class="stat-value">${blockSize}</div><div class="stat-label">Block size (m)</div></div>
+            <div class="stat-card"><div class="stat-value">${T}</div><div class="stat-label">Possible blocks (all T)</div></div>
+            <div class="stat-card"><div class="stat-value">${numBlocksPerSample}</div><div class="stat-label">Blocks drawn (&lceil;T/m&rceil;)</div></div>
+        `;
+
+        const { results, blockStarts } = cbbBootstrap(AIRLINE_DATA, blockSize, B);
+        plotBootstrapResults('cbb-chart', results, 'Circular Block Bootstrap (CBB)');
+        drawBlockDiagram('cbb-block-viz', blockStarts[0], blockSize, T, true);
+    }
+
+    // ================== STATIONARY BOOTSTRAP ==================
+    function stationaryBootstrap(series, meanBlockLength, B) {
+        const n = series.length;
+        const p = 1 / meanBlockLength;
+        const results = [];
+        const blockLengths = [];
+
+        for (let b = 0; b < B; b++) {
+            const sample = [];
+            const lengths = [];
+            let currentIdx = Math.floor(Math.random() * n);
+            let currentLen = 1;
+            sample.push(series[currentIdx]);
+
+            for (let t = 1; t < n; t++) {
+                if (Math.random() < p) {
+                    // Start new block
+                    lengths.push(currentLen);
+                    currentLen = 1;
+                    currentIdx = Math.floor(Math.random() * n);
+                } else {
+                    // Continue current block (circular)
+                    currentIdx = (currentIdx + 1) % n;
+                    currentLen++;
+                }
+                sample.push(series[currentIdx]);
+            }
+            lengths.push(currentLen);
+            results.push(sample);
+            blockLengths.push(lengths);
+        }
+        return { results, blockLengths };
+    }
+
+    function runSB() {
+        const meanBlock = +document.getElementById('sb-mean').value;
+        const B = +document.getElementById('sb-B').value;
+        const p = (1 / meanBlock).toFixed(3);
+
+        const { results, blockLengths } = stationaryBootstrap(AIRLINE_DATA, meanBlock, B);
+
+        // Compute actual average block length from first sample
+        const avgLen = (blockLengths[0].reduce((a,b) => a+b, 0) / blockLengths[0].length).toFixed(1);
+        const numBlocks = blockLengths[0].length;
+        const minLen = Math.min(...blockLengths[0]);
+        const maxLen = Math.max(...blockLengths[0]);
+
+        document.getElementById('sb-stats').innerHTML = `
+            <div class="stat-card"><div class="stat-value">${p}</div><div class="stat-label">p = 1/mean</div></div>
+            <div class="stat-card"><div class="stat-value">${meanBlock}</div><div class="stat-label">Target mean block</div></div>
+            <div class="stat-card"><div class="stat-value">${avgLen}</div><div class="stat-label">Actual avg block (sample 1)</div></div>
+            <div class="stat-card"><div class="stat-value">${minLen}&ndash;${maxLen}</div><div class="stat-label">Block range (sample 1)</div></div>
+        `;
+
+        plotBootstrapResults('sb-chart', results, 'Stationary Bootstrap (SB)');
+        drawSBBlockDiagram('sb-block-viz', blockLengths[0]);
+    }
+
+    // ================== PARAMETRIC ARIMA BOOTSTRAP ==================
+    // Pre-computed ARIMA(1,1,1) parameters for log(airline passengers)
+    // Fitted in Python: from statsmodels.tsa.arima.model import ARIMA
+    // model = ARIMA(np.log(data), order=(1,1,1)).fit()
+    const ARIMA_PARAMS = {
+        phi: 0.1189,    // AR(1) coefficient
+        theta: -0.6685, // MA(1) coefficient
+        c: 0.0
+    };
+
+    function fitARIMAResiduals() {
+        const logSeries = AIRLINE_DATA.map(y => Math.log(y));
+        // Compute first differences
+        const w = [];
+        for (let t = 1; t < logSeries.length; t++) {
+            w.push(logSeries[t] - logSeries[t - 1]);
+        }
+
+        const { phi, theta, c } = ARIMA_PARAMS;
+        // Compute residuals using the model
+        const residuals = [];
+        let prevResid = 0;
+        for (let t = 0; t < w.length; t++) {
+            const predicted = c + (t > 0 ? phi * w[t - 1] : 0) + theta * prevResid;
+            const resid = w[t] - predicted;
+            residuals.push(resid);
+            prevResid = resid;
+        }
+
+        // Center residuals
+        const mean = residuals.reduce((a, b) => a + b, 0) / residuals.length;
+        return residuals.map(r => r - mean);
+    }
+
+    function arimaBootstrap(B) {
+        const logSeries = AIRLINE_DATA.map(y => Math.log(y));
+        const residuals = fitARIMAResiduals();
+        const { phi, theta, c } = ARIMA_PARAMS;
+
+        // First differences
+        const w = [];
+        for (let t = 1; t < logSeries.length; t++) {
+            w.push(logSeries[t] - logSeries[t - 1]);
+        }
+
+        const results = [];
+        for (let b = 0; b < B; b++) {
+            // Resample residuals
+            const resampledResids = w.map(() =>
+                residuals[Math.floor(Math.random() * residuals.length)]
+            );
+
+            // Reconstruct differenced series
+            const wStar = [w[0]];
+            let prevInnovation = resampledResids[0];
+            for (let t = 1; t < w.length; t++) {
+                const val = c + phi * wStar[t - 1] + resampledResids[t] + theta * prevInnovation;
+                wStar.push(val);
+                prevInnovation = resampledResids[t];
+            }
+
+            // Integrate back to level (log scale)
+            const logYStar = [logSeries[0]];
+            for (let t = 0; t < wStar.length; t++) {
+                logYStar.push(logYStar[t] + wStar[t]);
+            }
+
+            // Exponentiate back to original scale
+            results.push(logYStar.map(v => Math.exp(v)));
+        }
+
+        return { results, residuals };
+    }
+
+    function runARIMA() {
+        const B = +document.getElementById('arima-B').value;
+        const { phi, theta, c } = ARIMA_PARAMS;
+
+        const { results, residuals } = arimaBootstrap(B);
+
+        document.getElementById('arima-stats').innerHTML = `
+            <div class="stat-card"><div class="stat-value">ARIMA(1,1,1)</div><div class="stat-label">Model</div></div>
+            <div class="stat-card"><div class="stat-value">&phi; = ${phi.toFixed(3)}</div><div class="stat-label">AR(1) coefficient</div></div>
+            <div class="stat-card"><div class="stat-value">&theta; = ${theta.toFixed(3)}</div><div class="stat-label">MA(1) coefficient</div></div>
+            <div class="stat-card"><div class="stat-value">${residuals.length}</div><div class="stat-label">Residuals resampled</div></div>
+        `;
+
+        plotBootstrapResults('arima-chart', results, 'Parametric ARIMA(1,1,1) Bootstrap');
+
+        // Plot residuals
+        Plotly.newPlot('arima-resid-chart', [
+            {
+                x: MONTHS.slice(1),
+                y: residuals,
+                type: 'bar',
+                marker: { color: residuals.map(r => r >= 0 ? 'rgba(59, 130, 246, 0.6)' : 'rgba(239, 68, 68, 0.6)') },
+                name: 'Residuals'
+            }
+        ], {
+            title: { text: 'ARIMA(1,1,1) Fitted Residuals (log scale)', font: { size: 14, family: 'Inter' } },
+            xaxis: { title: 'Date', tickfont: { size: 10 } },
+            yaxis: { title: 'Residual', tickfont: { size: 10 } },
+            margin: { t: 40, r: 20, b: 60, l: 60 },
+            plot_bgcolor: '#fafafa',
+            paper_bgcolor: 'white'
+        }, { responsive: true });
+    }
+
+    // ================== PLOTTING ==================
+    function plotBootstrapResults(containerId, bootstrapSamples, title) {
+        const traces = [
+            {
+                x: MONTHS,
+                y: AIRLINE_DATA,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Original',
+                line: { color: '#1e293b', width: 3 }
+            }
+        ];
+
+        bootstrapSamples.forEach((sample, i) => {
+            traces.push({
+                x: MONTHS,
+                y: sample,
+                type: 'scatter',
+                mode: 'lines',
+                name: `Bootstrap ${i + 1}`,
+                line: { color: BOOT_COLORS[i % BOOT_COLORS.length], width: 1.5 }
+            });
+        });
+
+        Plotly.newPlot(containerId, traces, {
+            title: { text: title, font: { size: 16, family: 'Inter' } },
+            xaxis: {
+                title: 'Date',
+                tickfont: { size: 10 },
+                tickangle: -45
+            },
+            yaxis: {
+                title: 'Number of Passengers',
+                tickfont: { size: 10 }
+            },
+            legend: { orientation: 'h', y: -0.25, font: { size: 10 } },
+            margin: { t: 50, r: 20, b: 80, l: 60 },
+            plot_bgcolor: '#fafafa',
+            paper_bgcolor: 'white',
+            hovermode: 'x unified'
+        }, { responsive: true });
+    }
+
+    // ================== BLOCK DIAGRAMS ==================
+    function drawBlockDiagram(containerId, blockStarts, blockSize, seriesLen, isCircular) {
+        const container = document.getElementById(containerId);
+        const cellW = Math.max(5, Math.min(8, 900 / seriesLen));
+        const cellH = 28;
+        const gap = 1;
+        const labelW = 120;
+        const rowH = cellH + 8;
+        const numRows = Math.min(blockStarts.length, 6); // Show up to 6 blocks
+        const svgW = labelW + seriesLen * (cellW + gap) + 20;
+        const svgH = (numRows + 2) * rowH + 20;
+
+        const blockColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+
+        let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">`;
+
+        // Title
+        svg += `<text x="${svgW/2}" y="16" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">Block Sampling Diagram (Bootstrap Sample 1) &mdash; ${isCircular ? 'Circular' : 'Linear'}</text>`;
+
+        // Original series bar
+        const origY = 28;
+        svg += `<text x="0" y="${origY + cellH/2 + 4}" font-size="10" font-weight="600" fill="#475569">Original:</text>`;
+        for (let i = 0; i < seriesLen; i++) {
+            const x = labelW + i * (cellW + gap);
+            svg += `<rect x="${x}" y="${origY}" width="${cellW}" height="${cellH}" rx="1" fill="#cbd5e1"/>`;
+        }
+
+        // Each sampled block
+        for (let b = 0; b < numRows; b++) {
+            const y = origY + (b + 1) * rowH;
+            const start = blockStarts[b];
+            const color = blockColors[b % blockColors.length];
+
+            svg += `<text x="0" y="${y + cellH/2 + 4}" font-size="10" font-weight="600" fill="${color}">Block ${b + 1} (i=${start + 1}):</text>`;
+
+            for (let j = 0; j < blockSize; j++) {
+                const idx = isCircular ? (start + j) % seriesLen : start + j;
+                if (idx >= seriesLen) break;
+                const x = labelW + idx * (cellW + gap);
+                svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="1" fill="${color}" opacity="0.7"/>`;
+            }
+
+            // Show wrap-around for circular
+            if (isCircular && start + blockSize > seriesLen) {
+                const wrapCount = (start + blockSize) - seriesLen;
+                for (let j = 0; j < wrapCount; j++) {
+                    const x = labelW + j * (cellW + gap);
+                    svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="1" fill="${color}" opacity="0.4" stroke="${color}" stroke-width="1" stroke-dasharray="2"/>`;
+                }
+            }
+        }
+
+        svg += '</svg>';
+        container.innerHTML = svg;
+    }
+
+    function drawSBBlockDiagram(containerId, blockLengths) {
+        const container = document.getElementById(containerId);
+        const cellW = Math.max(5, Math.min(8, 900 / T));
+        const cellH = 32;
+        const gap = 1;
+        const labelW = 30;
+        const svgW = labelW + T * (cellW + gap) + 20;
+        const svgH = cellH + 50;
+
+        const blockColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899',
+                             '#06b6d4', '#f97316', '#6366f1', '#14b8a6', '#84cc16', '#d946ef'];
+
+        let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">`;
+        svg += `<text x="${svgW/2}" y="14" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">Bootstrap Sample 1 &mdash; Random block lengths (${blockLengths.length} blocks)</text>`;
+
+        let pos = 0;
+        for (let b = 0; b < blockLengths.length; b++) {
+            const len = blockLengths[b];
+            const color = blockColors[b % blockColors.length];
+            for (let j = 0; j < len && pos < T; j++, pos++) {
+                const x = labelW + pos * (cellW + gap);
+                svg += `<rect x="${x}" y="24" width="${cellW}" height="${cellH}" rx="1" fill="${color}" opacity="0.7"/>`;
+            }
+        }
+
+        // Block length annotations
+        let annoPos = 0;
+        for (let b = 0; b < Math.min(blockLengths.length, 15); b++) {
+            const len = blockLengths[b];
+            const midX = labelW + (annoPos + len / 2) * (cellW + gap);
+            if (len >= 3) {
+                svg += `<text x="${midX}" y="${cellH + 44}" text-anchor="middle" font-size="8" fill="#64748b">${len}</text>`;
+            }
+            annoPos += len;
+        }
+
+        svg += '</svg>';
+        container.innerHTML = svg;
+    }
+
+    // ================== INITIALIZE ==================
+    runMBB();
+    </script>
+</body>
+</html>
