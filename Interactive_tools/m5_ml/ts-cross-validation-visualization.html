@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Series Cross Validation | Dr. Pedram Jahangiry</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .header .attribution {
+            font-size: 1.1em;
+            margin: 15px 0;
+            opacity: 0.95;
+        }
+
+        .header .links {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .header .links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .header .links a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-website { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .btn-youtube { background: linear-gradient(135deg, #ff0000, #cc0000); }
+        .btn-github { background: linear-gradient(135deg, #333, #000); }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        /* Tab navigation */
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #e2e8f0;
+        }
+
+        .tab-btn {
+            padding: 14px 28px;
+            border: none;
+            background: none;
+            font-size: 1.05em;
+            font-weight: 600;
+            color: #94a3b8;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -3px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .tab-btn:hover {
+            color: #64748b;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Intro section */
+        .intro {
+            background: linear-gradient(135deg, #f0f4ff, #e8ecff);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 28px;
+            border-left: 5px solid #667eea;
+        }
+
+        .intro h3 {
+            color: #4338ca;
+            margin-bottom: 10px;
+            font-size: 1.15em;
+        }
+
+        .intro p, .intro ul {
+            color: #475569;
+            line-height: 1.7;
+            font-size: 0.95em;
+        }
+
+        .intro ul {
+            margin-top: 8px;
+            padding-left: 20px;
+        }
+
+        .intro li {
+            margin-bottom: 4px;
+        }
+
+        .intro .formula {
+            font-family: 'Courier New', monospace;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #4338ca;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fff7ed, #ffedd5);
+            border-left: 5px solid #f59e0b;
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin-bottom: 28px;
+        }
+
+        .warning-box h4 {
+            color: #b45309;
+            margin-bottom: 6px;
+            font-size: 1em;
+        }
+
+        .warning-box p {
+            color: #78350f;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.95em;
+        }
+
+        .control-group select, .control-group input[type="range"] {
+            padding: 8px 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-family: inherit;
+            background: white;
+            cursor: pointer;
+        }
+
+        .control-group select:focus, .control-group input[type="range"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .control-group .val {
+            font-weight: 700;
+            color: #667eea;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .btn-animate {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-animate:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        }
+
+        .btn-animate:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Stats panel */
+        .stats-panel {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 140px;
+            background: linear-gradient(135deg, #f0f4ff, #e8ecff);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #4338ca;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.8em;
+            color: #64748b;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* Timeline visualization */
+        .viz-area {
+            margin: 24px 0;
+            overflow-x: auto;
+        }
+
+        .timeline-label {
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        /* SVG styles */
+        svg text {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85em;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .legend-swatch {
+            width: 20px;
+            height: 14px;
+            border-radius: 3px;
+        }
+
+        /* Iteration highlight */
+        .iteration-row {
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .iteration-row:hover {
+            opacity: 0.85;
+        }
+
+        /* Key insight boxes */
+        .key-insight {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border-left: 5px solid #10b981;
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin-top: 24px;
+        }
+
+        .key-insight h4 {
+            color: #065f46;
+            margin-bottom: 6px;
+            font-size: 1em;
+        }
+
+        .key-insight p {
+            color: #064e3b;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        /* Comparison table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.88em;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #475569;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .comparison-table .check { color: #10b981; font-weight: 700; }
+        .comparison-table .cross { color: #ef4444; font-weight: 700; }
+
+        /* Toggle buttons for walk-forward subtypes */
+        .sub-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .sub-tab-btn {
+            padding: 8px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .sub-tab-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        /* Path highlighting */
+        .path-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+        }
+
+        .path-btn {
+            padding: 6px 14px;
+            border: 2px solid #cbd5e1;
+            background: white;
+            border-radius: 6px;
+            font-size: 0.82em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .path-btn.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+            color: #4338ca;
+        }
+
+        .path-btn:hover {
+            border-color: #667eea;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 20px; }
+            .header h1 { font-size: 1.8em; }
+            .tabs { overflow-x: auto; }
+            .tab-btn { padding: 10px 16px; font-size: 0.9em; white-space: nowrap; }
+            .controls { flex-direction: column; align-items: flex-start; }
+            .stats-panel { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Time Series Cross Validation</h1>
+        <p class="subtitle">Purged K-Fold, Walk-Forward, & Combinatorial Purged CV</p>
+        <p class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</p>
+        <div class="links">
+            <a href="https://pjalgotrader.github.io" class="btn-website">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                Website
+            </a>
+            <a href="https://www.youtube.com/@pedramjahangiry" class="btn-youtube">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                YouTube
+            </a>
+            <a href="https://github.com/PJalgotrader" class="btn-github">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('purged')">Purged K-Fold CV</button>
+            <button class="tab-btn" onclick="switchTab('walkforward')">Walk-Forward CV</button>
+            <button class="tab-btn" onclick="switchTab('cpcv')">Combinatorial Purged CV</button>
+        </div>
+
+        <!-- ============ TAB 1: PURGED K-FOLD CV ============ -->
+        <div id="tab-purged" class="tab-content active">
+            <div class="intro">
+                <h3>Purged K-Fold Cross Validation</h3>
+                <p>
+                    Standard K-Fold CV randomly shuffles data into folds &mdash; but time series data is <strong>not i.i.d.</strong>!
+                    Nearby observations are correlated, and labels often span multiple time periods (e.g., a 20-day forward return).
+                    This creates <strong>data leakage</strong>: the training set contains information that "bleeds" into the test period.
+                </p>
+                <p style="margin-top: 10px;">
+                    <strong>Purged K-Fold CV</strong> (from de Prado, 2018) fixes this with two mechanisms:
+                </p>
+                <ul>
+                    <li><strong>Purging:</strong> Remove training samples whose labels overlap with the test period &mdash; eliminates direct lookahead bias</li>
+                    <li><strong>Embargo:</strong> Remove a buffer of training samples <em>after</em> each test block &mdash; accounts for feature leakage (e.g., rolling averages that include test data)</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <h4>&#9888; Why Not Standard K-Fold?</h4>
+                <p>
+                    With time series, standard K-Fold allows future data to train the model. Even if folds are contiguous,
+                    labels that span multiple bars create overlap between train and test sets. Purging and embargoing are
+                    essential to get an honest out-of-sample estimate.
+                </p>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Folds (K):</label>
+                    <input type="range" id="purged-k" min="3" max="8" value="5" oninput="updatePurged()">
+                    <span class="val" id="purged-k-val">5</span>
+                </div>
+                <div class="control-group">
+                    <label>Purge size:</label>
+                    <input type="range" id="purge-size" min="0" max="4" value="2" oninput="updatePurged()">
+                    <span class="val" id="purge-size-val">2</span>
+                </div>
+                <div class="control-group">
+                    <label>Embargo size:</label>
+                    <input type="range" id="embargo-size" min="0" max="4" value="1" oninput="updatePurged()">
+                    <span class="val" id="embargo-size-val">1</span>
+                </div>
+                <button class="btn-animate" onclick="animatePurged()">&#9654; Animate</button>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item"><div class="legend-swatch" style="background: #3b82f6;"></div> Train</div>
+                <div class="legend-item"><div class="legend-swatch" style="background: #f59e0b;"></div> Test</div>
+                <div class="legend-item"><div class="legend-swatch" style="background: #ef4444;"></div> Purged</div>
+                <div class="legend-item"><div class="legend-swatch" style="background: #f97316;"></div> Embargo</div>
+                <div class="legend-item"><div class="legend-swatch" style="background: #e2e8f0;"></div> Unused</div>
+            </div>
+
+            <div class="viz-area" id="purged-viz"></div>
+
+            <div class="key-insight">
+                <h4>Key Insight</h4>
+                <p>
+                    Purging removes training samples whose label resolution period overlaps the test set, while embargo
+                    removes samples immediately after the test set whose features may contain test-period information.
+                    Together, they prevent <em>both</em> direct and indirect data leakage.
+                </p>
+            </div>
+        </div>
+
+        <!-- ============ TAB 2: WALK-FORWARD CV ============ -->
+        <div id="tab-walkforward" class="tab-content">
+            <div class="intro">
+                <h3>Walk-Forward Cross Validation</h3>
+                <p>
+                    Walk-Forward CV respects the temporal ordering of time series by always training on <em>past</em> data and
+                    testing on <em>future</em> data. It comes in two variants:
+                </p>
+                <ul>
+                    <li><strong>Expanding Window:</strong> Training set grows over time &mdash; each split adds more historical data.
+                        Uses all available past data, but training cost increases with each split.</li>
+                    <li><strong>Rolling (Sliding) Window:</strong> Training set has a fixed size that slides forward &mdash;
+                        drops the oldest data as new data is added. Better for non-stationary data where old patterns may be irrelevant.</li>
+                </ul>
+            </div>
+
+            <div class="sub-tabs">
+                <button class="sub-tab-btn active" onclick="switchWalkForward('expanding')">Expanding Window</button>
+                <button class="sub-tab-btn" onclick="switchWalkForward('rolling')">Rolling Window</button>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Splits:</label>
+                    <input type="range" id="wf-splits" min="3" max="8" value="5" oninput="updateWalkForward()">
+                    <span class="val" id="wf-splits-val">5</span>
+                </div>
+                <div class="control-group" id="wf-train-group">
+                    <label id="wf-train-label">Min train size:</label>
+                    <input type="range" id="wf-train" min="3" max="10" value="5" oninput="updateWalkForward()">
+                    <span class="val" id="wf-train-val">5</span>
+                </div>
+                <div class="control-group">
+                    <label>Test size:</label>
+                    <input type="range" id="wf-test" min="1" max="4" value="2" oninput="updateWalkForward()">
+                    <span class="val" id="wf-test-val">2</span>
+                </div>
+                <button class="btn-animate" onclick="animateWalkForward()">&#9654; Animate</button>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item"><div class="legend-swatch" style="background: #3b82f6;"></div> Train</div>
+                <div class="legend-item"><div class="legend-swatch" style="background: #f59e0b;"></div> Test</div>
+                <div class="legend-item"><div class="legend-swatch" style="background: #e2e8f0;"></div> Unused</div>
+            </div>
+
+            <div class="viz-area" id="walkforward-viz"></div>
+
+            <div class="key-insight">
+                <h4>Key Insight</h4>
+                <p id="wf-insight">
+                    Expanding window uses all available history for training, making it data-efficient. However, it produces
+                    only a <strong>single backtest path</strong>, making it hard to assess overfitting.
+                    Old patterns may dominate if the data is non-stationary.
+                </p>
+            </div>
+        </div>
+
+        <!-- ============ TAB 3: CPCV ============ -->
+        <div id="tab-cpcv" class="tab-content">
+            <div class="intro">
+                <h3>Combinatorial Purged Cross Validation (CPCV)</h3>
+                <p>
+                    CPCV (de Prado, 2018) is the gold standard for financial time series model evaluation. It solves
+                    two critical problems that Walk-Forward and Purged K-Fold leave unaddressed:
+                </p>
+                <ul>
+                    <li><strong>Multiple backtest paths:</strong> Instead of one backtest path, CPCV generates
+                        <span class="formula">&phi;(N,k) = C(N&minus;1, k&minus;1)</span> unique paths that span the entire dataset</li>
+                    <li><strong>Overfitting detection:</strong> With multiple paths, you get a <em>distribution</em> of performance metrics
+                        (e.g., Sharpe ratios), enabling formal overfitting tests like the Probability of Backtest Overfitting (PBO)</li>
+                </ul>
+                <p style="margin-top: 10px;">
+                    <strong>How it works:</strong> Divide data into <strong>N</strong> groups, choose <strong>k</strong> as test groups
+                    in each split. This produces <span class="formula">C(N, k)</span> splits. Each observation is tested
+                    <span class="formula">C(N&minus;1, k&minus;1)</span> times. Predictions are recombined into full backtest paths.
+                </p>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Groups (N):</label>
+                    <input type="range" id="cpcv-n" min="3" max="8" value="6" oninput="updateCPCV()">
+                    <span class="val" id="cpcv-n-val">6</span>
+                </div>
+                <div class="control-group">
+                    <label>Test groups (k):</label>
+                    <input type="range" id="cpcv-k" min="1" max="4" value="2" oninput="updateCPCV()">
+                    <span class="val" id="cpcv-k-val">2</span>
+                </div>
+                <button class="btn-animate" onclick="animateCPCV()">&#9654; Animate</button>
+            </div>
+
+            <div class="stats-panel" id="cpcv-stats"></div>
+
+            <div class="legend">
+                <div class="legend-item"><div class="legend-swatch" style="background: #3b82f6;"></div> Train</div>
+                <div class="legend-item"><div class="legend-swatch" style="background: #f59e0b;"></div> Test</div>
+                <div class="legend-item"><div class="legend-swatch" style="background: #ef4444;"></div> Purge / Embargo</div>
+            </div>
+
+            <div class="timeline-label">All C(N, k) Splits</div>
+            <div class="viz-area" id="cpcv-viz"></div>
+
+            <div class="timeline-label" style="margin-top: 20px;">Backtest Paths &mdash; click a path to highlight its source splits</div>
+            <div class="path-selector" id="cpcv-paths"></div>
+            <div class="viz-area" id="cpcv-path-viz"></div>
+
+            <div class="key-insight">
+                <h4>Key Insight</h4>
+                <p>
+                    CPCV produces <strong>multiple backtest paths</strong>, enabling you to assess the
+                    <strong>distribution</strong> of out-of-sample performance &mdash; not just a single point estimate.
+                    This makes it possible to compute the Probability of Backtest Overfitting (PBO) and detect strategies
+                    that performed well by luck rather than genuine predictive power.
+                </p>
+            </div>
+
+            <h3 style="margin-top: 32px; color: #1e293b;">Comparison of Methods</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Standard K-Fold</th>
+                        <th>Walk-Forward</th>
+                        <th>Purged K-Fold</th>
+                        <th>CPCV</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Respects time order</td>
+                        <td class="cross">&#10007;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                    </tr>
+                    <tr>
+                        <td>Prevents label leakage</td>
+                        <td class="cross">&#10007;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                    </tr>
+                    <tr>
+                        <td>Handles feature leakage (embargo)</td>
+                        <td class="cross">&#10007;</td>
+                        <td class="cross">&#10007;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                    </tr>
+                    <tr>
+                        <td>Multiple backtest paths</td>
+                        <td class="cross">&#10007;</td>
+                        <td class="cross">&#10007;</td>
+                        <td class="cross">&#10007;</td>
+                        <td class="check">&#10003;</td>
+                    </tr>
+                    <tr>
+                        <td>Overfitting detection (PBO)</td>
+                        <td class="cross">&#10007;</td>
+                        <td class="cross">&#10007;</td>
+                        <td class="cross">&#10007;</td>
+                        <td class="check">&#10003;</td>
+                    </tr>
+                    <tr>
+                        <td>Data efficiency</td>
+                        <td>High</td>
+                        <td>Low</td>
+                        <td>High</td>
+                        <td>High</td>
+                    </tr>
+                    <tr>
+                        <td>Backtest paths</td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>&phi;(N,k)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+    // ================== UTILITY FUNCTIONS ==================
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach((btn, i) => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById('tab-' + tab).classList.add('active');
+        const tabs = ['purged', 'walkforward', 'cpcv'];
+        document.querySelectorAll('.tab-btn')[tabs.indexOf(tab)].classList.add('active');
+    }
+
+    function comb(n, k) {
+        if (k > n || k < 0) return 0;
+        if (k === 0 || k === n) return 1;
+        let result = 1;
+        for (let i = 0; i < Math.min(k, n - k); i++) {
+            result = result * (n - i) / (i + 1);
+        }
+        return Math.round(result);
+    }
+
+    function getCombinations(arr, k) {
+        if (k === 0) return [[]];
+        if (arr.length === 0) return [];
+        const [first, ...rest] = arr;
+        const withFirst = getCombinations(rest, k - 1).map(c => [first, ...c]);
+        const withoutFirst = getCombinations(rest, k);
+        return [...withFirst, ...withoutFirst];
+    }
+
+    const COLORS = {
+        train: '#3b82f6',
+        test: '#f59e0b',
+        purge: '#ef4444',
+        embargo: '#f97316',
+        unused: '#e2e8f0',
+        trainText: '#1e40af',
+        testText: '#92400e',
+        purgeText: '#991b1b',
+        embargoText: '#9a3412'
+    };
+
+    const PATH_COLORS = [
+        '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444',
+        '#ec4899', '#6366f1', '#14b8a6', '#f97316', '#84cc16'
+    ];
+
+    // ================== TAB 1: PURGED K-FOLD ==================
+    const T_PURGED = 30; // total samples
+
+    function updatePurged() {
+        const k = +document.getElementById('purged-k').value;
+        const purge = +document.getElementById('purge-size').value;
+        const embargo = +document.getElementById('embargo-size').value;
+        document.getElementById('purged-k-val').textContent = k;
+        document.getElementById('purge-size-val').textContent = purge;
+        document.getElementById('embargo-size-val').textContent = embargo;
+        drawPurged(k, purge, embargo);
+    }
+
+    function drawPurged(k, purgeSize, embargoSize, highlightFold = -1) {
+        const container = document.getElementById('purged-viz');
+        const foldSize = Math.floor(T_PURGED / k);
+        const cellW = 30, cellH = 36, gap = 3, labelW = 100;
+        const svgW = labelW + T_PURGED * (cellW + gap) + 20;
+        const svgH = (k + 1) * (cellH + gap) + 40;
+
+        let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">`;
+
+        // Time axis header
+        for (let i = 0; i < T_PURGED; i++) {
+            const x = labelW + i * (cellW + gap);
+            svg += `<text x="${x + cellW/2}" y="14" text-anchor="middle" font-size="9" fill="#94a3b8">${i+1}</text>`;
+        }
+
+        // Each fold iteration
+        for (let fold = 0; fold < k; fold++) {
+            const y = 24 + fold * (cellH + gap);
+            const testStart = fold * foldSize;
+            const testEnd = fold === k - 1 ? T_PURGED : (fold + 1) * foldSize;
+            const opacity = highlightFold >= 0 && highlightFold !== fold ? 0.2 : 1;
+
+            svg += `<g class="iteration-row" opacity="${opacity}">`;
+            svg += `<text x="0" y="${y + cellH/2 + 4}" font-size="12" font-weight="600" fill="#475569">Fold ${fold + 1}</text>`;
+
+            for (let i = 0; i < T_PURGED; i++) {
+                const x = labelW + i * (cellW + gap);
+                let color, textColor, label;
+
+                if (i >= testStart && i < testEnd) {
+                    color = COLORS.test;
+                    textColor = '#fff';
+                    label = 'Test';
+                } else {
+                    // Check purge: before test block
+                    const isPurgedBefore = i >= testStart - purgeSize && i < testStart && i >= 0;
+                    // Check embargo: after test block
+                    const isEmbargoed = i >= testEnd && i < testEnd + embargoSize;
+
+                    if (isPurgedBefore) {
+                        color = COLORS.purge;
+                        textColor = '#fff';
+                        label = 'P';
+                    } else if (isEmbargoed) {
+                        color = COLORS.embargo;
+                        textColor = '#fff';
+                        label = 'E';
+                    } else {
+                        color = COLORS.train;
+                        textColor = '#fff';
+                        label = '';
+                    }
+                }
+
+                svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="4" fill="${color}"/>`;
+                if (label) {
+                    svg += `<text x="${x + cellW/2}" y="${y + cellH/2 + 4}" text-anchor="middle" font-size="${label.length > 1 ? 8 : 10}" font-weight="600" fill="${textColor}">${label}</text>`;
+                }
+            }
+            svg += '</g>';
+        }
+
+        svg += '</svg>';
+        container.innerHTML = svg;
+    }
+
+    async function animatePurged() {
+        const k = +document.getElementById('purged-k').value;
+        const purge = +document.getElementById('purge-size').value;
+        const embargo = +document.getElementById('embargo-size').value;
+        const btn = document.querySelector('#tab-purged .btn-animate');
+        btn.disabled = true;
+        for (let fold = 0; fold < k; fold++) {
+            drawPurged(k, purge, embargo, fold);
+            await new Promise(r => setTimeout(r, 800));
+        }
+        drawPurged(k, purge, embargo);
+        btn.disabled = false;
+    }
+
+    // ================== TAB 2: WALK-FORWARD ==================
+    let wfMode = 'expanding';
+
+    function switchWalkForward(mode) {
+        wfMode = mode;
+        document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.sub-tab-btn').forEach(b => {
+            if (b.textContent.toLowerCase().includes(mode)) b.classList.add('active');
+        });
+        const label = document.getElementById('wf-train-label');
+        label.textContent = mode === 'expanding' ? 'Min train size:' : 'Train window:';
+        updateWalkForward();
+        // Update insight text
+        const insight = document.getElementById('wf-insight');
+        if (mode === 'expanding') {
+            insight.innerHTML = 'Expanding window uses all available history for training, making it data-efficient. However, it produces only a <strong>single backtest path</strong>, making it hard to assess overfitting. Old patterns may dominate if the data is non-stationary.';
+        } else {
+            insight.innerHTML = 'Rolling window keeps a fixed training size, dropping the oldest data as it slides forward. This is better for <strong>non-stationary data</strong> where old patterns may be irrelevant, but it uses less data overall. Like expanding window, it produces only a <strong>single backtest path</strong>.';
+        }
+    }
+
+    function updateWalkForward() {
+        const splits = +document.getElementById('wf-splits').value;
+        const trainSize = +document.getElementById('wf-train').value;
+        const testSize = +document.getElementById('wf-test').value;
+        document.getElementById('wf-splits-val').textContent = splits;
+        document.getElementById('wf-train-val').textContent = trainSize;
+        document.getElementById('wf-test-val').textContent = testSize;
+        drawWalkForward(splits, trainSize, testSize, wfMode);
+    }
+
+    function drawWalkForward(splits, trainSize, testSize, mode, highlightSplit = -1) {
+        const container = document.getElementById('walkforward-viz');
+        // Calculate total samples needed
+        let totalSamples;
+        if (mode === 'expanding') {
+            totalSamples = trainSize + testSize * splits;
+        } else {
+            totalSamples = trainSize + testSize * splits;
+        }
+
+        const cellW = Math.max(18, Math.min(30, 900 / totalSamples));
+        const cellH = 36, gap = 2, labelW = 100;
+        const svgW = labelW + totalSamples * (cellW + gap) + 20;
+        const svgH = (splits + 1) * (cellH + gap) + 40;
+
+        let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">`;
+
+        // Time axis
+        for (let i = 0; i < totalSamples; i++) {
+            const x = labelW + i * (cellW + gap);
+            if (i % Math.max(1, Math.floor(totalSamples / 20)) === 0) {
+                svg += `<text x="${x + cellW/2}" y="14" text-anchor="middle" font-size="9" fill="#94a3b8">${i+1}</text>`;
+            }
+        }
+
+        // Draw time arrow at bottom
+        const arrowY = 24 + splits * (cellH + gap) + 10;
+        svg += `<line x1="${labelW}" y1="${arrowY}" x2="${labelW + totalSamples * (cellW + gap)}" y2="${arrowY}" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrowhead)"/>`;
+        svg += `<defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker></defs>`;
+        svg += `<text x="${labelW + totalSamples * (cellW + gap) / 2}" y="${arrowY + 18}" text-anchor="middle" font-size="12" font-weight="600" fill="#64748b">Time</text>`;
+
+        for (let s = 0; s < splits; s++) {
+            const y = 24 + s * (cellH + gap);
+            const opacity = highlightSplit >= 0 && highlightSplit !== s ? 0.2 : 1;
+
+            let tStart, tEnd, testStart, testEnd;
+            if (mode === 'expanding') {
+                tStart = 0;
+                tEnd = trainSize + s * testSize;
+                testStart = tEnd;
+                testEnd = testStart + testSize;
+            } else {
+                tStart = s * testSize;
+                tEnd = tStart + trainSize;
+                testStart = tEnd;
+                testEnd = testStart + testSize;
+            }
+
+            svg += `<g class="iteration-row" opacity="${opacity}">`;
+            svg += `<text x="0" y="${y + cellH/2 + 4}" font-size="12" font-weight="600" fill="#475569">Split ${s + 1}</text>`;
+
+            for (let i = 0; i < totalSamples; i++) {
+                const x = labelW + i * (cellW + gap);
+                let color;
+
+                if (i >= tStart && i < tEnd) {
+                    color = COLORS.train;
+                } else if (i >= testStart && i < testEnd) {
+                    color = COLORS.test;
+                } else {
+                    color = COLORS.unused;
+                }
+
+                svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="4" fill="${color}"/>`;
+            }
+            svg += '</g>';
+        }
+
+        svg += '</svg>';
+        container.innerHTML = svg;
+    }
+
+    async function animateWalkForward() {
+        const splits = +document.getElementById('wf-splits').value;
+        const trainSize = +document.getElementById('wf-train').value;
+        const testSize = +document.getElementById('wf-test').value;
+        const btn = document.querySelector('#tab-walkforward .btn-animate');
+        btn.disabled = true;
+        for (let s = 0; s < splits; s++) {
+            drawWalkForward(splits, trainSize, testSize, wfMode, s);
+            await new Promise(r => setTimeout(r, 700));
+        }
+        drawWalkForward(splits, trainSize, testSize, wfMode);
+        btn.disabled = false;
+    }
+
+    // ================== TAB 3: CPCV ==================
+    let selectedPath = -1;
+    let currentCombinations = [];
+    let currentPaths = [];
+
+    function updateCPCV() {
+        let n = +document.getElementById('cpcv-n').value;
+        let k = +document.getElementById('cpcv-k').value;
+        // Ensure k < n
+        if (k >= n) {
+            k = n - 1;
+            document.getElementById('cpcv-k').value = k;
+        }
+        document.getElementById('cpcv-k').max = n - 1;
+        document.getElementById('cpcv-n-val').textContent = n;
+        document.getElementById('cpcv-k-val').textContent = k;
+
+        // Compute stats
+        const nSplits = comb(n, k);
+        const nPaths = comb(n - 1, k - 1);
+        const testAppearances = comb(n - 1, k - 1);
+        const trainFraction = ((n - k) / n * 100).toFixed(1);
+
+        document.getElementById('cpcv-stats').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-value">${nSplits}</div>
+                <div class="stat-label">C(${n},${k}) Splits</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${nPaths}</div>
+                <div class="stat-label">Backtest Paths &phi;(${n},${k})</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${testAppearances}</div>
+                <div class="stat-label">Test appearances / group</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${trainFraction}%</div>
+                <div class="stat-label">Train fraction / split</div>
+            </div>
+        `;
+
+        // Generate combinations
+        const groups = Array.from({length: n}, (_, i) => i);
+        currentCombinations = getCombinations(groups, k);
+
+        // Build paths
+        currentPaths = buildBacktestPaths(n, k, currentCombinations);
+
+        selectedPath = -1;
+        drawCPCV(n, k);
+        drawCPCVPaths(n, k);
+    }
+
+    function buildBacktestPaths(n, k, combinations) {
+        // Each group needs to be covered exactly once in each path.
+        // For each group g, find all splits where g is in the test set.
+        const groupToSplits = {};
+        for (let g = 0; g < n; g++) {
+            groupToSplits[g] = [];
+            combinations.forEach((combo, idx) => {
+                if (combo.includes(g)) groupToSplits[g].push(idx);
+            });
+        }
+
+        // Greedy path construction
+        const nPaths = comb(n - 1, k - 1);
+        const paths = [];
+        const splitUsage = {}; // Track how many times each split is used per group
+        for (let g = 0; g < n; g++) {
+            splitUsage[g] = {};
+            groupToSplits[g].forEach(s => splitUsage[g][s] = 0);
+        }
+
+        for (let p = 0; p < nPaths; p++) {
+            const path = []; // path[g] = split index that provides group g's test prediction
+            const usedSplits = new Set();
+
+            for (let g = 0; g < n; g++) {
+                // Find a split for group g not yet used in this path (prefer least globally used)
+                const candidates = groupToSplits[g].filter(s => !usedSplits.has(s));
+                if (candidates.length === 0) {
+                    // Fallback: just pick any
+                    path.push(groupToSplits[g][0]);
+                } else {
+                    // Pick the one used least
+                    candidates.sort((a, b) => splitUsage[g][a] - splitUsage[g][b]);
+                    const chosen = candidates[0];
+                    path.push(chosen);
+                    usedSplits.add(chosen);
+                    splitUsage[g][chosen]++;
+                }
+            }
+            paths.push(path);
+        }
+
+        return paths;
+    }
+
+    function drawCPCV(n, k, highlightSplit = -1) {
+        const container = document.getElementById('cpcv-viz');
+        const combos = currentCombinations;
+        const cellW = Math.max(50, Math.min(80, 800 / n));
+        const cellH = 30, gap = 4, labelW = 80;
+        const svgW = labelW + n * (cellW + gap) + 20;
+        const svgH = (combos.length + 1) * (cellH + gap) + 30;
+
+        let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">`;
+
+        // Group headers
+        for (let g = 0; g < n; g++) {
+            const x = labelW + g * (cellW + gap);
+            svg += `<text x="${x + cellW/2}" y="16" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">S${g+1}</text>`;
+        }
+
+        // Each split row
+        for (let s = 0; s < combos.length; s++) {
+            const y = 28 + s * (cellH + gap);
+            const isHighlighted = highlightSplit === s;
+            const isInSelectedPath = selectedPath >= 0 && currentPaths[selectedPath] && currentPaths[selectedPath].includes(s);
+            let opacity = 1;
+            if (highlightSplit >= 0 && !isHighlighted) opacity = 0.2;
+            if (selectedPath >= 0 && !isInSelectedPath) opacity = 0.25;
+
+            svg += `<g class="iteration-row" opacity="${opacity}">`;
+            svg += `<text x="0" y="${y + cellH/2 + 4}" font-size="11" font-weight="600" fill="#475569">${s+1}</text>`;
+
+            for (let g = 0; g < n; g++) {
+                const x = labelW + g * (cellW + gap);
+                const isTest = combos[s].includes(g);
+                const color = isTest ? COLORS.test : COLORS.train;
+                const label = isTest ? 'Test' : 'Train';
+                const textColor = '#fff';
+
+                svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="5" fill="${color}"/>`;
+                svg += `<text x="${x + cellW/2}" y="${y + cellH/2 + 4}" text-anchor="middle" font-size="10" font-weight="600" fill="${textColor}">${label}</text>`;
+            }
+            svg += '</g>';
+        }
+
+        svg += '</svg>';
+        container.innerHTML = svg;
+    }
+
+    function drawCPCVPaths(n, k) {
+        const pathContainer = document.getElementById('cpcv-paths');
+        const vizContainer = document.getElementById('cpcv-path-viz');
+        const nPaths = currentPaths.length;
+
+        // Path selector buttons
+        let btns = '<button class="path-btn' + (selectedPath === -1 ? ' active' : '') + '" onclick="selectPath(-1)">All Splits</button>';
+        for (let p = 0; p < nPaths; p++) {
+            btns += `<button class="path-btn${selectedPath === p ? ' active' : ''}" onclick="selectPath(${p})" style="border-color: ${PATH_COLORS[p % PATH_COLORS.length]}; ${selectedPath === p ? 'background:' + PATH_COLORS[p % PATH_COLORS.length] + '; color: white;' : ''}">Path ${p + 1}</button>`;
+        }
+        pathContainer.innerHTML = btns;
+
+        // Draw path visualization
+        const cellW = Math.max(50, Math.min(80, 800 / n));
+        const cellH = 30, gap = 4, labelW = 80;
+        const svgW = labelW + n * (cellW + gap) + 20;
+        const svgH = (nPaths + 1) * (cellH + gap) + 30;
+
+        let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">`;
+
+        // Group headers
+        for (let g = 0; g < n; g++) {
+            const x = labelW + g * (cellW + gap);
+            svg += `<text x="${x + cellW/2}" y="16" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">S${g+1}</text>`;
+        }
+
+        for (let p = 0; p < nPaths; p++) {
+            const y = 28 + p * (cellH + gap);
+            const pathColor = PATH_COLORS[p % PATH_COLORS.length];
+            const opacity = selectedPath >= 0 && selectedPath !== p ? 0.2 : 1;
+
+            svg += `<g opacity="${opacity}">`;
+            svg += `<text x="0" y="${y + cellH/2 + 4}" font-size="11" font-weight="600" fill="${pathColor}">Path ${p+1}</text>`;
+
+            for (let g = 0; g < n; g++) {
+                const x = labelW + g * (cellW + gap);
+                const splitIdx = currentPaths[p][g];
+                svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="5" fill="${pathColor}" opacity="0.8"/>`;
+                svg += `<text x="${x + cellW/2}" y="${y + cellH/2 + 4}" text-anchor="middle" font-size="9" font-weight="600" fill="white">Split ${splitIdx + 1}</text>`;
+            }
+            svg += '</g>';
+        }
+
+        svg += '</svg>';
+        vizContainer.innerHTML = svg;
+    }
+
+    function selectPath(p) {
+        selectedPath = p;
+        const n = +document.getElementById('cpcv-n').value;
+        const k = +document.getElementById('cpcv-k').value;
+        drawCPCV(n, k);
+        drawCPCVPaths(n, k);
+    }
+
+    async function animateCPCV() {
+        const n = +document.getElementById('cpcv-n').value;
+        const k = +document.getElementById('cpcv-k').value;
+        const btn = document.querySelector('#tab-cpcv .btn-animate');
+        btn.disabled = true;
+        selectedPath = -1;
+
+        // Animate through splits
+        for (let s = 0; s < currentCombinations.length; s++) {
+            drawCPCV(n, k, s);
+            await new Promise(r => setTimeout(r, 400));
+        }
+        drawCPCV(n, k);
+
+        // Then animate through paths
+        await new Promise(r => setTimeout(r, 300));
+        for (let p = 0; p < currentPaths.length; p++) {
+            selectedPath = p;
+            drawCPCV(n, k);
+            drawCPCVPaths(n, k);
+            await new Promise(r => setTimeout(r, 600));
+        }
+
+        selectedPath = -1;
+        drawCPCV(n, k);
+        drawCPCVPaths(n, k);
+        btn.disabled = false;
+    }
+
+    // ================== INITIALIZATION ==================
+    updatePurged();
+    updateWalkForward();
+    updateCPCV();
+    </script>
+</body>
+</html>
