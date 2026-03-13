@@ -70,6 +70,8 @@ Interactive_tools/
 │   ├── learning-curve-visualization.html
 │   ├── gradient-descent-visualization.html
 │   ├── dt-regression-visualization.html
+│   ├── ts-bootstrapping-visualization.html
+│   ├── ts-cross-validation-visualization.html
 │   └── Module 5-ML forecasting-whiteboard.pdf
 ├── m6_dl/                                  # Deep Learning
 │   └── dnn-timeseries-visualization.html
@@ -108,7 +110,7 @@ Every visualization follows these conventions:
 |--------|-------|---------------|
 | m3_ets | Exponential Smoothing | SES, Holt Linear Trend, Holt-Winters. Progressive complexity (level → trend → seasonal). Plotly.js charts. |
 | m4_arima | ARIMA Models | AR(1)/MA(1) building blocks, full SARIMA with (p,d,q)(P,D,Q)m controls. Default optimal: SARIMA(1,1,0)(0,1,0)₁₂. |
-| m5_ml | Machine Learning | Bias-Variance Tradeoff (polynomial fitting, 500 MC draws, hybrid metrics). Cross Validation (K-Fold, Stratified, LOOCV). Learning Curves (5-fold CV scores vs training size, cubic truth deg 0-5, benchmark + irreducible error lines, dynamic percentile y-cap). Gradient Descent & SGD (contour loss surface, animated optimization). Decision Tree regression with SVG tree viz, feature space plots, recursive forecasting. |
+| m5_ml | Machine Learning | Bias-Variance Tradeoff (polynomial fitting, 500 MC draws, hybrid metrics). Cross Validation (K-Fold, Stratified, LOOCV). Learning Curves (5-fold CV scores vs training size, cubic truth deg 0-5, benchmark + irreducible error lines, dynamic percentile y-cap). Gradient Descent & SGD (contour loss surface, animated optimization). Decision Tree regression with SVG tree viz, feature space plots, recursive forecasting. Time Series Bootstrapping (block bootstrap, stationary bootstrap for dependent data). Time Series Cross-Validation (expanding window, sliding window, gap strategies for temporal data). |
 | m6_dl | Deep Learning | DNN with TensorFlow.js. Configurable layers/neurons/activations. Live training loss, architecture SVG diagram, feature importance, DNN vs Linear Regression comparison. |
 | m7_rnn | Recurrent Neural Networks | RNN vs DNN comparison. Key lesson: preprocessing (log + differencing) dramatically improves RNN performance on non-stationary data. |
 
