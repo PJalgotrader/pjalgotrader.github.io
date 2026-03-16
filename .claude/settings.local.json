@@ -6,7 +6,8 @@
       "WebFetch(domain:github.com)",
       "Bash(start \"\" \"E:\\Github\\pjalgotrader.github.io\\Interactive_tools\\m6_dl\\dnn-timeseries-visualization.html\")",
       "Bash(git rm:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
