@@ -275,7 +275,7 @@
 <body>
     <div class="header">
         <h1>Time Series Bootstrapping</h1>
-        <p class="subtitle">MBB, CBB, Stationary Bootstrap & Parametric ARIMA Bootstrap</p>
+        <p class="subtitle">MBB, CBB, Stationary Bootstrap & Parametric SARIMA Bootstrap</p>
         <p class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</p>
         <div class="links">
             <a href="https://pjalgotrader.github.io" class="btn-website">
@@ -325,6 +325,7 @@
                     <li><strong>Block library:</strong> B<sub>i</sub> = [y<sub>i</sub>, y<sub>i+1</sub>, ..., y<sub>i+m&minus;1</sub>] for i = 1, ..., T&minus;m+1</li>
                     <li><strong>Draw</strong> k = &lceil;T/m&rceil; blocks uniformly with replacement</li>
                     <li><strong>Concatenate</strong> and trim to length T</li>
+                    <li><strong>For non-stationary data:</strong> decompose into Trend + Seasonal + Residual, apply MBB to the residuals, then reconstruct</li>
                 </ul>
             </div>
 
@@ -454,19 +455,20 @@
         <!-- ============ TAB 4: PARAMETRIC ARIMA ============ -->
         <div id="tab-parametric" class="tab-content">
             <div class="intro">
-                <h3>Parametric Bootstrap &mdash; ARIMA(1,1,1)</h3>
+                <h3>Parametric Bootstrap &mdash; SARIMA(1,1,0)(0,1,0)<sub>12</sub></h3>
                 <p>
                     The parametric bootstrap fits a model to the data, extracts the residuals (which should be
                     approximately i.i.d.), resamples the residuals with replacement, and feeds them through the
                     fitted model to generate new bootstrap paths. This is <strong>model-based</strong> rather than
-                    block-based.
+                    block-based. We use <strong>seasonal differencing</strong> to properly capture both trend and
+                    the 12-month seasonal pattern.
                 </p>
                 <ul>
-                    <li><strong>Step 1:</strong> Fit ARIMA(1,1,1) to airline passenger data (on log-transformed series)</li>
-                    <li><strong>Step 2:</strong> Extract residuals &epsilon;&#770;<sub>t</sub> and center them</li>
-                    <li><strong>Step 3:</strong> Resample residuals with replacement &rarr; &epsilon;*<sub>t</sub></li>
-                    <li><strong>Step 4:</strong> Reconstruct: w*<sub>t</sub> = c + &phi;&middot;w*<sub>t&minus;1</sub> + &epsilon;*<sub>t</sub> + &theta;&middot;&epsilon;*<sub>t&minus;1</sub></li>
-                    <li><strong>Step 5:</strong> Integrate back: y*<sub>t</sub> = y*<sub>t&minus;1</sub> + w*<sub>t</sub>, then exp() to undo log</li>
+                    <li><strong>Step 1:</strong> Log-transform &rarr; seasonal difference (lag 12) &rarr; first difference</li>
+                    <li><strong>Step 2:</strong> Fit AR(1) to doubly-differenced series: w<sub>t</sub> = c + &phi;&middot;w<sub>t&minus;1</sub> + &epsilon;<sub>t</sub></li>
+                    <li><strong>Step 3:</strong> Extract &amp; center residuals &epsilon;&#770;<sub>t</sub></li>
+                    <li><strong>Step 4:</strong> Resample residuals i.i.d. &rarr; &epsilon;*<sub>t</sub>, reconstruct w* via AR(1)</li>
+                    <li><strong>Step 5:</strong> Integrate (undo first diff) &rarr; seasonal integrate (undo seasonal diff) &rarr; exp()</li>
                 </ul>
             </div>
 
@@ -593,6 +595,53 @@
     }
 
     const T = AIRLINE_DATA.length;
+
+    // ================== CLASSICAL DECOMPOSITION ==================
+    // Decompose log(airline) into Trend + Seasonal + Residual
+    // Block bootstraps operate on residuals, then reconstruct
+    function decomposeAirline() {
+        const logData = AIRLINE_DATA.map(y => Math.log(y));
+        const n = logData.length;
+
+        // 2x12 centered moving average for trend
+        const trend = new Array(n).fill(null);
+        for (let t = 6; t < n - 6; t++) {
+            let sum = 0.5 * logData[t - 6] + 0.5 * logData[t + 6];
+            for (let j = -5; j <= 5; j++) sum += logData[t + j];
+            trend[t] = sum / 12;
+        }
+
+        // Extrapolate edges using local slope
+        const slopeL = trend[7] - trend[6];
+        for (let t = 5; t >= 0; t--) trend[t] = trend[t + 1] - slopeL;
+        const slopeR = trend[n - 7] - trend[n - 8];
+        for (let t = n - 6; t < n; t++) trend[t] = trend[t - 1] + slopeR;
+
+        // Seasonal: average (logData - trend) per month, then center
+        const seasonal = new Array(12).fill(0);
+        const counts = new Array(12).fill(0);
+        for (let t = 0; t < n; t++) {
+            seasonal[t % 12] += logData[t] - trend[t];
+            counts[t % 12]++;
+        }
+        for (let m = 0; m < 12; m++) seasonal[m] /= counts[m];
+        const sMean = seasonal.reduce((a, b) => a + b, 0) / 12;
+        for (let m = 0; m < 12; m++) seasonal[m] -= sMean;
+
+        const seasonalFull = logData.map((_, i) => seasonal[i % 12]);
+        const residuals = logData.map((v, i) => v - trend[i] - seasonalFull[i]);
+
+        return { logData, trend, seasonalFull, residuals };
+    }
+
+    const DECOMP = decomposeAirline();
+
+    function reconstructFromResiduals(bootResiduals) {
+        return bootResiduals.map((r, i) =>
+            Math.exp(DECOMP.trend[i] + DECOMP.seasonalFull[i] + r)
+        );
+    }
+
     const BOOT_COLORS = [
         'rgba(239, 68, 68, 0.5)', 'rgba(59, 130, 246, 0.5)', 'rgba(16, 185, 129, 0.5)',
         'rgba(245, 158, 11, 0.5)', 'rgba(139, 92, 246, 0.5)', 'rgba(236, 72, 153, 0.5)',
@@ -649,7 +698,8 @@
             <div class="stat-card"><div class="stat-value">${numBlocksPerSample}</div><div class="stat-label">Blocks drawn (&lceil;T/m&rceil;)</div></div>
         `;
 
-        const { results, blockStarts } = mbbBootstrap(AIRLINE_DATA, blockSize, B);
+        const { results: residResults, blockStarts } = mbbBootstrap(DECOMP.residuals, blockSize, B);
+        const results = residResults.map(reconstructFromResiduals);
         plotBootstrapResults('mbb-chart', results, 'Moving Block Bootstrap (MBB)');
         drawBlockDiagram('mbb-block-viz', blockStarts[0], blockSize, T, false);
     }
@@ -688,7 +738,8 @@
             <div class="stat-card"><div class="stat-value">${numBlocksPerSample}</div><div class="stat-label">Blocks drawn (&lceil;T/m&rceil;)</div></div>
         `;
 
-        const { results, blockStarts } = cbbBootstrap(AIRLINE_DATA, blockSize, B);
+        const { results: residResults, blockStarts } = cbbBootstrap(DECOMP.residuals, blockSize, B);
+        const results = residResults.map(reconstructFromResiduals);
         plotBootstrapResults('cbb-chart', results, 'Circular Block Bootstrap (CBB)');
         drawBlockDiagram('cbb-block-viz', blockStarts[0], blockSize, T, true);
     }
@@ -732,7 +783,8 @@
         const B = +document.getElementById('sb-B').value;
         const p = (1 / meanBlock).toFixed(3);
 
-        const { results, blockLengths } = stationaryBootstrap(AIRLINE_DATA, meanBlock, B);
+        const { results: residResults, blockLengths } = stationaryBootstrap(DECOMP.residuals, meanBlock, B);
+        const results = residResults.map(reconstructFromResiduals);
 
         // Compute actual average block length from first sample
         const avgLen = (blockLengths[0].reduce((a,b) => a+b, 0) / blockLengths[0].length).toFixed(1);
@@ -751,106 +803,92 @@
         drawSBBlockDiagram('sb-block-viz', blockLengths[0]);
     }
 
-    // ================== PARAMETRIC ARIMA BOOTSTRAP ==================
-    // Pre-computed ARIMA(1,1,1) parameters for log(airline passengers)
-    // Fitted in Python: from statsmodels.tsa.arima.model import ARIMA
-    // model = ARIMA(np.log(data), order=(1,1,1)).fit()
-    const ARIMA_PARAMS = {
-        phi: 0.1189,    // AR(1) coefficient
-        theta: -0.6685, // MA(1) coefficient
-        c: 0.0
-    };
-
-    function fitARIMAResiduals() {
-        const logSeries = AIRLINE_DATA.map(y => Math.log(y));
-        // Compute first differences
-        const w = [];
-        for (let t = 1; t < logSeries.length; t++) {
-            w.push(logSeries[t] - logSeries[t - 1]);
-        }
-
-        const { phi, theta, c } = ARIMA_PARAMS;
-        // Compute residuals using the model
-        const residuals = [];
-        let prevResid = 0;
-        for (let t = 0; t < w.length; t++) {
-            const predicted = c + (t > 0 ? phi * w[t - 1] : 0) + theta * prevResid;
-            const resid = w[t] - predicted;
-            residuals.push(resid);
-            prevResid = resid;
-        }
-
-        // Center residuals
-        const mean = residuals.reduce((a, b) => a + b, 0) / residuals.length;
-        return residuals.map(r => r - mean);
-    }
-
+    // ================== PARAMETRIC SARIMA BOOTSTRAP ==================
+    // Uses seasonal + first differencing on log data, then fits AR(1)
+    // to the doubly-differenced series. Equivalent to SARIMA(1,1,0)(0,1,0)_12.
     function arimaBootstrap(B) {
-        const logSeries = AIRLINE_DATA.map(y => Math.log(y));
-        const residuals = fitARIMAResiduals();
-        const { phi, theta, c } = ARIMA_PARAMS;
+        const logData = AIRLINE_DATA.map(y => Math.log(y));
+        const n = logData.length;
 
-        // First differences
+        // Seasonal difference: z[i] = logData[i+12] - logData[i]
+        const z = [];
+        for (let t = 12; t < n; t++) z.push(logData[t] - logData[t - 12]);
+
+        // First difference of z: w[i] = z[i+1] - z[i]
         const w = [];
-        for (let t = 1; t < logSeries.length; t++) {
-            w.push(logSeries[t] - logSeries[t - 1]);
-        }
+        for (let t = 1; t < z.length; t++) w.push(z[t] - z[t - 1]);
 
+        // Fit AR(1) via Yule-Walker: w_t = c + phi * w_{t-1} + eps_t
+        const wMean = w.reduce((a, b) => a + b, 0) / w.length;
+        let num = 0, den = 0;
+        for (let t = 1; t < w.length; t++) {
+            num += (w[t] - wMean) * (w[t - 1] - wMean);
+            den += (w[t - 1] - wMean) * (w[t - 1] - wMean);
+        }
+        const phi = den > 0 ? num / den : 0;
+        const c = wMean * (1 - phi);
+
+        // Compute & center residuals
+        const residuals = [0];
+        for (let t = 1; t < w.length; t++) residuals.push(w[t] - c - phi * w[t - 1]);
+        const rMean = residuals.reduce((a, b) => a + b, 0) / residuals.length;
+        const centeredResids = residuals.map(r => r - rMean);
+
+        // Generate bootstrap samples
         const results = [];
         for (let b = 0; b < B; b++) {
-            // Resample residuals
-            const resampledResids = w.map(() =>
-                residuals[Math.floor(Math.random() * residuals.length)]
+            // Resample residuals i.i.d.
+            const bootResids = w.map(() =>
+                centeredResids[Math.floor(Math.random() * centeredResids.length)]
             );
 
-            // Reconstruct differenced series
-            const wStar = [w[0]];
-            let prevInnovation = resampledResids[0];
+            // Reconstruct w* via AR(1)
+            const wStar = [c + bootResids[0]];
             for (let t = 1; t < w.length; t++) {
-                const val = c + phi * wStar[t - 1] + resampledResids[t] + theta * prevInnovation;
-                wStar.push(val);
-                prevInnovation = resampledResids[t];
+                wStar.push(c + phi * wStar[t - 1] + bootResids[t]);
             }
 
-            // Integrate back to level (log scale)
-            const logYStar = [logSeries[0]];
-            for (let t = 0; t < wStar.length; t++) {
-                logYStar.push(logYStar[t] + wStar[t]);
+            // Integrate → z* (undo first difference)
+            const zStar = [z[0]];
+            for (let t = 0; t < wStar.length; t++) zStar.push(zStar[t] + wStar[t]);
+
+            // Seasonal integrate → logY* (undo seasonal difference)
+            // First 12 values from original data
+            const logYStar = logData.slice(0, 12);
+            for (let t = 0; t < zStar.length; t++) {
+                logYStar.push(logYStar[t] + zStar[t]);
             }
 
-            // Exponentiate back to original scale
             results.push(logYStar.map(v => Math.exp(v)));
         }
 
-        return { results, residuals };
+        return { results, residuals: centeredResids, phi, c };
     }
 
     function runARIMA() {
         const B = +document.getElementById('arima-B').value;
-        const { phi, theta, c } = ARIMA_PARAMS;
-
-        const { results, residuals } = arimaBootstrap(B);
+        const { results, residuals, phi, c } = arimaBootstrap(B);
 
         document.getElementById('arima-stats').innerHTML = `
-            <div class="stat-card"><div class="stat-value">ARIMA(1,1,1)</div><div class="stat-label">Model</div></div>
+            <div class="stat-card"><div class="stat-value">SARIMA</div><div class="stat-label">(1,1,0)(0,1,0)<sub>12</sub></div></div>
             <div class="stat-card"><div class="stat-value">&phi; = ${phi.toFixed(3)}</div><div class="stat-label">AR(1) coefficient</div></div>
-            <div class="stat-card"><div class="stat-value">&theta; = ${theta.toFixed(3)}</div><div class="stat-label">MA(1) coefficient</div></div>
+            <div class="stat-card"><div class="stat-value">c = ${c.toFixed(4)}</div><div class="stat-label">Intercept</div></div>
             <div class="stat-card"><div class="stat-value">${residuals.length}</div><div class="stat-label">Residuals resampled</div></div>
         `;
 
-        plotBootstrapResults('arima-chart', results, 'Parametric ARIMA(1,1,1) Bootstrap');
+        plotBootstrapResults('arima-chart', results, 'Parametric SARIMA(1,1,0)(0,1,0)₁₂ Bootstrap');
 
-        // Plot residuals
+        // Plot residuals of the doubly-differenced series
         Plotly.newPlot('arima-resid-chart', [
             {
-                x: MONTHS.slice(1),
+                x: MONTHS.slice(13),
                 y: residuals,
                 type: 'bar',
                 marker: { color: residuals.map(r => r >= 0 ? 'rgba(59, 130, 246, 0.6)' : 'rgba(239, 68, 68, 0.6)') },
                 name: 'Residuals'
             }
         ], {
-            title: { text: 'ARIMA(1,1,1) Fitted Residuals (log scale)', font: { size: 14, family: 'Inter' } },
+            title: { text: 'SARIMA Residuals — (1−B)(1−B¹²)log(Yₜ) after AR(1)', font: { size: 14, family: 'Inter' } },
             xaxis: { title: 'Date', tickfont: { size: 10 } },
             yaxis: { title: 'Residual', tickfont: { size: 10 } },
             margin: { t: 40, r: 20, b: 60, l: 60 },
