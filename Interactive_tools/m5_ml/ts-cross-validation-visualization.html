@@ -1096,7 +1096,7 @@
         // Group headers
         for (let g = 0; g < n; g++) {
             const x = labelW + g * (cellW + gap);
-            svg += `<text x="${x + cellW/2}" y="16" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">S${g+1}</text>`;
+            svg += `<text x="${x + cellW/2}" y="16" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">G${g+1}</text>`;
         }
 
         // Each split row
@@ -1109,7 +1109,7 @@
             if (selectedPath >= 0 && !isInSelectedPath) opacity = 0.25;
 
             svg += `<g class="iteration-row" opacity="${opacity}">`;
-            svg += `<text x="0" y="${y + cellH/2 + 4}" font-size="11" font-weight="600" fill="#475569">${s+1}</text>`;
+            svg += `<text x="0" y="${y + cellH/2 + 4}" font-size="11" font-weight="600" fill="#475569">S${s+1}</text>`;
 
             for (let g = 0; g < n; g++) {
                 const x = labelW + g * (cellW + gap);
@@ -1151,7 +1151,7 @@
         // Group headers
         for (let g = 0; g < n; g++) {
             const x = labelW + g * (cellW + gap);
-            svg += `<text x="${x + cellW/2}" y="16" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">S${g+1}</text>`;
+            svg += `<text x="${x + cellW/2}" y="16" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">G${g+1}</text>`;
         }
 
         for (let p = 0; p < nPaths; p++) {
