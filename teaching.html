@@ -3,16 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teaching & Courses - Pedram Jahangiry</title>
+    <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>Teaching &amp; Courses — Pedram Jahangiry</title>
+    <meta name="description" content="Courses in machine learning, deep learning, and time series forecasting at the Huntsman School of Business, Utah State University. 2024 USU Teacher of the Year.">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <a href="index.html">Pedram Jahangiry</a>
+                <a href="index.html">Pedram&nbsp;Jahangiry</a>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
@@ -31,245 +38,198 @@
                     <a href="contact.html" class="nav-link">Contact</a>
                 </li>
             </ul>
-            <div class="hamburger">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
+            <div class="nav-right">
+                <button class="theme-toggle" aria-label="Switch color theme">
+                    <i class="fas fa-sun icon-sun" aria-hidden="true"></i>
+                    <i class="fas fa-moon icon-moon" aria-hidden="true"></i>
+                </button>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main>
+    <main id="main">
         <section class="page-header">
             <div class="container">
-                <h1>Teaching & Courses</h1>
-                <p>Innovative education that bridges theory and practice in data science and visualization</p>
+                <p class="eyebrow">Teaching &middot; USU Teacher of the Year &#9650; 2024</p>
+                <h1>Courses that bridge theory and production.</h1>
+                <p>Machine learning, deep learning, and forecasting at the Jon&nbsp;M. Huntsman School of Business &mdash; taught the way the industry actually uses them.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container about-grid">
+                <p class="section-label">&sect; 01 &mdash; Philosophy</p>
+                <div class="about-text">
+                    <p>
+                        My mission is to create equitable educational opportunities and nurture potential.
+                        Central to my approach is shifting focus from the perceived quality of students to
+                        the effectiveness of the learning design &mdash; so that every student, regardless
+                        of background, can reach their full potential.
+                    </p>
+                    <p>
+                        I believe in cultivating caring relationships with students and celebrating what
+                        makes each one unique. The job isn't just to impart knowledge; it's to discover,
+                        nurture, and help each student shine in their own way.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section alt">
+            <div class="container">
+                <p class="section-label">&sect; 02 &mdash; Courses taught</p>
+                <div class="content-grid">
+                    <div class="content-card">
+                        <p class="card-label">DATA 5630 &middot; developed from scratch &middot; Spring 2023</p>
+                        <h3>Deep Forecasting &mdash; Advanced Time Series</h3>
+                        <p>
+                            Classical time series models meet modern machine learning and deep learning.
+                            Launched as a special topic; its success made it a permanent part of the curriculum.
+                        </p>
+                        <p class="card-list-title">Key areas</p>
+                        <ul>
+                            <li>Time series fundamentals and stationarity</li>
+                            <li>Exponential smoothing and ARIMA/SARIMA</li>
+                            <li>Machine learning for time series</li>
+                            <li>Deep sequence models (RNN/LSTM)</li>
+                            <li>Prophet, NeuralProphet, and AutoML tools</li>
+                            <li>Production-ready deployment</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-card">
+                        <p class="card-label">DATA 5600 &middot; DAIS department &middot; ongoing</p>
+                        <h3>Machine Learning</h3>
+                        <p>
+                            The foundational course of the Data Analytics track. Real-time coding sessions
+                            on Google Colab so concepts get applied &mdash; and tested &mdash; immediately.
+                        </p>
+                        <p class="card-list-title">Key areas</p>
+                        <ul>
+                            <li>Supervised and unsupervised learning</li>
+                            <li>Model evaluation and validation</li>
+                            <li>Feature engineering and selection</li>
+                            <li>Practical implementation, end to end</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-card">
+                        <p class="card-label">DATA 5610 &middot; DAIS department &middot; ongoing</p>
+                        <h3>Deep Learning</h3>
+                        <p>
+                            From fundamentals to the frontier: modern architectures for vision and
+                            sequence modeling, taught with working code.
+                        </p>
+                        <p class="card-list-title">Key areas</p>
+                        <ul>
+                            <li>Deep neural networks (NN, DNN)</li>
+                            <li>Convolutional networks (CNN, R-CNN, YOLO, FCN)</li>
+                            <li>Recurrent networks (RNN, LSTM)</li>
+                            <li>Transformers and attention</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-card">
+                        <p class="card-label">USU 1010 &middot; first-year experience &middot; Fall 2023</p>
+                        <h3>University Connections</h3>
+                        <p>
+                            Helping freshmen find their footing in college. Teaching this course keeps me
+                            close to the challenges new students actually face &mdash; and it shapes how I
+                            teach everything else.
+                        </p>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section class="content-section">
             <div class="container">
-                <h2>Teaching Philosophy</h2>
-                <div class="content-card" style="margin-bottom: 3rem;">
-                    <p>
-                        My mission as an educator is to create equitable educational opportunities and nurture potential. 
-                        Central to my approach is shifting focus from the perceived quality of students to the effectiveness 
-                        of the learning design, ensuring that all students, regardless of their background, can achieve 
-                        their full potential.
-                    </p>
-                    <p>
-                        I believe in cultivating caring relationships with students and celebrating the uniqueness of each individual. 
-                        My role has evolved to not only impart knowledge but also to discover, nurture, and help each student 
-                        shine in their own way through inclusive learning environments and personalized education.
-                    </p>
-                </div>
-
-                <h2>Courses Taught</h2>
-                <div class="content-grid" style="grid-template-columns: 1fr;">
-                    
+                <p class="section-label">&sect; 03 &mdash; Teaching record</p>
+                <div class="content-grid cols-2">
                     <div class="content-card">
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                            <div class="highlight-icon" style="width: 50px; height: 50px; margin: 0;">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <div>
-                                <h3>DATA 5630: Deep Forecasting (Advanced Time Series Forecasting)</h3>
-                                <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">Developed from scratch • Spring 2023</p>
-                            </div>
-                        </div>
+                        <p class="card-label">Highest honor &#9650; 2024</p>
+                        <h3>Teacher of the Year, twice over</h3>
                         <p>
-                            A comprehensive course that combines classical time series models with modern machine learning and deep learning approaches. 
-                            This unique curriculum bridges traditional statistical forecasting methods with cutting-edge AI applications, 
-                            providing students with both foundational and advanced forecasting techniques. 
-                            Initially launched as a special topic, its success led to permanent inclusion in our curriculum.
+                            The USU Eldon&nbsp;J. Gardner Teacher of the Year &mdash; the university's top
+                            teaching award &mdash; and the Huntsman School Teacher of the Year, both in 2024.
                         </p>
-                        <div style="margin-top: 1rem;">
-                            <strong>Key Areas:</strong>
-                            <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
-                                <li>Time series fundamentals and stationarity analysis</li>
-                                <li>Exponential smoothing and ARIMA/SARIMA models</li>
-                                <li>Machine learning time series techniques</li>
-                                <li>Deep neural networks and sequence modeling (RNN/LSTM)</li>
-                                <li>Prophet and NeuralProphet frameworks</li>
-                                <li>AutoML tools and production-ready deployment</li>
-                            </ul>
-                        </div>
-                    </div>
-
-
-                    <div class="content-card">
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                            <div class="highlight-icon" style="width: 50px; height: 50px; margin: 0;">
-                                <i class="fas fa-database"></i>
-                            </div>
-                            <div>
-                                <h3>DATA 5600: Machine Learning</h3>
-                                <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">DAIS Department • Ongoing</p>
-                            </div>
-                        </div>
-                        <p>
-                            Foundational course in the Data Analytics track covering fundamental machine learning concepts and algorithms. 
-                            Emphasizes hands-on learning with real-time coding sessions using platforms like Google Colab, 
-                            allowing students to immediately apply concepts and receive instant feedback.
-                        </p>
-                        <div style="margin-top: 1rem;">
-                            <strong>Key Areas:</strong>
-                            <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
-                                <li>Supervised learning algorithms</li>
-                                <li>Unsupervised learning techniques</li>
-                                <li>Model evaluation and validation</li>
-                                <li>Feature engineering and selection</li>
-                                <li>Practical machine learning implementation</li>
-                            </ul>
-                        </div>
+                        <p><a href="https://www.youtube.com/watch?v=uapgcFHpl8Q" target="_blank" rel="noopener noreferrer">Watch the award ceremony &#8599;</a></p>
                     </div>
 
                     <div class="content-card">
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                            <div class="highlight-icon" style="width: 50px; height: 50px; margin: 0;">
-                                <i class="fas fa-brain"></i>
-                            </div>
-                            <div>
-                                <h3>DATA 5610: Deep Learning</h3>
-                                <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">DAIS Department • Ongoing</p>
-                            </div>
-                        </div>
-                        <p>
-                            Advanced course focusing on deep learning architectures and applications. 
-                            Covers modern neural network techniques from fundamentals to cutting-edge approaches in computer vision and sequence modeling.
-                        </p>
-                        <div style="margin-top: 1rem;">
-                            <strong>Key Areas:</strong>
-                            <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
-                                <li>Deep Neural Networks (NN and DNN)</li>
-                                <li>Convolutional Neural Networks (CNN, R-CNN, YOLO, FCN)</li>
-                                <li>Recurrent Neural Networks (RNN, LSTM)</li>
-                                <li>Transformers and Attention Mechanisms</li>
-                                <li>Deep Computer Vision and Sequence Modeling</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="content-card">
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                            <div class="highlight-icon" style="width: 50px; height: 50px; margin: 0;">
-                                <i class="fas fa-university"></i>
-                            </div>
-                            <div>
-                                <h3>USU 1010: University Connections</h3>
-                                <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">First-year Experience • Fall 2023</p>
-                            </div>
-                        </div>
-                        <p>
-                            A course designed to help freshmen transition to college life. This experience provides valuable 
-                            insights into challenges faced by new students and informs my overall teaching approach across 
-                            all courses.
-                        </p>
-                    </div>
-                </div>
-
-                <h2 style="margin-top: 4rem;">Teaching Excellence</h2>
-                <div class="content-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-                    
-                    <div class="content-card">
-                        <h3><i class="fas fa-trophy"></i> 2024 Teacher of the Year</h3>
-                        <p>
-                            Honored to receive both the USU Eldon J Gardner Teacher of the Year and 
-                            Huntsman School Teacher of the Year awards in 2024, recognizing excellence 
-                            in teaching and commitment to student success.
-                        </p>
-                        <div style="margin-top: 1rem;">
-                            <strong>Watch the Award Ceremony:</strong>
-                            <p style="margin-top: 0.5rem;">
-                                <a href="https://www.youtube.com/watch?v=uapgcFHpl8Q" target="_blank" style="color: #3b82f6; text-decoration: none;">
-                                    <i class="fab fa-youtube"></i> View on YouTube
-                                </a>
-                            </p>
-                        </div>
-                    </div>
-
-
-                    <div class="content-card">
-                        <h3><i class="fas fa-users"></i> Student Mentorship</h3>
-                        <p>
-                            Through the Analytics Solutions Center and course projects, I mentor students 
-                            in applying machine learning to real-world problems, helping them develop both 
-                            technical skills and professional competencies.
-                        </p>
-                        <div style="margin-top: 1rem;">
-                            <strong>Mentorship Focus:</strong>
-                            <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
-                                <li>Industry project guidance</li>
-                                <li>Career development in data science</li>
-                                <li>Research methodology</li>
-                                <li>Professional networking</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="content-card">
-                        <h3><i class="fas fa-trophy"></i> Awards & Recognition</h3>
-                        <ul style="margin-top: 1rem;">
-                            <li><strong>2024:</strong> Eldon J. Gardner Teacher of the Year Award (USU)</li>
-                            <li><strong>2023:</strong> Teaching Excellence Scholar</li>
-                            <li><strong>2023:</strong> ETE Teaching Scholar Certificate</li>
-                            <li><strong>2020:</strong> Graduate Mentor of the Year (Economics & Finance)</li>
-                            <li><strong>Ongoing:</strong> Average 4.8/5.0 "Excellent Teacher" rating</li>
+                        <p class="card-label">Awards &amp; recognition</p>
+                        <h3>The running tally</h3>
+                        <ul>
+                            <li><strong>2024</strong> &mdash; Eldon J. Gardner Teacher of the Year (USU)</li>
+                            <li><strong>2023</strong> &mdash; Teaching Excellence Scholar</li>
+                            <li><strong>2023</strong> &mdash; ETE Teaching Scholar Certificate</li>
+                            <li><strong>2020</strong> &mdash; Graduate Mentor of the Year (Econ &amp; Finance)</li>
+                            <li><strong>Ongoing</strong> &mdash; 4.8/5.0 average "Excellent Teacher" rating</li>
                         </ul>
                     </div>
 
                     <div class="content-card">
-                        <h3><i class="fas fa-graduation-cap"></i> Student Success</h3>
-                        <p>My students have secured positions at prestigious organizations:</p>
-                        <ul style="margin-top: 1rem;">
-                            <li>BlackRock NYC (first USU placement)</li>
-                            <li>Capital One</li>
-                            <li>American Express</li>
-                            <li>Tesla</li>
-                            <li>Wells Fargo</li>
-                            <li>KPMG</li>
-                            <li>Zions Bank</li>
-                            <li>Koch Industries</li>
-                            <li>Flex</li>
-                            <li>Many other local companies in Utah</li>
-                        </ul>
-                        <p style="margin-top: 1rem; font-style: italic;">
-                            Students often attribute their success to skills and insights gained from my courses.
+                        <p class="card-label">Mentorship</p>
+                        <h3>Beyond the classroom</h3>
+                        <p>
+                            Through the Analytics Solutions Center and course projects, I mentor students on
+                            real problems &mdash; industry project guidance, research methodology, career
+                            development in data science, and professional networking.
                         </p>
                     </div>
 
+                    <div class="content-card">
+                        <p class="card-label">Student outcomes</p>
+                        <h3>Where they land</h3>
+                        <p>Recent students have gone on to:</p>
+                        <ul>
+                            <li>BlackRock NYC &mdash; the first USU placement</li>
+                            <li>Capital One, American Express, Wells Fargo</li>
+                            <li>Tesla, Koch Industries, Flex</li>
+                            <li>KPMG, Zions Bank, and many Utah companies</li>
+                        </ul>
+                    </div>
                 </div>
+            </div>
+        </section>
 
-                <h2 style="margin-top: 4rem;">Teaching Innovations & Resources</h2>
-                <div class="content-card">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
-                        <div>
-                            <h4><i class="fas fa-robot"></i> AI-Enhanced Learning</h4>
-                            <ul style="margin-top: 0.5rem;">
-                                <li>Virtual teaching assistant using RAG</li>
-                                <li>Natural Language Processing for feedback analysis</li>
-                                <li>AI-augmented learning tools in curriculum</li>
-                                <li>Sentiment analysis for student support</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4><i class="fas fa-youtube"></i> Global Education Reach</h4>
-                            <ul style="margin-top: 0.5rem;">
-                                <li>YouTube channel with 15,000+ subscribers</li>
-                                <li>Open-access course materials on GitHub</li>
-                                <li>Interactive tutorials and demonstrations</li>
-                                <li>Democratizing education at scale</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4><i class="fas fa-handshake"></i> Industry Partnerships</h4>
-                            <ul style="margin-top: 0.5rem;">
-                                <li>Analytics Solutions Center mentorship</li>
-                                <li>Real-world projects (Meta, others)</li>
-                                <li>CFA Research Challenge (3 consecutive state wins)</li>
-                                <li>Alumni network "Stay in touch" Slack (200+ members)</li>
-                            </ul>
-                        </div>
+        <section class="content-section alt">
+            <div class="container">
+                <p class="section-label">&sect; 04 &mdash; Innovations &amp; reach</p>
+                <div class="content-grid cols-3">
+                    <div class="content-card">
+                        <p class="card-label">AI-enhanced learning</p>
+                        <h3>Teaching with the tools I teach</h3>
+                        <ul>
+                            <li>Virtual teaching assistant built on RAG</li>
+                            <li>NLP analysis of student feedback</li>
+                            <li>AI-augmented learning tools in curriculum</li>
+                            <li>Sentiment analysis for student support</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <p class="card-label">Global reach</p>
+                        <h3>Open education at scale</h3>
+                        <ul>
+                            <li>YouTube channel with 15,000+ subscribers</li>
+                            <li>Open-access course materials on GitHub</li>
+                            <li>Interactive tutorials and demonstrations</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <p class="card-label">Industry partnerships</p>
+                        <h3>Real stakes, real partners</h3>
+                        <ul>
+                            <li>Analytics Solutions Center mentorship</li>
+                            <li>Real-world projects (Meta and others)</li>
+                            <li>CFA Research Challenge &mdash; 3 straight state wins</li>
+                            <li>Alumni Slack network, 200+ members</li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -278,7 +238,7 @@
 
     <footer>
         <div class="container">
-            <p>&copy; 2024 Pedram Jahangiry. All rights reserved.</p>
+            <p class="footer-note">&copy; 2026 Pedram Jahangiry &mdash; all residuals are my own.</p>
             <div class="social-links">
                 <a href="https://x.com/PedramJahangiry" target="_blank" aria-label="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
                 <a href="https://www.linkedin.com/in/pedram-jahangiry-cfa-5778015a/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
@@ -286,6 +246,7 @@
                 <a href="https://github.com/PJalgotrader" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
                 <a href="mailto:pedram.jahangiry@usu.edu" aria-label="Email"><i class="fas fa-envelope"></i></a>
             </div>
+            <p class="colophon">Set in Fraunces, Inter &amp; IBM Plex Mono &middot; hand&#8209;built, zero frameworks &middot; Logan, Utah &mdash; 41.74&deg;&nbsp;N, 111.81&deg;&nbsp;W</p>
         </div>
     </footer>
 

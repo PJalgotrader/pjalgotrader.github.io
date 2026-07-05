@@ -3,16 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projects & Publications - Pedram Jahangiry</title>
+    <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>Projects &amp; Publications — Pedram Jahangiry</title>
+    <meta name="description" content="Analytics Solutions Center mentorship, open-source educational resources, and applied machine learning projects in economics and finance.">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <a href="index.html">Pedram Jahangiry</a>
+                <a href="index.html">Pedram&nbsp;Jahangiry</a>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
@@ -31,136 +38,115 @@
                     <a href="contact.html" class="nav-link">Contact</a>
                 </li>
             </ul>
-            <div class="hamburger">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
+            <div class="nav-right">
+                <button class="theme-toggle" aria-label="Switch color theme">
+                    <i class="fas fa-sun icon-sun" aria-hidden="true"></i>
+                    <i class="fas fa-moon icon-moon" aria-hidden="true"></i>
+                </button>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main>
+    <main id="main">
         <section class="page-header">
             <div class="container">
-                <h1>Projects & Publications</h1>
-                <p>Bridging academia and industry through theory, ML and AI applications in economics and finance</p>
+                <p class="eyebrow">Projects &middot; Analytics Solutions Center</p>
+                <h1>Applied work, real stakes.</h1>
+                <p>Bridging academia and industry through machine learning and AI applications in economics and finance.</p>
             </div>
         </section>
 
         <section class="content-section">
             <div class="container">
-                <h2>Areas of Expertise</h2>
-                <div class="content-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); margin-bottom: 3rem;">
+                <p class="section-label">&sect; 01 &mdash; Focus areas</p>
+                <div class="content-grid cols-3">
                     <div class="content-card">
-                        <h3><i class="fas fa-brain"></i> Machine Learning & Deep Learning</h3>
+                        <p class="card-label">ML &amp; DL</p>
+                        <h3>Machine Learning &amp; Deep Learning</h3>
                         <p>
-                            Applying machine learning and deep learning techniques across various domains, including 
-                            financial markets, algorithmic trading strategies, and economic analysis. 
-                            Leveraging industry experience from BlackRock to create practical applications in both research and education.
+                            Applied across financial markets, algorithmic trading strategies, and economic
+                            analysis &mdash; grounded in industry experience from BlackRock.
                         </p>
                     </div>
                     <div class="content-card">
-                        <h3><i class="fas fa-chart-line"></i> Time Series Forecasting</h3>
+                        <p class="card-label">Forecasting</p>
+                        <h3>Time Series Forecasting</h3>
                         <p>
-                            Specializing in advanced forecasting methods that combine classical time series models with 
-                            modern machine learning and deep learning approaches, including ARIMA, LSTM, RNN, and transformer architectures. 
-                            Applications include financial market prediction, economic forecasting, and risk modeling.
+                            Classical models through modern architectures: ARIMA, LSTM, RNN, and
+                            transformers, applied to market prediction, economic forecasting, and risk.
                         </p>
                     </div>
                     <div class="content-card">
-                        <h3><i class="fas fa-project-diagram"></i> Analytics Solutions Center</h3>
+                        <p class="card-label">ASC</p>
+                        <h3>Analytics Solutions Center</h3>
                         <p>
-                            As a project mentor at USU's Analytics Solutions Center, I guide student teams working on 
-                            real-world data analytics projects for industry partners, providing experiential learning 
-                            opportunities while solving practical business problems.
+                            Guiding student teams through real data analytics projects for industry
+                            partners &mdash; experiential learning that solves actual business problems.
                         </p>
                     </div>
                 </div>
+            </div>
+        </section>
 
-                <h2>Current Projects</h2>
-                <div class="content-grid" style="grid-template-columns: 1fr;">
-                    
+        <section class="content-section alt">
+            <div class="container">
+                <p class="section-label">&sect; 02 &mdash; Current projects</p>
+                <div class="content-grid">
                     <div class="content-card">
-                        <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem;">
-                            <div class="highlight-icon" style="width: 60px; height: 60px; margin: 0; flex-shrink: 0;">
-                                <i class="fas fa-project-diagram"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <h3>Analytics Solutions Center Projects</h3>
-                                <p style="margin: 0.5rem 0; color: #6b7280; font-size: 0.9rem;">
-                                    <strong>Role:</strong> Project Mentor • <strong>Duration:</strong> Ongoing
-                                </p>
-                                <p style="margin: 0.5rem 0; color: #6b7280; font-size: 0.9rem;">
-                                    <strong>Focus:</strong> Real-world data analytics projects with industry partners
-                                </p>
-                            </div>
-                        </div>
+                        <p class="card-label">Project mentor &middot; ongoing</p>
+                        <h3>Analytics Solutions Center Projects</h3>
                         <p>
-                            Mentoring student teams on industry-sponsored data analytics projects through USU's Analytics Solutions Center. 
-                            Projects span various domains including finance, healthcare, retail, and government, providing students with 
-                            hands-on experience in solving real business problems using machine learning and data analytics.
+                            Mentoring student teams on industry-sponsored analytics projects spanning
+                            finance, healthcare, retail, and government &mdash; hands-on experience solving
+                            real business problems with machine learning.
                         </p>
-                        <div style="margin-top: 1rem;">
-                            <strong>Project Areas:</strong>
-                            <ul style="margin-top: 0.5rem; margin-left: 1.5rem; color: #4b5563;">
-                                <li>Predictive modeling and analytics</li>
-                                <li>Data visualizations and dashboard solutions</li>
-                                <li>Machine learning and deep learning applications</li>
-                                <li>Forecasting tools and automation</li>
-                                <li>AI solutions and intelligent systems</li>
-                            </ul>
-                        </div>
+                        <p class="card-list-title">Project areas</p>
+                        <ul>
+                            <li>Predictive modeling and analytics</li>
+                            <li>Data visualization and dashboard solutions</li>
+                            <li>Machine learning and deep learning applications</li>
+                            <li>Forecasting tools and automation</li>
+                            <li>AI solutions and intelligent systems</li>
+                        </ul>
                     </div>
 
                     <div class="content-card">
-                        <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem;">
-                            <div class="highlight-icon" style="width: 60px; height: 60px; margin: 0; flex-shrink: 0;">
-                                <i class="fas fa-code-branch"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <h3>Open-Source Educational Resources</h3>
-                                <p style="margin: 0.5rem 0; color: #6b7280; font-size: 0.9rem;">
-                                    <strong>Platform:</strong> GitHub • <strong>Access:</strong> Public
-                                </p>
-                                <p style="margin: 0.5rem 0; color: #6b7280; font-size: 0.9rem;">
-                                    <strong>Repository:</strong> <a href="https://github.com/PJalgotrader" target="_blank" style="color: #3b82f6;">github.com/PJalgotrader</a>
-                                </p>
-                            </div>
-                        </div>
+                        <p class="card-label">GitHub &middot; public &middot; <a href="https://github.com/PJalgotrader" target="_blank" rel="noopener">github.com/PJalgotrader</a></p>
+                        <h3>Open-Source Educational Resources</h3>
                         <p>
-                            Developing and maintaining open-source educational materials for machine learning and deep learning courses. 
-                            These resources include Jupyter notebooks, code examples, and practical exercises designed to help students 
-                            master advanced concepts in machine learning, deep learning, and their applications in finance.
+                            Jupyter notebooks, code examples, and practical exercises for machine learning
+                            and deep learning &mdash; free for anyone to learn from.
                         </p>
-                        <div style="margin-top: 1rem;">
-                            <strong>Course Materials Available:</strong>
-                            <ul style="margin-top: 0.5rem; margin-left: 1.5rem; color: #4b5563;">
-                                <li>Machine Learning in Economics and Finance</li>
-                                <li>Deep Learning Applications</li>
-                                <li>Deep Forecasting Methods</li>
-                                <li>Python for Data Science</li>
-                            </ul>
-                        </div>
+                        <p class="card-list-title">Course materials available</p>
+                        <ul>
+                            <li>Machine Learning in Economics and Finance</li>
+                            <li>Deep Learning Applications</li>
+                            <li>Deep Forecasting Methods</li>
+                            <li>Python for Data Science</li>
+                        </ul>
                     </div>
-
                 </div>
+            </div>
+        </section>
 
-
-                <h3 style="margin-top: 2rem;">Academic Publications</h3>
+        <section class="content-section">
+            <div class="container">
+                <p class="section-label">&sect; 03 &mdash; Publications</p>
                 <div class="content-card">
-                    <p style="margin-bottom: 1rem;">
-                        As a Professor of Practice, my focus is on applied teaching and industry collaboration rather than 
-                        traditional academic research. My scholarly work emphasizes practical applications of machine learning 
-                        in finance and the development of educational resources.
+                    <p class="card-label">Scholarship of practice</p>
+                    <h3>Applied over archival</h3>
+                    <p>
+                        As a Professor of Practice, my focus is applied teaching and industry collaboration
+                        rather than traditional academic research. My scholarly work emphasizes practical
+                        applications of machine learning in finance and the development of open educational
+                        resources.
                     </p>
-                    <div style="margin-top: 1rem;">
-                        <strong>Publication Profile:</strong>
-                        <p style="margin-top: 0.5rem;">
-                            <a href="https://scholar.google.com/citations?user=rzAs9soAAAAJ&hl=en" target="_blank" style="color: #3b82f6; text-decoration: none;">
-                                <i class="fas fa-graduation-cap"></i> View Google Scholar Profile
-                            </a>
-                        </p>
-                    </div>
+                    <p><a href="https://scholar.google.com/citations?user=rzAs9soAAAAJ&amp;hl=en" target="_blank" rel="noopener noreferrer">Google Scholar profile &#8599;</a></p>
                 </div>
             </div>
         </section>
@@ -168,12 +154,15 @@
 
     <footer>
         <div class="container">
-            <p>&copy; 2024 Pedram Jahangiry. All rights reserved.</p>
+            <p class="footer-note">&copy; 2026 Pedram Jahangiry &mdash; all residuals are my own.</p>
             <div class="social-links">
+                <a href="https://x.com/PedramJahangiry" target="_blank" aria-label="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://www.linkedin.com/in/pedram-jahangiry-cfa-5778015a/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
                 <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
                 <a href="https://github.com/PJalgotrader" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
                 <a href="mailto:pedram.jahangiry@usu.edu" aria-label="Email"><i class="fas fa-envelope"></i></a>
             </div>
+            <p class="colophon">Set in Fraunces, Inter &amp; IBM Plex Mono &middot; hand&#8209;built, zero frameworks &middot; Logan, Utah &mdash; 41.74&deg;&nbsp;N, 111.81&deg;&nbsp;W</p>
         </div>
     </footer>
 

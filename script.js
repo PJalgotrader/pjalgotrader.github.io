@@ -2,11 +2,31 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all components
+    initializeThemeToggle();
     initializeNavigation();
     initializeAnimations();
-    initializeContactForm();
     initializeHeroWalk();
 });
+
+// Theme toggle — dark is the default; light is stored as a preference.
+// Pages set data-theme="light" on <html> before first paint via an inline
+// head script, so this only needs to handle clicks.
+function initializeThemeToggle() {
+    const btn = document.querySelector('.theme-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        if (isLight) {
+            document.documentElement.removeAttribute('data-theme');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+        try {
+            localStorage.setItem('pj-theme', isLight ? 'dark' : 'light');
+        } catch (e) { /* private browsing */ }
+        window.dispatchEvent(new Event('themechange'));
+    });
+}
 
 // Navigation functionality
 function initializeNavigation() {
@@ -89,7 +109,7 @@ function initializeAnimations() {
     animateElements.forEach(el => {
         const siblingIndex = Array.prototype.indexOf.call(el.parentElement.children, el);
         const stagger = (el.classList.contains('plate') || el.classList.contains('index-row'))
-            ? Math.max(0, siblingIndex) * 90
+            ? Math.min(Math.max(0, siblingIndex), 6) * 90
             : 0;
         el.style.opacity = '0';
         el.style.transform = 'translateY(20px)';
@@ -114,25 +134,6 @@ function initializeAnimations() {
         });
     }, { passive: true });
 
-}
-
-// Contact form functionality (if needed)
-function initializeContactForm() {
-    // Add hover effects for social cards
-    const socialCards = document.querySelectorAll('.social-card');
-    socialCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.borderColor = '#0E7A4E';
-            this.style.backgroundColor = '#F7F4EC';
-            this.style.transform = 'translateY(-2px)';
-        });
-
-        card.addEventListener('mouseleave', function() {
-            this.style.borderColor = '#DCD7C8';
-            this.style.backgroundColor = '#FDFCF8';
-            this.style.transform = 'translateY(0)';
-        });
-    });
 }
 
 // Hero random walk — a quiet nod to the random walk teaching tool.
@@ -316,6 +317,9 @@ function initializeHeroWalk() {
         drawWalk();
     });
 
+    // Redraw with the same seed when the theme changes so colors follow
+    window.addEventListener('themechange', drawWalk);
+
     // Redraw on resize with the same seed so the walk survives reflow
     let resizeTimer;
     window.addEventListener('resize', function() {
@@ -388,9 +392,9 @@ handleMissingElements();
 // Export functions for potential external use
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
+        initializeThemeToggle,
         initializeNavigation,
         initializeAnimations,
-        initializeContactForm,
         handleResponsiveGrid
     };
 }

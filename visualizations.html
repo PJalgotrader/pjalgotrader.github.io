@@ -3,17 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Tools - Pedram Jahangiry</title>
+    <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>Interactive Tools — Pedram Jahangiry</title>
+    <meta name="description" content="Interactive visualizations for time series, machine learning, and deep learning — random walks, exponential smoothing, SARIMA, cross-validation, gradient descent, and neural networks that train in your browser.">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <a href="index.html">Pedram Jahangiry</a>
+                <a href="index.html">Pedram&nbsp;Jahangiry</a>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
@@ -32,365 +38,185 @@
                     <a href="contact.html" class="nav-link">Contact</a>
                 </li>
             </ul>
-            <div class="hamburger">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
+            <div class="nav-right">
+                <button class="theme-toggle" aria-label="Switch color theme">
+                    <i class="fas fa-sun icon-sun" aria-hidden="true"></i>
+                    <i class="fas fa-moon icon-moon" aria-hidden="true"></i>
+                </button>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main>
+    <main id="main">
         <section class="page-header">
             <div class="container">
+                <p class="eyebrow">Table of contents</p>
                 <h1>Interactive Tools</h1>
-                <p>Interactive visualizations and advanced applications for exploring data and demystifying complex concepts</p>
+                <p>Every tool is a standalone HTML page &mdash; no installs, no accounts, no APIs. Open one and start turning knobs. The math moves.</p>
             </div>
         </section>
 
-        <section class="content-section">
+        <section class="index-section toc">
             <div class="container">
-                <div class="content-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem;">
-                    
-                    <div class="content-card topic-card">
-                        <div class="topic-header">
-                            <div class="highlight-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem; background: linear-gradient(135deg, #06b6d4, #3b82f6);">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <h3>Time Series Analysis</h3>
-                        </div>
-                        <p>
-                            Interactive time series visualizations revealing patterns, trends, and forecasts across 
-                            temporal data from various industries and research domains.
-                        </p>
-                        
-                        <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #06b6d4;">
-                            <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                <a href="Interactive_tools/random-walk-teaching-tool.html" target="_blank" style="text-decoration: none; color: #06b6d4;">
-                                    <i class="fas fa-chart-line" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                    Random Walk Visualizer
-                                </a>
-                            </h4>
-                            <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                An interactive exploration of random walks and their statistical properties. This visualization demonstrates 
-                                how random walks behave over time, showing multiple realizations, statistical distributions, and key properties 
-                                like variance scaling and the central limit theorem in action. Includes controls for step size, number of walks, 
-                                and time horizon to explore different scenarios.
-                            </p>
-                        </div>
-                        
-                        <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #06b6d4;">
-                            <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                <a href="Interactive_tools/stationarity-visualizer.html" target="_blank" style="text-decoration: none; color: #06b6d4;">
-                                    <i class="fas fa-chart-line" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                    Time Series Stationarity Visualizer
-                                </a>
-                            </h4>
-                            <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                An interactive exploration of stationarity in time series data. This visualization demonstrates the key concept 
-                                that a time series is stationary when its statistical properties (mean, variance, autocovariance) remain constant 
-                                over time, including examples of trending, seasonal, and white noise processes to illustrate the differences between 
-                                ensemble and time means.
-                            </p>
-                        </div>
-                        
-                        <div style="margin: 2rem 0 1rem 0; padding: 1.5rem; border-top: 1px solid #e5e7eb; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-radius: 12px; border-left: 4px solid #ef4444;">
-                            <h4 style="margin: 0 0 1rem 0; color: #1f2937; font-size: 1.1rem; font-weight: 600;">
-                                <i class="fas fa-exclamation-triangle" style="color: #ef4444; margin-right: 0.5rem;"></i>
-                                Time Series Challenges
-                            </h4>
-                            <p style="margin: 0 0 1.5rem 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                Time series data violates the i.i.d. assumption — temporal dependencies require specialized techniques for cross validation and resampling to avoid data leakage and produce honest model evaluations.
-                            </p>
 
-                            <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #ffffff; border-radius: 8px; border-left: 4px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                    <a href="Interactive_tools/m5_ml/ts-cross-validation-visualization.html" target="_blank" style="text-decoration: none; color: #ef4444;">
-                                        <i class="fas fa-random" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                        Time Series Cross Validation
-                                    </a>
-                                </h4>
-                                <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                    Explore three specialized cross validation methods for time series: Purged K-Fold CV with purging and embargo to prevent data leakage, Walk-Forward CV with expanding and rolling windows that respect temporal order, and Combinatorial Purged Cross Validation (CPCV) that generates multiple backtest paths for overfitting detection. Animate each method step-by-step and compare their properties.
-                                </p>
-                            </div>
+                <p class="section-label">&sect; 01 &mdash; Time series foundations</p>
+                <a class="index-row" href="Interactive_tools/random-walk-teaching-tool.html" target="_blank" rel="noopener">
+                    <span class="index-num">01</span>
+                    <span class="index-body">
+                        <span class="index-title">The Random Walk</span>
+                        <span class="index-desc">Multiple realizations, variance scaling, and the central limit theorem emerging live. Control step size, number of walks, and horizon.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
+                <a class="index-row" href="Interactive_tools/stationarity-visualizer.html" target="_blank" rel="noopener">
+                    <span class="index-num">02</span>
+                    <span class="index-body">
+                        <span class="index-title">Stationarity Visualizer</span>
+                        <span class="index-desc">Why constant mean, variance, and autocovariance matter &mdash; trending, seasonal, and white-noise processes compared through ensemble versus time means.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
 
-                            <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #ffffff; border-radius: 8px; border-left: 4px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                    <a href="Interactive_tools/m5_ml/ts-bootstrapping-visualization.html" target="_blank" style="text-decoration: none; color: #ef4444;">
-                                        <i class="fas fa-cubes" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                        Time Series Bootstrapping
-                                    </a>
-                                </h4>
-                                <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                    Interactive exploration of Moving Block Bootstrap (MBB), Circular Block Bootstrap (CBB), Stationary Bootstrap (SB), and Parametric ARIMA Bootstrap for resampling dependent time series data while preserving temporal structure. Generate bootstrap paths from the airline passenger dataset and compare block-based vs. model-based approaches.
-                                </p>
-                            </div>
-                        </div>
+                <p class="section-label">&sect; 02 &mdash; Exponential smoothing</p>
+                <a class="index-row" href="Interactive_tools/m3_ets/ses/ses_interactive_visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">03</span>
+                    <span class="index-body">
+                        <span class="index-title">Simple Exponential Smoothing</span>
+                        <span class="index-desc">How &alpha; trades stability for responsiveness &mdash; and why &alpha; near 1 is a confession that your model is missing trend or season.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
+                <a class="index-row" href="Interactive_tools/m3_ets/holt_linear_trend/holt_linear_trend_visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">04</span>
+                    <span class="index-body">
+                        <span class="index-title">Holt's Linear Trend</span>
+                        <span class="index-desc">Level and trend decomposed, each with its own smoothing parameter &mdash; flat forecasts become sloped ones.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
+                <a class="index-row" href="Interactive_tools/m3_ets/holt_winter/holt_winters_visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">05</span>
+                    <span class="index-body">
+                        <span class="index-title">Holt&ndash;Winters Seasonal</span>
+                        <span class="index-desc">The full triple: &alpha;, &beta;*, and &gamma; working together to capture level, trend, and seasonality at once.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
 
-                        <div style="margin: 2rem 0 1rem 0; padding: 1.5rem; border-top: 1px solid #e5e7eb; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; border-left: 4px solid #0ea5e9;">
-                            <h4 style="margin: 0 0 1rem 0; color: #1f2937; font-size: 1.1rem; font-weight: 600;">
-                                <i class="fas fa-chart-line" style="color: #0ea5e9; margin-right: 0.5rem;"></i>
-                                Exponential Smoothing Methods
-                            </h4>
-                            <p style="margin: 0 0 1.5rem 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                Interactive exploration of exponential smoothing techniques that progressively handle level, trend, and seasonal patterns in time series data.
-                            </p>
-                        
-                            <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #ffffff; border-radius: 8px; border-left: 4px solid #06b6d4; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                    <a href="Interactive_tools/m3_ets/ses/ses_interactive_visualization.html" target="_blank" style="text-decoration: none; color: #06b6d4;">
-                                        <i class="fas fa-chart-line" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                        Simple Exponential Smoothing (SES)
-                                    </a>
-                                </h4>
-                                <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                    Master the fundamentals of exponential smoothing by exploring how the α parameter controls the trade-off between stability and responsiveness. Watch the weighted averaging process in action as SES creates flat forecasts, and discover why high α values (approaching 1) signal model inadequacy when data contains trends or seasonal patterns.
-                                </p>
-                            </div>
-                            
-                            <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #ffffff; border-radius: 8px; border-left: 4px solid #06b6d4; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                    <a href="Interactive_tools/m3_ets/holt_linear_trend/holt_linear_trend_visualization.html" target="_blank" style="text-decoration: none; color: #06b6d4;">
-                                        <i class="fas fa-chart-line" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                        Holt's Linear Trend Method
-                                    </a>
-                                </h4>
-                                <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                    Advance beyond flat forecasts by decomposing time series into level and trend components. Experiment with dual smoothing parameters α and β* to understand how each component adapts independently, creating dynamic sloped forecasts that naturally extend trending patterns into the future.
-                                </p>
-                            </div>
-                            
-                            <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #ffffff; border-radius: 8px; border-left: 4px solid #06b6d4; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                    <a href="Interactive_tools/m3_ets/holt_winter/holt_winters_visualization.html" target="_blank" style="text-decoration: none; color: #06b6d4;">
-                                        <i class="fas fa-chart-line" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                        Holt-Winters Seasonal Method
-                                    </a>
-                                </h4>
-                                <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                    Experience the complete forecasting framework with three-component decomposition of level, trend, and seasonality. Observe how the triple smoothing parameters α, β*, and γ work together to capture complex data patterns, producing sophisticated forecasts that maintain both trending behavior and cyclical seasonal patterns.
-                                </p>
-                            </div>
-                        </div>
+                <p class="section-label">&sect; 03 &mdash; ARIMA</p>
+                <a class="index-row" href="Interactive_tools/m4_arima/ar-ma-visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">06</span>
+                    <span class="index-body">
+                        <span class="index-title">AR(1) &amp; MA(1) Building Blocks</span>
+                        <span class="index-desc">Past values versus past errors: stationarity conditions, autocorrelation signatures, and how each block forecasts.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
+                <a class="index-row" href="Interactive_tools/m4_arima/sarima-visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">07</span>
+                    <span class="index-body">
+                        <span class="index-title">SARIMA Explorer</span>
+                        <span class="index-desc">Dial in (p,&nbsp;d,&nbsp;q)(P,&nbsp;D,&nbsp;Q)&#8342; on the airline-passengers data and watch trend and seasonality get captured &mdash; forecasts with confidence intervals included.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
 
-                        <div style="margin: 2rem 0 1rem 0; padding: 1.5rem; border-top: 1px solid #e5e7eb; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; border-left: 4px solid #f59e0b;">
-                            <h4 style="margin: 0 0 1rem 0; color: #1f2937; font-size: 1.1rem; font-weight: 600;">
-                                <i class="fas fa-chart-line" style="color: #f59e0b; margin-right: 0.5rem;"></i>
-                                ARIMA Models
-                            </h4>
-                            <p style="margin: 0 0 1.5rem 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                Interactive exploration of Autoregressive Integrated Moving Average (ARIMA) models, the foundation of modern time series forecasting that combines AR and MA components.
-                            </p>
+                <p class="section-label">&sect; 04 &mdash; Machine learning</p>
+                <a class="index-row" href="Interactive_tools/m5_ml/bias-variance-visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">08</span>
+                    <span class="index-body">
+                        <span class="index-title">Bias&ndash;Variance Tradeoff</span>
+                        <span class="index-desc">Repeated sampling makes bias and variance visible: fit polynomials to noisy draws and watch underfitting and overfitting emerge on a live tradeoff curve.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
+                <a class="index-row" href="Interactive_tools/m5_ml/cross-validation-visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">09</span>
+                    <span class="index-body">
+                        <span class="index-title">Cross-Validation</span>
+                        <span class="index-desc">K-Fold, Stratified, and Leave-One-Out, animated fold by fold &mdash; see exactly where validation scores come from.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
+                <a class="index-row" href="Interactive_tools/m5_ml/learning-curve-visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">10</span>
+                    <span class="index-body">
+                        <span class="index-title">Learning Curves</span>
+                        <span class="index-desc">Training and validation error as data grows &mdash; diagnose high bias versus high variance, and learn when more data actually helps.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
+                <a class="index-row" href="Interactive_tools/m5_ml/gradient-descent-visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">11</span>
+                    <span class="index-body">
+                        <span class="index-title">Gradient Descent &amp; SGD</span>
+                        <span class="index-desc">Watch optimization crawl a contour loss surface in real time. Compare smooth Batch GD with noisy SGD, and push the learning rate until it diverges.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
+                <a class="index-row" href="Interactive_tools/m5_ml/dt-regression-visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">12</span>
+                    <span class="index-body">
+                        <span class="index-title">Decision Trees for Time Series</span>
+                        <span class="index-desc">Trees partitioning lag space, rendered as both structure and decision boundaries &mdash; and why they struggle with trend once forecasts go recursive.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
 
-                            <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #ffffff; border-radius: 8px; border-left: 4px solid #06b6d4; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                    <a href="Interactive_tools/m4_arima/ar-ma-visualization.html" target="_blank" style="text-decoration: none; color: #06b6d4;">
-                                        <i class="fas fa-chart-line" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                        AR(1) & MA(1) Models Visualization
-                                    </a>
-                                </h4>
-                                <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                    Understand the fundamental building blocks of ARIMA models through interactive AR(1) and MA(1) visualizations. Compare how autoregressive models use past values versus moving average models using past errors for forecasting. Experiment with parameters to observe stationarity conditions, autocorrelation patterns, and the distinct forecasting behaviors of each model type.
-                                </p>
-                            </div>
+                <p class="section-label">&sect; 05 &mdash; Leakage &amp; dependence <span class="section-note" style="text-transform: none; letter-spacing: 0.03em;">&mdash; where honest backtests live or die</span></p>
+                <a class="index-row" href="Interactive_tools/m5_ml/ts-cross-validation-visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">13</span>
+                    <span class="index-body">
+                        <span class="index-title">Time Series Cross-Validation</span>
+                        <span class="index-desc">Purged K-Fold with embargo, Walk-Forward windows, and Combinatorial Purged CV with backtest-path reconstruction &mdash; the machinery that keeps evaluations honest.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
+                <a class="index-row" href="Interactive_tools/m5_ml/ts-bootstrapping-visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">14</span>
+                    <span class="index-body">
+                        <span class="index-title">Time Series Bootstrapping</span>
+                        <span class="index-desc">Moving Block, Circular Block, Stationary, and parametric AR(1) bootstraps &mdash; resampling dependent data without destroying its structure.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
 
-                            <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #ffffff; border-radius: 8px; border-left: 4px solid #06b6d4; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                    <a href="Interactive_tools/m4_arima/sarima-visualization.html" target="_blank" style="text-decoration: none; color: #06b6d4;">
-                                        <i class="fas fa-chart-line" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                        SARIMA Model Visualization (Airline Passengers)
-                                    </a>
-                                </h4>
-                                <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                    Explore Seasonal ARIMA models using the classic airline passenger dataset (1949-1960). Interactively adjust both non-seasonal (p,d,q) and seasonal (P,D,Q)ₘ parameters to understand how SARIMA captures trend and seasonality. Observe how the optimal model SARIMA(2,1,0)(1,1,1)₁₂ handles monthly patterns and forecast future passenger numbers with confidence intervals.
-                                </p>
-                            </div>
-                        </div>
+                <p class="section-label">&sect; 06 &mdash; Deep learning</p>
+                <a class="index-row" href="Interactive_tools/m6_dl/dnn-timeseries-visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">15</span>
+                    <span class="index-body">
+                        <span class="index-title">Deep Neural Networks, Live</span>
+                        <span class="index-desc">Configure layers, neurons, activations, and lags, then train in your browser with TensorFlow.js &mdash; live loss curves, feature importance, and a linear-regression benchmark to keep the hype honest.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
+                <a class="index-row" href="Interactive_tools/m7_rnn/rnn-vs-dnn-timeseries-visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">16</span>
+                    <span class="index-body">
+                        <span class="index-title">RNN vs DNN</span>
+                        <span class="index-desc">Train both side by side and discover the key lesson: preprocessing (log + differencing) turns RNN performance from poor to excellent on non-stationary data.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
 
-                        <div class="topic-footer">
-                            <span class="project-count">9 Projects</span>
-                            <a href="#" class="btn btn-primary" onclick="document.querySelector('.visualization-item').scrollIntoView({behavior: 'smooth'})">
-                                <i class="fas fa-arrow-right"></i> Explore
-                            </a>
-                        </div>
-                    </div>
+                <p class="section-label">&sect; 07 &mdash; From around the web</p>
+                <a class="index-row" href="https://zenith-wavelength-8c2.notion.site/NN-visualization-3271bcf20cbb807c8d8ff7434bf785b6" target="_blank" rel="noopener noreferrer">
+                    <span class="index-num">&#8599;</span>
+                    <span class="index-body">
+                        <span class="index-title">Neural Network Visualization</span>
+                        <span class="index-desc">A curated external find: architectures, activations, and how networks learn. Opens on Notion.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&#8599;</span></span>
+                </a>
 
-                    <div class="content-card topic-card">
-                        <div class="topic-header">
-                            <div class="highlight-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6);">
-                                <i class="fas fa-brain"></i>
-                            </div>
-                            <h3>Machine Learning & AI</h3>
-                        </div>
-                        <p>
-                            Explore interactive visualizations showcasing machine learning algorithms, neural networks,
-                            and artificial intelligence applications across various domains.
-                        </p>
-
-                        <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #8b5cf6;">
-                            <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                <a href="Interactive_tools/m5_ml/bias-variance-visualization.html" target="_blank" style="text-decoration: none; color: #8b5cf6;">
-                                    <i class="fas fa-balance-scale" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                    Bias-Variance Tradeoff
-                                </a>
-                            </h4>
-                            <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                See bias and variance come alive through repeated sampling. Draw noisy samples from a
-                                quadratic truth, fit polynomials of any degree, and watch how underfitting (high bias)
-                                and overfitting (high variance) emerge. Includes a live bias-variance tradeoff curve
-                                that updates as you experiment.
-                            </p>
-                        </div>
-
-                        <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #8b5cf6;">
-                            <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                <a href="Interactive_tools/m5_ml/cross-validation-visualization.html" target="_blank" style="text-decoration: none; color: #8b5cf6;">
-                                    <i class="fas fa-sync-alt" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                    Cross Validation
-                                </a>
-                            </h4>
-                            <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                Interactive walkthrough of K-Fold, Stratified K-Fold, and Leave-One-Out cross validation.
-                                Animate fold splits step-by-step, see how validation scores are averaged, and understand
-                                the bias-variance trade-offs of each strategy.
-                            </p>
-                        </div>
-
-                        <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #8b5cf6;">
-                            <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                <a href="Interactive_tools/m5_ml/learning-curve-visualization.html" target="_blank" style="text-decoration: none; color: #8b5cf6;">
-                                    <i class="fas fa-chart-line" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                    Learning Curves
-                                </a>
-                            </h4>
-                            <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                Visualize how training and validation error evolve as training set size grows.
-                                Adjust polynomial complexity and noise level to diagnose high bias (underfitting)
-                                vs high variance (overfitting), and understand when more data helps.
-                            </p>
-                        </div>
-
-                        <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #8b5cf6;">
-                            <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                <a href="Interactive_tools/m5_ml/gradient-descent-visualization.html" target="_blank" style="text-decoration: none; color: #8b5cf6;">
-                                    <i class="fas fa-chart-line" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                    Gradient Descent & SGD
-                                </a>
-                            </h4>
-                            <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                Watch gradient descent optimize a linear model in real time. See the optimization
-                                path on a contour loss surface, the fitted line updating step-by-step, and loss
-                                converging over iterations. Compare smooth Batch GD with noisy Stochastic GD,
-                                and experiment with learning rates to see convergence, slow crawling, and divergence.
-                            </p>
-                        </div>
-
-                        <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #8b5cf6;">
-                            <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                <a href="Interactive_tools/m5_ml/dt-regression-visualization.html" target="_blank" style="text-decoration: none; color: #8b5cf6;">
-                                    <i class="fas fa-project-diagram" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                    Decision Tree Regression for Time Series
-                                </a>
-                            </h4>
-                            <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                Discover how Decision Trees partition feature space for time series forecasting using lagged features.
-                                Interactively adjust tree depth and forecast horizon to visualize the tree structure, decision
-                                boundaries in 2D lag space, and multi-step ahead forecasts. Understand why tree-based models struggle
-                                with trend and seasonality through recursive forecasting demonstrations.
-                            </p>
-                        </div>
-
-                        <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #8b5cf6;">
-                            <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                <a href="Interactive_tools/m6_dl/dnn-timeseries-visualization.html" target="_blank" style="text-decoration: none; color: #8b5cf6;">
-                                    <i class="fas fa-brain" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                    Deep Neural Networks for Time Series
-                                </a>
-                            </h4>
-                            <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                Experience how Deep Neural Networks learn complex nonlinear patterns in time series using the airline passenger dataset. Interactively configure network architecture (1-4 hidden layers), adjust neurons per layer, choose activation functions (ReLU, tanh), and control the number of lagged features (1-12 lags). Watch the model train in real-time with live loss curves, explore feature importance from learned weights, and compare DNN performance against Linear Regression benchmarks to understand when added complexity provides value.
-                            </p>
-                        </div>
-
-                        <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #8b5cf6;">
-                            <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                <a href="Interactive_tools/m7_rnn/rnn-vs-dnn-timeseries-visualization.html" target="_blank" style="text-decoration: none; color: #8b5cf6;">
-                                    <i class="fas fa-project-diagram" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                    RNN vs DNN for Time Series Forecasting
-                                </a>
-                            </h4>
-                            <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                Compare how Recurrent Neural Networks (RNNs) and Dense Neural Networks (DNNs) approach time series forecasting using the airline passenger dataset. Discover the critical insight that DNNs work well on raw data by treating lags as independent features, while RNNs require data preprocessing (log transformation and differencing) to capture temporal dependencies effectively. Toggle between raw and stationary data to see how preprocessing transforms RNN performance from poor to excellent, matching or exceeding DNN results. Train both models side-by-side with live loss curves and performance metrics to understand when each architecture excels.
-                            </p>
-                        </div>
-
-                        <div class="topic-footer">
-                            <span class="project-count">7 Projects</span>
-                            <a href="#" class="btn btn-primary" onclick="document.querySelector('.visualization-item').scrollIntoView({behavior: 'smooth'})">
-                                <i class="fas fa-arrow-right"></i> Explore
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="content-card topic-card">
-                        <div class="topic-header">
-                            <div class="highlight-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem; background: linear-gradient(135deg, #10b981, #06b6d4);">
-                                <i class="fas fa-chart-area"></i>
-                            </div>
-                            <h3>Stock Market & Trading</h3>
-                        </div>
-                        <p>
-                            Financial market visualizations including price movements, trading patterns, portfolio 
-                            analysis, and risk management tools for informed investment decisions.
-                        </p>
-                        <div class="topic-footer">
-                            <span class="project-count">Coming Soon</span>
-                            <a href="#" class="btn btn-primary">
-                                <i class="fas fa-arrow-right"></i> Explore
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="content-card topic-card">
-                        <div class="topic-header">
-                            <div class="highlight-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem; background: linear-gradient(135deg, #8b5cf6, #ec4899);">
-                                <i class="fas fa-palette"></i>
-                            </div>
-                            <h3>Miscellaneous</h3>
-                        </div>
-                        <p>
-                            A curated collection of interesting visualizations and interactive tools from around the web —
-                            things I've come across and found worth sharing.
-                        </p>
-
-                        <div class="visualization-item" style="margin: 1.5rem 0; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #ec4899;">
-                            <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">
-                                <a href="https://zenith-wavelength-8c2.notion.site/NN-visualization-3271bcf20cbb807c8d8ff7434bf785b6" target="_blank" style="text-decoration: none; color: #ec4899;">
-                                    <i class="fas fa-brain" style="font-size: 0.8rem; margin-right: 0.5rem;"></i>
-                                    Neural Network Visualization
-                                </a>
-                            </h4>
-                            <p style="margin: 0; font-size: 0.9rem; color: #6b7280; line-height: 1.4;">
-                                An interactive neural network visualization exploring network architectures, activation functions, and how neural networks learn. Embedded from an external source.
-                            </p>
-                        </div>
-
-                        <div class="topic-footer">
-                            <span class="project-count">1 Project</span>
-                            <a href="#" class="btn btn-primary" onclick="document.querySelector('.visualization-item').scrollIntoView({behavior: 'smooth'})">
-                                <i class="fas fa-arrow-right"></i> Explore
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="content-card" style="margin-top: 3rem; text-align: center; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border: none;">
-                    <h3>About These Tools</h3>
-                    <p>
-                        Interactive tools and visualizations will be organized by topic area. 
-                        Projects will be added as they are developed and ready for public viewing.
-                    </p>
+                <div class="toc-foot">
+                    <p class="plates-footnote">&#9734; In preparation: stock market &amp; trading tools.</p>
+                    <p class="plates-footnote">All tools by Dr.&nbsp;Pedram Jahangiry &middot; enhanced with Claude.</p>
                 </div>
             </div>
         </section>
@@ -398,12 +224,15 @@
 
     <footer>
         <div class="container">
-            <p>&copy; 2024 Pedram Jahangiry. All rights reserved.</p>
+            <p class="footer-note">&copy; 2026 Pedram Jahangiry &mdash; all residuals are my own.</p>
             <div class="social-links">
+                <a href="https://x.com/PedramJahangiry" target="_blank" aria-label="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://www.linkedin.com/in/pedram-jahangiry-cfa-5778015a/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
                 <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
                 <a href="https://github.com/PJalgotrader" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
                 <a href="mailto:pedram.jahangiry@usu.edu" aria-label="Email"><i class="fas fa-envelope"></i></a>
             </div>
+            <p class="colophon">Set in Fraunces, Inter &amp; IBM Plex Mono &middot; hand&#8209;built, zero frameworks &middot; Logan, Utah &mdash; 41.74&deg;&nbsp;N, 111.81&deg;&nbsp;W</p>
         </div>
     </footer>
 

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
     <title>Pedram Jahangiry — Machine Learning, Finance & Forecasting</title>
     <meta name="description" content="Pedram Jahangiry, PhD, CFA. Professional Practice Associate Professor at the Huntsman School of Business, Utah State University. Machine learning, forecasting, and interactive teaching tools.">
     <meta property="og:title" content="Pedram Jahangiry — Machine Learning, Finance & Forecasting">
@@ -10,7 +11,8 @@
     <meta property="og:image" content="https://pjalgotrader.github.io/images/pedram.jpg">
     <meta property="og:url" content="https://pjalgotrader.github.io">
     <meta property="og:type" content="website">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231C1B18'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%2323A06C' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -41,10 +43,16 @@
                     <a href="contact.html" class="nav-link">Contact</a>
                 </li>
             </ul>
-            <div class="hamburger">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
+            <div class="nav-right">
+                <button class="theme-toggle" aria-label="Switch color theme">
+                    <i class="fas fa-sun icon-sun" aria-hidden="true"></i>
+                    <i class="fas fa-moon icon-moon" aria-hidden="true"></i>
+                </button>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
             </div>
         </div>
     </nav>
