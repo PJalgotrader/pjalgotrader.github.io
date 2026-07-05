@@ -663,6 +663,56 @@ body::after {
     transform: translateX(6px);
 }
 
+/* "At a glance" panel — every tool visible in one screen */
+.glance {
+    padding: 44px 0 52px;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+}
+
+.glance .section-label {
+    margin-bottom: 1.6rem;
+}
+
+.glance-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.6rem 2.25rem;
+}
+
+.glance-cat {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 0.55rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.glance-item {
+    display: flex;
+    gap: 0.55rem;
+    align-items: baseline;
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 0.22rem 0;
+    transition: color 0.2s ease;
+}
+
+.glance-item span {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--green);
+}
+
+.glance-item:hover {
+    color: var(--green);
+}
+
 /* Compact table-of-contents variant (visualizations page) */
 .toc .section-label {
     margin: 4rem 0 1.5rem;
@@ -986,7 +1036,7 @@ body::after {
    Inner pages — header, sections, cards
    ========================================================================== */
 .page-header {
-    padding: 150px 0 64px;
+    padding: 140px 0 52px;
     background-color: var(--paper);
     background-image:
         linear-gradient(var(--line-soft) 1px, transparent 1px),
@@ -1291,6 +1341,10 @@ footer .container {
     .content-grid.cols-3 {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .glance-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 768px) {
@@ -1362,7 +1416,8 @@ footer .container {
     .content-grid.cols-2,
     .content-grid.cols-3,
     .contact-grid,
-    .social-grid {
+    .social-grid,
+    .glance-grid {
         grid-template-columns: 1fr;
     }
 
