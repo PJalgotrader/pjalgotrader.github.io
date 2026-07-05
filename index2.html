@@ -3,30 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pedram Jahangiry — Machine Learning, Finance & Forecasting</title>
+    <title>Pedram Jahangiry — Machine Learning, Finance & Forecasting · Dark</title>
     <meta name="description" content="Pedram Jahangiry, PhD, CFA. Professional Practice Associate Professor at the Huntsman School of Business, Utah State University. Machine learning, forecasting, and interactive teaching tools.">
-    <meta property="og:title" content="Pedram Jahangiry — Machine Learning, Finance & Forecasting">
-    <meta property="og:description" content="Turning black-box models into blackboard intuition. Interactive tools for time series, ML, and deep learning.">
-    <meta property="og:image" content="https://pjalgotrader.github.io/images/pedram.jpg">
-    <meta property="og:url" content="https://pjalgotrader.github.io">
-    <meta property="og:type" content="website">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231C1B18'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%2323A06C' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        /* ==============================================================
+           Dark theme — very dark navy, warm grey, gold
+           Same design tokens, different values; gold stays the accent.
+           ============================================================== */
+        :root {
+            --paper: #0A1020;
+            --paper-deep: #141F3A;
+            --card: #0F1A31;
+            --ink: #E9E4D4;
+            --ink-soft: #C0BCAD;
+            --ink-mute: #8B8FA0;
+            --line: #263250;
+            --line-soft: #16203A;
+            --green: #D0A63C;
+            --green-bright: #E8C468;
+            --red: #D0603F;
+            --walk-fan-opacity: 0.03;
+        }
+
+        body::after {
+            opacity: 0.05;
+        }
+
+        .navbar {
+            background: rgba(10, 16, 32, 0.85);
+        }
+
+        .navbar.scrolled {
+            box-shadow: 0 1px 0 var(--line), 0 8px 24px rgba(0, 0, 0, 0.45);
+        }
+
+        /* Dark theme flips the print: on paper the portrait is dark ink, on
+           navy it's a light figure glowing softly out of the dark. */
+        .hero-portrait img {
+            mix-blend-mode: normal;
+            filter: grayscale(1) contrast(1.04) brightness(1.06)
+                    drop-shadow(0 0 48px rgba(233, 228, 212, 0.14));
+        }
+
+        /* Let the banner's neon nodes glow a little more through the overlay */
+        .ticker::before {
+            background: rgba(6, 11, 22, 0.62);
+        }
+
+        /* Gold buttons want dark text, not white */
+        .btn-primary:hover {
+            color: #0A1020;
+        }
+
+        .plate:hover {
+            box-shadow: 8px 8px 0 rgba(208, 166, 60, 0.16);
+        }
+
+        footer {
+            background-color: #060B16;
+            border-top: 1px solid var(--line);
+        }
+
+        .footer-note {
+            color: rgba(233, 228, 212, 0.7);
+        }
+
+        .social-links a {
+            color: rgba(233, 228, 212, 0.55);
+        }
+
+        .colophon {
+            border-top-color: rgba(233, 228, 212, 0.1);
+            color: rgba(233, 228, 212, 0.4);
+        }
+    </style>
 </head>
 <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <a href="index.html">Pedram&nbsp;Jahangiry</a>
+                <a href="index2.html">Pedram&nbsp;Jahangiry</a>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="index.html" class="nav-link active">Home</a>
+                    <a href="index2.html" class="nav-link active">Home</a>
                 </li>
                 <li class="nav-item">
                     <a href="visualizations.html" class="nav-link">Interactive Tools</a>
