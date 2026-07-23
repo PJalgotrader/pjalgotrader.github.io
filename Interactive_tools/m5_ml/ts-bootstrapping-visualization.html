@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Four time series bootstrap methods, one browser tab: Moving Block, Circular Block, Stationary, and parametric AR(1), with live block-size and sample sliders.">
     <title>Time Series Bootstrapping | Dr. Pedram Jahangiry</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <style>
@@ -278,7 +279,7 @@
         <p class="subtitle">MBB, CBB, Stationary Bootstrap & Parametric AR(1) Bootstrap</p>
         <p class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</p>
         <div class="links">
-            <a href="https://pjalgotrader.github.io" class="btn-website">
+            <a href="https://pedramjahangiry.com/" class="btn-website">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 Website
             </a>
@@ -294,6 +295,8 @@
     </div>
 
     <div class="container">
+        <p style="max-width: 760px; margin: 0 auto 25px auto; text-align: center; color: #555; line-height: 1.6; font-size: 1.05em;">Each tab resamples the same monthly airline passenger series with a different bootstrap method. Drag the block-size (or mean block length) and sample-count sliders to regenerate the paths, see exactly which stretches of history got reused, and compare how block-based resampling differs from fitting an AR(1) model to the residuals instead.</p>
+
         <div class="warning-box">
             <h4>&#9888; Why Not Standard (i.i.d.) Bootstrap?</h4>
             <p>

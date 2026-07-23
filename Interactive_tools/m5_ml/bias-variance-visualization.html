@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Draw repeated 20-point samples from a noisy quadratic, fit polynomials of degree 0-4 live, and watch the bias-variance tradeoff decompose in your browser.">
     <title>Bias-Variance Tradeoff | Dr. Pedram Jahangiry</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <style>
@@ -303,7 +304,7 @@
     <div class="subtitle">Module 5 — Machine Learning for Time Series Forecasting</div>
     <div class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</div>
     <div class="links">
-        <a href="https://pjalgotrader.github.io" class="btn-website">
+        <a href="https://pedramjahangiry.com/" class="btn-website">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
             Website
         </a>
@@ -319,6 +320,8 @@
 </div>
 
 <div class="container">
+
+    <p style="max-width: 760px; margin: 0 auto 25px auto; text-align: center; color: #555; line-height: 1.6; font-size: 1.05em;">This tool refits a polynomial to a fresh random sample every time you click "Draw Sample," so you can watch low-degree fits stay stable but miss the curve while high-degree fits chase the noise instead. Bias, variance, and the resulting mean squared error update from the accumulated draws, letting you see the tradeoff build up sample by sample rather than take it on faith.</p>
 
     <div class="intro">
         <h3>Understanding Bias and Variance Through Repeated Sampling</h3>
