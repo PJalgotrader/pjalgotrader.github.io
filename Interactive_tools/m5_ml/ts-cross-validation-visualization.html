@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive, in-browser time series cross-validation: purged K-fold, walk-forward, and combinatorial purged CV. Move a slider, watch the leakage vanish.">
     <title>Time Series Cross Validation | Dr. Pedram Jahangiry</title>
     <style>
         * {
@@ -456,7 +457,7 @@
         <p class="subtitle">Purged K-Fold, Walk-Forward, & Combinatorial Purged CV</p>
         <p class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</p>
         <div class="links">
-            <a href="https://pjalgotrader.github.io" class="btn-website">
+            <a href="https://pedramjahangiry.com/" class="btn-website">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 Website
             </a>
@@ -472,6 +473,7 @@
     </div>
 
     <div class="container">
+        <p style="max-width: 760px; margin: 0 auto 25px auto; text-align: center; color: #555; line-height: 1.6; font-size: 1.05em;">This tool walks through three ways of splitting time-ordered data for validation &mdash; purged K-fold, walk-forward (expanding and rolling), and combinatorial purged CV &mdash; letting you drag sliders for fold count, window size, and purge/embargo buffers to see exactly which observations get excluded to stop look-ahead bias. It follows the methodology from Marcos L&oacute;pez de Prado's <em>Advances in Financial Machine Learning</em>, including how combinatorial purged CV builds multiple backtest paths to help catch overfit strategies.</p>
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('purged')">Purged K-Fold CV</button>
             <button class="tab-btn" onclick="switchTab('walkforward')">Walk-Forward CV</button>

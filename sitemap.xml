@@ -27,66 +27,82 @@
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/random-walk-teaching-tool.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/stationarity-visualizer.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/m3_ets/ses/ses_interactive_visualization.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/m3_ets/holt_linear_trend/holt_linear_trend_visualization.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/m3_ets/holt_winter/holt_winters_visualization.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/m4_arima/ar-ma-visualization.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/m4_arima/sarima-visualization.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/m5_ml/bias-variance-visualization.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/m5_ml/cross-validation-visualization.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/m5_ml/learning-curve-visualization.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/m5_ml/gradient-descent-visualization.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/m5_ml/dt-regression-visualization.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/m5_ml/ts-bootstrapping-visualization.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/m5_ml/ts-cross-validation-visualization.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/m6_dl/dnn-timeseries-visualization.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/Interactive_tools/m7_rnn/rnn-vs-dnn-timeseries-visualization.html</loc>
+    <lastmod>2026-07-23</lastmod>
     <priority>0.6</priority>
   </url>
 </urlset>
