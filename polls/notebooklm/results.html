@@ -88,7 +88,7 @@
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
         footer a { color: var(--ink-mute); text-decoration: none; }
         footer a:hover { color: var(--green); }
-        #resetBtn, #deleteBtn { text-decoration: underline; text-underline-offset: 3px; }
+        #resetBtn, #closeBtn, #deleteBtn { text-decoration: underline; text-underline-offset: 3px; }
         @media (prefers-reduced-motion: reduce) { .bar-row .fill { transition: none; } .dot { animation: none; } }
     </style>
 </head>
@@ -121,7 +121,7 @@
 
     <footer>
         <div id="liveState"><span class="dot"></span>Updates automatically</div>
-        <div><a href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com</a> &middot; <a href="#" id="resetBtn">new session</a> &middot; <a href="#" id="deleteBtn" hidden>reset this session</a></div>
+        <div><a href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com</a> &middot; <a href="#" id="resetBtn">new session</a> &middot; <a href="#" id="closeBtn" hidden>close session</a> &middot; <a href="#" id="deleteBtn" hidden>reset this session</a></div>
     </footer>
 
 <script>
@@ -164,7 +164,7 @@ async function refresh() {
     try {
         const [sRes, vRes] = await Promise.all([
             fetch(POLL.supabaseUrl + '/rest/v1/poll_sessions?poll_slug=eq.' + POLL.slug +
-                  '&select=session,label&order=session.asc', { headers: HEADERS }),
+                  '&select=session,label,closed_at&order=session.asc', { headers: HEADERS }),
             fetch(POLL.supabaseUrl + '/rest/v1/' + POLL.table +
                   '?select=session,question,choice,voter_id&limit=50000', { headers: HEADERS })
         ]);
@@ -194,12 +194,12 @@ function render() {
     // Session picker: one button per session + All time. Rebuild only when
     // the session list itself changes (the page polls every 3 s).
     const seg = document.getElementById('seg');
-    const sig = sessions.map(s => s.session + ':' + s.label).join('|');
+    const sig = sessions.map(s => s.session + ':' + s.label + ':' + (s.closed_at ? 'c' : 'o')).join('|');
     if (sig !== segSig) {
         segSig = sig;
         seg.innerHTML = sessions.map(s =>
             '<button data-view="' + s.session + '">' + esc(s.label) +
-            (s.session === current.session ? ' · live' : '') + '</button>').join('') +
+            (s.session === current.session && !s.closed_at ? ' · live' : '') + '</button>').join('') +
             '<button data-view="all"></button>';
     }
     seg.querySelector('[data-view="all"]').textContent =
@@ -213,11 +213,16 @@ function render() {
     // edge function refuses to delete the last remaining session.
     document.getElementById('deleteBtn').hidden = (view === 'all' || sessions.length <= 1);
 
-    // Past sessions are immutable (RLS only allows inserts into the current
-    // session), so polling them is waste — show a frozen state instead.
+    // "Close session" applies to the poll's one open session, if any.
+    document.getElementById('closeBtn').hidden = !pollIsOpen();
+
+    // Closed sessions are immutable (RLS only allows inserts into an OPEN
+    // current session), so polling them is waste — show the state instead.
     document.getElementById('liveState').innerHTML = viewIsLive()
         ? '<span class="dot"></span>Updates automatically'
-        : 'Past session &mdash; results are frozen';
+        : (view !== 'all' && view !== current.session)
+            ? 'Past session &mdash; results are frozen'
+            : 'Poll closed &mdash; dormant until a new session starts';
 
     for (const c of POLL.charts) renderChart(c, rows.filter(r => r.question === c.id), n);
 }
@@ -245,10 +250,17 @@ function renderChart(cfg, rows, totalVoters) {
     });
 }
 
-// Polling is worth it only for data that can still change: the current
-// session, or the all-time view (which contains it).
+// The poll can only receive votes while its newest session is open.
+function pollIsOpen() {
+    return sessions.length > 0 && !sessions[sessions.length - 1].closed_at;
+}
+
+// Polling is worth it only for data that can still change: an OPEN current
+// session, or the all-time view while a session is open. A closed poll is
+// fully dormant — every view is frozen.
 function viewIsLive() {
     if (!sessions.length) return true;
+    if (!pollIsOpen()) return false;
     if (view === 'all' || view === 'live') return true;
     return view === sessions[sessions.length - 1].session;
 }
@@ -259,6 +271,27 @@ document.getElementById('seg').addEventListener('click', (e) => {
     view = b.dataset.view === 'all' ? 'all' : Number(b.dataset.view);
     render();
     if (viewIsLive()) refresh(); // catch up immediately after a dormant stretch
+});
+
+document.getElementById('closeBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const current = sessions[sessions.length - 1];
+    if (!current || current.closed_at) return;
+    const pin = prompt('Close session "' + current.label + '"?\nVoting stops and the poll goes dormant until a new session starts. Results are kept.\nEnter the PIN to confirm:');
+    if (!pin) return;
+    try {
+        const res = await fetch(POLL.resetUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: pin.trim(), slug: POLL.slug, action: 'close' })
+        });
+        if (res.ok) {
+            await refresh();
+            alert('Session "' + current.label + '" closed. The poll is now dormant.');
+        } else {
+            alert(res.status === 401 ? 'Wrong PIN.' : 'Could not close the session — try again.');
+        }
+    } catch (err) { alert('Could not close the session — check your connection.'); }
 });
 
 document.getElementById('deleteBtn').addEventListener('click', async (e) => {
