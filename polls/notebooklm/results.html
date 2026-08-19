@@ -49,15 +49,16 @@
         .count .n { font-family: var(--serif); font-size: clamp(34px, 4vw, 60px); font-weight: 700; color: var(--green); line-height: 1; font-variant-numeric: tabular-nums; }
         .count .l { font-family: var(--mono); font-size: clamp(10px, 0.9vw, 13px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-mute); margin-top: 4px; }
         .seg {
-            display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden;
+            display: flex; flex-wrap: wrap; gap: 8px;
             margin: 2.6vh 0 3.2vh; font-family: var(--mono);
         }
         .seg button {
             font: inherit; font-size: clamp(11px, 1vw, 13px); letter-spacing: 0.08em; text-transform: uppercase;
-            background: none; border: none; color: var(--ink-mute); padding: 9px 20px; cursor: pointer;
+            background: none; border: 1px solid var(--line); border-radius: 999px;
+            color: var(--ink-mute); padding: 9px 18px; cursor: pointer;
         }
-        .seg button.on { background: var(--green); color: var(--green-ink); font-weight: 500; }
-        .seg button:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+        .seg button.on { background: var(--green); border-color: var(--green); color: var(--green-ink); font-weight: 500; }
+        .seg button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
         .grid { display: grid; grid-template-columns: auto 1fr 1fr; gap: 3vh 4.5vw; align-items: start; }
         @media (max-width: 940px) { .grid { grid-template-columns: 1fr; } .qr-card { margin: 0 auto; } }
         .qr-card {
@@ -87,7 +88,7 @@
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
         footer a { color: var(--ink-mute); text-decoration: none; }
         footer a:hover { color: var(--green); }
-        #resetBtn { text-decoration: underline; text-underline-offset: 3px; }
+        #resetBtn, #deleteBtn { text-decoration: underline; text-underline-offset: 3px; }
         @media (prefers-reduced-motion: reduce) { .bar-row .fill { transition: none; } .dot { animation: none; } }
     </style>
 </head>
@@ -100,10 +101,7 @@
         <div class="count"><div class="n" id="total">&ndash;</div><div class="l" id="totalLabel">responses</div></div>
     </header>
 
-    <div class="seg" role="group" aria-label="Results view">
-        <button id="segLive">This session</button>
-        <button id="segAll" class="on">All time</button>
-    </div>
+    <div class="seg" role="group" aria-label="Results view" id="seg"></div>
 
     <div class="grid">
         <aside class="qr-card">
@@ -122,8 +120,8 @@
     </div>
 
     <footer>
-        <div><span class="dot"></span>Updates automatically</div>
-        <div><a href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com</a> &middot; <a href="#" id="resetBtn">new session</a></div>
+        <div id="liveState"><span class="dot"></span>Updates automatically</div>
+        <div><a href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com</a> &middot; <a href="#" id="resetBtn">new session</a> &middot; <a href="#" id="deleteBtn" hidden>reset this session</a></div>
     </footer>
 
 <script>
@@ -153,7 +151,10 @@ const POLL = {
 
 const HEADERS = { 'apikey': POLL.supabaseKey, 'Authorization': 'Bearer ' + POLL.supabaseKey };
 const HOT = new Set(POLL.hot);
+// view: 'all', a session number, or 'live' (sentinel — resolves to the
+// current session once the session list has loaded)
 let view = new URLSearchParams(location.search).has('live') ? 'live' : 'all';
+let segSig = '';     // signature of the rendered session buttons, to avoid rebuilding mid-click
 let sessions = [];   // [{session, label}]
 let votes = [];      // [{session, question, choice, voter_id}]
 
@@ -177,17 +178,46 @@ async function refresh() {
 function render() {
     if (!sessions.length) return;
     const current = sessions[sessions.length - 1];
-    const rows = view === 'live' ? votes.filter(v => v.session === current.session) : votes;
+    if (view === 'live') view = current.session;
+    if (view !== 'all' && !sessions.some(s => s.session === view)) view = 'all'; // session deleted underneath us
+
+    const rows = view === 'all' ? votes : votes.filter(v => v.session === view);
     const voters = new Set(rows.map(r => r.voter_id + '|' + r.session));
     const n = voters.size;
+    const viewing = view === 'all' ? null : sessions.find(s => s.session === view);
 
     document.getElementById('total').textContent = n;
-    document.getElementById('totalLabel').textContent =
-        view === 'live' ? 'responses · this session' : 'responses · ' + sessions.length + ' session' + (sessions.length > 1 ? 's' : '');
-    document.getElementById('segLive').textContent = 'This session · ' + current.label;
-    document.getElementById('segAll').textContent = 'All time · ' + sessions.length + ' session' + (sessions.length > 1 ? 's' : '');
-    document.getElementById('segLive').classList.toggle('on', view === 'live');
-    document.getElementById('segAll').classList.toggle('on', view === 'all');
+    document.getElementById('totalLabel').textContent = viewing
+        ? 'responses · ' + viewing.label
+        : 'responses · ' + sessions.length + ' session' + (sessions.length > 1 ? 's' : '');
+
+    // Session picker: one button per session + All time. Rebuild only when
+    // the session list itself changes (the page polls every 3 s).
+    const seg = document.getElementById('seg');
+    const sig = sessions.map(s => s.session + ':' + s.label).join('|');
+    if (sig !== segSig) {
+        segSig = sig;
+        seg.innerHTML = sessions.map(s =>
+            '<button data-view="' + s.session + '">' + esc(s.label) +
+            (s.session === current.session ? ' · live' : '') + '</button>').join('') +
+            '<button data-view="all"></button>';
+    }
+    seg.querySelector('[data-view="all"]').textContent =
+        'All time · ' + sessions.length + ' session' + (sessions.length > 1 ? 's' : '');
+    seg.querySelectorAll('button').forEach(b => {
+        const v = b.dataset.view === 'all' ? 'all' : Number(b.dataset.view);
+        b.classList.toggle('on', v === view);
+    });
+
+    // "Reset this session" only makes sense inside a session view, and the
+    // edge function refuses to delete the last remaining session.
+    document.getElementById('deleteBtn').hidden = (view === 'all' || sessions.length <= 1);
+
+    // Past sessions are immutable (RLS only allows inserts into the current
+    // session), so polling them is waste — show a frozen state instead.
+    document.getElementById('liveState').innerHTML = viewIsLive()
+        ? '<span class="dot"></span>Updates automatically'
+        : 'Past session &mdash; results are frozen';
 
     for (const c of POLL.charts) renderChart(c, rows.filter(r => r.question === c.id), n);
 }
@@ -215,8 +245,48 @@ function renderChart(cfg, rows, totalVoters) {
     });
 }
 
-document.getElementById('segLive').addEventListener('click', () => { view = 'live'; render(); });
-document.getElementById('segAll').addEventListener('click', () => { view = 'all'; render(); });
+// Polling is worth it only for data that can still change: the current
+// session, or the all-time view (which contains it).
+function viewIsLive() {
+    if (!sessions.length) return true;
+    if (view === 'all' || view === 'live') return true;
+    return view === sessions[sessions.length - 1].session;
+}
+
+document.getElementById('seg').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    view = b.dataset.view === 'all' ? 'all' : Number(b.dataset.view);
+    render();
+    if (viewIsLive()) refresh(); // catch up immediately after a dormant stretch
+});
+
+document.getElementById('deleteBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const s = view === 'all' ? null : sessions.find(x => x.session === view);
+    if (!s) return;
+    const pin = prompt('RESET session "' + s.label + '"?\nThis permanently deletes its votes and removes the session.\nEnter the PIN to confirm:');
+    if (!pin) return;
+    try {
+        const res = await fetch(POLL.resetUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: pin.trim(), slug: POLL.slug, action: 'delete', session: s.session })
+        });
+        const out = await res.json().catch(() => ({}));
+        if (res.ok) {
+            view = 'all';
+            await refresh();
+            alert('Session "' + s.label + '" deleted.');
+        } else if (res.status === 401) {
+            alert('Wrong PIN.');
+        } else if (out.error === 'cannot delete the only session') {
+            alert('This is the only session — start a new one first, then reset this one.');
+        } else {
+            alert('Could not reset the session — try again.');
+        }
+    } catch (err) { alert('Could not reset the session — check your connection.'); }
+});
 
 document.getElementById('resetBtn').addEventListener('click', async (e) => {
     e.preventDefault();
@@ -241,7 +311,12 @@ document.getElementById('resetBtn').addEventListener('click', async (e) => {
 });
 
 refresh();
-setInterval(refresh, 3000);
+// Poll only while the tab is visible AND the view can still change;
+// past-session views and background tabs are dormant.
+setInterval(() => { if (!document.hidden && viewIsLive()) refresh(); }, 3000);
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && viewIsLive()) refresh();
+});
 </script>
 </body>
 </html>
