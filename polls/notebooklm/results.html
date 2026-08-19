@@ -209,12 +209,13 @@ function render() {
         b.classList.toggle('on', v === view);
     });
 
-    // "Reset this session" only makes sense inside a session view, and the
-    // edge function refuses to delete the last remaining session.
-    document.getElementById('deleteBtn').hidden = (view === 'all' || sessions.length <= 1);
-
-    // "Close session" applies to the poll's one open session, if any.
-    document.getElementById('closeBtn').hidden = !pollIsOpen();
+    // "Close session" and "reset this session" act on the live session only,
+    // so both appear only while viewing it — closed sessions are history and
+    // can be neither closed nor reset (the edge function enforces this
+    // server-side too). Reset is also unavailable for the only session.
+    const viewingLive = pollIsOpen() && view === current.session;
+    document.getElementById('closeBtn').hidden = !viewingLive;
+    document.getElementById('deleteBtn').hidden = !viewingLive || sessions.length <= 1;
 
     // Closed sessions are immutable (RLS only allows inserts into an OPEN
     // current session), so polling them is waste — show the state instead.
@@ -315,6 +316,8 @@ document.getElementById('deleteBtn').addEventListener('click', async (e) => {
             alert('Wrong PIN.');
         } else if (out.error === 'cannot delete the only session') {
             alert('This is the only session — start a new one first, then reset this one.');
+        } else if (out.error === 'only the live session can be reset') {
+            alert('Only the live session can be reset — closed sessions are permanent.');
         } else {
             alert('Could not reset the session — try again.');
         }
