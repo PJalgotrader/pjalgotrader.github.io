@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>AI Tools Pulse Check — Results</title>
+    <meta name="description" content="Live results of the AI tools pulse check poll.">
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper: #0A1020;
+            --card: #0F1A31;
+            --ink: #E9E4D4;
+            --ink-mute: #8B8FA0;
+            --line: #263250;
+            --green: #D0A63C;
+            --green-ink: #0A1020;
+            --track: rgba(233, 228, 212, 0.10);
+            --bar: #8B7A45;
+            --live-dot: #4CAF7D;
+            --serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+            --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --mono: 'IBM Plex Mono', 'SF Mono', Menlo, monospace;
+        }
+        [data-theme="light"] {
+            --paper: #F7F4EC;
+            --card: #FDFCF8;
+            --ink: #1C1B18;
+            --ink-mute: #807D72;
+            --line: #DCD7C8;
+            --green: #0E7A4E;
+            --green-ink: #F7F4EC;
+            --track: rgba(28, 27, 24, 0.09);
+            --bar: #9BB3A3;
+            --live-dot: #0E7A4E;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--paper); color: var(--ink); font-family: var(--sans); min-height: 100vh; padding: 3vh 4vw; }
+        header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+        .kicker { font-family: var(--mono); font-size: clamp(10px, 1vw, 13px); letter-spacing: 0.18em; text-transform: uppercase; color: var(--green); }
+        h1 { font-family: var(--serif); font-size: clamp(24px, 3vw, 42px); font-weight: 600; line-height: 1.1; margin-top: 6px; }
+        .count { text-align: right; }
+        .count .n { font-family: var(--serif); font-size: clamp(34px, 4vw, 60px); font-weight: 700; color: var(--green); line-height: 1; font-variant-numeric: tabular-nums; }
+        .count .l { font-family: var(--mono); font-size: clamp(10px, 0.9vw, 13px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-mute); margin-top: 4px; }
+        .seg {
+            display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden;
+            margin: 2.6vh 0 3.2vh; font-family: var(--mono);
+        }
+        .seg button {
+            font: inherit; font-size: clamp(11px, 1vw, 13px); letter-spacing: 0.08em; text-transform: uppercase;
+            background: none; border: none; color: var(--ink-mute); padding: 9px 20px; cursor: pointer;
+        }
+        .seg button.on { background: var(--green); color: var(--green-ink); font-weight: 500; }
+        .seg button:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+        .grid { display: grid; grid-template-columns: auto 1fr 1fr; gap: 3vh 4.5vw; align-items: start; }
+        @media (max-width: 940px) { .grid { grid-template-columns: 1fr; } .qr-card { margin: 0 auto; } }
+        .qr-card {
+            background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+            padding: clamp(12px, 1.8vh, 20px); width: clamp(180px, 18vw, 260px); text-align: center;
+        }
+        .qr-card .t { font-family: var(--serif); font-weight: 600; font-size: clamp(14px, 1.3vw, 18px); margin-bottom: 10px; }
+        .qr-card img { width: 100%; height: auto; display: block; background: #fff; border-radius: 6px; padding: 7px; }
+        .qr-card .u { font-family: var(--mono); font-size: clamp(9px, 0.85vw, 12px); color: var(--ink-mute); margin-top: 10px; word-break: break-all; line-height: 1.5; }
+        .panel h2 { font-size: clamp(14px, 1.4vw, 20px); font-weight: 600; margin-bottom: 16px; }
+        .panel h2 small { color: var(--ink-mute); font-weight: 400; }
+        .bar-row { margin-bottom: clamp(10px, 1.7vh, 18px); }
+        .bar-row .top { display: flex; justify-content: space-between; gap: 12px; font-size: clamp(12px, 1.2vw, 17px); margin-bottom: 5px; }
+        .bar-row .name { font-weight: 500; }
+        .bar-row .val { font-family: var(--mono); font-size: clamp(11px, 1vw, 14px); color: var(--ink-mute); font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .bar-row .track { background: var(--track); border-radius: 6px; height: clamp(14px, 2vh, 22px); overflow: hidden; }
+        .bar-row .fill { height: 100%; background: var(--bar); border-radius: 6px; width: 0%; transition: width 0.55s ease; }
+        .bar-row.hot .fill { background: var(--green); }
+        .bar-row.hot .name, .bar-row.hot .val { color: var(--green); }
+        .waiting { color: var(--ink-mute); font-size: clamp(13px, 1.2vw, 17px); padding: 1vh 0; }
+        footer {
+            display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+            margin-top: 3.5vh; padding-top: 1.6vh; border-top: 1px solid var(--line);
+            font-family: var(--mono); font-size: clamp(10px, 0.9vw, 13px); color: var(--ink-mute);
+        }
+        .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--live-dot); margin-right: 7px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+        footer a { color: var(--ink-mute); text-decoration: none; }
+        footer a:hover { color: var(--green); }
+        #resetBtn { text-decoration: underline; text-underline-offset: 3px; }
+        @media (prefers-reduced-motion: reduce) { .bar-row .fill { transition: none; } .dot { animation: none; } }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <p class="kicker">Live Poll &middot; Gemini Notebook (NotebookLM)</p>
+            <h1>AI tools pulse check</h1>
+        </div>
+        <div class="count"><div class="n" id="total">&ndash;</div><div class="l" id="totalLabel">responses</div></div>
+    </header>
+
+    <div class="seg" role="group" aria-label="Results view">
+        <button id="segLive">This session</button>
+        <button id="segAll" class="on">All time</button>
+    </div>
+
+    <div class="grid">
+        <aside class="qr-card">
+            <div class="t">Scan to vote</div>
+            <img src="qr.png" alt="QR code linking to the vote page" width="396" height="396">
+            <div class="u">pedramjahangiry.com/<br>polls/notebooklm</div>
+        </aside>
+        <section class="panel">
+            <h2 id="q1title">Which AI tools have you worked with? <small>(select all)</small></h2>
+            <div id="chart1"><div class="waiting">Loading&hellip;</div></div>
+        </section>
+        <section class="panel">
+            <h2 id="q2title">If you haven't used NotebookLM &mdash; why not?</h2>
+            <div id="chart2"><div class="waiting">Loading&hellip;</div></div>
+        </section>
+    </div>
+
+    <footer>
+        <div><span class="dot"></span>Updates automatically</div>
+        <div><a href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com</a> &middot; <a href="#" id="resetBtn">new session</a></div>
+    </footer>
+
+<script>
+// ─── poll config: copy this folder + edit this block for a new poll ───
+const POLL = {
+    slug: 'notebooklm-2026',
+    table: 'poll_notebooklm_2026',
+    supabaseUrl: 'https://daimsfgtfrjbkegxmwag.supabase.co',
+    supabaseKey: 'sb_publishable_O_xS8NobEAWlHn_cR0SwOw_LYnB9o2d',
+    resetUrl: 'https://daimsfgtfrjbkegxmwag.supabase.co/functions/v1/reset-poll',
+    charts: [
+        { id: 'tools_used', el: 'chart1', order: [
+            'ChatGPT (OpenAI)', 'Claude (Anthropic)', 'Gemini (Google)', 'NotebookLM (Google)',
+            'Grok (xAI)', 'Open-source models', 'None of these' ] },
+        { id: 'why_not_nblm', el: 'chart2', order: [
+            'Never heard of it', 'Not sure how it differs from ChatGPT', 'Nobody showed me how to use it',
+            "Tried it, but it didn't stick", 'I have used NotebookLM' ],
+          labels: {
+            'Not sure how it differs from ChatGPT': 'Unsure how it differs from ChatGPT',
+            'Nobody showed me how to use it': 'Nobody showed me how',
+            "Tried it, but it didn't stick": "Tried it — didn't stick",
+            'I have used NotebookLM': 'I have used it' } }
+    ],
+    hot: ['NotebookLM (Google)', 'Nobody showed me how to use it']
+};
+// ───────────────────────────────────────────────────────────────────────
+
+const HEADERS = { 'apikey': POLL.supabaseKey, 'Authorization': 'Bearer ' + POLL.supabaseKey };
+const HOT = new Set(POLL.hot);
+let view = new URLSearchParams(location.search).has('live') ? 'live' : 'all';
+let sessions = [];   // [{session, label}]
+let votes = [];      // [{session, question, choice, voter_id}]
+
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+
+async function refresh() {
+    try {
+        const [sRes, vRes] = await Promise.all([
+            fetch(POLL.supabaseUrl + '/rest/v1/poll_sessions?poll_slug=eq.' + POLL.slug +
+                  '&select=session,label&order=session.asc', { headers: HEADERS }),
+            fetch(POLL.supabaseUrl + '/rest/v1/' + POLL.table +
+                  '?select=session,question,choice,voter_id&limit=50000', { headers: HEADERS })
+        ]);
+        if (!sRes.ok || !vRes.ok) return;
+        sessions = await sRes.json();
+        votes = await vRes.json();
+        render();
+    } catch (e) { /* transient network error — next tick retries */ }
+}
+
+function render() {
+    if (!sessions.length) return;
+    const current = sessions[sessions.length - 1];
+    const rows = view === 'live' ? votes.filter(v => v.session === current.session) : votes;
+    const voters = new Set(rows.map(r => r.voter_id + '|' + r.session));
+    const n = voters.size;
+
+    document.getElementById('total').textContent = n;
+    document.getElementById('totalLabel').textContent =
+        view === 'live' ? 'responses · this session' : 'responses · ' + sessions.length + ' session' + (sessions.length > 1 ? 's' : '');
+    document.getElementById('segLive').textContent = 'This session · ' + current.label;
+    document.getElementById('segAll').textContent = 'All time · ' + sessions.length + ' session' + (sessions.length > 1 ? 's' : '');
+    document.getElementById('segLive').classList.toggle('on', view === 'live');
+    document.getElementById('segAll').classList.toggle('on', view === 'all');
+
+    for (const c of POLL.charts) renderChart(c, rows.filter(r => r.question === c.id), n);
+}
+
+function renderChart(cfg, rows, totalVoters) {
+    const el = document.getElementById(cfg.el);
+    if (totalVoters === 0) { el.innerHTML = '<div class="waiting">Waiting for votes&hellip;</div>'; return; }
+
+    const counts = {};
+    cfg.order.forEach(o => counts[o] = 0);
+    rows.forEach(r => { if (r.choice in counts) counts[r.choice]++; });
+    const max = Math.max(1, ...Object.values(counts));
+
+    if (el.querySelectorAll('.bar-row').length !== cfg.order.length) {
+        el.innerHTML = cfg.order.map(o =>
+            '<div class="bar-row' + (HOT.has(o) ? ' hot' : '') + '" data-key="' + esc(o) + '">' +
+            '<div class="top"><span class="name">' + esc((cfg.labels && cfg.labels[o]) || o) + '</span><span class="val"></span></div>' +
+            '<div class="track"><div class="fill"></div></div></div>').join('');
+    }
+    el.querySelectorAll('.bar-row').forEach(rowEl => {
+        const k = rowEl.dataset.key;
+        const c = counts[k] || 0;
+        rowEl.querySelector('.val').textContent = c + ' · ' + Math.round(100 * c / totalVoters) + '%';
+        rowEl.querySelector('.fill').style.width = (100 * c / max) + '%';
+    });
+}
+
+document.getElementById('segLive').addEventListener('click', () => { view = 'live'; render(); });
+document.getElementById('segAll').addEventListener('click', () => { view = 'all'; render(); });
+
+document.getElementById('resetBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const pin = prompt('Start a NEW session? Previous data is kept.\nEnter the PIN:');
+    if (!pin) return;
+    const label = prompt('Label for the new session (e.g. "ECON 4610 · Sep 3"):') || '';
+    try {
+        const res = await fetch(POLL.resetUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: pin.trim(), slug: POLL.slug, label: label.trim() })
+        });
+        const out = await res.json();
+        if (res.ok) {
+            view = 'live';
+            await refresh();
+            alert('Session ' + out.session + ' started. The room can vote now.');
+        } else {
+            alert(res.status === 401 ? 'Wrong PIN.' : 'Could not start a session — try again.');
+        }
+    } catch (err) { alert('Could not start a session — check your connection.'); }
+});
+
+refresh();
+setInterval(refresh, 3000);
+</script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>AI Tools Pulse Check — Pedram Jahangiry</title>
+    <meta name="description" content="Live classroom poll: which AI tools have you worked with?">
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper: #0A1020;
+            --card: #0F1A31;
+            --card-2: #17223E;
+            --ink: #E9E4D4;
+            --ink-mute: #8B8FA0;
+            --line: #263250;
+            --green: #D0A63C;
+            --green-ink: #0A1020;
+            --red: #D0603F;
+            --serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+            --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --mono: 'IBM Plex Mono', 'SF Mono', Menlo, monospace;
+        }
+        [data-theme="light"] {
+            --paper: #F7F4EC;
+            --card: #FDFCF8;
+            --card-2: #EFEBDF;
+            --ink: #1C1B18;
+            --ink-mute: #807D72;
+            --line: #DCD7C8;
+            --green: #0E7A4E;
+            --green-ink: #F7F4EC;
+            --red: #C2452D;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--paper); color: var(--ink); font-family: var(--sans); min-height: 100vh; }
+        .wrap { max-width: 560px; margin: 0 auto; padding: 34px 18px 56px; }
+        .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--green); }
+        h1 { font-family: var(--serif); font-size: 30px; font-weight: 600; line-height: 1.15; margin: 8px 0 4px; }
+        .dek { color: var(--ink-mute); font-size: 14.5px; margin-bottom: 26px; }
+        .qlabel { font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--green); margin: 24px 0 10px; }
+        .qlabel small { color: var(--ink-mute); text-transform: none; letter-spacing: 0; }
+        label.opt {
+            display: flex; align-items: flex-start; gap: 11px;
+            background: var(--card); border: 1.5px solid var(--line); border-radius: 10px;
+            padding: 13px 13px; margin-bottom: 8px; cursor: pointer;
+            font-size: 15px; line-height: 1.35;
+            transition: border-color 0.15s, background 0.15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        label.opt:has(input:checked) { border-color: var(--green); background: var(--card-2); }
+        label.opt input { margin-top: 3px; accent-color: var(--green); width: 17px; height: 17px; flex: 0 0 auto; }
+        label.opt .sub { display: block; font-family: var(--mono); font-size: 11px; color: var(--ink-mute); margin-top: 2px; }
+        button.submit {
+            width: 100%; margin-top: 20px; cursor: pointer;
+            font-family: var(--mono); font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500;
+            background: var(--green); color: var(--green-ink); border: none; border-radius: 10px; padding: 15px;
+        }
+        button.submit:disabled { opacity: 0.55; cursor: default; }
+        button.submit:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+        .error { color: var(--red); font-size: 13.5px; margin-top: 12px; display: none; }
+        #done { display: none; text-align: center; padding: 70px 10px; }
+        #done .mark { font-family: var(--serif); font-size: 52px; color: var(--green); line-height: 1; }
+        #done h2 { font-family: var(--serif); font-size: 24px; font-weight: 600; margin: 14px 0 6px; }
+        #done p { color: var(--ink-mute); font-size: 14.5px; }
+        .home { display: block; text-align: center; margin-top: 40px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; color: var(--ink-mute); text-decoration: none; }
+        .home:hover { color: var(--green); }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <p class="kicker">Pedram Jahangiry &middot; Live Poll</p>
+        <h1>AI tools pulse check</h1>
+        <p class="dek">Two questions, thirty seconds. Results appear live on screen.</p>
+
+        <form id="pollForm"></form>
+
+        <div id="done">
+            <div class="mark">&Sigma;</div>
+            <h2>Thanks &mdash; you're in.</h2>
+            <p>Watch the screen up front for the live results.</p>
+        </div>
+
+        <a class="home" href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com &middot; all polls</a>
+    </div>
+
+<script>
+// ─── poll config: copy this folder + edit this block for a new poll ───
+const POLL = {
+    slug: 'notebooklm-2026',
+    table: 'poll_notebooklm_2026',
+    supabaseUrl: 'https://daimsfgtfrjbkegxmwag.supabase.co',
+    supabaseKey: 'sb_publishable_O_xS8NobEAWlHn_cR0SwOw_LYnB9o2d',
+    questions: [
+        {
+            id: 'tools_used', type: 'multi',
+            title: 'Which AI tools have you worked with?', hint: 'select all that apply',
+            options: [
+                { value: 'ChatGPT (OpenAI)', label: 'ChatGPT', sub: 'OpenAI' },
+                { value: 'Claude (Anthropic)', label: 'Claude', sub: 'Anthropic' },
+                { value: 'Gemini (Google)', label: 'Gemini', sub: 'Google' },
+                { value: 'NotebookLM (Google)', label: 'NotebookLM', sub: 'Google' },
+                { value: 'Grok (xAI)', label: 'Grok', sub: 'xAI' },
+                { value: 'Open-source models', label: 'Open-source models', sub: 'Llama (Meta), Qwen, Kimi, DeepSeek, …' },
+                { value: 'None of these', label: 'None of these' }
+            ]
+        },
+        {
+            id: 'why_not_nblm', type: 'single',
+            title: "If you haven't used NotebookLM — why not?", hint: 'pick the closest one',
+            options: [
+                { value: 'Never heard of it', label: "I'd never heard of it" },
+                { value: 'Not sure how it differs from ChatGPT', label: "Heard of it, but not sure how it's different from ChatGPT" },
+                { value: 'Nobody showed me how to use it', label: 'Nobody ever showed me how to use it' },
+                { value: "Tried it, but it didn't stick", label: "Tried it, but it didn't stick" },
+                { value: 'I have used NotebookLM', label: 'I have used NotebookLM' }
+            ]
+        }
+    ]
+};
+// ───────────────────────────────────────────────────────────────────────
+
+const HEADERS = {
+    'Content-Type': 'application/json',
+    'apikey': POLL.supabaseKey,
+    'Authorization': 'Bearer ' + POLL.supabaseKey
+};
+const form = document.getElementById('pollForm');
+const done = document.getElementById('done');
+
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+
+form.innerHTML = POLL.questions.map((q, i) =>
+    '<div class="qlabel">Q' + (i + 1) + ' · ' + esc(q.title) + ' <small>(' + q.hint + ')</small></div>' +
+    q.options.map(o =>
+        '<label class="opt"><input type="' + (q.type === 'multi' ? 'checkbox' : 'radio') + '" name="' + q.id + '" value="' + esc(o.value) + '">' +
+        '<span>' + esc(o.label) + (o.sub ? '<span class="sub">' + esc(o.sub) + '</span>' : '') + '</span></label>'
+    ).join('')
+).join('') +
+'<div class="error" id="errMsg"></div>' +
+'<button type="submit" class="submit" id="submitBtn">Submit</button>';
+
+const errMsg = document.getElementById('errMsg');
+const submitBtn = document.getElementById('submitBtn');
+let session = null;
+
+async function currentSession() {
+    const res = await fetch(POLL.supabaseUrl + '/rest/v1/poll_sessions?poll_slug=eq.' + POLL.slug +
+        '&select=session&order=session.desc&limit=1', { headers: HEADERS });
+    const rows = await res.json();
+    return rows[0].session;
+}
+
+function votedKey(s) { return 'pj-voted-' + POLL.slug + '-s' + s; }
+function voterId() {
+    let id = localStorage.getItem('pj-voter');
+    if (!id) {
+        id = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+        localStorage.setItem('pj-voter', id);
+    }
+    return id;
+}
+function showDone() { form.style.display = 'none'; done.style.display = 'block'; window.scrollTo(0, 0); }
+function showError(msg) { errMsg.textContent = msg; errMsg.style.display = 'block'; }
+
+currentSession().then(s => {
+    session = s;
+    if (localStorage.getItem(votedKey(s))) showDone();
+}).catch(() => { /* leave the form usable; session re-fetched on submit */ });
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errMsg.style.display = 'none';
+
+    const rows = [];
+    for (const q of POLL.questions) {
+        const picked = [...form.querySelectorAll('input[name="' + q.id + '"]:checked')].map(x => x.value);
+        if (picked.length === 0) { showError('Please answer every question (Q' + (POLL.questions.indexOf(q) + 1) + ' is empty).'); return; }
+        picked.forEach(v => rows.push({ question: q.id, choice: v }));
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting…';
+    try {
+        if (session === null) session = await currentSession();
+        const vid = voterId();
+        const payload = rows.map(r => ({ ...r, session: session, voter_id: vid }));
+        const res = await fetch(POLL.supabaseUrl + '/rest/v1/' + POLL.table, {
+            method: 'POST',
+            headers: { ...HEADERS, 'Prefer': 'return=minimal' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        localStorage.setItem(votedKey(session), '1');
+        showDone();
+    } catch (err) {
+        showError("Couldn't submit — check your connection and try again.");
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit';
+    }
+});
+</script>
+</body>
+</html>
