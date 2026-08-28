@@ -81,6 +81,31 @@
                     </span>
                 </a>
 
+                <p class="section-label" style="margin-top: 3rem;">&sect; 02 &mdash; How's the class feeling?</p>
+                <a class="index-row" href="polls/dl-feelings/results.html">
+                    <span class="index-num">02</span>
+                    <span class="index-body">
+                        <span class="index-title">Deep Learning &mdash; Module Pulse</span>
+                        <span class="index-desc">DATA 5610. At the end of every module: how do you feel, and how was the pace? Anonymous, twenty seconds, and each module is its own session &mdash; so the feeling chart accumulates across the semester. Vote at <span style="font-family: var(--mono); font-size: 0.9em;">polls/dl-feelings</span>.</span>
+                        <span class="index-desc" style="font-family: var(--mono); font-size: 0.8rem; margin-top: 0.5rem;" id="poll-stats-dl-feelings-2026">&mdash;</span>
+                    </span>
+                    <span class="index-meta">
+                        <span class="index-arrow">&rarr;</span>
+                    </span>
+                </a>
+
+                <a class="index-row" href="polls/df-feelings/results.html">
+                    <span class="index-num">03</span>
+                    <span class="index-body">
+                        <span class="index-title">Deep Forecasting &mdash; Module Pulse</span>
+                        <span class="index-desc">DATA 5630. Same two questions, same rhythm: a per-module read on confidence and pace, tracked module by module across the course. Vote at <span style="font-family: var(--mono); font-size: 0.9em;">polls/df-feelings</span>.</span>
+                        <span class="index-desc" style="font-family: var(--mono); font-size: 0.8rem; margin-top: 0.5rem;" id="poll-stats-df-feelings-2026">&mdash;</span>
+                    </span>
+                    <span class="index-meta">
+                        <span class="index-arrow">&rarr;</span>
+                    </span>
+                </a>
+
             </div>
         </section>
     </main>
@@ -106,7 +131,11 @@
         const SUPABASE_URL = 'https://daimsfgtfrjbkegxmwag.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_O_xS8NobEAWlHn_cR0SwOw_LYnB9o2d';
         const HEADERS = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
-        const POLLS = [{ slug: 'notebooklm-2026', table: 'poll_notebooklm_2026' }];
+        const POLLS = [
+            { slug: 'notebooklm-2026', table: 'poll_notebooklm_2026' },
+            { slug: 'dl-feelings-2026', table: 'poll_dl_feelings_2026' },
+            { slug: 'df-feelings-2026', table: 'poll_df_feelings_2026' }
+        ];
 
         POLLS.forEach(async (p) => {
             const el = document.getElementById('poll-stats-' + p.slug);
