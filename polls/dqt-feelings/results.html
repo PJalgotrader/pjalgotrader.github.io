@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>Deep Quantitative Trading Module Pulse — Results</title>
+    <meta name="description" content="Live results of the Deep Quantitative Trading module pulse poll.">
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper: #0A1020;
+            --card: #0F1A31;
+            --ink: #E9E4D4;
+            --ink-mute: #8B8FA0;
+            --line: #263250;
+            --green: #D0A63C;
+            --green-ink: #0A1020;
+            --track: rgba(233, 228, 212, 0.10);
+            --bar: #8B7A45;
+            --live-dot: #4CAF7D;
+            --serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+            --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --mono: 'IBM Plex Mono', 'SF Mono', Menlo, monospace;
+        }
+        [data-theme="light"] {
+            --paper: #F7F4EC;
+            --card: #FDFCF8;
+            --ink: #1C1B18;
+            --ink-mute: #807D72;
+            --line: #DCD7C8;
+            --green: #0E7A4E;
+            --green-ink: #F7F4EC;
+            --track: rgba(28, 27, 24, 0.09);
+            --bar: #9BB3A3;
+            --live-dot: #0E7A4E;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--paper); color: var(--ink); font-family: var(--sans); min-height: 100vh; padding: 3vh 4vw; }
+        header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+        .kicker { font-family: var(--mono); font-size: clamp(10px, 1vw, 13px); letter-spacing: 0.18em; text-transform: uppercase; color: var(--green); }
+        h1 { font-family: var(--serif); font-size: clamp(24px, 3vw, 42px); font-weight: 600; line-height: 1.1; margin-top: 6px; }
+        .count { text-align: right; }
+        .count .n { font-family: var(--serif); font-size: clamp(34px, 4vw, 60px); font-weight: 700; color: var(--green); line-height: 1; font-variant-numeric: tabular-nums; }
+        .count .l { font-family: var(--mono); font-size: clamp(10px, 0.9vw, 13px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-mute); margin-top: 4px; }
+        .seg {
+            display: flex; flex-wrap: wrap; gap: 8px;
+            margin: 2.6vh 0 3.2vh; font-family: var(--mono);
+        }
+        .seg button {
+            font: inherit; font-size: clamp(11px, 1vw, 13px); letter-spacing: 0.08em; text-transform: uppercase;
+            background: none; border: 1px solid var(--line); border-radius: 999px;
+            color: var(--ink-mute); padding: 9px 18px; cursor: pointer;
+        }
+        .seg button.on { background: var(--green); border-color: var(--green); color: var(--green-ink); font-weight: 500; }
+        .seg button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+        .grid { display: grid; grid-template-columns: auto 1fr 1fr; gap: 4.5vh 5.5vw; align-items: start; }
+        @media (max-width: 940px) { .grid { grid-template-columns: 1fr; } .qr-card { margin: 0 auto; } }
+        /* Bars stay compact (never full column width); on wide screens both chart
+           blocks reserve the 5-row height so the two trend panels sit level. */
+        #chart1, #chart2 { max-width: 460px; }
+        @media (min-width: 941px) { #chart1, #chart2 { min-height: 292px; } }
+        .cloud h2 small { font-size: 0.75em; }
+        @media (min-width: 941px) { .cloud { grid-column: 2 / span 2; } }
+        .cloudwords { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; column-gap: 26px; row-gap: 6px; padding: 10px 0 4px; font-family: var(--serif); }
+        .qr-card {
+            background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+            padding: clamp(12px, 1.8vh, 20px); width: clamp(180px, 18vw, 260px); text-align: center;
+        }
+        .qr-card .t { font-family: var(--serif); font-weight: 600; font-size: clamp(14px, 1.3vw, 18px); margin-bottom: 10px; }
+        .qr-card img { width: 100%; height: auto; display: block; background: #fff; border-radius: 6px; padding: 7px; }
+        .qr-card .u { font-family: var(--mono); font-size: clamp(9px, 0.85vw, 12px); color: var(--ink-mute); margin-top: 10px; word-break: break-all; line-height: 1.5; }
+        .qr-card .u a { color: var(--ink-mute); text-decoration: underline; text-underline-offset: 3px; }
+        .qr-card .u a:hover { color: var(--green); }
+        .panel h2 { font-size: clamp(16px, 1.6vw, 22px); font-weight: 600; margin-bottom: 18px; }
+        .panel h2 small { color: var(--ink-mute); font-weight: 400; }
+        .bar-row { margin-bottom: clamp(10px, 1.7vh, 18px); }
+        .bar-row .top { display: flex; justify-content: space-between; gap: 12px; font-size: clamp(14px, 1.4vw, 19px); margin-bottom: 5px; }
+        .bar-row .name { font-weight: 500; }
+        .bar-row .val { font-family: var(--mono); font-size: clamp(12px, 1.1vw, 15px); color: var(--ink-mute); font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .bar-row .track { background: var(--track); border-radius: 5px; height: clamp(9px, 1.3vh, 12px); overflow: hidden; }
+        .bar-row .fill { height: 100%; background: var(--bar); border-radius: 6px; width: 0%; transition: width 0.55s ease; }
+        .bar-row.hot .fill { background: var(--green); }
+        .bar-row.hot .name, .bar-row.hot .val { color: var(--green); }
+        .waiting { color: var(--ink-mute); font-size: clamp(13px, 1.2vw, 17px); padding: 1vh 0; }
+        .trend { margin-top: clamp(28px, 4.5vh, 48px); border-top: 1px dashed var(--line); padding-top: clamp(16px, 2.4vh, 26px); }
+        .trend .tlabel { font-family: var(--mono); font-size: clamp(9px, 0.85vw, 12px); letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); margin-bottom: 4px; }
+        .trend .tscale { font-family: var(--mono); font-size: clamp(9px, 0.8vw, 11px); color: var(--ink-mute); margin-bottom: 8px; }
+        .trend svg { width: 100%; height: auto; display: block; }
+        .trend .tnote { color: var(--ink-mute); font-size: clamp(11px, 1vw, 14px); }
+        footer {
+            display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+            margin-top: 3.5vh; padding-top: 1.6vh; border-top: 1px solid var(--line);
+            font-family: var(--mono); font-size: clamp(10px, 0.9vw, 13px); color: var(--ink-mute);
+        }
+        .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--live-dot); margin-right: 7px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+        footer a { color: var(--ink-mute); text-decoration: none; }
+        footer a:hover { color: var(--green); }
+        #resetBtn, #closeBtn, #deleteBtn { text-decoration: underline; text-underline-offset: 3px; }
+        dialog#pinDlg {
+            background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 12px;
+            padding: 22px; width: min(92vw, 380px); font-family: var(--sans);
+        }
+        dialog#pinDlg::backdrop { background: rgba(4, 8, 18, 0.72); }
+        #pinDlg p { font-size: 14.5px; line-height: 1.45; margin-bottom: 14px; white-space: pre-line; }
+        #pinDlg input {
+            width: 100%; margin-bottom: 10px; padding: 11px 12px;
+            background: var(--paper); color: var(--ink); border: 1.5px solid var(--line); border-radius: 8px;
+            font-family: var(--mono); font-size: 14px;
+        }
+        #pinDlg input:focus-visible { outline: none; border-color: var(--green); }
+        #pinDlg .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+        #pinDlg .row button {
+            font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+            padding: 10px 16px; border-radius: 8px; cursor: pointer; border: 1px solid var(--line);
+            background: none; color: var(--ink-mute);
+        }
+        #pinDlg .row button.primary { background: var(--green); border-color: var(--green); color: var(--green-ink); font-weight: 500; }
+        @media (prefers-reduced-motion: reduce) { .bar-row .fill { transition: none; } .dot { animation: none; } }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <p class="kicker">DATA 5650 &middot; Deep Quantitative Trading &middot; Live Poll</p>
+            <h1>Module pulse</h1>
+        </div>
+        <div class="count"><div class="n" id="total">&ndash;</div><div class="l" id="totalLabel">responses</div></div>
+    </header>
+
+    <div class="seg" role="group" aria-label="Results view" id="seg"></div>
+
+    <div class="grid">
+        <aside class="qr-card">
+            <div class="t">Scan to vote</div>
+            <img src="qr.png" alt="QR code linking to the vote page" width="396" height="396">
+            <div class="u"><a href="index.html" target="_blank" rel="noopener">pedramjahangiry.com/<br>polls/dqt-feelings</a></div>
+        </aside>
+        <section class="panel">
+            <h2 id="q1title">How do you feel coming out of this module?</h2>
+            <div id="chart1"><div class="waiting">Loading&hellip;</div></div>
+            <div class="trend" id="trend1" hidden>
+                <div class="tlabel">Across modules &middot; average feeling</div>
+                <div class="tscale">1 = 😩 lost &nbsp;&middot;&nbsp; 3 = 😐 okay &nbsp;&middot;&nbsp; 5 = 😄 confident &nbsp;&middot;&nbsp; equal weight per response</div>
+                <div id="trendBody1"></div>
+            </div>
+        </section>
+        <section class="panel">
+            <h2 id="q2title">How was the pace?</h2>
+            <div id="chart2"><div class="waiting">Loading&hellip;</div></div>
+            <div class="trend" id="trend2" hidden>
+                <div class="tlabel">Across modules &middot; pace balance</div>
+                <div class="tscale">&minus;1 = 🏃 too fast &nbsp;&middot;&nbsp; 0 = ✅ just right &nbsp;&middot;&nbsp; +1 = 🐢 too slow</div>
+                <div id="trendBody2"></div>
+            </div>
+        </section>
+        <section class="panel cloud" id="cloudPanel" hidden>
+            <h2>One word for this module <small id="cloudMeta"></small></h2>
+            <div id="cloudBody"></div>
+        </section>
+    </div>
+
+    <footer>
+        <div id="liveState"><span class="dot"></span>Updates automatically</div>
+        <div><a href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com</a> &middot; <a href="#" id="resetBtn">new session</a> &middot; <a href="#" id="closeBtn" hidden>close session</a> &middot; <a href="#" id="deleteBtn" hidden>delete session</a></div>
+    </footer>
+
+    <dialog id="pinDlg">
+        <form id="pinForm">
+            <p id="pinMsg"></p>
+            <input type="password" id="pinInput" placeholder="PIN" autocomplete="off" autocapitalize="off">
+            <input type="text" id="labelInput" placeholder='Session label, e.g. "Module 2 · Momentum"' autocomplete="off" style="display:none">
+            <div class="row">
+                <button type="button" id="pinCancel">Cancel</button>
+                <button type="submit" class="primary" id="pinOk">Confirm</button>
+            </div>
+        </form>
+    </dialog>
+
+<script>
+// ─── poll config: copy this folder + edit this block for a new poll ───
+const POLL = {
+    slug: 'dqt-feelings-2026',
+    table: 'poll_dqt_feelings_2026',
+    supabaseUrl: 'https://daimsfgtfrjbkegxmwag.supabase.co',
+    supabaseKey: 'sb_publishable_O_xS8NobEAWlHn_cR0SwOw_LYnB9o2d',
+    resetUrl: 'https://daimsfgtfrjbkegxmwag.supabase.co/functions/v1/reset-poll',
+    // Charts render only once a view has minN responses — with one or two
+    // responses on the projector, a bar chart is a person, not a distribution.
+    minN: 3,
+    // Sessions with this label are structural anchors (a poll must always keep
+    // at least one session row) — hidden from the picker and from trends.
+    anchorLabel: 'Setup',
+    charts: [
+        { id: 'feeling', el: 'chart1', trendEl: 'trendBody1', trendWrap: 'trend1',
+          order: [ 'Confident', 'Good', 'Okay', 'Confused', 'Lost' ],
+          labels: {
+            'Confident': '😄 Confident',
+            'Good': '🙂 Good',
+            'Okay': '😐 Okay',
+            'Confused': '😕 Confused',
+            'Lost': '😩 Lost' },
+          // Equal-weighted per response: session score = mean of these values.
+          scores: { 'Confident': 5, 'Good': 4, 'Okay': 3, 'Confused': 2, 'Lost': 1 },
+          domain: [1, 5], baseline: 3 },
+        { id: 'pace', el: 'chart2', trendEl: 'trendBody2', trendWrap: 'trend2',
+          order: [ 'Too fast', 'Just right', 'Too slow' ],
+          labels: {
+            'Too fast': '🏃 Too fast',
+            'Just right': '✅ Just right',
+            'Too slow': '🐢 Too slow' },
+          scores: { 'Too fast': -1, 'Just right': 0, 'Too slow': 1 },
+          domain: [-1, 1], baseline: 0 }
+    ],
+    hot: ['Confused', 'Lost']
+};
+// ───────────────────────────────────────────────────────────────────────
+
+const HEADERS = { 'apikey': POLL.supabaseKey, 'Authorization': 'Bearer ' + POLL.supabaseKey };
+const HOT = new Set(POLL.hot);
+// view: 'lobby' (default — nothing shown until a session opens or a chip is
+// clicked, so the room never sees earlier results before class), 'all', a
+// session number, or 'live' (sentinel → resolves to the current session).
+let view = new URLSearchParams(location.search).has('live') ? 'live' : 'lobby';
+let segSig = null;   // signature of the rendered session buttons, to avoid rebuilding mid-click
+let sessions = [];   // [{session, label, closed_at}] — includes the hidden anchor
+let votes = [];      // [{session, question, choice, voter_id}]
+
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+function realSessions() { return sessions.filter(s => s.label !== POLL.anchorLabel); }
+
+async function refresh() {
+    try {
+        const [sRes, vRes] = await Promise.all([
+            fetch(POLL.supabaseUrl + '/rest/v1/poll_sessions?poll_slug=eq.' + POLL.slug +
+                  '&select=session,label,closed_at&order=session.asc', { headers: HEADERS }),
+            fetch(POLL.supabaseUrl + '/rest/v1/' + POLL.table +
+                  '?select=session,question,choice,voter_id&limit=50000', { headers: HEADERS })
+        ]);
+        if (!sRes.ok || !vRes.ok) return;
+        sessions = await sRes.json();
+        votes = await vRes.json();
+        render();
+    } catch (e) { /* transient network error — next tick retries */ }
+}
+
+function render() {
+    if (!sessions.length) return;
+    const current = sessions[sessions.length - 1];
+    const picker = realSessions();
+
+    // Lobby resolves: to the live session the moment one is open, otherwise it
+    // stays a blank pre-class state (no earlier results on the projector).
+    if (view === 'lobby' && pollIsOpen()) view = current.session;
+    if (view === 'live') view = current.session;
+    if (view !== 'all' && view !== 'lobby' && !sessions.some(s => s.session === view)) view = 'lobby';
+
+    const lobby = view === 'lobby';
+    const rows = lobby ? [] : (view === 'all' ? votes : votes.filter(v => v.session === view));
+    const voters = new Set(rows.map(r => r.voter_id + '|' + r.session));
+    const n = voters.size;
+    const viewing = (lobby || view === 'all') ? null : sessions.find(s => s.session === view);
+
+    document.getElementById('total').textContent = lobby ? '–' : n;
+    document.getElementById('totalLabel').textContent = lobby
+        ? 'poll closed'
+        : viewing
+            ? 'responses · ' + viewing.label
+            : 'responses · ' + picker.length + ' module' + (picker.length !== 1 ? 's' : '');
+
+    // Session picker: one button per real session + All modules (the Setup
+    // anchor is structural and never shown). Rebuild only when the list changes.
+    const seg = document.getElementById('seg');
+    const sig = picker.map(s => s.session + ':' + s.label + ':' + (s.closed_at ? 'c' : 'o')).join('|');
+    if (sig !== segSig) {
+        segSig = sig;
+        seg.innerHTML = picker.map(s =>
+            '<button data-view="' + s.session + '">' + esc(s.label) +
+            (s.session === current.session && !s.closed_at ? ' · live' : '') + '</button>').join('') +
+            '<button data-view="all"></button>';
+    }
+    seg.querySelector('[data-view="all"]').textContent =
+        'All modules · ' + picker.length + ' session' + (picker.length !== 1 ? 's' : '');
+    seg.querySelectorAll('button').forEach(b => {
+        const v = b.dataset.view === 'all' ? 'all' : Number(b.dataset.view);
+        b.classList.toggle('on', v === view);
+    });
+
+    // "Close session" appears only while viewing the live session. "Delete
+    // session" works on ANY specific session view — live or closed (the edge
+    // function allows both from v6 on) — but never on the poll's only session,
+    // and never on the hidden anchor.
+    const viewingLive = pollIsOpen() && view === current.session;
+    const viewingReal = viewing && viewing.label !== POLL.anchorLabel;
+    document.getElementById('closeBtn').hidden = !viewingLive;
+    document.getElementById('deleteBtn').hidden = !viewingReal || sessions.length <= 1;
+
+    document.getElementById('liveState').innerHTML = lobby
+        ? 'Poll closed &mdash; dormant until a new module opens'
+        : viewIsLive()
+            ? '<span class="dot"></span>Updates automatically'
+            : (view !== 'all' && view !== current.session)
+                ? 'Past module &mdash; results are frozen'
+                : 'Poll closed &mdash; dormant until a new module opens';
+
+    // Privacy floor: below minN responses a bar chart is close to a roster.
+    // The count still shows n; the distribution waits for the room.
+    const suppressed = n > 0 && n < (POLL.minN || 0);
+    for (const c of POLL.charts) {
+        if (lobby) {
+            document.getElementById(c.el).innerHTML =
+                '<div class="waiting">Results are hidden while the poll is closed &mdash; start a session to begin.</div>';
+        } else {
+            renderChart(c, rows.filter(r => r.question === c.id), n, suppressed);
+        }
+        // Trends are cross-module by design: shown under EVERY module view and
+        // under All modules — hidden only in the pre-class lobby.
+        document.getElementById(c.trendWrap).hidden = lobby;
+        if (!lobby) renderTrend(c);
+    }
+    renderCloud(rows, lobby);
+}
+
+// Word cloud from the optional one-word question. Hidden entirely when the
+// view has no words (or in the lobby); same privacy floor as the bars.
+function renderCloud(rows, lobby) {
+    const panel = document.getElementById('cloudPanel');
+    const words = rows.filter(r => r.question === 'word');
+    if (lobby || words.length === 0) { panel.hidden = true; return; }
+    panel.hidden = false;
+    const meta = document.getElementById('cloudMeta');
+    const body = document.getElementById('cloudBody');
+    if (words.length < (POLL.minN || 0)) {
+        meta.textContent = '';
+        body.innerHTML = '<div class="waiting">' + words.length + ' in &mdash; the cloud appears at ' +
+            POLL.minN + ' words (keeps individual answers private).</div>';
+        return;
+    }
+    const counts = {};
+    words.forEach(r => { const w = String(r.choice).toLowerCase().slice(0, 16); if (w) counts[w] = (counts[w] || 0) + 1; });
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 24);
+    const max = top[0][1], min = top[top.length - 1][1];
+    const colors = ['var(--green)', 'var(--ink)', 'var(--bar)', 'var(--ink-mute)'];
+    meta.textContent = '(' + words.length + ' answered)';
+    body.innerHTML = '<div class="cloudwords">' + top.map(([w, c], i) => {
+        const t = max === min ? 1 : (c - min) / (max - min);
+        const size = Math.round(16 + t * 28);
+        return '<span style="font-size: ' + size + 'px; font-weight: ' + (t > 0.6 ? 600 : 400) +
+               '; color: ' + colors[i % 4] + '" title="' + c + '&times;">' + esc(w) + '</span>';
+    }).join('') + '</div>';
+}
+
+function renderChart(cfg, rows, totalVoters, suppressed) {
+    const el = document.getElementById(cfg.el);
+    if (totalVoters === 0) { el.innerHTML = '<div class="waiting">Waiting for votes&hellip;</div>'; return; }
+    if (suppressed) {
+        el.innerHTML = '<div class="waiting">' + totalVoters + ' in &mdash; the chart appears at ' +
+            POLL.minN + ' responses (keeps individual answers private).</div>';
+        return;
+    }
+
+    const counts = {};
+    cfg.order.forEach(o => counts[o] = 0);
+    rows.forEach(r => { if (r.choice in counts) counts[r.choice]++; });
+    const max = Math.max(1, ...Object.values(counts));
+
+    if (el.querySelectorAll('.bar-row').length !== cfg.order.length) {
+        el.innerHTML = cfg.order.map(o =>
+            '<div class="bar-row' + (HOT.has(o) ? ' hot' : '') + '" data-key="' + esc(o) + '">' +
+            '<div class="top"><span class="name">' + esc((cfg.labels && cfg.labels[o]) || o) + '</span><span class="val"></span></div>' +
+            '<div class="track"><div class="fill"></div></div></div>').join('');
+    }
+    el.querySelectorAll('.bar-row').forEach(rowEl => {
+        const k = rowEl.dataset.key;
+        const c = counts[k] || 0;
+        rowEl.querySelector('.val').textContent = c + ' · ' + Math.round(100 * c / totalVoters) + '%';
+        rowEl.querySelector('.fill').style.width = (100 * c / max) + '%';
+    });
+}
+
+// One equal-weighted score per module (mean of cfg.scores over that module's
+// responses), plotted across the semester. Modules under the privacy floor are
+// skipped — an average of two people is still those two people.
+function sessionScores(cfg) {
+    const out = [];
+    for (const s of realSessions()) {
+        const rows = votes.filter(v => v.session === s.session && v.question === cfg.id);
+        const scored = rows.filter(r => r.choice in cfg.scores);
+        if (scored.length < (POLL.minN || 1)) continue;
+        const mean = scored.reduce((a, r) => a + cfg.scores[r.choice], 0) / scored.length;
+        out.push({ label: s.label, score: mean, n: scored.length });
+    }
+    return out;
+}
+
+function renderTrend(cfg) {
+    const el = document.getElementById(cfg.trendEl);
+    const pts = sessionScores(cfg);
+    if (pts.length === 0) {
+        el.innerHTML = '<div class="tnote">The trend line starts once a module has ' + POLL.minN + '+ responses.</div>';
+        return;
+    }
+    const [lo, hi] = cfg.domain;
+    // Tall plot: the full 1–5 / −1–+1 axis gets ~175px of travel so
+    // module-to-module movement reads as a slope, not a wiggle.
+    const W = 560, H = 220, padL = 34, padR = 12, padT = 16, padB = 30;
+    const iw = W - padL - padR, ih = H - padT - padB;
+    const x = i => pts.length === 1 ? padL + iw / 2 : padL + (iw * i) / (pts.length - 1);
+    const y = v => padT + ih - ((v - lo) / (hi - lo)) * ih;
+    const fmt = v => (cfg.baseline === 0 && v > 0 ? '+' : '') + (Math.round(v * 10) / 10);
+
+    let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Average score per module">';
+    [lo, hi].forEach(v => {
+        svg += '<line x1="' + padL + '" y1="' + y(v) + '" x2="' + (W - padR) + '" y2="' + y(v) +
+               '" stroke="var(--line)" stroke-width="1"/>';
+        svg += '<text x="' + (padL - 6) + '" y="' + (y(v) + 4) + '" text-anchor="end" font-size="12"' +
+               ' fill="var(--ink-mute)" font-family="var(--mono)">' + fmt(v) + '</text>';
+    });
+    svg += '<line x1="' + padL + '" y1="' + y(cfg.baseline) + '" x2="' + (W - padR) + '" y2="' + y(cfg.baseline) +
+           '" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4"/>';
+    svg += '<text x="' + (padL - 6) + '" y="' + (y(cfg.baseline) + 4) + '" text-anchor="end" font-size="12"' +
+           ' fill="var(--ink-mute)" font-family="var(--mono)">' + fmt(cfg.baseline) + '</text>';
+    if (pts.length > 1) {
+        svg += '<polyline fill="none" stroke="var(--bar)" stroke-width="2.5" points="' +
+               pts.map((p, i) => x(i) + ',' + y(p.score)).join(' ') + '"/>';
+    }
+    pts.forEach((p, i) => {
+        svg += '<circle cx="' + x(i) + '" cy="' + y(p.score) + '" r="5" fill="var(--green)">' +
+               '<title>' + esc(p.label) + ' — ' + fmt(p.score) + ' (n=' + p.n + ')</title></circle>';
+        svg += '<text x="' + x(i) + '" y="' + (y(p.score) - 11) + '" text-anchor="middle" font-size="13"' +
+               ' fill="var(--green)" font-family="var(--mono)">' + fmt(p.score) + '</text>';
+        svg += '<text x="' + x(i) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="12"' +
+               ' fill="var(--ink-mute)" font-family="var(--mono)">' + esc(shortLabel(p.label)) + '</text>';
+    });
+    svg += '</svg>';
+    el.innerHTML = svg;
+}
+
+// "Module 3 · ETS" → "M3", "Class 1- intro" → "C1"; anything else → first 6 chars
+function shortLabel(l) {
+    const m = /(module|class|week|session)\s*(\d+)/i.exec(l);
+    return m ? m[1][0].toUpperCase() + m[2] : String(l).slice(0, 6);
+}
+
+// The poll can only receive votes while its newest session is open.
+function pollIsOpen() {
+    return sessions.length > 0 && !sessions[sessions.length - 1].closed_at;
+}
+
+// Polling is worth it for data that can still change — an OPEN current session
+// or the all-time view — and for the lobby, which must notice a session
+// opening (possibly from another device) and wake the projector.
+function viewIsLive() {
+    if (!sessions.length) return true;
+    if (view === 'lobby') return true;
+    if (!pollIsOpen()) return false;
+    if (view === 'all' || view === 'live') return true;
+    return view === sessions[sessions.length - 1].session;
+}
+
+// ── masked PIN dialog (replaces prompt(), which showed the PIN in clear text) ──
+function askPin(message, withLabel) {
+    return new Promise(resolve => {
+        const dlg = document.getElementById('pinDlg');
+        const pin = document.getElementById('pinInput');
+        const lab = document.getElementById('labelInput');
+        document.getElementById('pinMsg').textContent = message;
+        pin.value = ''; lab.value = '';
+        lab.style.display = withLabel ? '' : 'none';
+        const done = val => { cleanup(); dlg.close(); resolve(val); };
+        const onSubmit = e => { e.preventDefault(); if (!pin.value.trim()) { pin.focus(); return; } done({ pin: pin.value.trim(), label: lab.value.trim() }); };
+        const onCancelBtn = () => done(null);
+        const onCancelEvt = e => { e.preventDefault(); done(null); };
+        function cleanup() {
+            document.getElementById('pinForm').removeEventListener('submit', onSubmit);
+            document.getElementById('pinCancel').removeEventListener('click', onCancelBtn);
+            dlg.removeEventListener('cancel', onCancelEvt);
+        }
+        document.getElementById('pinForm').addEventListener('submit', onSubmit);
+        document.getElementById('pinCancel').addEventListener('click', onCancelBtn);
+        dlg.addEventListener('cancel', onCancelEvt);
+        dlg.showModal();
+        pin.focus();
+    });
+}
+
+document.getElementById('seg').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    view = b.dataset.view === 'all' ? 'all' : Number(b.dataset.view);
+    render();
+    if (viewIsLive()) refresh(); // catch up immediately after a dormant stretch
+});
+
+document.getElementById('closeBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const current = sessions[sessions.length - 1];
+    if (!current || current.closed_at) return;
+    const r = await askPin('Close session "' + current.label + '"?\nVoting stops and the poll goes dormant until a new module opens. Results are kept.', false);
+    if (!r) return;
+    try {
+        const res = await fetch(POLL.resetUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: r.pin, slug: POLL.slug, action: 'close' })
+        });
+        if (res.ok) {
+            view = 'lobby';
+            await refresh();
+        } else {
+            alert(res.status === 401 ? 'Wrong PIN.' : 'Could not close the session — try again.');
+        }
+    } catch (err) { alert('Could not close the session — check your connection.'); }
+});
+
+document.getElementById('deleteBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const s = (view === 'all' || view === 'lobby') ? null : sessions.find(x => x.session === view);
+    if (!s) return;
+    const r = await askPin('DELETE session "' + s.label + '"?\nThis permanently deletes its votes and removes it from the timeline. There is no undo.', false);
+    if (!r) return;
+    try {
+        const res = await fetch(POLL.resetUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: r.pin, slug: POLL.slug, action: 'delete', session: s.session })
+        });
+        const out = await res.json().catch(() => ({}));
+        if (res.ok) {
+            view = 'lobby';
+            await refresh();
+        } else if (res.status === 401) {
+            alert('Wrong PIN.');
+        } else if (out.error === 'cannot delete the only session') {
+            alert('This is the only session — start a new one first, then delete this one.');
+        } else {
+            alert('Could not delete the session — try again.');
+        }
+    } catch (err) { alert('Could not delete the session — check your connection.'); }
+});
+
+document.getElementById('resetBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const r = await askPin('Start a NEW session? Previous data is kept.', true);
+    if (!r) return;
+    try {
+        const res = await fetch(POLL.resetUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: r.pin, slug: POLL.slug, label: r.label })
+        });
+        const out = await res.json();
+        if (res.ok) {
+            view = 'live';
+            await refresh();
+        } else {
+            alert(res.status === 401 ? 'Wrong PIN.' : 'Could not start a session — try again.');
+        }
+    } catch (err) { alert('Could not start a session — check your connection.'); }
+});
+
+refresh();
+// Poll only while the tab is visible AND the view can still change;
+// past-session views and background tabs are dormant.
+setInterval(() => { if (!document.hidden && viewIsLive()) refresh(); }, 3000);
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && viewIsLive()) refresh();
+});
+</script>
+</body>
+</html>
