@@ -79,6 +79,11 @@
         .bar-row.hot .fill { background: var(--green); }
         .bar-row.hot .name, .bar-row.hot .val { color: var(--green); }
         .waiting { color: var(--ink-mute); font-size: clamp(13px, 1.2vw, 17px); padding: 1vh 0; }
+        .trend { margin-top: clamp(14px, 2.4vh, 24px); border-top: 1px dashed var(--line); padding-top: clamp(10px, 1.6vh, 16px); }
+        .trend .tlabel { font-family: var(--mono); font-size: clamp(9px, 0.85vw, 12px); letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); margin-bottom: 4px; }
+        .trend .tscale { font-family: var(--mono); font-size: clamp(9px, 0.8vw, 11px); color: var(--ink-mute); margin-bottom: 8px; }
+        .trend svg { width: 100%; height: auto; display: block; }
+        .trend .tnote { color: var(--ink-mute); font-size: clamp(11px, 1vw, 14px); }
         footer {
             display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap;
             margin-top: 3.5vh; padding-top: 1.6vh; border-top: 1px solid var(--line);
@@ -89,6 +94,25 @@
         footer a { color: var(--ink-mute); text-decoration: none; }
         footer a:hover { color: var(--green); }
         #resetBtn, #closeBtn, #deleteBtn { text-decoration: underline; text-underline-offset: 3px; }
+        dialog#pinDlg {
+            background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 12px;
+            padding: 22px; width: min(92vw, 380px); font-family: var(--sans);
+        }
+        dialog#pinDlg::backdrop { background: rgba(4, 8, 18, 0.72); }
+        #pinDlg p { font-size: 14.5px; line-height: 1.45; margin-bottom: 14px; white-space: pre-line; }
+        #pinDlg input {
+            width: 100%; margin-bottom: 10px; padding: 11px 12px;
+            background: var(--paper); color: var(--ink); border: 1.5px solid var(--line); border-radius: 8px;
+            font-family: var(--mono); font-size: 14px;
+        }
+        #pinDlg input:focus-visible { outline: none; border-color: var(--green); }
+        #pinDlg .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+        #pinDlg .row button {
+            font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+            padding: 10px 16px; border-radius: 8px; cursor: pointer; border: 1px solid var(--line);
+            background: none; color: var(--ink-mute);
+        }
+        #pinDlg .row button.primary { background: var(--green); border-color: var(--green); color: var(--green-ink); font-weight: 500; }
         @media (prefers-reduced-motion: reduce) { .bar-row .fill { transition: none; } .dot { animation: none; } }
     </style>
 </head>
@@ -112,17 +136,39 @@
         <section class="panel">
             <h2 id="q1title">How do you feel coming out of this module?</h2>
             <div id="chart1"><div class="waiting">Loading&hellip;</div></div>
+            <div class="trend" id="trend1" hidden>
+                <div class="tlabel">Across modules &middot; average feeling</div>
+                <div class="tscale">1 = 😩 lost &nbsp;&middot;&nbsp; 3 = 😐 okay &nbsp;&middot;&nbsp; 5 = 😄 confident &nbsp;&middot;&nbsp; equal weight per response</div>
+                <div id="trendBody1"></div>
+            </div>
         </section>
         <section class="panel">
             <h2 id="q2title">How was the pace?</h2>
             <div id="chart2"><div class="waiting">Loading&hellip;</div></div>
+            <div class="trend" id="trend2" hidden>
+                <div class="tlabel">Across modules &middot; pace balance</div>
+                <div class="tscale">&minus;1 = 🏃 too fast &nbsp;&middot;&nbsp; 0 = ✅ just right &nbsp;&middot;&nbsp; +1 = 🐢 too slow</div>
+                <div id="trendBody2"></div>
+            </div>
         </section>
     </div>
 
     <footer>
         <div id="liveState"><span class="dot"></span>Updates automatically</div>
-        <div><a href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com</a> &middot; <a href="#" id="resetBtn">new session</a> &middot; <a href="#" id="closeBtn" hidden>close session</a> &middot; <a href="#" id="deleteBtn" hidden>reset this session</a></div>
+        <div><a href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com</a> &middot; <a href="#" id="resetBtn">new session</a> &middot; <a href="#" id="closeBtn" hidden>close session</a> &middot; <a href="#" id="deleteBtn" hidden>delete session</a></div>
     </footer>
+
+    <dialog id="pinDlg">
+        <form id="pinForm">
+            <p id="pinMsg"></p>
+            <input type="password" id="pinInput" placeholder="PIN" autocomplete="off" autocapitalize="off">
+            <input type="text" id="labelInput" placeholder='Session label, e.g. "Module 3 · ETS"' autocomplete="off" style="display:none">
+            <div class="row">
+                <button type="button" id="pinCancel">Cancel</button>
+                <button type="submit" class="primary" id="pinOk">Confirm</button>
+            </div>
+        </form>
+    </dialog>
 
 <script>
 // ─── poll config: copy this folder + edit this block for a new poll ───
@@ -132,24 +178,32 @@ const POLL = {
     supabaseUrl: 'https://daimsfgtfrjbkegxmwag.supabase.co',
     supabaseKey: 'sb_publishable_O_xS8NobEAWlHn_cR0SwOw_LYnB9o2d',
     resetUrl: 'https://daimsfgtfrjbkegxmwag.supabase.co/functions/v1/reset-poll',
-    // Charts render only once a session has minN responses — with one
-    // response on the projector, a bar chart is a person, not a distribution.
+    // Charts render only once a view has minN responses — with one or two
+    // responses on the projector, a bar chart is a person, not a distribution.
     minN: 3,
+    // Sessions with this label are structural anchors (a poll must always keep
+    // at least one session row) — hidden from the picker and from trends.
+    anchorLabel: 'Setup',
     charts: [
-        { id: 'feeling', el: 'chart1', order: [
-            'Confident', 'Good', 'Okay', 'Confused', 'Lost' ],
+        { id: 'feeling', el: 'chart1', trendEl: 'trendBody1', trendWrap: 'trend1',
+          order: [ 'Confident', 'Good', 'Okay', 'Confused', 'Lost' ],
           labels: {
             'Confident': '😄 Confident',
             'Good': '🙂 Good',
             'Okay': '😐 Okay',
             'Confused': '😕 Confused',
-            'Lost': '😩 Lost' } },
-        { id: 'pace', el: 'chart2', order: [
-            'Too fast', 'Just right', 'Too slow' ],
+            'Lost': '😩 Lost' },
+          // Equal-weighted per response: session score = mean of these values.
+          scores: { 'Confident': 5, 'Good': 4, 'Okay': 3, 'Confused': 2, 'Lost': 1 },
+          domain: [1, 5], baseline: 3 },
+        { id: 'pace', el: 'chart2', trendEl: 'trendBody2', trendWrap: 'trend2',
+          order: [ 'Too fast', 'Just right', 'Too slow' ],
           labels: {
             'Too fast': '🏃 Too fast',
             'Just right': '✅ Just right',
-            'Too slow': '🐢 Too slow' } }
+            'Too slow': '🐢 Too slow' },
+          scores: { 'Too fast': -1, 'Just right': 0, 'Too slow': 1 },
+          domain: [-1, 1], baseline: 0 }
     ],
     hot: ['Confused', 'Lost']
 };
@@ -157,14 +211,16 @@ const POLL = {
 
 const HEADERS = { 'apikey': POLL.supabaseKey, 'Authorization': 'Bearer ' + POLL.supabaseKey };
 const HOT = new Set(POLL.hot);
-// view: 'all', a session number, or 'live' (sentinel — resolves to the
-// current session once the session list has loaded)
-let view = new URLSearchParams(location.search).has('live') ? 'live' : 'all';
-let segSig = '';     // signature of the rendered session buttons, to avoid rebuilding mid-click
-let sessions = [];   // [{session, label}]
+// view: 'lobby' (default — nothing shown until a session opens or a chip is
+// clicked, so the room never sees earlier results before class), 'all', a
+// session number, or 'live' (sentinel → resolves to the current session).
+let view = new URLSearchParams(location.search).has('live') ? 'live' : 'lobby';
+let segSig = null;   // signature of the rendered session buttons, to avoid rebuilding mid-click
+let sessions = [];   // [{session, label, closed_at}] — includes the hidden anchor
 let votes = [];      // [{session, question, choice, voter_id}]
 
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+function realSessions() { return sessions.filter(s => s.label !== POLL.anchorLabel); }
 
 async function refresh() {
     try {
@@ -184,57 +240,77 @@ async function refresh() {
 function render() {
     if (!sessions.length) return;
     const current = sessions[sessions.length - 1];
-    if (view === 'live') view = current.session;
-    if (view !== 'all' && !sessions.some(s => s.session === view)) view = 'all'; // session deleted underneath us
+    const picker = realSessions();
 
-    const rows = view === 'all' ? votes : votes.filter(v => v.session === view);
+    // Lobby resolves: to the live session the moment one is open, otherwise it
+    // stays a blank pre-class state (no earlier results on the projector).
+    if (view === 'lobby' && pollIsOpen()) view = current.session;
+    if (view === 'live') view = current.session;
+    if (view !== 'all' && view !== 'lobby' && !sessions.some(s => s.session === view)) view = 'lobby';
+
+    const lobby = view === 'lobby';
+    const rows = lobby ? [] : (view === 'all' ? votes : votes.filter(v => v.session === view));
     const voters = new Set(rows.map(r => r.voter_id + '|' + r.session));
     const n = voters.size;
-    const viewing = view === 'all' ? null : sessions.find(s => s.session === view);
+    const viewing = (lobby || view === 'all') ? null : sessions.find(s => s.session === view);
 
-    document.getElementById('total').textContent = n;
-    document.getElementById('totalLabel').textContent = viewing
-        ? 'responses · ' + viewing.label
-        : 'responses · ' + sessions.length + ' session' + (sessions.length > 1 ? 's' : '');
+    document.getElementById('total').textContent = lobby ? '–' : n;
+    document.getElementById('totalLabel').textContent = lobby
+        ? 'poll closed'
+        : viewing
+            ? 'responses · ' + viewing.label
+            : 'responses · ' + picker.length + ' module' + (picker.length !== 1 ? 's' : '');
 
-    // Session picker: one button per session + All time. Rebuild only when
-    // the session list itself changes (the page polls every 3 s).
+    // Session picker: one button per real session + All modules (the Setup
+    // anchor is structural and never shown). Rebuild only when the list changes.
     const seg = document.getElementById('seg');
-    const sig = sessions.map(s => s.session + ':' + s.label + ':' + (s.closed_at ? 'c' : 'o')).join('|');
+    const sig = picker.map(s => s.session + ':' + s.label + ':' + (s.closed_at ? 'c' : 'o')).join('|');
     if (sig !== segSig) {
         segSig = sig;
-        seg.innerHTML = sessions.map(s =>
+        seg.innerHTML = picker.map(s =>
             '<button data-view="' + s.session + '">' + esc(s.label) +
             (s.session === current.session && !s.closed_at ? ' · live' : '') + '</button>').join('') +
             '<button data-view="all"></button>';
     }
     seg.querySelector('[data-view="all"]').textContent =
-        'All modules · ' + sessions.length + ' session' + (sessions.length > 1 ? 's' : '');
+        'All modules · ' + picker.length + ' session' + (picker.length !== 1 ? 's' : '');
     seg.querySelectorAll('button').forEach(b => {
         const v = b.dataset.view === 'all' ? 'all' : Number(b.dataset.view);
         b.classList.toggle('on', v === view);
     });
 
-    // "Close session" and "reset this session" act on the live session only,
-    // so both appear only while viewing it — closed sessions are history and
-    // can be neither closed nor reset (the edge function enforces this
-    // server-side too). Reset is also unavailable for the only session.
+    // "Close session" appears only while viewing the live session. "Delete
+    // session" works on ANY specific session view — live or closed (the edge
+    // function allows both from v6 on) — but never on the poll's only session,
+    // and never on the hidden anchor.
     const viewingLive = pollIsOpen() && view === current.session;
+    const viewingReal = viewing && viewing.label !== POLL.anchorLabel;
     document.getElementById('closeBtn').hidden = !viewingLive;
-    document.getElementById('deleteBtn').hidden = !viewingLive || sessions.length <= 1;
+    document.getElementById('deleteBtn').hidden = !viewingReal || sessions.length <= 1;
 
-    // Closed sessions are immutable (RLS only allows inserts into an OPEN
-    // current session), so polling them is waste — show the state instead.
-    document.getElementById('liveState').innerHTML = viewIsLive()
-        ? '<span class="dot"></span>Updates automatically'
-        : (view !== 'all' && view !== current.session)
-            ? 'Past module &mdash; results are frozen'
-            : 'Poll closed &mdash; dormant until a new module opens';
+    document.getElementById('liveState').innerHTML = lobby
+        ? 'Poll closed &mdash; dormant until a new module opens'
+        : viewIsLive()
+            ? '<span class="dot"></span>Updates automatically'
+            : (view !== 'all' && view !== current.session)
+                ? 'Past module &mdash; results are frozen'
+                : 'Poll closed &mdash; dormant until a new module opens';
 
     // Privacy floor: below minN responses a bar chart is close to a roster.
     // The count still shows n; the distribution waits for the room.
     const suppressed = n > 0 && n < (POLL.minN || 0);
-    for (const c of POLL.charts) renderChart(c, rows.filter(r => r.question === c.id), n, suppressed);
+    for (const c of POLL.charts) {
+        if (lobby) {
+            document.getElementById(c.el).innerHTML =
+                '<div class="waiting">Results are hidden while the poll is closed &mdash; start a session to begin.</div>';
+        } else {
+            renderChart(c, rows.filter(r => r.question === c.id), n, suppressed);
+        }
+        // Trends are cross-module by design: shown under EVERY module view and
+        // under All modules — hidden only in the pre-class lobby.
+        document.getElementById(c.trendWrap).hidden = lobby;
+        if (!lobby) renderTrend(c);
+    }
 }
 
 function renderChart(cfg, rows, totalVoters, suppressed) {
@@ -265,19 +341,106 @@ function renderChart(cfg, rows, totalVoters, suppressed) {
     });
 }
 
+// One equal-weighted score per module (mean of cfg.scores over that module's
+// responses), plotted across the semester. Modules under the privacy floor are
+// skipped — an average of two people is still those two people.
+function sessionScores(cfg) {
+    const out = [];
+    for (const s of realSessions()) {
+        const rows = votes.filter(v => v.session === s.session && v.question === cfg.id);
+        const scored = rows.filter(r => r.choice in cfg.scores);
+        if (scored.length < (POLL.minN || 1)) continue;
+        const mean = scored.reduce((a, r) => a + cfg.scores[r.choice], 0) / scored.length;
+        out.push({ label: s.label, score: mean, n: scored.length });
+    }
+    return out;
+}
+
+function renderTrend(cfg) {
+    const el = document.getElementById(cfg.trendEl);
+    const pts = sessionScores(cfg);
+    if (pts.length === 0) {
+        el.innerHTML = '<div class="tnote">The trend line starts once a module has ' + POLL.minN + '+ responses.</div>';
+        return;
+    }
+    const [lo, hi] = cfg.domain;
+    const W = 320, H = 96, padL = 26, padR = 10, padT = 12, padB = 20;
+    const iw = W - padL - padR, ih = H - padT - padB;
+    const x = i => pts.length === 1 ? padL + iw / 2 : padL + (iw * i) / (pts.length - 1);
+    const y = v => padT + ih - ((v - lo) / (hi - lo)) * ih;
+    const fmt = v => (cfg.baseline === 0 && v > 0 ? '+' : '') + (Math.round(v * 10) / 10);
+
+    let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Average score per module">';
+    [lo, hi].forEach(v => {
+        svg += '<line x1="' + padL + '" y1="' + y(v) + '" x2="' + (W - padR) + '" y2="' + y(v) +
+               '" stroke="var(--line)" stroke-width="1"/>';
+        svg += '<text x="' + (padL - 5) + '" y="' + (y(v) + 3) + '" text-anchor="end" font-size="8.5"' +
+               ' fill="var(--ink-mute)" font-family="var(--mono)">' + fmt(v) + '</text>';
+    });
+    svg += '<line x1="' + padL + '" y1="' + y(cfg.baseline) + '" x2="' + (W - padR) + '" y2="' + y(cfg.baseline) +
+           '" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4"/>';
+    if (pts.length > 1) {
+        svg += '<polyline fill="none" stroke="var(--bar)" stroke-width="2" points="' +
+               pts.map((p, i) => x(i) + ',' + y(p.score)).join(' ') + '"/>';
+    }
+    pts.forEach((p, i) => {
+        svg += '<circle cx="' + x(i) + '" cy="' + y(p.score) + '" r="3.5" fill="var(--green)">' +
+               '<title>' + esc(p.label) + ' — ' + fmt(p.score) + ' (n=' + p.n + ')</title></circle>';
+        svg += '<text x="' + x(i) + '" y="' + (y(p.score) - 7) + '" text-anchor="middle" font-size="9"' +
+               ' fill="var(--green)" font-family="var(--mono)">' + fmt(p.score) + '</text>';
+        svg += '<text x="' + x(i) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="8"' +
+               ' fill="var(--ink-mute)" font-family="var(--mono)">' + esc(shortLabel(p.label)) + '</text>';
+    });
+    svg += '</svg>';
+    el.innerHTML = svg;
+}
+
+// "Module 3 · ETS" → "M3" ; anything else → first 6 chars
+function shortLabel(l) {
+    const m = /module\s*(\d+)/i.exec(l);
+    return m ? 'M' + m[1] : String(l).slice(0, 6);
+}
+
 // The poll can only receive votes while its newest session is open.
 function pollIsOpen() {
     return sessions.length > 0 && !sessions[sessions.length - 1].closed_at;
 }
 
-// Polling is worth it only for data that can still change: an OPEN current
-// session, or the all-time view while a session is open. A closed poll is
-// fully dormant — every view is frozen.
+// Polling is worth it for data that can still change — an OPEN current session
+// or the all-time view — and for the lobby, which must notice a session
+// opening (possibly from another device) and wake the projector.
 function viewIsLive() {
     if (!sessions.length) return true;
+    if (view === 'lobby') return true;
     if (!pollIsOpen()) return false;
     if (view === 'all' || view === 'live') return true;
     return view === sessions[sessions.length - 1].session;
+}
+
+// ── masked PIN dialog (replaces prompt(), which showed the PIN in clear text) ──
+function askPin(message, withLabel) {
+    return new Promise(resolve => {
+        const dlg = document.getElementById('pinDlg');
+        const pin = document.getElementById('pinInput');
+        const lab = document.getElementById('labelInput');
+        document.getElementById('pinMsg').textContent = message;
+        pin.value = ''; lab.value = '';
+        lab.style.display = withLabel ? '' : 'none';
+        const done = val => { cleanup(); dlg.close(); resolve(val); };
+        const onSubmit = e => { e.preventDefault(); if (!pin.value.trim()) { pin.focus(); return; } done({ pin: pin.value.trim(), label: lab.value.trim() }); };
+        const onCancelBtn = () => done(null);
+        const onCancelEvt = e => { e.preventDefault(); done(null); };
+        function cleanup() {
+            document.getElementById('pinForm').removeEventListener('submit', onSubmit);
+            document.getElementById('pinCancel').removeEventListener('click', onCancelBtn);
+            dlg.removeEventListener('cancel', onCancelEvt);
+        }
+        document.getElementById('pinForm').addEventListener('submit', onSubmit);
+        document.getElementById('pinCancel').addEventListener('click', onCancelBtn);
+        dlg.addEventListener('cancel', onCancelEvt);
+        dlg.showModal();
+        pin.focus();
+    });
 }
 
 document.getElementById('seg').addEventListener('click', (e) => {
@@ -292,17 +455,17 @@ document.getElementById('closeBtn').addEventListener('click', async (e) => {
     e.preventDefault();
     const current = sessions[sessions.length - 1];
     if (!current || current.closed_at) return;
-    const pin = prompt('Close session "' + current.label + '"?\nVoting stops and the poll goes dormant until a new module opens. Results are kept.\nEnter the PIN to confirm:');
-    if (!pin) return;
+    const r = await askPin('Close session "' + current.label + '"?\nVoting stops and the poll goes dormant until a new module opens. Results are kept.', false);
+    if (!r) return;
     try {
         const res = await fetch(POLL.resetUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: pin.trim(), slug: POLL.slug, action: 'close' })
+            body: JSON.stringify({ pin: r.pin, slug: POLL.slug, action: 'close' })
         });
         if (res.ok) {
+            view = 'lobby';
             await refresh();
-            alert('Session "' + current.label + '" closed. The poll is now dormant.');
         } else {
             alert(res.status === 401 ? 'Wrong PIN.' : 'Could not close the session — try again.');
         }
@@ -311,49 +474,44 @@ document.getElementById('closeBtn').addEventListener('click', async (e) => {
 
 document.getElementById('deleteBtn').addEventListener('click', async (e) => {
     e.preventDefault();
-    const s = view === 'all' ? null : sessions.find(x => x.session === view);
+    const s = (view === 'all' || view === 'lobby') ? null : sessions.find(x => x.session === view);
     if (!s) return;
-    const pin = prompt('RESET session "' + s.label + '"?\nThis permanently deletes its votes and removes the session.\nEnter the PIN to confirm:');
-    if (!pin) return;
+    const r = await askPin('DELETE session "' + s.label + '"?\nThis permanently deletes its votes and removes it from the timeline. There is no undo.', false);
+    if (!r) return;
     try {
         const res = await fetch(POLL.resetUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: pin.trim(), slug: POLL.slug, action: 'delete', session: s.session })
+            body: JSON.stringify({ pin: r.pin, slug: POLL.slug, action: 'delete', session: s.session })
         });
         const out = await res.json().catch(() => ({}));
         if (res.ok) {
-            view = 'all';
+            view = 'lobby';
             await refresh();
-            alert('Session "' + s.label + '" deleted.');
         } else if (res.status === 401) {
             alert('Wrong PIN.');
         } else if (out.error === 'cannot delete the only session') {
-            alert('This is the only session — start a new one first, then reset this one.');
-        } else if (out.error === 'only the live session can be reset') {
-            alert('Only the live session can be reset — closed sessions are permanent.');
+            alert('This is the only session — start a new one first, then delete this one.');
         } else {
-            alert('Could not reset the session — try again.');
+            alert('Could not delete the session — try again.');
         }
-    } catch (err) { alert('Could not reset the session — check your connection.'); }
+    } catch (err) { alert('Could not delete the session — check your connection.'); }
 });
 
 document.getElementById('resetBtn').addEventListener('click', async (e) => {
     e.preventDefault();
-    const pin = prompt('Start a NEW session? Previous data is kept.\nEnter the PIN:');
-    if (!pin) return;
-    const label = prompt('Label for the new session (e.g. "Module 3 · ETS"):') || '';
+    const r = await askPin('Start a NEW session? Previous data is kept.', true);
+    if (!r) return;
     try {
         const res = await fetch(POLL.resetUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: pin.trim(), slug: POLL.slug, label: label.trim() })
+            body: JSON.stringify({ pin: r.pin, slug: POLL.slug, label: r.label })
         });
         const out = await res.json();
         if (res.ok) {
             view = 'live';
             await refresh();
-            alert('Session ' + out.session + ' started. The room can vote now.');
         } else {
             alert(res.status === 401 ? 'Wrong PIN.' : 'Could not start a session — try again.');
         }

@@ -89,6 +89,25 @@
         footer a { color: var(--ink-mute); text-decoration: none; }
         footer a:hover { color: var(--green); }
         #resetBtn, #closeBtn, #deleteBtn { text-decoration: underline; text-underline-offset: 3px; }
+        dialog#pinDlg {
+            background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 12px;
+            padding: 22px; width: min(92vw, 380px); font-family: var(--sans);
+        }
+        dialog#pinDlg::backdrop { background: rgba(4, 8, 18, 0.72); }
+        #pinDlg p { font-size: 14.5px; line-height: 1.45; margin-bottom: 14px; white-space: pre-line; }
+        #pinDlg input {
+            width: 100%; margin-bottom: 10px; padding: 11px 12px;
+            background: var(--paper); color: var(--ink); border: 1.5px solid var(--line); border-radius: 8px;
+            font-family: var(--mono); font-size: 14px;
+        }
+        #pinDlg input:focus-visible { outline: none; border-color: var(--green); }
+        #pinDlg .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+        #pinDlg .row button {
+            font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+            padding: 10px 16px; border-radius: 8px; cursor: pointer; border: 1px solid var(--line);
+            background: none; color: var(--ink-mute);
+        }
+        #pinDlg .row button.primary { background: var(--green); border-color: var(--green); color: var(--green-ink); font-weight: 500; }
         @media (prefers-reduced-motion: reduce) { .bar-row .fill { transition: none; } .dot { animation: none; } }
     </style>
 </head>
@@ -121,8 +140,20 @@
 
     <footer>
         <div id="liveState"><span class="dot"></span>Updates automatically</div>
-        <div><a href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com</a> &middot; <a href="#" id="resetBtn">new session</a> &middot; <a href="#" id="closeBtn" hidden>close session</a> &middot; <a href="#" id="deleteBtn" hidden>reset this session</a></div>
+        <div><a href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com</a> &middot; <a href="#" id="resetBtn">new session</a> &middot; <a href="#" id="closeBtn" hidden>close session</a> &middot; <a href="#" id="deleteBtn" hidden>delete session</a></div>
     </footer>
+
+    <dialog id="pinDlg">
+        <form id="pinForm">
+            <p id="pinMsg"></p>
+            <input type="password" id="pinInput" placeholder="PIN" autocomplete="off" autocapitalize="off">
+            <input type="text" id="labelInput" placeholder='Session label, e.g. "ECON 4610 · Sep 3"' autocomplete="off" style="display:none">
+            <div class="row">
+                <button type="button" id="pinCancel">Cancel</button>
+                <button type="submit" class="primary" id="pinOk">Confirm</button>
+            </div>
+        </form>
+    </dialog>
 
 <script>
 // ─── poll config: copy this folder + edit this block for a new poll ───
@@ -209,13 +240,12 @@ function render() {
         b.classList.toggle('on', v === view);
     });
 
-    // "Close session" and "reset this session" act on the live session only,
-    // so both appear only while viewing it — closed sessions are history and
-    // can be neither closed nor reset (the edge function enforces this
-    // server-side too). Reset is also unavailable for the only session.
+    // "Close session" acts on the live session only. "Delete session" works on
+    // ANY specific session view — live or closed (edge function v6) — but never
+    // on the poll's only session.
     const viewingLive = pollIsOpen() && view === current.session;
     document.getElementById('closeBtn').hidden = !viewingLive;
-    document.getElementById('deleteBtn').hidden = !viewingLive || sessions.length <= 1;
+    document.getElementById('deleteBtn').hidden = view === 'all' || sessions.length <= 1;
 
     // Closed sessions are immutable (RLS only allows inserts into an OPEN
     // current session), so polling them is waste — show the state instead.
@@ -266,6 +296,32 @@ function viewIsLive() {
     return view === sessions[sessions.length - 1].session;
 }
 
+// ── masked PIN dialog (replaces prompt(), which showed the PIN in clear text) ──
+function askPin(message, withLabel) {
+    return new Promise(resolve => {
+        const dlg = document.getElementById('pinDlg');
+        const pin = document.getElementById('pinInput');
+        const lab = document.getElementById('labelInput');
+        document.getElementById('pinMsg').textContent = message;
+        pin.value = ''; lab.value = '';
+        lab.style.display = withLabel ? '' : 'none';
+        const done = val => { cleanup(); dlg.close(); resolve(val); };
+        const onSubmit = e => { e.preventDefault(); if (!pin.value.trim()) { pin.focus(); return; } done({ pin: pin.value.trim(), label: lab.value.trim() }); };
+        const onCancelBtn = () => done(null);
+        const onCancelEvt = e => { e.preventDefault(); done(null); };
+        function cleanup() {
+            document.getElementById('pinForm').removeEventListener('submit', onSubmit);
+            document.getElementById('pinCancel').removeEventListener('click', onCancelBtn);
+            dlg.removeEventListener('cancel', onCancelEvt);
+        }
+        document.getElementById('pinForm').addEventListener('submit', onSubmit);
+        document.getElementById('pinCancel').addEventListener('click', onCancelBtn);
+        dlg.addEventListener('cancel', onCancelEvt);
+        dlg.showModal();
+        pin.focus();
+    });
+}
+
 document.getElementById('seg').addEventListener('click', (e) => {
     const b = e.target.closest('button');
     if (!b) return;
@@ -278,13 +334,13 @@ document.getElementById('closeBtn').addEventListener('click', async (e) => {
     e.preventDefault();
     const current = sessions[sessions.length - 1];
     if (!current || current.closed_at) return;
-    const pin = prompt('Close session "' + current.label + '"?\nVoting stops and the poll goes dormant until a new session starts. Results are kept.\nEnter the PIN to confirm:');
-    if (!pin) return;
+    const r = await askPin('Close session "' + current.label + '"?\nVoting stops and the poll goes dormant until a new session starts. Results are kept.', false);
+    if (!r) return;
     try {
         const res = await fetch(POLL.resetUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: pin.trim(), slug: POLL.slug, action: 'close' })
+            body: JSON.stringify({ pin: r.pin, slug: POLL.slug, action: 'close' })
         });
         if (res.ok) {
             await refresh();
@@ -299,13 +355,13 @@ document.getElementById('deleteBtn').addEventListener('click', async (e) => {
     e.preventDefault();
     const s = view === 'all' ? null : sessions.find(x => x.session === view);
     if (!s) return;
-    const pin = prompt('RESET session "' + s.label + '"?\nThis permanently deletes its votes and removes the session.\nEnter the PIN to confirm:');
-    if (!pin) return;
+    const r = await askPin('DELETE session "' + s.label + '"?\nThis permanently deletes its votes and removes it from the timeline. There is no undo.', false);
+    if (!r) return;
     try {
         const res = await fetch(POLL.resetUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: pin.trim(), slug: POLL.slug, action: 'delete', session: s.session })
+            body: JSON.stringify({ pin: r.pin, slug: POLL.slug, action: 'delete', session: s.session })
         });
         const out = await res.json().catch(() => ({}));
         if (res.ok) {
@@ -315,25 +371,22 @@ document.getElementById('deleteBtn').addEventListener('click', async (e) => {
         } else if (res.status === 401) {
             alert('Wrong PIN.');
         } else if (out.error === 'cannot delete the only session') {
-            alert('This is the only session — start a new one first, then reset this one.');
-        } else if (out.error === 'only the live session can be reset') {
-            alert('Only the live session can be reset — closed sessions are permanent.');
+            alert('This is the only session — start a new one first, then delete this one.');
         } else {
-            alert('Could not reset the session — try again.');
+            alert('Could not delete the session — try again.');
         }
-    } catch (err) { alert('Could not reset the session — check your connection.'); }
+    } catch (err) { alert('Could not delete the session — check your connection.'); }
 });
 
 document.getElementById('resetBtn').addEventListener('click', async (e) => {
     e.preventDefault();
-    const pin = prompt('Start a NEW session? Previous data is kept.\nEnter the PIN:');
-    if (!pin) return;
-    const label = prompt('Label for the new session (e.g. "ECON 4610 · Sep 3"):') || '';
+    const r = await askPin('Start a NEW session? Previous data is kept.', true);
+    if (!r) return;
     try {
         const res = await fetch(POLL.resetUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: pin.trim(), slug: POLL.slug, label: label.trim() })
+            body: JSON.stringify({ pin: r.pin, slug: POLL.slug, label: r.label })
         });
         const out = await res.json();
         if (res.ok) {
