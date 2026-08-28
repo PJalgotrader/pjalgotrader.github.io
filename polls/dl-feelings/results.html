@@ -75,6 +75,8 @@
         .qr-card .t { font-family: var(--serif); font-weight: 600; font-size: clamp(14px, 1.3vw, 18px); margin-bottom: 10px; }
         .qr-card img { width: 100%; height: auto; display: block; background: #fff; border-radius: 6px; padding: 7px; }
         .qr-card .u { font-family: var(--mono); font-size: clamp(9px, 0.85vw, 12px); color: var(--ink-mute); margin-top: 10px; word-break: break-all; line-height: 1.5; }
+        .qr-card .u a { color: var(--ink-mute); text-decoration: underline; text-underline-offset: 3px; }
+        .qr-card .u a:hover { color: var(--green); }
         .panel h2 { font-size: clamp(16px, 1.6vw, 22px); font-weight: 600; margin-bottom: 18px; }
         .panel h2 small { color: var(--ink-mute); font-weight: 400; }
         .bar-row { margin-bottom: clamp(10px, 1.7vh, 18px); }
@@ -138,7 +140,7 @@
         <aside class="qr-card">
             <div class="t">Scan to vote</div>
             <img src="qr.png" alt="QR code linking to the vote page" width="396" height="396">
-            <div class="u">pedramjahangiry.com/<br>polls/dl-feelings</div>
+            <div class="u"><a href="index.html" target="_blank" rel="noopener">pedramjahangiry.com/<br>polls/dl-feelings</a></div>
         </aside>
         <section class="panel">
             <h2 id="q1title">How do you feel coming out of this module?</h2>
