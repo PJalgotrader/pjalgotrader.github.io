@@ -59,7 +59,8 @@
         }
         .seg button.on { background: var(--green); border-color: var(--green); color: var(--green-ink); font-weight: 500; }
         .seg button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-        .grid { display: grid; grid-template-columns: auto 1fr 1fr; gap: 3vh 4.5vw; align-items: start; }
+        .grid { display: grid; grid-template-columns: auto 1fr 1fr; gap: 4vh 5.5vw; align-items: start; }
+        #chart1, #chart2 { max-width: 460px; }
         @media (max-width: 940px) { .grid { grid-template-columns: 1fr; } .qr-card { margin: 0 auto; } }
         .qr-card {
             background: var(--card); border: 1px solid var(--line); border-radius: 12px;
@@ -68,13 +69,13 @@
         .qr-card .t { font-family: var(--serif); font-weight: 600; font-size: clamp(14px, 1.3vw, 18px); margin-bottom: 10px; }
         .qr-card img { width: 100%; height: auto; display: block; background: #fff; border-radius: 6px; padding: 7px; }
         .qr-card .u { font-family: var(--mono); font-size: clamp(9px, 0.85vw, 12px); color: var(--ink-mute); margin-top: 10px; word-break: break-all; line-height: 1.5; }
-        .panel h2 { font-size: clamp(14px, 1.4vw, 20px); font-weight: 600; margin-bottom: 16px; }
+        .panel h2 { font-size: clamp(16px, 1.6vw, 22px); font-weight: 600; margin-bottom: 18px; }
         .panel h2 small { color: var(--ink-mute); font-weight: 400; }
         .bar-row { margin-bottom: clamp(10px, 1.7vh, 18px); }
-        .bar-row .top { display: flex; justify-content: space-between; gap: 12px; font-size: clamp(12px, 1.2vw, 17px); margin-bottom: 5px; }
+        .bar-row .top { display: flex; justify-content: space-between; gap: 12px; font-size: clamp(14px, 1.4vw, 19px); margin-bottom: 5px; }
         .bar-row .name { font-weight: 500; }
-        .bar-row .val { font-family: var(--mono); font-size: clamp(11px, 1vw, 14px); color: var(--ink-mute); font-variant-numeric: tabular-nums; white-space: nowrap; }
-        .bar-row .track { background: var(--track); border-radius: 6px; height: clamp(14px, 2vh, 22px); overflow: hidden; }
+        .bar-row .val { font-family: var(--mono); font-size: clamp(12px, 1.1vw, 15px); color: var(--ink-mute); font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .bar-row .track { background: var(--track); border-radius: 6px; height: clamp(9px, 1.3vh, 12px); overflow: hidden; }
         .bar-row .fill { height: 100%; background: var(--bar); border-radius: 6px; width: 0%; transition: width 0.55s ease; }
         .bar-row.hot .fill { background: var(--green); }
         .bar-row.hot .name, .bar-row.hot .val { color: var(--green); }

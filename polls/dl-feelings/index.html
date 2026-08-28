@@ -65,6 +65,13 @@
         button.submit:disabled { opacity: 0.55; cursor: default; }
         button.submit:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
         .error { color: var(--red); font-size: 13.5px; margin-top: 12px; display: none; }
+        input.wordin {
+            width: 100%; padding: 13px; box-sizing: border-box;
+            background: var(--card); color: var(--ink); border: 1.5px solid var(--line); border-radius: 10px;
+            font-family: var(--mono); font-size: 15px;
+        }
+        input.wordin:focus-visible { outline: none; border-color: var(--green); }
+        .wordhint { font-family: var(--mono); font-size: 11px; color: var(--ink-mute); margin-top: 6px; }
         #done, #closed { display: none; text-align: center; padding: 70px 10px; }
         #done .mark, #closed .mark { font-family: var(--serif); font-size: 52px; color: var(--green); line-height: 1; }
         #done h2, #closed h2 { font-family: var(--serif); font-size: 24px; font-weight: 600; margin: 14px 0 6px; }
@@ -77,7 +84,7 @@
     <div class="wrap">
         <p class="kicker">DATA 5610 &middot; Deep Learning &middot; Live Poll</p>
         <h1>How did that module land?</h1>
-        <p class="dek">Two questions, twenty seconds. Anonymous &mdash; no names, ever. Results appear live on screen.</p>
+        <p class="dek">Two taps and one word, twenty seconds. Anonymous &mdash; no names, ever. Results appear live on screen.</p>
 
         <form id="pollForm"></form>
 
@@ -145,6 +152,9 @@ form.innerHTML = POLL.questions.map((q, i) =>
         '<span>' + esc(o.label) + (o.sub ? '<span class="sub">' + esc(o.sub) + '</span>' : '') + '</span></label>'
     ).join('')
 ).join('') +
+'<div class="qlabel">Q' + (POLL.questions.length + 1) + ' · One word for this module <small>(optional)</small></div>' +
+'<input class="wordin" id="wordIn" maxlength="16" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. excited">' +
+'<div class="wordhint">one word &middot; max 16 letters &middot; it joins the class word cloud</div>' +
 '<div class="error" id="errMsg"></div>' +
 '<button type="submit" class="submit" id="submitBtn">Submit</button>';
 
@@ -190,6 +200,12 @@ form.addEventListener('submit', async (e) => {
         const picked = [...form.querySelectorAll('input[name="' + q.id + '"]:checked')].map(x => x.value);
         if (picked.length === 0) { showError('Please answer every question (Q' + (POLL.questions.indexOf(q) + 1) + ' is empty).'); return; }
         picked.forEach(v => rows.push({ question: q.id, choice: v }));
+    }
+    // Optional one-word answer: first word only, letters/digits/hyphen, ≤16 chars.
+    const wordRaw = (document.getElementById('wordIn').value || '').trim();
+    if (wordRaw) {
+        const w = wordRaw.split(/\s+/)[0].toLowerCase().replace(/[^\p{L}\p{N}\-']/gu, '').slice(0, 16);
+        if (w) rows.push({ question: 'word', choice: w });
     }
 
     submitBtn.disabled = true;

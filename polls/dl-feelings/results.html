@@ -59,8 +59,15 @@
         }
         .seg button.on { background: var(--green); border-color: var(--green); color: var(--green-ink); font-weight: 500; }
         .seg button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-        .grid { display: grid; grid-template-columns: auto 1fr 1fr; gap: 3vh 4.5vw; align-items: start; }
+        .grid { display: grid; grid-template-columns: auto 1fr 1fr; gap: 4.5vh 5.5vw; align-items: start; }
         @media (max-width: 940px) { .grid { grid-template-columns: 1fr; } .qr-card { margin: 0 auto; } }
+        /* Bars stay compact (never full column width); on wide screens both chart
+           blocks reserve the 5-row height so the two trend panels sit level. */
+        #chart1, #chart2 { max-width: 460px; }
+        @media (min-width: 941px) { #chart1, #chart2 { min-height: 292px; } }
+        .cloud h2 small { font-size: 0.75em; }
+        @media (min-width: 941px) { .cloud { grid-column: 2 / span 2; } }
+        .cloudwords { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; column-gap: 26px; row-gap: 6px; padding: 10px 0 4px; font-family: var(--serif); }
         .qr-card {
             background: var(--card); border: 1px solid var(--line); border-radius: 12px;
             padding: clamp(12px, 1.8vh, 20px); width: clamp(180px, 18vw, 260px); text-align: center;
@@ -68,18 +75,18 @@
         .qr-card .t { font-family: var(--serif); font-weight: 600; font-size: clamp(14px, 1.3vw, 18px); margin-bottom: 10px; }
         .qr-card img { width: 100%; height: auto; display: block; background: #fff; border-radius: 6px; padding: 7px; }
         .qr-card .u { font-family: var(--mono); font-size: clamp(9px, 0.85vw, 12px); color: var(--ink-mute); margin-top: 10px; word-break: break-all; line-height: 1.5; }
-        .panel h2 { font-size: clamp(14px, 1.4vw, 20px); font-weight: 600; margin-bottom: 16px; }
+        .panel h2 { font-size: clamp(16px, 1.6vw, 22px); font-weight: 600; margin-bottom: 18px; }
         .panel h2 small { color: var(--ink-mute); font-weight: 400; }
         .bar-row { margin-bottom: clamp(10px, 1.7vh, 18px); }
-        .bar-row .top { display: flex; justify-content: space-between; gap: 12px; font-size: clamp(12px, 1.2vw, 17px); margin-bottom: 5px; }
+        .bar-row .top { display: flex; justify-content: space-between; gap: 12px; font-size: clamp(14px, 1.4vw, 19px); margin-bottom: 5px; }
         .bar-row .name { font-weight: 500; }
-        .bar-row .val { font-family: var(--mono); font-size: clamp(11px, 1vw, 14px); color: var(--ink-mute); font-variant-numeric: tabular-nums; white-space: nowrap; }
-        .bar-row .track { background: var(--track); border-radius: 6px; height: clamp(14px, 2vh, 22px); overflow: hidden; }
+        .bar-row .val { font-family: var(--mono); font-size: clamp(12px, 1.1vw, 15px); color: var(--ink-mute); font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .bar-row .track { background: var(--track); border-radius: 5px; height: clamp(9px, 1.3vh, 12px); overflow: hidden; }
         .bar-row .fill { height: 100%; background: var(--bar); border-radius: 6px; width: 0%; transition: width 0.55s ease; }
         .bar-row.hot .fill { background: var(--green); }
         .bar-row.hot .name, .bar-row.hot .val { color: var(--green); }
         .waiting { color: var(--ink-mute); font-size: clamp(13px, 1.2vw, 17px); padding: 1vh 0; }
-        .trend { margin-top: clamp(14px, 2.4vh, 24px); border-top: 1px dashed var(--line); padding-top: clamp(10px, 1.6vh, 16px); }
+        .trend { margin-top: clamp(28px, 4.5vh, 48px); border-top: 1px dashed var(--line); padding-top: clamp(16px, 2.4vh, 26px); }
         .trend .tlabel { font-family: var(--mono); font-size: clamp(9px, 0.85vw, 12px); letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); margin-bottom: 4px; }
         .trend .tscale { font-family: var(--mono); font-size: clamp(9px, 0.8vw, 11px); color: var(--ink-mute); margin-bottom: 8px; }
         .trend svg { width: 100%; height: auto; display: block; }
@@ -150,6 +157,10 @@
                 <div class="tscale">&minus;1 = 🏃 too fast &nbsp;&middot;&nbsp; 0 = ✅ just right &nbsp;&middot;&nbsp; +1 = 🐢 too slow</div>
                 <div id="trendBody2"></div>
             </div>
+        </section>
+        <section class="panel cloud" id="cloudPanel" hidden>
+            <h2>One word for this module <small id="cloudMeta"></small></h2>
+            <div id="cloudBody"></div>
         </section>
     </div>
 
@@ -311,6 +322,36 @@ function render() {
         document.getElementById(c.trendWrap).hidden = lobby;
         if (!lobby) renderTrend(c);
     }
+    renderCloud(rows, lobby);
+}
+
+// Word cloud from the optional one-word question. Hidden entirely when the
+// view has no words (or in the lobby); same privacy floor as the bars.
+function renderCloud(rows, lobby) {
+    const panel = document.getElementById('cloudPanel');
+    const words = rows.filter(r => r.question === 'word');
+    if (lobby || words.length === 0) { panel.hidden = true; return; }
+    panel.hidden = false;
+    const meta = document.getElementById('cloudMeta');
+    const body = document.getElementById('cloudBody');
+    if (words.length < (POLL.minN || 0)) {
+        meta.textContent = '';
+        body.innerHTML = '<div class="waiting">' + words.length + ' in &mdash; the cloud appears at ' +
+            POLL.minN + ' words (keeps individual answers private).</div>';
+        return;
+    }
+    const counts = {};
+    words.forEach(r => { const w = String(r.choice).toLowerCase().slice(0, 16); if (w) counts[w] = (counts[w] || 0) + 1; });
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 24);
+    const max = top[0][1], min = top[top.length - 1][1];
+    const colors = ['var(--green)', 'var(--ink)', 'var(--bar)', 'var(--ink-mute)'];
+    meta.textContent = '(' + words.length + ' answered)';
+    body.innerHTML = '<div class="cloudwords">' + top.map(([w, c], i) => {
+        const t = max === min ? 1 : (c - min) / (max - min);
+        const size = Math.round(16 + t * 28);
+        return '<span style="font-size: ' + size + 'px; font-weight: ' + (t > 0.6 ? 600 : 400) +
+               '; color: ' + colors[i % 4] + '" title="' + c + '&times;">' + esc(w) + '</span>';
+    }).join('') + '</div>';
 }
 
 function renderChart(cfg, rows, totalVoters, suppressed) {
@@ -364,7 +405,9 @@ function renderTrend(cfg) {
         return;
     }
     const [lo, hi] = cfg.domain;
-    const W = 320, H = 96, padL = 26, padR = 10, padT = 12, padB = 20;
+    // Tall plot: the full 1–5 / −1–+1 axis gets ~175px of travel so
+    // module-to-module movement reads as a slope, not a wiggle.
+    const W = 560, H = 220, padL = 34, padR = 12, padT = 16, padB = 30;
     const iw = W - padL - padR, ih = H - padT - padB;
     const x = i => pts.length === 1 ? padL + iw / 2 : padL + (iw * i) / (pts.length - 1);
     const y = v => padT + ih - ((v - lo) / (hi - lo)) * ih;
@@ -374,31 +417,33 @@ function renderTrend(cfg) {
     [lo, hi].forEach(v => {
         svg += '<line x1="' + padL + '" y1="' + y(v) + '" x2="' + (W - padR) + '" y2="' + y(v) +
                '" stroke="var(--line)" stroke-width="1"/>';
-        svg += '<text x="' + (padL - 5) + '" y="' + (y(v) + 3) + '" text-anchor="end" font-size="8.5"' +
+        svg += '<text x="' + (padL - 6) + '" y="' + (y(v) + 4) + '" text-anchor="end" font-size="12"' +
                ' fill="var(--ink-mute)" font-family="var(--mono)">' + fmt(v) + '</text>';
     });
     svg += '<line x1="' + padL + '" y1="' + y(cfg.baseline) + '" x2="' + (W - padR) + '" y2="' + y(cfg.baseline) +
            '" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4"/>';
+    svg += '<text x="' + (padL - 6) + '" y="' + (y(cfg.baseline) + 4) + '" text-anchor="end" font-size="12"' +
+           ' fill="var(--ink-mute)" font-family="var(--mono)">' + fmt(cfg.baseline) + '</text>';
     if (pts.length > 1) {
-        svg += '<polyline fill="none" stroke="var(--bar)" stroke-width="2" points="' +
+        svg += '<polyline fill="none" stroke="var(--bar)" stroke-width="2.5" points="' +
                pts.map((p, i) => x(i) + ',' + y(p.score)).join(' ') + '"/>';
     }
     pts.forEach((p, i) => {
-        svg += '<circle cx="' + x(i) + '" cy="' + y(p.score) + '" r="3.5" fill="var(--green)">' +
+        svg += '<circle cx="' + x(i) + '" cy="' + y(p.score) + '" r="5" fill="var(--green)">' +
                '<title>' + esc(p.label) + ' — ' + fmt(p.score) + ' (n=' + p.n + ')</title></circle>';
-        svg += '<text x="' + x(i) + '" y="' + (y(p.score) - 7) + '" text-anchor="middle" font-size="9"' +
+        svg += '<text x="' + x(i) + '" y="' + (y(p.score) - 11) + '" text-anchor="middle" font-size="13"' +
                ' fill="var(--green)" font-family="var(--mono)">' + fmt(p.score) + '</text>';
-        svg += '<text x="' + x(i) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="8"' +
+        svg += '<text x="' + x(i) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="12"' +
                ' fill="var(--ink-mute)" font-family="var(--mono)">' + esc(shortLabel(p.label)) + '</text>';
     });
     svg += '</svg>';
     el.innerHTML = svg;
 }
 
-// "Module 3 · ETS" → "M3" ; anything else → first 6 chars
+// "Module 3 · ETS" → "M3", "Class 1- intro" → "C1"; anything else → first 6 chars
 function shortLabel(l) {
-    const m = /module\s*(\d+)/i.exec(l);
-    return m ? 'M' + m[1] : String(l).slice(0, 6);
+    const m = /(module|class|week|session)\s*(\d+)/i.exec(l);
+    return m ? m[1][0].toUpperCase() + m[2] : String(l).slice(0, 6);
 }
 
 // The poll can only receive votes while its newest session is open.
