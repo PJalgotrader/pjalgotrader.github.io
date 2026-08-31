@@ -191,9 +191,8 @@ const POLL = {
     supabaseUrl: 'https://daimsfgtfrjbkegxmwag.supabase.co',
     supabaseKey: 'sb_publishable_O_xS8NobEAWlHn_cR0SwOw_LYnB9o2d',
     resetUrl: 'https://daimsfgtfrjbkegxmwag.supabase.co/functions/v1/reset-poll',
-    // Charts render only once a view has minN responses — with one or two
-    // responses on the projector, a bar chart is a person, not a distribution.
-    minN: 3,
+    // Show charts as soon as the first response arrives.
+    minN: 1,
     // Sessions with this label are structural anchors (a poll must always keep
     // at least one session row) — hidden from the picker and from trends.
     anchorLabel: 'Setup',
