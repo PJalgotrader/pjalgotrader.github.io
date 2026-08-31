@@ -161,17 +161,18 @@ form.innerHTML = POLL.questions.map((q, i) =>
 const errMsg = document.getElementById('errMsg');
 const submitBtn = document.getElementById('submitBtn');
 let session = null;
+let sessionStartedAt = null;
 
 // Returns {session, closed_at} for the poll's newest session.
 // closed_at !== null means the poll is dormant: no voting until a new session.
 async function currentSession() {
     const res = await fetch(POLL.supabaseUrl + '/rest/v1/poll_sessions?poll_slug=eq.' + POLL.slug +
-        '&select=session,closed_at&order=session.desc&limit=1', { headers: HEADERS });
+        '&select=session,closed_at,started_at&order=session.desc&limit=1', { headers: HEADERS });
     const rows = await res.json();
     return rows[0];
 }
 
-function votedKey(s) { return 'pj-voted-' + POLL.slug + '-s' + s; }
+function votedKey(s, startedAt) { return 'pj-voted-' + POLL.slug + '-s' + s + '-t' + encodeURIComponent(startedAt || ''); }
 function voterId() {
     let id = localStorage.getItem('pj-voter');
     if (!id) {
@@ -188,7 +189,8 @@ function showError(msg) { errMsg.textContent = msg; errMsg.style.display = 'bloc
 currentSession().then(s => {
     if (!s || s.closed_at) { showClosed(); return; }
     session = s.session;
-    if (localStorage.getItem(votedKey(s.session))) showDone();
+    sessionStartedAt = s.started_at;
+    if (localStorage.getItem(votedKey(s.session, s.started_at))) showDone();
 }).catch(() => { /* leave the form usable; session re-checked on submit */ });
 
 form.addEventListener('submit', async (e) => {
@@ -215,6 +217,7 @@ form.addEventListener('submit', async (e) => {
             const s = await currentSession();
             if (!s || s.closed_at) { showClosed(); return; }
             session = s.session;
+            sessionStartedAt = s.started_at;
         }
         const vid = voterId();
         const payload = rows.map(r => ({ ...r, session: session, voter_id: vid }));
@@ -226,7 +229,7 @@ form.addEventListener('submit', async (e) => {
         // 403 = RLS rejected the insert: the session closed while the form was open.
         if (res.status === 403) { showClosed(); return; }
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        localStorage.setItem(votedKey(session), '1');
+        localStorage.setItem(votedKey(session, sessionStartedAt), '1');
         showDone();
     } catch (err) {
         showError("Couldn't submit — check your connection and try again.");
