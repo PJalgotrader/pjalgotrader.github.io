@@ -1630,13 +1630,51 @@ footer .container {
     }
 }
 @media (max-width: 768px) {
-    .proj-grid,
+    /* Phones: one plate per row, laid out as a row itself (mark left, text
+       right) so six plates do not become a mile of scrolling. */
+    .proj-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+    }
+    .proj-grid .plate {
+        display: grid;
+        grid-template-columns: 72px minmax(0, 1fr);
+        column-gap: 1rem;
+        align-items: start;
+        padding: 1.1rem 1.1rem 1.2rem;
+    }
+    .proj-grid .proj-mark {
+        grid-row: 1 / span 4;
+        aspect-ratio: 1;
+        margin: 0;
+    }
+    .proj-grid .proj-mark img,
+    .proj-grid .proj-mark svg {
+        width: 64%;
+    }
+    .proj-grid .proj-mark svg.wide {
+        width: 84%;
+    }
+    .proj-grid .plate-num {
+        font-size: 0.62rem;
+        margin-bottom: 0.25rem;
+    }
+    .proj-grid .plate-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.3rem;
+    }
+    .proj-grid .plate-desc {
+        font-size: 0.82rem;
+    }
+    .proj-grid .proj-cta {
+        margin-top: 0.6rem;
+    }
     .shots,
     .shots.phones {
-        grid-template-columns: 1fr 1fr;
-    }
-    .shots {
         grid-template-columns: 1fr;
+    }
+    .shots.phones {
+        grid-template-columns: 1fr 1fr;
     }
     .detail-hero {
         align-items: flex-start;
