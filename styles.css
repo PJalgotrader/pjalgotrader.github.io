@@ -1508,6 +1508,35 @@ footer .container {
     width: 46%;
     border-radius: 0;
 }
+.proj-mark img.wordmark {
+    width: 74%;
+    border-radius: 0;
+}
+.detail-hero.brand {
+    display: block;
+}
+.brand-wordmark {
+    display: block;
+    width: min(420px, 80%);
+    height: auto;
+}
+.only-light {
+    display: none !important;
+}
+[data-theme="light"] .only-light {
+    display: block !important;
+}
+[data-theme="light"] .only-dark {
+    display: none !important;
+}
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
 .plate .proj-cta {
     display: block;
     margin-top: 1rem;
@@ -1665,6 +1694,9 @@ footer .container {
     }
     .proj-grid .proj-mark img.plain {
         width: 74%;
+    }
+    .proj-grid .proj-mark img.wordmark {
+        width: 92%;
     }
     .proj-grid .plate-num {
         font-size: 0.62rem;
