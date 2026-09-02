@@ -1504,6 +1504,10 @@ footer .container {
 .proj-mark svg.wide {
     width: 60%;
 }
+.proj-mark img.plain {
+    width: 46%;
+    border-radius: 0;
+}
 .plate .proj-cta {
     display: block;
     margin-top: 1rem;
@@ -1532,6 +1536,10 @@ footer .container {
 .detail-hero .proj-mark img {
     width: 100%;
     border-radius: 24px;
+}
+.detail-hero .proj-mark img.plain {
+    width: 74%;
+    border-radius: 0;
 }
 .detail-hero .eyebrow {
     margin-bottom: 0.4rem;
@@ -1654,6 +1662,9 @@ footer .container {
     }
     .proj-grid .proj-mark svg.wide {
         width: 84%;
+    }
+    .proj-grid .proj-mark img.plain {
+        width: 74%;
     }
     .proj-grid .plate-num {
         font-size: 0.62rem;
