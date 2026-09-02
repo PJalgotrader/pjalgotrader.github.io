@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
-    <title>Projects &amp; Publications — Pedram Jahangiry</title>
-    <meta name="description" content="Analytics Solutions Center mentorship, open-source educational resources, and applied machine learning projects in economics and finance.">
+    <title>Projects &amp; Products — Pedram Jahangiry</title>
+    <meta name="description" content="Products and projects by Pedram Jahangiry: Eisenhour, a local-first iPhone planner; PAD Renovations, an AI operating layer for residential contracting; Hunt Ledger, a paper-trading research book; DAIS Resume Studio for USU students; and the Analytics Solutions Center.">
     <meta name="theme-color" content="#0A1020">
     <link rel="canonical" href="https://pedramjahangiry.com/projects.html">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="styles.css?v=3">
+    <link rel="stylesheet" href="styles.css?v=4">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -59,15 +59,212 @@
     <main id="main">
         <section class="page-header">
             <div class="container">
-                <p class="eyebrow">Projects &middot; Analytics Solutions Center</p>
-                <h1>Applied work, real stakes.</h1>
-                <p>Bridging academia and industry through machine learning and AI applications in economics and finance.</p>
+                <p class="eyebrow">Projects &middot; Products &middot; Analytics Solutions Center</p>
+                <h1>Things I build, and ship.</h1>
+                <p>An iPhone app on the App Store, a company, a research ledger, tools for my students, and the industry projects I mentor. Every screenshot below is the real thing running.</p>
             </div>
         </section>
 
         <section class="content-section">
             <div class="container">
-                <p class="section-label">&sect; 01 &mdash; Focus areas</p>
+                <p class="section-label">&sect; 01 &mdash; Products</p>
+                <div class="content-grid cols-2">
+
+                    <article class="content-card project-card">
+                        <img class="project-thumb" src="images/projects/eisenhour-app.webp" alt="The Eisenhour matrix on an iPhone: four quadrants, Do, Schedule, Delegate and Someday, above today's blocks" width="1200" height="683" loading="lazy">
+                        <div class="project-body">
+                            <p class="card-label">iPhone app &middot; App Store, 2026 &middot; <a href="https://eisenhour.app" target="_blank" rel="noopener noreferrer">eisenhour.app</a></p>
+                            <h3>Eisenhour</h3>
+                            <p>
+                                Eisenhower matrix, by the hour. Most to-do apps make lists; Eisenhour makes
+                                decisions, then turns them into hours on a real calendar and shows you where
+                                your life actually goes. Four quadrants, time blocking beside the calendars
+                                already on your phone, a focus timer with a year-long heatmap, weekly targets
+                                per life area, and a business card you can share as an image or PDF.
+                            </p>
+                            <p>
+                                Local-first by design: no account, no server, no tracking. The App Store privacy
+                                label reads &ldquo;Data Not Collected&rdquo; because there is nothing to collect.
+                                Free, with a one-time Pro unlock and no subscription.
+                            </p>
+                            <p class="project-meta">Expo &middot; React Native &middot; TypeScript &middot; SQLite on device &middot; EventKit &middot; StoreKit</p>
+                            <ul class="project-links">
+                                <li><a href="https://eisenhour.app" target="_blank" rel="noopener noreferrer">Website &#8599;</a></li>
+                                <li><a href="https://eisenhour.app/support" target="_blank" rel="noopener noreferrer">Support &#8599;</a></li>
+                            </ul>
+                        </div>
+                    </article>
+
+                    <article class="content-card project-card">
+                        <img class="project-thumb" src="images/projects/eisenhour-site.webp" alt="The eisenhour.app landing page: Decide what matters, block the time, beside a phone showing the matrix" width="1200" height="683" loading="lazy">
+                        <div class="project-body">
+                            <p class="card-label">Website &middot; <a href="https://eisenhour.app" target="_blank" rel="noopener noreferrer">eisenhour.app</a></p>
+                            <h3>eisenhour.app</h3>
+                            <p>
+                                The product site, support pages and privacy policy for Eisenhour. Three static
+                                pages in the app&rsquo;s own palette and type, built from the app&rsquo;s intro art
+                                and real screenshots, with the free-versus-Pro table, a roadmap, and an FAQ.
+                            </p>
+                            <p>
+                                Registered, hosted and served from one place, with the support address forwarded
+                                to a mailbox, for about fifteen dollars a year. The domain was chosen before the
+                                app had a single line of code.
+                            </p>
+                            <p class="project-meta">Static HTML &middot; Cloudflare Workers &middot; Cloudflare Registrar &amp; Email Routing</p>
+                            <ul class="project-links">
+                                <li><a href="https://eisenhour.app" target="_blank" rel="noopener noreferrer">Visit &#8599;</a></li>
+                            </ul>
+                        </div>
+                    </article>
+
+                    <article class="content-card project-card wide">
+                        <div class="project-thumbs">
+                            <img class="project-thumb" src="images/projects/pad-site.webp" alt="The PAD Renovations homepage: One call, one price, one guarantee, with a house photo and three competing bids for a whole-home repaint" width="1200" height="683" loading="lazy">
+                            <img class="project-thumb" src="images/projects/pad-crm.webp" alt="The PAD CRM dashboard in demo mode: open pipeline, missed-call rate, median time to quote, close rate, and recent AI-handled calls" width="1200" height="683" loading="lazy">
+                        </div>
+                        <div class="project-body">
+                            <p class="card-label">Company &middot; PAD Renovations LLC, Utah, 2026 &middot; founder</p>
+                            <h3>PAD Renovations</h3>
+                            <p>
+                                An AI operating layer for residential contracting, and my own company. The premise
+                                in one line: lead sites sell the introduction and software vendors sell the toolbox;
+                                PAD sells the finished job. A homeowner makes one call, gets one price, and deals
+                                with one company that stands behind the work, while vetted local pros compete for
+                                the job behind the scenes. It starts with painting on the Wasatch Front and grows
+                                trade by trade.
+                            </p>
+                            <p>
+                                The software runs the business. An AI receptionist answers every call around the
+                                clock, introduces itself, answers questions and books the estimate on the spot, then
+                                texts back anyone who did not book. Quotes get automated follow-ups at one, three
+                                and seven days, drafted by Claude and sent by SMS, and cancelled the moment a lead
+                                closes. A pipeline tracks every lead from first contact to won or lost, transparent
+                                bids price each job, and a dashboard turns it all into the case-study numbers:
+                                missed-call rate, time to quote, close rate.
+                            </p>
+                            <p class="project-meta">Next.js &middot; Supabase &middot; Vapi (voice) &middot; Twilio (SMS) &middot; Claude API &middot; Vercel &middot; multi-tenant from day one</p>
+                            <ul class="project-links">
+                                <li><a href="https://pad-crm.vercel.app" target="_blank" rel="noopener noreferrer">Website &#8599;</a></li>
+                                <li><a href="https://github.com/PJalgotrader/pad-crm" target="_blank" rel="noopener noreferrer">GitHub &#8599;</a></li>
+                            </ul>
+                            <p class="project-note">
+                                The live deployment runs a real pilot and sits behind a password; the screenshots
+                                above show the public site and the CRM in demo mode on sample data.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article class="content-card project-card wide">
+                        <img class="project-thumb" src="images/projects/hunt-ledger.webp" alt="The Hunt Ledger dashboard: NAV, cash, return versus SPY, target and actual sector pies, an indexed equity chart, and the holdings table" width="1200" height="683" loading="lazy">
+                        <div class="project-body">
+                            <p class="card-label">Research tool &middot; paper trading &middot; not investment advice</p>
+                            <h3>Hunt Ledger</h3>
+                            <p>
+                                A paper-trading book for a monthly research exercise I call the
+                                &ldquo;10&times;-by-2030 hunt&rdquo;: which small companies have an arithmetically
+                                possible path to ten times their value by 2030, and what would have to be true for
+                                it to happen? The ledger starts with a notional $100,000 on August 21, 2026,
+                                imports one CSV of names and integer weights each month, sells what dropped off,
+                                rebalances the rest to target, records every fill, and marks the book against a
+                                $100,000 buy of SPY on the same day.
+                            </p>
+                            <p>
+                                The part that matters is the process, not the tickers. Every name has to survive a
+                                <em>bridge</em> before it earns a weight: revenue to margins, margins to cash and
+                                capex, cash to financing and dilution, a deliberately compressed terminal multiple,
+                                and only then an equity value per share, in a base and a bull case, compared to the
+                                10&times; price in plain words. Names are ranked on the quality of that path, never
+                                on how loud they are online, and each carries one sentence that would falsify the
+                                thesis. Most candidates fail the bridge, which is the point.
+                            </p>
+                            <p class="project-meta">Next.js &middot; React &middot; TypeScript &middot; Supabase &middot; Yahoo Finance daily closes &middot; Vercel</p>
+                            <ul class="project-links">
+                                <li><a href="https://hunt-ledger-beta.vercel.app" target="_blank" rel="noopener noreferrer">Live book &#8599;</a></li>
+                                <li><a href="https://hunt-ledger-beta.vercel.app/history" target="_blank" rel="noopener noreferrer">Trade history &#8599;</a></li>
+                                <li><a href="https://github.com/PJalgotrader/hunt-ledger" target="_blank" rel="noopener noreferrer">GitHub &#8599;</a></li>
+                            </ul>
+                            <p class="project-note">
+                                <strong>Not investment advice.</strong> This is a paper-trading ledger: no real money
+                                is invested, and nothing on it is a recommendation to buy, sell or hold any security.
+                                The names are speculative small-capitalisation stocks that can lose most or all of
+                                their value; the scenarios are thought experiments, not forecasts. I am not a licensed
+                                investment adviser, this is not a solicitation, and past paper performance says nothing
+                                about future results. It is published as a teaching artefact about research discipline.
+                                Do your own research and consult a licensed professional before investing.
+                            </p>
+                        </div>
+                    </article>
+
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section alt">
+            <div class="container">
+                <p class="section-label">&sect; 02 &mdash; For students &middot; Analytics Solutions Center</p>
+                <div class="content-grid cols-2">
+
+                    <article class="content-card project-card">
+                        <img class="project-thumb" src="images/projects/dais-resume-studio.webp" alt="DAIS Resume Studio: model and access settings above a resume upload box" width="1200" height="683" loading="lazy">
+                        <div class="project-body">
+                            <p class="card-label">Web app &middot; Huntsman School, Data Analytics &amp; Information Systems</p>
+                            <h3>DAIS Resume Studio</h3>
+                            <p>
+                                AI-assisted resume coaching for USU&rsquo;s DAIS students, built from the
+                                department&rsquo;s own feedback protocol so the advice matches what instructors and
+                                the Huntsman career team actually say. Upload a resume and get strengths, ranked
+                                fixes and before-and-after bullet rewrites; paste a job posting for an honest gap
+                                analysis; turn a course project into bullets that only claim what you did; or
+                                restructure the whole document into the DAIS template and download it as Word.
+                            </p>
+                            <p>
+                                An instructor mode keeps a human in the loop: the AI pre-flags issues from the shared
+                                comment library, the instructor decides what applies, and a ready-to-send letter comes
+                                out in the department&rsquo;s format. Files are parsed in the browser and nothing is
+                                stored on a server.
+                            </p>
+                            <p class="project-meta">Next.js &middot; Claude, OpenAI or Gemini &middot; bring your own key or a department code &middot; Vercel</p>
+                            <ul class="project-links">
+                                <li><a href="https://dais-resume-studio.vercel.app" target="_blank" rel="noopener noreferrer">Open the studio &#8599;</a></li>
+                                <li><a href="https://github.com/PJalgotrader/dais-resume-studio" target="_blank" rel="noopener noreferrer">GitHub &#8599;</a></li>
+                            </ul>
+                        </div>
+                    </article>
+
+                    <div class="content-card">
+                        <p class="card-label">Project mentor &middot; ongoing &middot; <a href="https://huntsman.usu.edu/asc/" target="_blank" rel="noopener noreferrer">huntsman.usu.edu/asc</a></p>
+                        <h3>Analytics Solutions Center Projects</h3>
+                        <p>
+                            Mentoring student teams on industry-sponsored analytics projects through
+                            <a href="https://huntsman.usu.edu/asc/" target="_blank" rel="noopener noreferrer">USU&rsquo;s Analytics Solutions Center</a>,
+                            spanning finance, healthcare, retail, and government &mdash; hands-on experience
+                            solving real business problems with machine learning.
+                        </p>
+                        <p class="card-list-title">Project areas</p>
+                        <ul>
+                            <li>Predictive modeling and analytics</li>
+                            <li>Data visualization and dashboard solutions</li>
+                            <li>Machine learning and deep learning applications</li>
+                            <li>Forecasting tools and automation</li>
+                            <li>AI solutions and intelligent systems</li>
+                        </ul>
+                        <p class="card-list-title">Open-source course materials</p>
+                        <p>
+                            Jupyter notebooks, code examples and exercises for Machine Learning in Economics and
+                            Finance, Deep Learning Applications, Deep Forecasting Methods and Python for Data
+                            Science, free for anyone to learn from at
+                            <a href="https://github.com/PJalgotrader" target="_blank" rel="noopener noreferrer">github.com/PJalgotrader</a>.
+                            The interactive versions live under <a href="visualizations.html">Interactive Tools</a>.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <p class="section-label">&sect; 03 &mdash; Focus areas</p>
                 <div class="content-grid cols-3">
                     <div class="content-card">
                         <p class="card-label">ML &amp; DL</p>
@@ -86,13 +283,13 @@
                         </p>
                     </div>
                     <div class="content-card">
-                        <p class="card-label">ASC</p>
-                        <h3>Analytics Solutions Center</h3>
+                        <p class="card-label">Building software</p>
+                        <h3>Local-first apps, AI in the loop</h3>
                         <p>
-                            Guiding student teams through real data analytics projects for industry
-                            partners &mdash; experiential learning that solves actual business problems.
+                            The products above share a stack and a philosophy: keep the user&rsquo;s data on the
+                            user&rsquo;s device where possible, put an AI where it removes a chore rather than adds a
+                            feature, and ship. Built with Expo, Next.js, Supabase, Vercel, Cloudflare and Claude Code.
                         </p>
-                        <p><a href="https://huntsman.usu.edu/asc/" target="_blank" rel="noopener noreferrer">Visit the ASC &#8599;</a></p>
                     </div>
                 </div>
             </div>
@@ -100,49 +297,7 @@
 
         <section class="content-section alt">
             <div class="container">
-                <p class="section-label">&sect; 02 &mdash; Current projects</p>
-                <div class="content-grid">
-                    <div class="content-card">
-                        <p class="card-label">Project mentor &middot; ongoing</p>
-                        <h3>Analytics Solutions Center Projects</h3>
-                        <p>
-                            Mentoring student teams on industry-sponsored analytics projects through
-                            <a href="https://huntsman.usu.edu/asc/" target="_blank" rel="noopener noreferrer">USU's Analytics Solutions Center</a>,
-                            spanning finance, healthcare, retail, and government &mdash; hands-on experience
-                            solving real business problems with machine learning.
-                        </p>
-                        <p class="card-list-title">Project areas</p>
-                        <ul>
-                            <li>Predictive modeling and analytics</li>
-                            <li>Data visualization and dashboard solutions</li>
-                            <li>Machine learning and deep learning applications</li>
-                            <li>Forecasting tools and automation</li>
-                            <li>AI solutions and intelligent systems</li>
-                        </ul>
-                    </div>
-
-                    <div class="content-card">
-                        <p class="card-label">GitHub &middot; public &middot; <a href="https://github.com/PJalgotrader" target="_blank" rel="noopener">github.com/PJalgotrader</a></p>
-                        <h3>Open-Source Educational Resources</h3>
-                        <p>
-                            Jupyter notebooks, code examples, and practical exercises for machine learning
-                            and deep learning &mdash; free for anyone to learn from.
-                        </p>
-                        <p class="card-list-title">Course materials available</p>
-                        <ul>
-                            <li>Machine Learning in Economics and Finance</li>
-                            <li>Deep Learning Applications</li>
-                            <li>Deep Forecasting Methods</li>
-                            <li>Python for Data Science</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="content-section">
-            <div class="container">
-                <p class="section-label">&sect; 03 &mdash; Publications</p>
+                <p class="section-label">&sect; 04 &mdash; Publications</p>
                 <div class="content-card">
                     <p class="card-label">Scholarship of practice</p>
                     <h3>Applied over archival</h3>

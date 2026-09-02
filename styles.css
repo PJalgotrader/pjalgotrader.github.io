@@ -1471,3 +1471,88 @@ footer .container {
         animation: none !important;
     }
 }
+
+/* ── Projects page: cards with real screenshots (Sep 2026) ── */
+.project-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+}
+.project-card:hover {
+    border-color: var(--ink);
+    box-shadow: 8px 8px 0 var(--plate-shadow);
+}
+.project-thumb {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1200 / 683;
+    object-fit: cover;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper-deep);
+}
+.project-thumbs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+.project-thumbs .project-thumb + .project-thumb {
+    border-left: 1px solid var(--line);
+}
+.project-body {
+    padding: 1.6rem 2rem 1.9rem;
+}
+.project-body h3 {
+    margin-bottom: 0.6rem;
+}
+.project-body p:last-child {
+    margin-bottom: 0;
+}
+.project-meta {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-mute);
+    margin: 0.9rem 0 0;
+}
+.project-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.4rem;
+    margin: 1.1rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+.project-links a {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+}
+.project-card.wide {
+    grid-column: 1 / -1;
+}
+.project-note {
+    margin-top: 1.1rem;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--green);
+    background: var(--paper-deep);
+    font-size: 0.85rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+}
+.project-note strong {
+    color: var(--ink);
+}
+@media (max-width: 768px) {
+    .project-thumbs {
+        grid-template-columns: 1fr;
+    }
+    .project-thumbs .project-thumb + .project-thumb {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+    }
+    .project-body {
+        padding: 1.3rem 1.3rem 1.5rem;
+    }
+}
