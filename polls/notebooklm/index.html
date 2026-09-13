@@ -111,7 +111,7 @@ const POLL = {
                 { value: 'ChatGPT (OpenAI)', label: 'ChatGPT', sub: 'OpenAI' },
                 { value: 'Claude (Anthropic)', label: 'Claude', sub: 'Anthropic' },
                 { value: 'Gemini (Google)', label: 'Gemini', sub: 'Google' },
-                { value: 'NotebookLM (Google)', label: 'NotebookLM', sub: 'Google' },
+                { value: 'NotebookLM (Google)', label: 'NotebookLM (Gemini Notebook)', sub: 'Google' },
                 { value: 'Grok (xAI)', label: 'Grok', sub: 'xAI' },
                 { value: 'Open-source models', label: 'Open-source models', sub: 'Llama (Meta), Qwen, Kimi, DeepSeek, …' },
                 { value: 'None of these', label: 'None of these' }
@@ -119,7 +119,7 @@ const POLL = {
         },
         {
             id: 'why_not_nblm', type: 'single',
-            title: "If you haven't used NotebookLM — why not?", hint: 'pick the closest one',
+            title: "If you haven't used NotebookLM (Gemini Notebook) — why not?", hint: 'pick the closest one',
             options: [
                 { value: 'Never heard of it', label: "I'd never heard of it" },
                 { value: 'Not sure how it differs from ChatGPT', label: "Heard of it, but not sure how it's different from ChatGPT" },
