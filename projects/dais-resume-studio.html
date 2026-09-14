@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
     <title>DAIS Resume Studio — Pedram Jahangiry</title>
-    <meta name="description" content="DAIS Resume Studio: AI-assisted resume coaching for Data Analytics and Information Systems students at USU's Huntsman School, built from the department's own feedback protocol, with an instructor mode.">
+    <meta name="description" content="DAIS Resume Studio: AI-assisted resume coaching for Data Analytics and Information Systems students at USU's Huntsman School. Review, queue course projects, and rebuild the resume in the department's template, with an instructor mode and nothing stored.">
     <meta name="theme-color" content="#0A1020">
     <link rel="canonical" href="https://pedramjahangiry.com/projects/dais-resume-studio.html">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -66,20 +66,23 @@
                 <div class="content-grid cols-2">
                     <div class="content-card">
                         <p class="card-label">For the student</p>
-                        <h3>Four ways in</h3>
+                        <h3>Review, then rebuild</h3>
                         <p>
-                            <strong>Review:</strong> upload a resume as PDF, Word or text and get strengths, ranked
-                            improvement suggestions, before-and-after bullet rewrites and a personal closing note,
-                            all against the DAIS rubric.
-                            <strong>Job fit:</strong> paste a posting for an honest gap analysis, with matched
-                            requirements, real gaps, keywords you could truthfully add and re-angled bullets.
+                            The three student pages form a sequence. <strong>Review:</strong> upload a resume as
+                            PDF, Word or text and get strengths, ranked suggestions from the department&rsquo;s
+                            comment library, before-and-after bullet rewrites, and the specific questions a rewrite
+                            will need answered. Tick the suggestions you want acted on.
+                            <strong>Projects:</strong> pick one of seventeen DAIS course projects, describe what you
+                            personally did, and get bullets that only claim your own work, plus the interview
+                            questions a recruiter would ask; queue the ones you like.
                         </p>
                         <p>
-                            <strong>Project bullets:</strong> pick a DAIS course project, describe what you personally
-                            did, and get resume bullets that only claim your actual work, plus the interview questions
-                            a recruiter would ask. <strong>Rewrite:</strong> restructure the whole resume into the
-                            DAIS template and download a formatted Word document; anything unverifiable becomes a
-                            bracketed placeholder with a verify list.
+                            <strong>Rewrite:</strong> the resume comes back in the DAIS template using the suggestions
+                            you kept, the projects you queued, your answers and notes, tailored to a posting if you
+                            add one. Choose a coached draft, template-complete with bracketed prompts wherever you
+                            can add a number, date or link, or a clean draft that only brackets what is missing.
+                            Compare before and after, then download a formatted Word document.
+                            <strong>Job fit</strong> stands alone: paste a posting for an honest gap analysis.
                         </p>
                     </div>
                     <div class="content-card">
@@ -89,15 +92,18 @@
                             Instructor mode is the department&rsquo;s workflow, not a replacement for it: the AI
                             pre-flags issues from the shared comment library, the instructor toggles what applies and
                             edits the closing note, and a ready-to-send feedback letter comes out in the established
-                            format. Nothing reaches a student unreviewed.
+                            format. The rubric and the project library are plain text files the instructor edits
+                            directly. Nothing reaches a student unreviewed.
                         </p>
                         <p>
                             Files are parsed in the browser, so the document itself never leaves the student&rsquo;s
-                            machine; only extracted text is sent, with optional redaction of contact details. The
-                            server holds no database and stores nothing. It works with a student&rsquo;s own API key or
-                            a department key unlocked by a class access code.
+                            machine, and the server holds no database and stores nothing. Reviews can hide the name
+                            and contact details before anything is sent. The rewrite goes further: identity is swapped
+                            for placeholders before the call and restored in the finished draft, so the model never
+                            sees who the resume belongs to. It runs on a department key unlocked by a class access
+                            code, or on a student&rsquo;s own key.
                         </p>
-                        <p class="detail-meta">Next.js &middot; Claude, OpenAI or Gemini &middot; bring your own key or a department code &middot; Vercel</p>
+                        <p class="detail-meta">Next.js &middot; OpenAI, Claude or Gemini &middot; department code or bring your own key &middot; Vercel</p>
                     </div>
                 </div>
             </div>
@@ -108,8 +114,8 @@
                 <p class="section-label">&sect; 02 &mdash; Screens</p>
                 <div class="shots">
                     <figure>
-                        <img src="../images/projects/dais-resume-studio.webp" alt="DAIS Resume Studio: model and access settings above a resume upload box" width="1200" height="683" loading="lazy">
-                        <figcaption><strong>Review</strong>Choose the model, unlock with the class code or your own key, then upload or paste a resume.</figcaption>
+                        <img src="../images/projects/dais-resume-studio.webp?v=2" alt="DAIS Resume Studio: model and access settings, then the three-step Review, Projects, Rewrite indicator above the resume upload" width="1200" height="683" loading="lazy">
+                        <figcaption><strong>Review</strong>Unlock with the class code or your own key, then follow the three steps: Review, Projects, Rewrite.</figcaption>
                     </figure>
                 </div>
             </div>
