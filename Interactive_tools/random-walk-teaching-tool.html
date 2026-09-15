@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A browser-based random-walk simulator that doubles as a Central Limit Theorem demo: tune drift, noise, and step distribution live, no install.">
-    <title>Random Walk Interactive Visualization</title>
+    <meta name="description" content="Simulate stock prices as a random walk with drift: set drift, volatility, horizon and fat-tailed shocks, watch the forecast cone widen with √t, and see how price patterns emerge from pure noise.">
+    <title>The Market Random Walk</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: linear-gradient(135deg, #0A1020 0%, #1B2A4A 100%);
@@ -19,7 +19,7 @@
             padding: 20px;
             color: #333;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -29,36 +29,37 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
         }
-        
+
         h1 {
             text-align: center;
-            color: #667eea;
+            color: #1B2A4A;
             margin-bottom: 10px;
             font-size: 2.5em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         .subtitle {
             text-align: center;
             color: #666;
-            margin-bottom: 30px;
+            margin-bottom: 22px;
             font-size: 1.1em;
         }
-        
+
         .attribution {
             text-align: center;
             color: #888;
             margin-bottom: 15px;
             font-size: 1.1em;
         }
-        
+
         .header-links {
             display: flex;
             gap: 10px;
             justify-content: center;
             margin-bottom: 25px;
+            flex-wrap: wrap;
         }
-        
+
         .header-links a {
             display: inline-flex;
             align-items: center;
@@ -70,53 +71,86 @@
             border-radius: 8px;
             transition: all 0.3s;
         }
-        
+
         .header-links a:hover {
             transform: translateY(-2px);
         }
-        
+
         .btn-website {
             background: linear-gradient(135deg, #0A1020 0%, #1B2A4A 100%);
-            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 2px 10px rgba(27, 42, 74, 0.3);
         }
-        
+
         .btn-website:hover {
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 4px 15px rgba(27, 42, 74, 0.5);
         }
-        
+
         .btn-youtube {
             background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
             box-shadow: 0 2px 10px rgba(255, 0, 0, 0.3);
         }
-        
+
         .btn-youtube:hover {
             box-shadow: 0 4px 15px rgba(255, 0, 0, 0.5);
         }
-        
+
         .btn-github {
             background: linear-gradient(135deg, #333 0%, #000 100%);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
-        
+
         .btn-github:hover {
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
-        
+
+        .intro {
+            max-width: 800px;
+            margin: 0 auto 18px auto;
+            text-align: center;
+            color: #555;
+            line-height: 1.6;
+            font-size: 1.05em;
+        }
+
+        .model-strip {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: baseline;
+            gap: 8px 28px;
+            margin: 0 auto 26px auto;
+            padding: 14px 20px;
+            border-radius: 12px;
+            background: #0A1020;
+            color: #E9E4D4;
+            font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        }
+
+        .model-strip .eq {
+            font-size: 1.15em;
+            color: #D0A63C;
+        }
+
+        .model-strip .eq-words {
+            font-size: 0.92em;
+            opacity: 0.85;
+        }
+
         .controls {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
             padding: 20px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #dfe6f0 100%);
             border-radius: 15px;
         }
-        
+
         .control-group {
             display: flex;
             flex-direction: column;
         }
-        
+
         label {
             font-weight: 600;
             margin-bottom: 5px;
@@ -125,16 +159,16 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         input[type="range"] {
             width: 100%;
             height: 6px;
             border-radius: 3px;
-            background: linear-gradient(to right, #667eea, #764ba2);
+            background: linear-gradient(to right, #1B2A4A, #D0A63C);
             outline: none;
             cursor: pointer;
         }
-        
+
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 18px;
@@ -145,11 +179,11 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
             transition: transform 0.2s;
         }
-        
+
         input[type="range"]::-webkit-slider-thumb:hover {
             transform: scale(1.2);
         }
-        
+
         select {
             padding: 8px;
             border-radius: 5px;
@@ -158,25 +192,32 @@
             font-size: 14px;
             cursor: pointer;
         }
-        
+
         .value-display {
             text-align: center;
             font-weight: bold;
-            color: #667eea;
+            color: #1B2A4A;
             margin-top: 5px;
         }
-        
+
+        .value-sub {
+            text-align: center;
+            color: #777;
+            font-size: 0.8em;
+            margin-top: 2px;
+        }
+
         .button-group {
             display: flex;
             gap: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 26px;
             flex-wrap: wrap;
             justify-content: center;
         }
-        
+
         button {
-            padding: 12px 24px;
-            font-size: 16px;
+            padding: 12px 22px;
+            font-size: 15px;
             font-weight: 600;
             border: none;
             border-radius: 10px;
@@ -186,60 +227,69 @@
             letter-spacing: 1px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #0A1020 0%, #1B2A4A 100%);
             color: white;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(27, 42, 74, 0.4);
         }
-        
+
         .btn-secondary {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
+            background: linear-gradient(135deg, #D0A63C 0%, #B8902F 100%);
+            color: #0A1020;
         }
-        
+
         .btn-secondary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(240, 147, 251, 0.4);
+            box-shadow: 0 6px 20px rgba(208, 166, 60, 0.45);
         }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #FC466B 0%, #3F5EFB 100%);
+
+        .btn-toggle {
+            background: white;
+            color: #1B2A4A;
+            border: 2px solid #1B2A4A;
+            box-shadow: none;
+        }
+
+        .btn-toggle.active {
+            background: linear-gradient(135deg, #0A1020 0%, #1B2A4A 100%);
             color: white;
         }
-        
+
+        .btn-toggle:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #B3402E 0%, #7F2A1D 100%);
+            color: white;
+        }
+
         .btn-danger:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(252, 70, 107, 0.4);
+            box-shadow: 0 6px 20px rgba(179, 64, 46, 0.4);
         }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-            color: white;
-        }
-        
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(67, 233, 123, 0.4);
-        }
-        
+
         .charts-container {
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
         }
-        
+
         @media (max-width: 968px) {
             .charts-container {
                 grid-template-columns: 1fr;
             }
+            #endCanvas {
+                height: 280px;
+            }
         }
-        
+
         .chart-box {
             background: white;
             border-radius: 15px;
@@ -247,28 +297,81 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             position: relative;
         }
-        
+
         .chart-title {
             font-weight: bold;
-            color: #667eea;
+            color: #1B2A4A;
             margin-bottom: 10px;
             text-align: center;
         }
-        
+
+        .chart-subtitle {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.85em;
+            margin: 14px 0 6px 0;
+            text-align: center;
+        }
+
         canvas {
             display: block;
             width: 100%;
-            height: 400px;
             cursor: crosshair;
         }
-        
+
+        #priceCanvas { height: 330px; }
+        #returnCanvas { height: 120px; cursor: default; }
+        #endCanvas { height: 480px; cursor: default; }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 16px;
+            font-size: 0.82em;
+            color: #555;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .sw {
+            display: inline-block;
+            width: 22px;
+            height: 0;
+            border-top: 3px solid;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        .sw.dash { border-top-style: dashed; border-top-width: 2px; }
+        .sw.box { height: 12px; border: none; background: rgba(208, 166, 60, 0.32); }
+
+        .chart-caption {
+            font-size: 0.85em;
+            color: #666;
+            line-height: 1.5;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .chart-caption a {
+            color: #1B2A4A;
+            font-weight: 600;
+        }
+
+        .stats-group h4 {
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #777;
+            margin: 22px 0 10px 0;
+        }
+
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 15px;
-            margin-top: 30px;
         }
-        
+
         .stat-card {
             background: linear-gradient(135deg, #0A1020 0%, #1B2A4A 100%);
             color: white;
@@ -278,59 +381,88 @@
             transform: translateY(0);
             transition: transform 0.3s ease;
         }
-        
+
         .stat-card:hover {
             transform: translateY(-5px);
         }
-        
+
+        .stat-card.gold {
+            background: linear-gradient(135deg, #B8902F 0%, #D0A63C 100%);
+            color: #0A1020;
+        }
+
         .stat-label {
-            font-size: 0.9em;
+            font-size: 0.85em;
             opacity: 0.9;
             margin-bottom: 5px;
         }
-        
+
         .stat-value {
             font-size: 1.5em;
             font-weight: bold;
         }
-        
+
+        .stat-sub {
+            font-size: 0.75em;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
         .info-panel {
-            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-            padding: 20px;
+            background: #F7F4EC;
+            border-left: 5px solid #D0A63C;
+            padding: 24px 28px;
             border-radius: 15px;
             margin-top: 30px;
         }
-        
+
         .info-panel h3 {
-            color: #ff6b6b;
-            margin-bottom: 10px;
+            color: #1B2A4A;
+            margin: 18px 0 8px 0;
         }
-        
-        .info-panel p {
-            line-height: 1.6;
-            color: #555;
+
+        .info-panel h3:first-child {
+            margin-top: 0;
         }
-        
+
+        .info-panel p, .info-panel li {
+            line-height: 1.65;
+            color: #444;
+        }
+
+        .info-panel ol {
+            padding-left: 22px;
+        }
+
+        .info-panel li {
+            margin-bottom: 8px;
+        }
+
+        .info-panel .formula {
+            font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            background: #fff;
+            border: 1px solid #e6e1d3;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin: 8px 0 12px 0;
+            color: #1C1B18;
+            font-size: 0.95em;
+        }
+
         .highlight {
-            background: yellow;
+            background: rgba(208, 166, 60, 0.35);
             padding: 2px 4px;
             border-radius: 3px;
         }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
+
+        .info-panel a {
+            color: #1B2A4A;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎲 Random Walk Visualization</h1>
+        <h1>📈 The Market Random Walk</h1>
         <p class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</p>
         <div class="header-links">
             <a href="https://pedramjahangiry.com/" target="_blank" class="btn-website">
@@ -352,532 +484,790 @@
                 GitHub Profile
             </a>
         </div>
-        <p style="max-width: 760px; margin: 0 auto 25px auto; text-align: center; color: #555; line-height: 1.6; font-size: 1.05em;">Each walk is built step by step from a noise distribution you choose — Gaussian, uniform, exponential, or bimodal — plus an optional drift, so you can watch bias and variance bend a path as it's drawn. Average groups of walks and plot those averages, and the running histogram settles into a bell curve as samples accumulate, no matter which distribution generated the underlying steps — the Central Limit Theorem, shown rather than asserted.</p>
-        <p class="subtitle">Interactive Teaching Tool for Understanding Stochastic Processes & Central Limit Theorem</p>
-        
+        <p class="intro">Stock prices are often described as a random walk: each trading day the price moves by a small expected drift plus a surprise nobody can predict. This tool simulates exactly that model as price paths you can add one at a time, with sliders for annual drift, volatility, horizon, and the shape of the daily shocks (Gaussian, fat-tailed Student-t, a plain coin flip, or uniform). A forecast cone shows how uncertainty grows with the square root of time, the returns strip shows the noise that produces every apparent trend, and the histogram shows the spread of final prices across paths.</p>
+        <p class="subtitle">Interactive teaching tool: why stock prices look the way they do</p>
+
+        <div class="model-strip">
+            <span class="eq">log P<sub>t</sub> = log P<sub>t−1</sub> + μ + ε<sub>t</sub></span>
+            <span class="eq-words">tomorrow's price = today's price × e<sup>drift + surprise</sup></span>
+            <span class="eq-words">E[ε<sub>t</sub>] = 0 · ε<sub>t</sub> has no memory</span>
+        </div>
+
         <div class="controls">
             <div class="control-group">
-                <label for="steps">Number of Steps</label>
-                <input type="range" id="steps" min="10" max="1000" value="100">
-                <div class="value-display" id="stepsValue">100</div>
+                <label for="horizon">Horizon (trading days)</label>
+                <input type="range" id="horizon" min="20" max="1260" value="252" step="1">
+                <div class="value-display" id="horizonValue">252</div>
+                <div class="value-sub" id="horizonSub">≈ 1.0 year</div>
             </div>
-            
+
             <div class="control-group">
-                <label for="stepSize">Step Size</label>
-                <input type="range" id="stepSize" min="1" max="20" value="5" step="0.5">
-                <div class="value-display" id="stepSizeValue">5</div>
+                <label for="drift">Drift μ (per year)</label>
+                <input type="range" id="drift" min="-30" max="30" value="8" step="1">
+                <div class="value-display" id="driftValue">+8%</div>
+                <div class="value-sub" id="driftSub">≈ +0.032% per day</div>
             </div>
-            
+
             <div class="control-group">
-                <label for="bias">Bias (Drift)</label>
-                <input type="range" id="bias" min="-1" max="1" value="0" step="0.1">
-                <div class="value-display" id="biasValue">0</div>
+                <label for="vol">Volatility σ (per year)</label>
+                <input type="range" id="vol" min="1" max="80" value="20" step="1">
+                <div class="value-display" id="volValue">20%</div>
+                <div class="value-sub" id="volSub">≈ 1.26% per day</div>
             </div>
-            
+
             <div class="control-group">
-                <label for="noiseMean">Noise Mean</label>
-                <input type="range" id="noiseMean" min="-2" max="2" value="0" step="0.1">
-                <div class="value-display" id="noiseMeanValue">0</div>
-            </div>
-            
-            <div class="control-group">
-                <label for="noiseVariance">Noise Variance</label>
-                <input type="range" id="noiseVariance" min="0.1" max="5" value="1" step="0.1">
-                <div class="value-display" id="noiseVarianceValue">1</div>
-            </div>
-            
-            <div class="control-group">
-                <label for="sampleSize">CLT Sample Size</label>
-                <input type="range" id="sampleSize" min="1" max="30" value="5">
-                <div class="value-display" id="sampleSizeValue">5</div>
-            </div>
-            
-            <div class="control-group">
-                <label for="stepDistribution">Step Distribution</label>
-                <select id="stepDistribution">
-                    <option value="gaussian">Gaussian</option>
+                <label for="dist">Daily shock ε</label>
+                <select id="dist">
+                    <option value="gaussian">Gaussian (bell curve)</option>
+                    <option value="student">Student-t, fat tails (ν = 4)</option>
+                    <option value="coin">Coin flip (±σ every day)</option>
                     <option value="uniform">Uniform</option>
-                    <option value="exponential">Exponential</option>
-                    <option value="bimodal">Bimodal</option>
                 </select>
+                <div class="value-sub" id="distSub">all shapes are scaled to the same σ</div>
             </div>
-            
+
             <div class="control-group">
-                <label for="animSpeed">Animation Speed (ms)</label>
-                <input type="range" id="animSpeed" min="1" max="100" value="10">
-                <div class="value-display" id="animSpeedValue">10ms</div>
+                <label for="speed">Animation speed (ms / step)</label>
+                <input type="range" id="speed" min="1" max="60" value="12">
+                <div class="value-display" id="speedValue">12 ms</div>
             </div>
         </div>
-        
+
         <div class="button-group">
-            <button class="btn-primary" onclick="addNewWalk()">➕ Add Walk</button>
-            <button class="btn-secondary" onclick="animateLastWalk()">▶️ Animate</button>
-            <button class="btn-primary" onclick="addMultipleWalks()">➕ Add 5</button>
-            <button class="btn-secondary" onclick="toggleGrid()">📊 Grid</button>
-            <button class="btn-danger" onclick="clearAll()">🗑️ Clear</button>
+            <button class="btn-primary" id="btnAdd">＋ 1 path</button>
+            <button class="btn-primary" id="btnAdd25">＋ 25 paths</button>
+            <button class="btn-secondary" id="btnReplay">▶ Replay last</button>
+            <button class="btn-toggle active" id="btnCone">Forecast cone</button>
+            <button class="btn-toggle" id="btnLog">Log scale</button>
+            <button class="btn-danger" id="btnClear">Clear</button>
         </div>
-        
+
         <div class="charts-container">
             <div class="chart-box">
-                <div class="chart-title">Random Walk Paths</div>
-                <canvas id="walkCanvas"></canvas>
+                <div class="chart-title">Price paths, starting at $100</div>
+                <canvas id="priceCanvas"></canvas>
+                <div class="legend">
+                    <span><span class="sw" style="border-color:#0A1020"></span>latest path</span>
+                    <span><span class="sw" style="border-color:rgba(59,91,140,0.6)"></span>earlier paths</span>
+                    <span><span class="sw dash" style="border-color:#9C7A22"></span>central forecast (drift only)</span>
+                    <span><span class="sw box"></span>±1σ√t and ±2σ√t bands</span>
+                </div>
+                <div class="chart-subtitle">Daily returns of the latest path</div>
+                <canvas id="returnCanvas"></canvas>
+                <div class="chart-caption" id="priceCaption">Hover for values · click the price chart to move the forecast origin to that day · <a href="#" id="resetOrigin">reset to day 0</a></div>
             </div>
             <div class="chart-box">
-                <div class="chart-title">Distribution of Sample Means (CLT)</div>
-                <canvas id="histCanvas"></canvas>
+                <div class="chart-title">Where does the price end up?</div>
+                <canvas id="endCanvas"></canvas>
+                <div class="chart-caption" id="endCaption">Add paths to see the spread of final prices.</div>
             </div>
         </div>
-        
-        <div class="stats" id="stats"></div>
-        
+
+        <div class="stats-group">
+            <h4 id="statsHeadA">Latest path</h4>
+            <div class="stats" id="statsA"></div>
+            <h4 id="statsHeadB">All paths</h4>
+            <div class="stats" id="statsB"></div>
+        </div>
+
         <div class="info-panel">
-            <h3>📚 Teaching Guide</h3>
-            <p>
-                <strong>Random Walk Concepts:</strong><br>
-                • <strong>Path Independence:</strong> Each walk is unique despite same parameters<br>
-                • <strong>Drift Effect:</strong> Positive bias creates upward trend, negative creates downward<br>
-                • <strong>Noise Parameters:</strong> Control randomness with mean and variance<br><br>
-                
-                <strong>Central Limit Theorem Demo:</strong><br>
-                • <strong>Sample Size:</strong> Adjust "CLT Sample Size" to see how averaging more walks creates normality<br>
-                • <strong>Step Distribution:</strong> Try different distributions - the average still becomes normal!<br>
-                • <strong>Click "Demo CLT":</strong> Generates 100 sample means to build the distribution<br>
-                • <span class="highlight">Key Insight:</span> Even with non-normal step distributions (exponential, bimodal), the distribution of averages becomes normal!<br><br>
-                
-                <strong>Mathematical Model:</strong><br>
-                X(t+1) = X(t) + drift + ε, where ε follows the selected distribution<br>
-                Sample Mean: X̄ = (X₁ + X₂ + ... + Xₙ)/n → Normal as n increases
-            </p>
+            <h3>How to read this</h3>
+            <p>Each trading day the price moves by a drift μ plus a surprise ε. The surprise averages zero and has no memory: yesterday's surprise tells you nothing about today's. That one assumption produces everything on this page.</p>
+            <p class="formula">log P<sub>t</sub> = log P<sub>t−1</sub> + μ + ε<sub>t</sub>&nbsp;&nbsp;&nbsp;⇔&nbsp;&nbsp;&nbsp;P<sub>t</sub> = P<sub>t−1</sub> · e<sup>μ + ε<sub>t</sub></sup>&nbsp;&nbsp;&nbsp;⇔&nbsp;&nbsp;&nbsp;daily return r<sub>t</sub> = μ + ε<sub>t</sub></p>
+            <p>The random walk lives in log prices, so returns compound and the price can never go negative. Flip on <strong>Log scale</strong> and the same path becomes the plain additive random walk with drift that you meet in every time-series course. The sliders are annual; the tool converts them to daily values: μ<sub>day</sub> = μ / 252 and σ<sub>day</sub> = σ / √252. At the defaults (8% and 20%) that is about +0.03% of drift against 1.26% of noise every day, so <span class="highlight">the daily surprise is roughly 40 times the daily drift</span>. That ratio is why tomorrow looks unpredictable even when the long-run drift is real.</p>
+            <p>The sliders re-price the paths already on screen using the <em>same</em> random surprises. Drag drift or volatility and you can watch what each parameter does to a path without the randomness changing under you.</p>
+
+            <h3>Why markets look like this</h3>
+            <p>If today's price already reflects what is known, only new information can move it, and news is by definition not predictable from the past. Returns then behave like ε: noise with no pattern. Prices are the running sum of that noise, and running sums of noise wander, form apparent trends, and never revert to anything. Bachelier wrote this down in 1900, Samuelson and Fama turned it into the efficient-market benchmark, and Malkiel gave it its popular name. Real markets show small departures (volatility clustering, fat tails, faint short-horizon predictability), but the random walk remains the benchmark that any forecast, chart pattern, or trading rule has to beat.</p>
+
+            <h3>Five things to try</h3>
+            <ol>
+                <li><strong>Patterns from nothing.</strong> Set drift to 0 and add 25 paths. Find the most convincing uptrend, the cleanest "support level", the scariest crash. Every one of them came from a coin with no memory. The returns strip under the chart is the honest picture: no trend, no cycle, just noise. Trends live in the price chart only because it accumulates that noise.</li>
+                <li><strong>Uncertainty grows with √t, not t.</strong> The gold cone is the ±1σ√t and ±2σ√t band around the drift line. Drag the horizon from 252 to 1008 days: four times the days, but the cone ends only about twice as wide.</li>
+                <li><strong>The best forecast is today's price, plus drift.</strong> Click any day on the chart and the cone re-anchors there. Its center is just the last price drifting slowly upward, and no amount of history narrows the band. Nothing before the last price helps. This "naive" forecast is the benchmark that any ARIMA, exponential smoothing, or machine-learning model has to beat on financial data.</li>
+                <li><strong>Drift versus noise.</strong> At 8% drift and 20% volatility, about one path in three ends the year below where it started (histogram on the right). Stretch the horizon to 5 years and it drops to about one in five: the drift accumulates with t while the noise only grows with √t, so time is on the side of the drift.</li>
+                <li><strong>Fat tails.</strong> Switch the shock to Student-t. Same volatility, but a handful of days now carry most of the action: the crash days that Gaussian noise almost never produces. Then try the coin flip, the original textbook random walk. It still looks like a stock chart.</li>
+            </ol>
+
+            <h3>Where this leads</h3>
+            <p>A random walk is the simplest process with a unit root: it is not stationary, its variance grows without bound, and its first difference (the return) is white noise. That is why ARIMA models for prices use d = 1, why forecasting textbooks treat "tomorrow = today" as the baseline, and why so much of financial econometrics is about testing whether returns carry any structure at all. To see stationarity itself, continue with the <a href="stationarity-visualizer.html">Stationarity Visualizer</a>.</p>
         </div>
     </div>
-    
+
     <script>
-        const walkCanvas = document.getElementById('walkCanvas');
-        const histCanvas = document.getElementById('histCanvas');
-        const walkCtx = walkCanvas.getContext('2d');
-        const histCtx = histCanvas.getContext('2d');
-        let walks = [];
-        let sampleMeans = [];
-        let showGrid = true;
-        let animationInProgress = false;
-        let colors = [
-            '#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe',
-            '#43e97b', '#fa709a', '#fee140', '#30cfd0', '#a8edea'
-        ];
-        
-        // Set canvas sizes
-        function resizeCanvases() {
-            walkCanvas.width = walkCanvas.offsetWidth;
-            walkCanvas.height = walkCanvas.offsetHeight;
-            histCanvas.width = histCanvas.offsetWidth;
-            histCanvas.height = histCanvas.offsetHeight;
-            drawAll();
+        const P0 = 100;
+        const TRADING_DAYS = 252;
+        const MAX_STEPS = 1260;
+        const MAX_PATHS = 200;
+
+        const NAVY = '#0A1020', GOLD = '#D0A63C', GOLD_DARK = '#9C7A22', GREEN = '#0E7A4E', RED = '#B3402E';
+        const INK = '#1C1B18', MUTED = '#777', GRID = 'rgba(0, 0, 0, 0.07)', AXIS = 'rgba(0, 0, 0, 0.25)';
+        const PATH_COLORS = ['#3B5B8C', '#2E6B6B', '#6B6B8C', '#8C6B3B', '#5C7FB0', '#4A7A5C'];
+        const FONT = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        const MONO = '11px "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+
+        const $ = id => document.getElementById(id);
+        const priceCanvas = $('priceCanvas'), returnCanvas = $('returnCanvas'), endCanvas = $('endCanvas');
+        const offscreen = document.createElement('canvas');
+
+        const state = {
+            paths: [],        // { r: randomness, d: built path }
+            showCone: true,
+            logScale: false,
+            origin: 0,        // forecast origin (day) for the cone
+            reveal: null,     // steps of the latest path revealed while animating
+            timer: null,
+            hoverT: null
+        };
+
+        // ---------- randomness & model ----------
+        function randn() {
+            let u = 0;
+            while (u === 0) u = Math.random();
+            const v = Math.random();
+            return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
         }
-        
-        window.addEventListener('resize', resizeCanvases);
-        resizeCanvases();
-        
-        // Update value displays
-        document.getElementById('steps').addEventListener('input', (e) => {
-            document.getElementById('stepsValue').textContent = e.target.value;
-        });
-        
-        document.getElementById('stepSize').addEventListener('input', (e) => {
-            document.getElementById('stepSizeValue').textContent = e.target.value;
-        });
-        
-        document.getElementById('bias').addEventListener('input', (e) => {
-            document.getElementById('biasValue').textContent = e.target.value;
-        });
-        
-        document.getElementById('noiseMean').addEventListener('input', (e) => {
-            document.getElementById('noiseMeanValue').textContent = e.target.value;
-        });
-        
-        document.getElementById('noiseVariance').addEventListener('input', (e) => {
-            document.getElementById('noiseVarianceValue').textContent = e.target.value;
-        });
-        
-        document.getElementById('sampleSize').addEventListener('input', (e) => {
-            document.getElementById('sampleSizeValue').textContent = e.target.value;
-        });
-        
-        document.getElementById('animSpeed').addEventListener('input', (e) => {
-            document.getElementById('animSpeedValue').textContent = e.target.value + 'ms';
-        });
-        
-        // Distribution functions
-        function generateGaussian(mean, variance) {
-            const u1 = Math.random();
-            const u2 = Math.random();
-            const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-            return z0 * Math.sqrt(variance) + mean;
+
+        // Each path stores raw randomness once; drift, volatility, horizon and shock shape
+        // are applied on top, so the sliders re-price the same "news".
+        function makeRandomness() {
+            const u = new Float64Array(MAX_STEPS), z = new Float64Array(MAX_STEPS), h = new Float64Array(MAX_STEPS);
+            for (let i = 0; i < MAX_STEPS; i++) {
+                u[i] = Math.random();
+                z[i] = randn();
+                let v = 0;
+                for (let k = 0; k < 4; k++) { const g = randn(); v += g * g; }
+                h[i] = Math.sqrt(4 / v) / Math.SQRT2;   // z * h ~ Student-t(4) scaled to unit variance
+            }
+            return { u, z, h };
         }
-        
-        function generateUniform(min, max) {
-            return Math.random() * (max - min) + min;
-        }
-        
-        function generateExponential(lambda) {
-            return -Math.log(1 - Math.random()) / lambda - 1/lambda;
-        }
-        
-        function generateBimodal() {
-            // 50% chance of each mode
-            if (Math.random() < 0.5) {
-                return generateGaussian(-1, 0.3);
-            } else {
-                return generateGaussian(1, 0.3);
+
+        // Unit-variance, zero-mean shock of the chosen shape
+        function shock(dist, r, i) {
+            switch (dist) {
+                case 'student': return r.z[i] * r.h[i];
+                case 'coin': return r.u[i] < 0.5 ? -1 : 1;
+                case 'uniform': return (2 * r.u[i] - 1) * Math.sqrt(3);
+                default: return r.z[i];
             }
         }
-        
-        function generateStep(distribution, mean, variance) {
-            switch(distribution) {
-                case 'gaussian':
-                    return generateGaussian(mean, variance);
-                case 'uniform':
-                    const range = Math.sqrt(variance * 12);
-                    return generateUniform(mean - range/2, mean + range/2);
-                case 'exponential':
-                    return generateExponential(1/Math.sqrt(variance)) + mean;
-                case 'bimodal':
-                    return generateBimodal() * Math.sqrt(variance) + mean;
-                default:
-                    return generateGaussian(mean, variance);
-            }
+
+        function params() {
+            const horizon = +$('horizon').value;
+            const muA = +$('drift').value / 100;
+            const sigA = +$('vol').value / 100;
+            return {
+                horizon, muA, sigA,
+                dist: $('dist').value,
+                muD: muA / TRADING_DAYS,
+                sigD: sigA / Math.sqrt(TRADING_DAYS)
+            };
         }
-        
-        function generateRandomWalk() {
-            const steps = parseInt(document.getElementById('steps').value);
-            const stepSize = parseFloat(document.getElementById('stepSize').value);
-            const bias = parseFloat(document.getElementById('bias').value);
-            const noiseMean = parseFloat(document.getElementById('noiseMean').value);
-            const noiseVariance = parseFloat(document.getElementById('noiseVariance').value);
-            const distribution = document.getElementById('stepDistribution').value;
-            
-            let walk = [{x: 0, y: walkCanvas.height / 2}];
-            let currentX = 0;
-            let currentY = walkCanvas.height / 2;
-            let totalDisplacement = 0;
-            
-            for (let i = 0; i < steps; i++) {
-                currentX += stepSize;
-                const noise = generateStep(distribution, noiseMean, noiseVariance) * stepSize;
-                const drift = -bias * stepSize;
-                const randomStep = noise + drift;
-                currentY += randomStep;
-                totalDisplacement += randomStep;
-                walk.push({x: currentX, y: currentY});
+
+        function buildPath(r, p) {
+            const T = p.horizon;
+            const prices = new Float64Array(T + 1), rets = new Float64Array(T);
+            prices[0] = P0;
+            let lp = Math.log(P0);
+            for (let t = 0; t < T; t++) {
+                const ret = p.muD + p.sigD * shock(p.dist, r, t);
+                lp += ret;
+                prices[t + 1] = Math.exp(lp);
+                rets[t] = ret;
             }
-            
-            return {path: walk, meanDisplacement: totalDisplacement / steps};
+            let peak = P0, mdd = 0;
+            for (let t = 1; t <= T; t++) {
+                if (prices[t] > peak) peak = prices[t];
+                const dd = prices[t] / peak - 1;
+                if (dd < mdd) mdd = dd;
+            }
+            let m = 0;
+            for (let t = 0; t < T; t++) m += rets[t];
+            m /= T;
+            let v = 0;
+            for (let t = 0; t < T; t++) v += (rets[t] - m) ** 2;
+            v /= Math.max(1, T - 1);
+            return { prices, rets, final: prices[T], mdd, vol: Math.sqrt(v * TRADING_DAYS) };
         }
-        
-        function drawGrid(ctx, canvas) {
-            if (!showGrid) return;
-            
-            ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
-            ctx.lineWidth = 1;
-            
-            for (let x = 0; x < canvas.width; x += 50) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
-            }
-            
-            for (let y = 0; y < canvas.height; y += 50) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
-            }
-            
-            ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(0, canvas.height / 2);
-            ctx.lineTo(canvas.width, canvas.height / 2);
-            ctx.stroke();
+
+        function rebuildAll() {
+            const p = params();
+            for (const path of state.paths) path.d = buildPath(path.r, p);
+            if (state.origin > p.horizon) state.origin = 0;
         }
-        
-        function drawWalk(walk, color, opacity = 1) {
-            walkCtx.strokeStyle = color;
-            walkCtx.globalAlpha = opacity;
-            walkCtx.lineWidth = 2;
-            walkCtx.beginPath();
-            
-            walk.forEach((point, i) => {
-                if (i === 0) {
-                    walkCtx.moveTo(point.x, point.y);
-                } else {
-                    walkCtx.lineTo(point.x, point.y);
+
+        function latest() {
+            return state.paths.length ? state.paths[state.paths.length - 1] : null;
+        }
+
+        // Forecast cone from the origin: center = anchor · e^{μh}, bands = center · e^{±kσ√h}
+        function coneData(p) {
+            const T = p.horizon, o = state.origin;
+            const L = latest();
+            const anchor = (o > 0 && L) ? L.d.prices[o] : P0;
+            const n = T - o + 1;
+            const center = new Float64Array(n), u1 = new Float64Array(n), l1 = new Float64Array(n), u2 = new Float64Array(n), l2 = new Float64Array(n);
+            for (let h = 0; h < n; h++) {
+                const c = anchor * Math.exp(p.muD * h);
+                const s = p.sigD * Math.sqrt(h);
+                center[h] = c;
+                u1[h] = c * Math.exp(s); l1[h] = c * Math.exp(-s);
+                u2[h] = c * Math.exp(2 * s); l2[h] = c * Math.exp(-2 * s);
+            }
+            return { origin: o, anchor, center, u1, l1, u2, l2 };
+        }
+
+        // ---------- helpers ----------
+        function Phi(x) {
+            const t = 1 / (1 + 0.2316419 * Math.abs(x));
+            const d = 0.3989423 * Math.exp(-x * x / 2);
+            const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+            return x > 0 ? 1 - p : p;
+        }
+
+        function fmtPrice(v) {
+            if (v >= 1000) return '$' + v.toFixed(0);
+            if (Math.abs(v - Math.round(v)) < 1e-9) return '$' + v.toFixed(0);
+            return '$' + v.toFixed(v < 10 ? 2 : 1);
+        }
+
+        function fmtPct(x, digits = 1) {
+            const s = (x * 100).toFixed(digits);
+            return (x > 0 ? '+' : '') + s + '%';
+        }
+
+        function niceStep(range, target) {
+            const raw = range / target;
+            const p = Math.pow(10, Math.floor(Math.log10(raw)));
+            const f = raw / p;
+            const nf = f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10;
+            return nf * p;
+        }
+
+        function ticks(min, max, target) {
+            const s = niceStep(max - min, target);
+            const out = [];
+            for (let v = Math.ceil(min / s) * s; v <= max + 1e-9; v += s) out.push(+v.toFixed(10));
+            return out;
+        }
+
+        function logTicks(pmin, pmax) {
+            const build = mults => {
+                const out = [];
+                for (let k = Math.floor(Math.log10(pmin)); k <= Math.ceil(Math.log10(pmax)); k++) {
+                    for (const m of mults) {
+                        const v = m * Math.pow(10, k);
+                        if (v >= pmin && v <= pmax) out.push(v);
+                    }
                 }
-            });
-            
-            walkCtx.stroke();
-            
-            walkCtx.fillStyle = color;
-            walkCtx.beginPath();
-            walkCtx.arc(walk[walk.length - 1].x, walk[walk.length - 1].y, 5, 0, Math.PI * 2);
-            walkCtx.fill();
-            
-            walkCtx.globalAlpha = 1;
+                return out;
+            };
+            let out = build([1, 2, 5]);
+            if (out.length < 4) out = build([1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9]);
+            if (out.length < 3) out = ticks(pmin, pmax, 6);
+            return out;
         }
-        
-        function drawHistogram() {
-            histCtx.clearRect(0, 0, histCanvas.width, histCanvas.height);
-            
-            if (sampleMeans.length === 0) return;
-            
-            // Calculate histogram bins
-            const numBins = Math.min(30, Math.ceil(Math.sqrt(sampleMeans.length)));
-            const min = Math.min(...sampleMeans);
-            const max = Math.max(...sampleMeans);
-            const range = max - min;
-            
-            // Check for valid range
-            if (!isFinite(range) || range === 0) {
-                // Draw a message instead
-                histCtx.fillStyle = '#666';
-                histCtx.font = '14px sans-serif';
-                histCtx.textAlign = 'center';
-                histCtx.fillText('Insufficient data variation', histCanvas.width / 2, histCanvas.height / 2);
+
+        function quantile(sorted, q) {
+            if (!sorted.length) return NaN;
+            const pos = (sorted.length - 1) * q;
+            const lo = Math.floor(pos), hi = Math.ceil(pos);
+            return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
+        }
+
+        function setupCanvas(c) {
+            const dpr = window.devicePixelRatio || 1;
+            const w = c.clientWidth, h = c.clientHeight;
+            c.width = Math.round(w * dpr);
+            c.height = Math.round(h * dpr);
+            const ctx = c.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            return { ctx, w, h, dpr };
+        }
+
+        function dashedLine(ctx, x1, y1, x2, y2, color, width = 1, dash = [5, 4]) {
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.setLineDash(dash);
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // ---------- price chart ----------
+        const M = { l: 60, r: 18, t: 14, b: 30 };
+        let priceLayout = null;   // x(), y(), plot box — reused by hover overlay
+
+        function yValue(p) { return state.logScale ? Math.log(p) : p; }
+
+        function drawPriceBase(ctx, w, h) {
+            const p = params();
+            const T = p.horizon;
+            const plotW = w - M.l - M.r, plotH = h - M.t - M.b;
+            const x = t => M.l + plotW * t / T;
+
+            let lo = P0, hi = P0;
+            for (const path of state.paths) {
+                const pr = path.d.prices;
+                for (let t = 0; t <= T; t++) { if (pr[t] < lo) lo = pr[t]; if (pr[t] > hi) hi = pr[t]; }
+            }
+            const cone = state.showCone ? coneData(p) : null;
+            if (cone) {
+                for (let i = 0; i < cone.u2.length; i++) { if (cone.u2[i] > hi) hi = cone.u2[i]; if (cone.l2[i] < lo) lo = cone.l2[i]; }
+            }
+            if (!state.paths.length && !cone) { lo = P0 * 0.7; hi = P0 * 1.3; }
+            let vlo = yValue(lo), vhi = yValue(hi);
+            if (vhi - vlo < 1e-9) { vlo -= 1; vhi += 1; }
+            const pad = (vhi - vlo) * 0.06;
+            vlo -= pad; vhi += pad;
+            const y = v => M.t + plotH * (1 - (yValue(v) - vlo) / (vhi - vlo));
+            priceLayout = { x, y, T, plotW, plotH, cone };
+
+            ctx.clearRect(0, 0, w, h);
+
+            // grid + y axis
+            const yt = state.logScale ? logTicks(Math.exp(vlo), Math.exp(vhi)) : ticks(vlo, vhi, 6);
+            ctx.font = FONT;
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            for (const v of yt) {
+                const yy = y(v);
+                ctx.strokeStyle = GRID; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(M.l, yy); ctx.lineTo(w - M.r, yy); ctx.stroke();
+                ctx.fillStyle = MUTED;
+                ctx.fillText(fmtPrice(v), M.l - 8, yy);
+            }
+            // x axis
+            const xt = ticks(0, T, 7).filter(v => v >= 0 && v <= T);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            for (const t of xt) {
+                const xx = x(t);
+                ctx.strokeStyle = GRID;
+                ctx.beginPath(); ctx.moveTo(xx, M.t); ctx.lineTo(xx, M.t + plotH); ctx.stroke();
+                ctx.fillStyle = MUTED;
+                ctx.fillText(t === 0 ? '0' : String(Math.round(t)), xx, M.t + plotH + 6);
+            }
+            ctx.textAlign = 'right';
+            ctx.fillText('trading days', w - M.r, M.t + plotH + 17);
+            ctx.strokeStyle = AXIS;
+            ctx.beginPath(); ctx.moveTo(M.l, M.t); ctx.lineTo(M.l, M.t + plotH); ctx.lineTo(w - M.r, M.t + plotH); ctx.stroke();
+
+            // starting price
+            dashedLine(ctx, M.l, y(P0), w - M.r, y(P0), 'rgba(0,0,0,0.3)', 1, [2, 4]);
+
+            // cone
+            if (cone) {
+                const o = cone.origin;
+                const band = (up, dn, fill) => {
+                    ctx.beginPath();
+                    for (let i = 0; i < up.length; i++) ctx.lineTo(x(o + i), y(up[i]));
+                    for (let i = dn.length - 1; i >= 0; i--) ctx.lineTo(x(o + i), y(dn[i]));
+                    ctx.closePath();
+                    ctx.fillStyle = fill;
+                    ctx.fill();
+                };
+                band(cone.u2, cone.l2, 'rgba(208, 166, 60, 0.14)');
+                band(cone.u1, cone.l1, 'rgba(208, 166, 60, 0.18)');
+                const edge = arr => {
+                    ctx.beginPath();
+                    for (let i = 0; i < arr.length; i++) ctx.lineTo(x(o + i), y(arr[i]));
+                    ctx.stroke();
+                };
+                ctx.save();
+                ctx.setLineDash([4, 4]);
+                ctx.strokeStyle = 'rgba(156, 122, 34, 0.7)';
+                ctx.lineWidth = 1;
+                edge(cone.u2); edge(cone.l2);
+                ctx.setLineDash([7, 4]);
+                ctx.strokeStyle = GOLD_DARK;
+                ctx.lineWidth = 1.6;
+                edge(cone.center);
+                ctx.restore();
+            }
+
+            // earlier paths
+            const n = state.paths.length;
+            const thin = n > 60;
+            ctx.lineJoin = 'round';
+            for (let i = 0; i < n - 1; i++) {
+                const pr = state.paths[i].d.prices;
+                ctx.strokeStyle = PATH_COLORS[i % PATH_COLORS.length];
+                ctx.globalAlpha = thin ? 0.28 : 0.5;
+                ctx.lineWidth = thin ? 1 : 1.3;
+                ctx.beginPath();
+                for (let t = 0; t <= T; t++) ctx.lineTo(x(t), y(pr[t]));
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+
+            // latest path
+            const L = latest();
+            if (L) {
+                const pr = L.d.prices;
+                const upto = state.reveal === null ? T : Math.min(T, state.reveal);
+                ctx.strokeStyle = NAVY;
+                ctx.lineWidth = 2.4;
+                ctx.beginPath();
+                for (let t = 0; t <= upto; t++) ctx.lineTo(x(t), y(pr[t]));
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(x(upto), y(pr[upto]), 4.5, 0, Math.PI * 2);
+                ctx.fillStyle = GOLD; ctx.fill();
+                ctx.strokeStyle = NAVY; ctx.lineWidth = 1.5; ctx.stroke();
+
+                if (cone && cone.origin > 0) {
+                    const ox = x(cone.origin), oy = y(cone.anchor);
+                    ctx.beginPath();
+                    ctx.arc(ox, oy, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fff'; ctx.fill();
+                    ctx.strokeStyle = GOLD_DARK; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.font = MONO;
+                    ctx.fillStyle = GOLD_DARK;
+                    ctx.textAlign = ox > M.l + plotW * 0.7 ? 'right' : 'left';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText('forecast origin · day ' + cone.origin, ox + (ctx.textAlign === 'left' ? 9 : -9), oy - 8);
+                }
+            } else {
+                ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                ctx.fillStyle = MUTED;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('Click “+ 1 path” to simulate a year of prices', M.l + plotW / 2, M.t + plotH / 2);
+            }
+        }
+
+        function compositePrice() {
+            const { ctx, w, h, dpr } = setupCanvas(priceCanvas);
+            ctx.drawImage(offscreen, 0, 0, offscreen.width, offscreen.height, 0, 0, w, h);
+            const L = latest();
+            if (state.hoverT === null || !L || !priceLayout) return;
+            const { x, y, T, cone } = priceLayout;
+            const t = Math.max(0, Math.min(T, state.hoverT));
+            const upto = state.reveal === null ? T : Math.min(T, state.reveal);
+            if (t > upto) return;
+            const price = L.d.prices[t];
+            const xx = x(t), yy = y(price);
+            dashedLine(ctx, xx, M.t, xx, h - M.b, 'rgba(0,0,0,0.35)', 1, [3, 3]);
+            ctx.beginPath(); ctx.arc(xx, yy, 4, 0, Math.PI * 2);
+            ctx.fillStyle = NAVY; ctx.fill();
+
+            const lines = [
+                'Day ' + t,
+                fmtPrice(price) + '  (' + fmtPct(price / P0 - 1) + ' since start)'
+            ];
+            if (t > 0) lines.push('Return today ' + fmtPct(L.d.rets[t - 1], 2));
+            if (cone && t >= cone.origin) {
+                const i = t - cone.origin;
+                lines.push('2σ band ' + fmtPrice(cone.l2[i]) + ' – ' + fmtPrice(cone.u2[i]));
+            }
+            ctx.font = MONO;
+            let bw = 0;
+            for (const s of lines) bw = Math.max(bw, ctx.measureText(s).width);
+            bw += 18;
+            const bh = lines.length * 16 + 12;
+            let bx = xx + 12, by = Math.max(M.t, Math.min(yy - bh / 2, h - M.b - bh));
+            if (bx + bw > w - M.r) bx = xx - 12 - bw;
+            ctx.fillStyle = 'rgba(10, 16, 32, 0.92)';
+            ctx.beginPath();
+            ctx.roundRect ? ctx.roundRect(bx, by, bw, bh, 6) : ctx.rect(bx, by, bw, bh);
+            ctx.fill();
+            ctx.fillStyle = '#E9E4D4';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            lines.forEach((s, i) => ctx.fillText(s, bx + 9, by + 7 + i * 16));
+        }
+
+        function drawPrice() {
+            const dpr = window.devicePixelRatio || 1;
+            const w = priceCanvas.clientWidth, h = priceCanvas.clientHeight;
+            offscreen.width = Math.round(w * dpr);
+            offscreen.height = Math.round(h * dpr);
+            const octx = offscreen.getContext('2d');
+            octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            drawPriceBase(octx, w, h);
+            compositePrice();
+        }
+
+        // ---------- returns strip ----------
+        function drawReturns() {
+            const { ctx, w, h } = setupCanvas(returnCanvas);
+            const p = params();
+            const T = p.horizon;
+            const m = { l: M.l, r: M.r, t: 8, b: 6 };
+            const plotW = w - m.l - m.r, plotH = h - m.t - m.b;
+            ctx.clearRect(0, 0, w, h);
+            const L = latest();
+            const upto = L ? (state.reveal === null ? T : Math.min(T, state.reveal)) : 0;
+
+            let R = 2.6 * p.sigD;
+            if (L) for (let t = 0; t < upto; t++) R = Math.max(R, Math.abs(L.d.rets[t]));
+            R *= 1.08;
+            const x = t => m.l + plotW * t / T;
+            const y = r => m.t + plotH * (1 - (r + R) / (2 * R));
+
+            ctx.font = FONT;
+            ctx.fillStyle = MUTED;
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            for (const [r, label] of [[2 * p.sigD, '+2σ ' + fmtPct(2 * p.sigD)], [0, '0'], [-2 * p.sigD, '−2σ ' + fmtPct(-2 * p.sigD)]]) {
+                const yy = y(r);
+                dashedLine(ctx, m.l, yy, w - m.r, yy, r === 0 ? AXIS : 'rgba(156,122,34,0.6)', 1, r === 0 ? [] : [3, 3]);
+                ctx.fillStyle = r === 0 ? MUTED : GOLD_DARK;
+                ctx.fillText(label, m.l - 8, yy);
+            }
+            ctx.strokeStyle = AXIS;
+            ctx.beginPath(); ctx.moveTo(m.l, m.t); ctx.lineTo(m.l, m.t + plotH); ctx.stroke();
+
+            if (!L) return;
+            const bw = Math.max(1, plotW / T - 0.6);
+            const y0 = y(0);
+            for (let t = 0; t < upto; t++) {
+                const r = L.d.rets[t];
+                ctx.fillStyle = r >= 0 ? GREEN : RED;
+                const yy = y(r);
+                ctx.fillRect(x(t + 1) - bw / 2, Math.min(yy, y0), bw, Math.max(1, Math.abs(yy - y0)));
+            }
+        }
+
+        // ---------- final price histogram ----------
+        function drawEnd() {
+            const { ctx, w, h } = setupCanvas(endCanvas);
+            ctx.clearRect(0, 0, w, h);
+            const p = params();
+            const finals = state.paths.map(q => q.d.final).sort((a, b) => a - b);
+            const N = finals.length;
+            const cap = $('endCaption');
+            const pTheory = Phi(p.muA / p.sigA * Math.sqrt(p.horizon / TRADING_DAYS));
+
+            if (N < 2) {
+                ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                ctx.fillStyle = MUTED;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(N === 0 ? 'No paths yet' : 'Add more paths to see the spread', w / 2, h / 2);
+                cap.innerHTML = 'With these settings, theory says <strong>' + (pTheory * 100).toFixed(0) + '%</strong> of paths should end above $100 after ' + p.horizon + ' days (Gaussian shocks).';
                 return;
             }
-            
-            const binWidth = range / numBins;
-            
-            const bins = new Array(numBins).fill(0);
-            sampleMeans.forEach(mean => {
-                const binIndex = Math.min(Math.floor((mean - min) / binWidth), numBins - 1);
-                bins[binIndex]++;
-            });
-            
-            const maxCount = Math.max(...bins);
-            
-            if (maxCount === 0) return;
-            
-            // Draw histogram
-            const barWidth = histCanvas.width / numBins;
-            const scale = (histCanvas.height - 60) / maxCount;
-            
-            bins.forEach((count, i) => {
-                const barHeight = count * scale;
-                const x = i * barWidth;
-                const y = histCanvas.height - barHeight - 30;
-                
-                // Bar gradient - check for valid values
-                if (isFinite(y) && isFinite(barHeight) && barHeight > 0) {
-                    const gradient = histCtx.createLinearGradient(0, y, 0, histCanvas.height - 30);
-                    gradient.addColorStop(0, '#667eea');
-                    gradient.addColorStop(1, '#764ba2');
-                    
-                    histCtx.fillStyle = gradient;
-                    histCtx.fillRect(x, y, barWidth - 2, barHeight);
-                }
-            });
-            
-            // Draw normal curve overlay
-            if (sampleMeans.length > 10 && range > 0) {
-                const mean = sampleMeans.reduce((a, b) => a + b, 0) / sampleMeans.length;
-                const variance = sampleMeans.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / sampleMeans.length;
-                const stdDev = Math.sqrt(variance);
-                
-                if (stdDev > 0 && isFinite(stdDev)) {
-                    histCtx.strokeStyle = '#f5576c';
-                    histCtx.lineWidth = 3;
-                    histCtx.beginPath();
-                    
-                    for (let x = 0; x < histCanvas.width; x++) {
-                        const value = min + (x / histCanvas.width) * range;
-                        const z = (value - mean) / stdDev;
-                        const normalDensity = Math.exp(-0.5 * z * z) / (stdDev * Math.sqrt(2 * Math.PI));
-                        const scaledDensity = normalDensity * sampleMeans.length * binWidth;
-                        const y = histCanvas.height - 30 - (scaledDensity * scale);
-                        
-                        if (isFinite(y)) {
-                            if (x === 0) {
-                                histCtx.moveTo(x, y);
-                            } else {
-                                histCtx.lineTo(x, y);
-                            }
-                        }
-                    }
-                    
-                    histCtx.stroke();
-                }
+
+            const m = { l: 44, r: 16, t: 16, b: 34 };
+            const plotW = w - m.l - m.r, plotH = h - m.t - m.b;
+            let lo = Math.min(finals[0], P0), hi = Math.max(finals[N - 1], P0);
+            const padv = (hi - lo) * 0.05 || 1;
+            lo -= padv; hi += padv;
+            const nb = Math.max(8, Math.min(30, Math.round(Math.sqrt(N) * 1.6)));
+            const bwv = (hi - lo) / nb;
+            const counts = new Array(nb).fill(0);
+            for (const f of finals) counts[Math.min(nb - 1, Math.floor((f - lo) / bwv))]++;
+            const cmax = Math.max(...counts);
+            const x = v => m.l + plotW * (v - lo) / (hi - lo);
+            const y = c => m.t + plotH * (1 - c / cmax);
+
+            ctx.font = FONT;
+            ctx.fillStyle = MUTED;
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            for (const c of ticks(0, cmax, 4)) {
+                if (c === 0) continue;
+                ctx.strokeStyle = GRID;
+                ctx.beginPath(); ctx.moveTo(m.l, y(c)); ctx.lineTo(w - m.r, y(c)); ctx.stroke();
+                ctx.fillText(String(c), m.l - 6, y(c));
             }
-            
-            // Draw axis
-            histCtx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
-            histCtx.lineWidth = 2;
-            histCtx.beginPath();
-            histCtx.moveTo(0, histCanvas.height - 30);
-            histCtx.lineTo(histCanvas.width, histCanvas.height - 30);
-            histCtx.stroke();
-            
-            // Labels
-            histCtx.fillStyle = '#666';
-            histCtx.font = '12px sans-serif';
-            histCtx.textAlign = 'center';
-            histCtx.fillText(`n = ${sampleMeans.length} samples`, histCanvas.width / 2, histCanvas.height - 10);
+            for (let i = 0; i < nb; i++) {
+                const v0 = lo + i * bwv, v1 = v0 + bwv;
+                const mid = (v0 + v1) / 2;
+                ctx.fillStyle = mid >= P0 ? 'rgba(14, 122, 78, 0.75)' : 'rgba(179, 64, 46, 0.75)';
+                const top = y(counts[i]);
+                ctx.fillRect(x(v0) + 0.5, top, Math.max(1, x(v1) - x(v0) - 1), m.t + plotH - top);
+            }
+            ctx.strokeStyle = AXIS;
+            ctx.beginPath(); ctx.moveTo(m.l, m.t); ctx.lineTo(m.l, m.t + plotH); ctx.lineTo(w - m.r, m.t + plotH); ctx.stroke();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = MUTED;
+            for (const v of ticks(lo, hi, 5)) if (v >= lo && v <= hi) ctx.fillText(fmtPrice(v), x(v), m.t + plotH + 6);
+            ctx.fillText('final price after ' + p.horizon + ' days', m.l + plotW / 2, m.t + plotH + 20);
+
+            const med = quantile(finals, 0.5);
+            dashedLine(ctx, x(P0), m.t, x(P0), m.t + plotH, 'rgba(0,0,0,0.5)', 1, [2, 4]);
+            dashedLine(ctx, x(med), m.t, x(med), m.t + plotH, GOLD_DARK, 1.6, [6, 4]);
+            ctx.font = MONO;
+            ctx.textBaseline = 'top';
+            const tag = (text, xv, yy, color) => {
+                const left = xv < m.l + plotW / 2;
+                const tw = ctx.measureText(text).width;
+                const tx = xv + (left ? 5 : -5 - tw);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+                ctx.fillRect(tx - 3, yy - 2, tw + 6, 15);
+                ctx.fillStyle = color;
+                ctx.textAlign = 'left';
+                ctx.fillText(text, tx, yy);
+            };
+            tag('start $100', x(P0), m.t + 2, '#333');
+            tag('median ' + fmtPrice(med), x(med), m.t + 20, GOLD_DARK);
+
+            const above = finals.filter(f => f > P0).length / N;
+            cap.innerHTML = '<strong>' + N + ' paths</strong> · ' + (above * 100).toFixed(0) + '% ended above $100 (theory ' + (pTheory * 100).toFixed(0) + '%) · median ' + fmtPrice(med) +
+                ' · 90% of paths finished between ' + fmtPrice(quantile(finals, 0.05)) + ' and ' + fmtPrice(quantile(finals, 0.95)) + '.';
         }
-        
+
+        // ---------- stats ----------
+        function card(label, value, sub = '', gold = false) {
+            return '<div class="stat-card' + (gold ? ' gold' : '') + '"><div class="stat-label">' + label + '</div><div class="stat-value">' + value + '</div>' + (sub ? '<div class="stat-sub">' + sub + '</div>' : '') + '</div>';
+        }
+
+        function updateStats() {
+            const p = params();
+            const L = latest();
+            const A = $('statsA'), B = $('statsB');
+            if (!L) { A.innerHTML = ''; B.innerHTML = ''; return; }
+            const d = L.d;
+            A.innerHTML =
+                card('Final price', fmtPrice(d.final), 'after ' + p.horizon + ' days') +
+                card('Total return', fmtPct(d.final / P0 - 1), 'vs drift-only ' + fmtPct(Math.exp(p.muD * p.horizon) - 1)) +
+                card('Max drawdown', fmtPct(d.mdd), 'largest peak-to-trough drop') +
+                card('Realized volatility', fmtPct(d.vol, 1).replace('+', ''), 'annualized · input σ = ' + (p.sigA * 100).toFixed(0) + '%');
+            const finals = state.paths.map(q => q.d.final).sort((a, b) => a - b);
+            const N = finals.length;
+            const above = finals.filter(f => f > P0).length / N;
+            B.innerHTML =
+                card('Paths', String(N), 'same μ, σ, and horizon', true) +
+                card('Ended above $100', (above * 100).toFixed(0) + '%', 'theory ' + (Phi(p.muA / p.sigA * Math.sqrt(p.horizon / TRADING_DAYS)) * 100).toFixed(0) + '% with Gaussian shocks', true) +
+                card('Median final price', fmtPrice(quantile(finals, 0.5)), 'drift-only path ends at ' + fmtPrice(P0 * Math.exp(p.muD * p.horizon)), true) +
+                card('5th – 95th percentile', fmtPrice(quantile(finals, 0.05)) + ' – ' + fmtPrice(quantile(finals, 0.95)), 'theory ±1.64σ√t: ' + fmtPrice(P0 * Math.exp(p.muD * p.horizon - 1.645 * p.sigD * Math.sqrt(p.horizon))) + ' – ' + fmtPrice(P0 * Math.exp(p.muD * p.horizon + 1.645 * p.sigD * Math.sqrt(p.horizon))), true);
+        }
+
         function drawAll() {
-            walkCtx.clearRect(0, 0, walkCanvas.width, walkCanvas.height);
-            drawGrid(walkCtx, walkCanvas);
-            
-            walks.forEach((walk, i) => {
-                drawWalk(walk.data.path, walk.color, 0.7);
-            });
-            
-            drawHistogram();
+            drawPrice();
+            drawReturns();
+            drawEnd();
             updateStats();
         }
-        
-        function addNewWalk() {
-            const walkData = generateRandomWalk();
-            const color = colors[walks.length % colors.length];
-            walks.push({data: walkData, color: color});
-            
-            // Add to sample means calculation
-            const sampleSize = parseInt(document.getElementById('sampleSize').value);
-            if (walks.length >= sampleSize) {
-                // Calculate mean of last n walks
-                const lastNWalks = walks.slice(-sampleSize);
-                const avgMeanDisplacement = lastNWalks.reduce((sum, w) => sum + w.data.meanDisplacement, 0) / sampleSize;
-                sampleMeans.push(avgMeanDisplacement);
+
+        // ---------- actions ----------
+        function stopAnim() {
+            if (state.timer) { clearInterval(state.timer); state.timer = null; }
+            state.reveal = null;
+        }
+
+        function animateLast() {
+            if (!state.paths.length) return;
+            stopAnim();
+            const T = params().horizon;
+            const speed = +$('speed').value;
+            const perTick = Math.max(1, Math.round(T / 260));
+            state.reveal = 0;
+            state.timer = setInterval(() => {
+                state.reveal += perTick;
+                if (state.reveal >= T) stopAnim();
+                drawAll();
+            }, speed);
+        }
+
+        function addPath(animate) {
+            stopAnim();
+            if (state.paths.length >= MAX_PATHS) state.paths.shift();
+            const r = makeRandomness();
+            state.paths.push({ r, d: buildPath(r, params()) });
+            if (animate) animateLast(); else drawAll();
+        }
+
+        $('btnAdd').addEventListener('click', () => addPath(true));
+        $('btnAdd25').addEventListener('click', () => {
+            stopAnim();
+            const p = params();
+            for (let i = 0; i < 25; i++) {
+                if (state.paths.length >= MAX_PATHS) state.paths.shift();
+                const r = makeRandomness();
+                state.paths.push({ r, d: buildPath(r, p) });
             }
-            
             drawAll();
-        }
-        
-        function addMultipleWalks() {
-            for (let i = 0; i < 5; i++) {
-                setTimeout(() => {
-                    addNewWalk();
-                }, i * 100);
-            }
-        }
-        
-        function demonstrateCLT() {
-            // Clear and generate many samples for CLT
-            sampleMeans = [];
-            const sampleSize = parseInt(document.getElementById('sampleSize').value);
-            
-            for (let i = 0; i < 100; i++) {
-                let sampleSum = 0;
-                for (let j = 0; j < sampleSize; j++) {
-                    const walkData = generateRandomWalk();
-                    sampleSum += walkData.meanDisplacement;
-                }
-                sampleMeans.push(sampleSum / sampleSize);
-            }
-            
-            drawHistogram();
-            
-            // Show notification
-            const statsDiv = document.getElementById('stats');
-            const originalHTML = statsDiv.innerHTML;
-            statsDiv.innerHTML = `<div class="stat-card pulse" style="grid-column: 1/-1; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-                <div class="stat-label">CLT Demonstration Complete!</div>
-                <div class="stat-value">Generated 100 sample means (n=${sampleSize} each)</div>
-            </div>` + originalHTML;
-            
-            setTimeout(() => {
-                updateStats();
-            }, 3000);
-        }
-        
-        function animateLastWalk() {
-            if (walks.length === 0 || animationInProgress) return;
-            
-            animationInProgress = true;
-            const lastWalk = walks[walks.length - 1];
-            const tempData = lastWalk.data.path;
-            lastWalk.data.path = [];
-            
-            const animSpeed = parseInt(document.getElementById('animSpeed').value);
-            let i = 0;
-            
-            const animate = setInterval(() => {
-                if (i < tempData.length) {
-                    lastWalk.data.path.push(tempData[i]);
-                    drawAll();
-                    i++;
-                } else {
-                    clearInterval(animate);
-                    animationInProgress = false;
-                }
-            }, animSpeed);
-        }
-        
-        function clearAll() {
-            walks = [];
-            sampleMeans = [];
+        });
+        $('btnReplay').addEventListener('click', animateLast);
+        $('btnCone').addEventListener('click', e => {
+            state.showCone = !state.showCone;
+            e.currentTarget.classList.toggle('active', state.showCone);
             drawAll();
-        }
-        
-        function toggleGrid() {
-            showGrid = !showGrid;
+        });
+        $('btnLog').addEventListener('click', e => {
+            state.logScale = !state.logScale;
+            e.currentTarget.classList.toggle('active', state.logScale);
             drawAll();
+        });
+        $('btnClear').addEventListener('click', () => {
+            stopAnim();
+            state.paths = [];
+            state.origin = 0;
+            drawAll();
+        });
+        $('resetOrigin').addEventListener('click', e => {
+            e.preventDefault();
+            state.origin = 0;
+            drawAll();
+        });
+
+        // sliders: update labels, re-price existing paths with the same shocks
+        function refreshLabels() {
+            const p = params();
+            $('horizonValue').textContent = p.horizon;
+            $('horizonSub').textContent = '≈ ' + (p.horizon / TRADING_DAYS).toFixed(1) + (p.horizon / TRADING_DAYS >= 1.05 ? ' years' : ' year');
+            $('driftValue').textContent = fmtPct(p.muA, 0);
+            $('driftSub').textContent = '≈ ' + fmtPct(p.muD, 3) + ' per day';
+            $('volValue').textContent = (p.sigA * 100).toFixed(0) + '%';
+            $('volSub').textContent = '≈ ' + (p.sigD * 100).toFixed(2) + '% per day';
+            $('speedValue').textContent = $('speed').value + ' ms';
         }
-        
-        function updateStats() {
-            const statsDiv = document.getElementById('stats');
-            
-            if (walks.length === 0) {
-                statsDiv.innerHTML = '';
-                return;
-            }
-            
-            const finalPositions = walks.map(w => w.data.path[w.data.path.length - 1].y - walkCanvas.height / 2);
-            const mean = finalPositions.reduce((a, b) => a + b, 0) / finalPositions.length;
-            const variance = finalPositions.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / finalPositions.length;
-            const stdDev = Math.sqrt(variance);
-            
-            let cltStats = '';
-            if (sampleMeans.length > 0) {
-                const cltMean = sampleMeans.reduce((a, b) => a + b, 0) / sampleMeans.length;
-                const cltVar = sampleMeans.reduce((a, b) => a + Math.pow(b - cltMean, 2), 0) / sampleMeans.length;
-                const cltStdDev = Math.sqrt(cltVar);
-                
-                cltStats = `
-                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                        <div class="stat-label">CLT Mean</div>
-                        <div class="stat-value">${cltMean.toFixed(3)}</div>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                        <div class="stat-label">CLT Std Dev</div>
-                        <div class="stat-value">${cltStdDev.toFixed(3)}</div>
-                    </div>
-                `;
-            }
-            
-            statsDiv.innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-label">Total Walks</div>
-                    <div class="stat-value">${walks.length}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Mean Position</div>
-                    <div class="stat-value">${mean.toFixed(2)}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Std Deviation</div>
-                    <div class="stat-value">${stdDev.toFixed(2)}</div>
-                </div>
-                ${cltStats}
-                <div class="stat-card">
-                    <div class="stat-label">Sample Means</div>
-                    <div class="stat-value">${sampleMeans.length}</div>
-                </div>
-            `;
+
+        for (const id of ['horizon', 'drift', 'vol']) {
+            $(id).addEventListener('input', () => {
+                stopAnim();
+                refreshLabels();
+                rebuildAll();
+                drawAll();
+            });
         }
-        
-        // Add initial walk
-        addNewWalk();
+        $('dist').addEventListener('change', () => {
+            stopAnim();
+            rebuildAll();
+            drawAll();
+        });
+        $('speed').addEventListener('input', refreshLabels);
+
+        // hover + click on the price chart
+        function dayFromEvent(e) {
+            if (!priceLayout) return null;
+            const rect = priceCanvas.getBoundingClientRect();
+            const px = e.clientX - rect.left;
+            const t = Math.round((px - M.l) / priceLayout.plotW * priceLayout.T);
+            if (px < M.l - 4 || px > rect.width - M.r + 4) return null;
+            return Math.max(0, Math.min(priceLayout.T, t));
+        }
+        priceCanvas.addEventListener('pointermove', e => {
+            state.hoverT = dayFromEvent(e);
+            compositePrice();
+        });
+        priceCanvas.addEventListener('pointerleave', () => {
+            state.hoverT = null;
+            compositePrice();
+        });
+        priceCanvas.addEventListener('click', e => {
+            const t = dayFromEvent(e);
+            if (t === null || !state.paths.length) return;
+            state.origin = t;
+            drawAll();
+        });
+
+        let resizeTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(drawAll, 80);
+        });
+
+        refreshLabels();
+        addPath(true);
     </script>
 </body>
 </html>
