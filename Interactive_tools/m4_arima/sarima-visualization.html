@@ -6,7 +6,6 @@
     <meta name="description" content="Tune SARIMA orders p,d,q,P,D,Q and season length on the classic airline passenger series and watch how each parameter reshapes the live forecast in your browser, no install required.">
     <title>SARIMA Interactive Visualization - Airline Passengers</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/arima@4.0.0/dist/browser.js"></script>
     <style>
         * {
             margin: 0;
@@ -270,6 +269,65 @@
             margin-left: 20px;
             line-height: 1.8;
         }
+
+        .bf-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            max-width: 760px;
+            margin: -10px auto 22px auto;
+            padding-top: 16px;
+            border-top: 1px dashed #cfc8b4;
+        }
+
+        .bf-actions button { white-space: nowrap; }
+
+        .bf-actions-label {
+            font-size: 0.78em;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #9C7A22;
+        }
+
+        .bf-actions-note { font-size: 0.88em; color: #666; }
+
+        .bf-panel {
+            background: #FBF6E6;
+            border-left: 5px solid #D0A63C;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 0 0 24px 0;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .bf-panel .bf-title { font-weight: 700; color: #1B2A4A; margin-bottom: 6px; }
+        .bf-panel .bf-row { margin: 4px 0; }
+        .bf-panel .bf-note { font-size: 0.85em; color: #666; margin-top: 8px; }
+        .bf-panel table { border-collapse: collapse; margin: 10px 0 4px 0; font-size: 0.92em; width: 100%; max-width: 900px; }
+        .bf-panel th, .bf-panel td { text-align: left; padding: 5px 12px 5px 0; border-bottom: 1px solid #ece6d2; vertical-align: top; }
+        .bf-panel th { font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.5px; color: #9C7A22; }
+        .bf-panel tr.applied td { font-weight: 700; color: #1B2A4A; }
+        .bf-panel td.num { font-family: 'IBM Plex Mono', Menlo, Consolas, monospace; white-space: nowrap; }
+
+        .bf-explain {
+            background: #F7F4EC;
+            border-left: 5px solid #D0A63C;
+            border-radius: 12px;
+            padding: 22px 26px;
+            margin-top: 28px;
+            color: #333;
+            line-height: 1.65;
+        }
+
+        .bf-explain h3 { color: #1B2A4A; margin-bottom: 10px; }
+        .bf-explain p { margin: 0 0 10px 0; }
+        .bf-explain ul { padding-left: 22px; margin: 0 0 10px 0; }
+        .bf-explain li { margin-bottom: 6px; }
+        .bf-explain code { font-family: 'IBM Plex Mono', Menlo, Consolas, monospace; background: #fff; padding: 1px 5px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -300,7 +358,7 @@
         </div>
 
         <p style="max-width: 760px; margin: 0 auto 25px auto; text-align: center; color: #555; line-height: 1.6; font-size: 1.05em;">
-            This tool approximates how a Seasonal ARIMA model behaves on the classic Box-Jenkins airline passenger counts (1949-1960), directly in your browser. Move the sliders for the orders and seasonal period below and the chart redraws the forecast against the actual monthly data, so you can see exactly how each parameter changes what the model captures.
+            Fit a seasonal ARIMA model to the classic Box-Jenkins airline passenger counts (monthly, 1949-1960) in your browser. Move the order sliders and the chart refits by conditional least squares: the dashed line is the forecast, and the band around it is a 95% prediction interval.
         </p>
 
         <div class="controls">
@@ -355,12 +413,19 @@
 
         <div class="button-group">
             <button class="btn-primary" onclick="updateModel()">🔄 Update Model</button>
-            <button class="btn-secondary" onclick="resetToOptimal()">⭐ Reset to Optimal SARIMA(1,1,0)(0,1,0)₁₂</button>
+            <button class="btn-secondary" onclick="resetToOptimal()">↩ Reset to SARIMA(1,1,0)(0,1,0)₁₂</button>
         </div>
+        <div class="bf-actions">
+            <span class="bf-actions-label">Answer key</span>
+            <button class="btn-primary" id="bestFitBtn" onclick="findBestFit()" title="Fit every (p, q, P, Q) with the current d, D and m, rank by AICc, and apply the winner">⭐ Find the Best Fit</button>
+            <span class="bf-actions-note">searches p, q ≤ 3 and P, Q ≤ 1 with your d, D and m</span>
+        </div>
+        <div class="bf-panel" id="bestFitPanel" style="display: none;"></div>
 
-        <div id="model-info" style="text-align: center; margin-bottom: 20px; font-size: 1.2em; font-weight: bold; color: #667eea;">
+        <div id="model-info" style="text-align: center; margin-bottom: 8px; font-size: 1.2em; font-weight: bold; color: #667eea;">
             Current Model: SARIMA(1,1,0)(0,1,0)₁₂
         </div>
+        <p id="fit-info" style="text-align: center; margin: 0 auto 20px auto; max-width: 760px; color: #555; line-height: 1.5;"></p>
 
         <div class="chart-container">
             <div id="mainChart"></div>
@@ -402,7 +467,7 @@
                     <ul>
                         <li><strong>Period:</strong> Monthly, Jan 1949 - Dec 1960 (144 observations)</li>
                         <li><strong>Pattern:</strong> Clear upward trend + strong yearly seasonality</li>
-                        <li><strong>Optimal Model:</strong> SARIMA(1,1,0)(0,1,0)₁₂</li>
+                        <li><strong>Default model:</strong> SARIMA(1,1,0)(0,1,0)₁₂, a parsimonious starting point. Press Find the Best Fit to rank the alternatives.</li>
                         <li><strong>Features:</strong> Parsimonious model with differencing handling both trend and seasonality</li>
                     </ul>
                 </div>
@@ -419,13 +484,26 @@
             </div>
 
             <p style="margin-top: 20px;">
-                <span class="highlight">Educational Insight:</span> The optimal model SARIMA(1,1,0)(0,1,0)₁₂ uses:
+                <span class="highlight">Educational Insight:</span> The default model SARIMA(1,1,0)(0,1,0)₁₂ uses:
                 <br>• <strong>d=1</strong> to remove the trend through first differencing
                 <br>• <strong>D=1</strong> to remove seasonal pattern through seasonal differencing
                 <br>• <strong>p=1</strong> for short-term AR(1) autocorrelation
                 <br>• <strong>P=0, Q=0</strong> meaning seasonal differencing alone handles seasonality without additional AR/MA terms
                 <br>• This is a parsimonious model that captures both trend and seasonality efficiently
             </p>
+        </div>
+
+        <div class="bf-explain">
+            <h3>⭐ What does "Find the Best Fit" do?</h3>
+            <p>It fits every SARIMA(p, d, q)(P, D, Q)<sub>m</sub> with p and q from 0 to 3 and P and Q from 0 to 1, keeping the d, D and m you set, which is 64 candidate models. Each one is estimated by the same conditional least squares that runs when you press Update Model. The candidates are then ranked by AICc, the corrected Akaike information criterion, and the winner is applied to the sliders and the chart. The table lists the top six so you can see how close the race was.</p>
+            <ul>
+                <li><strong>The criterion.</strong> AICc = n·log(σ̂²) + 2k + 2k(k+1)/(n−k−1), where σ̂² is the residual variance and k counts the coefficients plus one for the variance. The first term rewards fit, the second charges for every extra parameter, and the third is a small-sample correction. Lower is better. Every model's σ̂² is computed on the same window of observations (the one the largest candidate needs after its lags), so the numbers are comparable.</li>
+                <li><strong>Why d, D and m are not searched.</strong> Differencing changes the series being modelled, so residual variances of models with different d or D are not comparable and neither are their AICc values. In practice the differencing orders are chosen first, from plots and unit-root tests such as KPSS and OCSB, and only p, q, P, Q are ranked by an information criterion. That is exactly what R's <code>auto.arima</code> does. For this series d = 1 and D = 1 is the standard choice; try others and search again to see how the answer moves.</li>
+                <li><strong>Dropped candidates.</strong> A fit whose AR part is non-stationary or whose MA part is non-invertible is discarded rather than ranked, again following <code>auto.arima</code>. The panel says how many were dropped.</li>
+                <li><strong>Reading the table.</strong> Differences in AICc below about 2 are ties in practice, and among tied models the one with fewer parameters is preferred. With d = D = 1 the winner is a seven-coefficient SARIMA(3,1,3)(1,1,0)<sub>12</sub> that beats SARIMA(2,1,1)(0,1,0)<sub>12</sub>, the model <code>auto.arima</code> returns for this series, by only about three points. Compare their forecast bands before deciding the extra four coefficients are worth having. The default SARIMA(1,1,0)(0,1,0)<sub>12</sub> sits about five points behind with a single coefficient, which is why it makes a good classroom baseline.</li>
+                <li><strong>The lesson the criterion cannot give you.</strong> The seasonal swings in this series grow with the level, and no ARIMA on the raw counts can reproduce that. On log(y) the classic "airline model" SARIMA(0,1,1)(0,1,1)<sub>12</sub> wins with two coefficients. Model selection ranks the candidates you offer it; choosing the transformation is still your job.</li>
+                <li><strong>Approximation.</strong> This tool uses conditional least squares while <code>statsmodels</code> and R use the exact Gaussian likelihood. On this series both give the same top five models by AICc and coefficients that agree to a few hundredths; rankings can differ only among near-ties.</li>
+            </ul>
         </div>
     </div>
 
@@ -475,125 +553,344 @@
 
         initializeControls();
 
-        // Educational SARIMA approximation showing parameter effects
-        function simulateSARIMA(data, p, d, q, P, D, Q, m, horizon) {
-            console.log(`Simulating SARIMA(${p},${d},${q})(${P},${D},${Q})_${m}`);
+        // Conditional least-squares SARIMA, checked against statsmodels.
+        // φ(B) Φ(B^m) (1-B)^d (1-B^m)^D y_t = c + θ(B) Θ(B^m) ε_t
+        // c is included only when d = D = 0.
 
-            const lastValue = data[data.length - 1];
-            const dataMean = data.reduce((a, b) => a + b, 0) / data.length;
-
-            // Special case: SARIMA(0,0,0)(0,0,0) = white noise, flat forecast at the mean
-            if (p === 0 && d === 0 && q === 0 && P === 0 && D === 0 && Q === 0) {
-                return Array(horizon).fill(dataMean);
+        function polyMul(a, b) {
+            const out = new Array(a.length + b.length - 1).fill(0);
+            for (let i = 0; i < a.length; i++) {
+                for (let j = 0; j < b.length; j++) out[i + j] += a[i] * b[j];
             }
+            return out;
+        }
 
-            const recentData = data.slice(-Math.max(m > 0 ? m * 3 : 36, 36));
-
-            // Calculate base trend based on d
-            let trendRate = 0;
-            if (d === 0) {
-                // No differencing: flat forecast
-                trendRate = 0;
-            } else if (d === 1) {
-                // First difference: linear trend
-                const window = Math.min(24, data.length);
-                trendRate = (data[data.length - 1] - data[data.length - window]) / (window - 1);
-            } else {
-                // Second difference: smoother trend
-                const window = Math.min(36, data.length);
-                trendRate = (data[data.length - 1] - data[data.length - window]) / (window - 1) * 0.7;
-            }
-
-            // Extract seasonal pattern (only if m > 0)
-            let seasonalIndices = [];
-            let overallMean = 0;
-            const seasonalGrowthRates = [];
-
+        function diffPoly(d, D, m) {
+            let p = [1];
+            for (let i = 0; i < d; i++) p = polyMul(p, [1, -1]);
             if (m > 0) {
-                const lastSeasonalCycle = data.slice(-m);
-                overallMean = data.slice(-m * 3).reduce((a, b) => a + b, 0) / (m * 3);
+                for (let i = 0; i < D; i++) {
+                    const s = new Array(m + 1).fill(0);
+                    s[0] = 1;
+                    s[m] = -1;
+                    p = polyMul(p, s);
+                }
+            }
+            return p;
+        }
 
-                // Calculate seasonal indices (deviation from mean)
-                seasonalIndices = lastSeasonalCycle.map(val => val - overallMean);
+        // φ(B) = 1 − φ₁B − … − φ_pB^p multiplied by Φ(B^m) = 1 − Φ₁B^m − … (standard SARIMA form)
+        function arPoly(phis, Phis, m) {
+            const ns = [1].concat(phis.map(v => -v));
+            let seas = [1];
+            if (Phis.length && m > 0) {
+                seas = new Array(Phis.length * m + 1).fill(0);
+                seas[0] = 1;
+                Phis.forEach((Phi, i) => { seas[(i + 1) * m] = -Phi; });
+            }
+            return polyMul(ns, seas);
+        }
 
-                // Calculate seasonal growth rate if D > 0
-                if (D > 0) {
-                    for (let i = 0; i < m; i++) {
-                        if (data.length >= 2 * m + i) {
-                            const currentSeason = data[data.length - m + i];
-                            const previousSeason = data[data.length - 2 * m + i];
-                            seasonalGrowthRates.push((currentSeason - previousSeason) / 12);
-                        } else {
-                            seasonalGrowthRates.push(0);
+        // θ(B) = 1 + θ₁B + … + θ_qB^q multiplied by Θ(B^m) = 1 + Θ₁B^m + …
+        function maPoly(thetas, Thetas, m) {
+            const ns = [1].concat(thetas);
+            let seas = [1];
+            if (Thetas.length && m > 0) {
+                seas = new Array(Thetas.length * m + 1).fill(0);
+                seas[0] = 1;
+                Thetas.forEach((Th, i) => { seas[(i + 1) * m] = Th; });
+            }
+            return polyMul(ns, seas);
+        }
+
+        function applyPoly(y, c) {
+            const L = c.length - 1;
+            const w = new Array(y.length - L);
+            for (let t = L; t < y.length; t++) {
+                let s = 0;
+                for (let j = 0; j < c.length; j++) s += c[j] * y[t - j];
+                w[t - L] = s;
+            }
+            return w;
+        }
+
+        function solveLinear(A, b) {
+            const n = b.length;
+            const M = A.map((row, i) => [...row, b[i]]);
+            for (let col = 0; col < n; col++) {
+                let maxRow = col, maxVal = Math.abs(M[col][col]);
+                for (let row = col + 1; row < n; row++) {
+                    if (Math.abs(M[row][col]) > maxVal) { maxVal = Math.abs(M[row][col]); maxRow = row; }
+                }
+                if (maxVal < 1e-12) return null;
+                if (maxRow !== col) { const tmp = M[col]; M[col] = M[maxRow]; M[maxRow] = tmp; }
+                const pivot = M[col][col];
+                for (let j = col; j <= n; j++) M[col][j] /= pivot;
+                for (let row = 0; row < n; row++) {
+                    if (row === col) continue;
+                    const f = M[row][col];
+                    for (let j = col; j <= n; j++) M[row][j] -= f * M[col][j];
+                }
+            }
+            return M.map(row => row[n]);
+        }
+
+        function ols(X, y) {
+            const n = y.length, k = X[0].length;
+            const XtX = Array.from({ length: k }, () => new Array(k).fill(0));
+            const Xty = new Array(k).fill(0);
+            for (let i = 0; i < n; i++) {
+                for (let a = 0; a < k; a++) {
+                    Xty[a] += X[i][a] * y[i];
+                    for (let b = a; b < k; b++) XtX[a][b] += X[i][a] * X[i][b];
+                }
+            }
+            for (let a = 0; a < k; a++) for (let b = 0; b < a; b++) XtX[a][b] = XtX[b][a];
+            for (let a = 0; a < k; a++) XtX[a][a] += 1e-10;
+            return solveLinear(XtX, Xty);
+        }
+
+        function residuals(w, ar, ma, c) {
+            const n = w.length;
+            const e = new Array(n).fill(0);
+            let sse = 0, count = 0;
+            const burn = Math.max(ar.length, ma.length) - 1;
+            for (let t = 0; t < n; t++) {
+                let pred = c;
+                for (let j = 1; j < ar.length; j++) if (t - j >= 0) pred += -ar[j] * w[t - j];
+                for (let j = 1; j < ma.length; j++) if (t - j >= 0) pred += ma[j] * e[t - j];
+                e[t] = w[t] - pred;
+                if (t >= burn) { sse += e[t] * e[t]; count++; }
+            }
+            return { e, sse, count, burn };
+        }
+
+        function arImpulseStable(ar) {
+            const T = Math.max(80, ar.length * 4);
+            const u = new Array(T).fill(0);
+            u[0] = 1;
+            for (let t = 1; t < T; t++) {
+                let s = 0;
+                for (let j = 1; j < ar.length && j <= t; j++) s -= ar[j] * u[t - j];
+                u[t] = s;
+                if (!Number.isFinite(u[t]) || Math.abs(u[t]) > 1e6) return false;
+            }
+            let tail = 0;
+            for (let t = T - 15; t < T; t++) tail = Math.max(tail, Math.abs(u[t]));
+            return tail < 0.5;
+        }
+
+        function nelderMead(fn, x0, maxIter) {
+            const n = x0.length;
+            const simplex = [x0.slice()];
+            for (let i = 0; i < n; i++) {
+                const x = x0.slice();
+                x[i] += x[i] === 0 ? 0.25 : 0.25 * Math.abs(x[i]);
+                simplex.push(x);
+            }
+            const vals = simplex.map(fn);
+            const alpha = 1, gamma = 2, rho = 0.5, sigma = 0.5;
+            for (let iter = 0; iter < maxIter; iter++) {
+                const order = vals.map((v, i) => i).sort((a, b) => vals[a] - vals[b]);
+                const S = order.map(i => simplex[i]);
+                const V = order.map(i => vals[i]);
+                for (let i = 0; i <= n; i++) { simplex[i] = S[i]; vals[i] = V[i]; }
+                if (vals[n] - vals[0] < 1e-10) break;
+                const c = new Array(n).fill(0);
+                for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) c[j] += simplex[i][j];
+                for (let j = 0; j < n; j++) c[j] /= n;
+                const worst = simplex[n];
+                const xr = c.map((cj, j) => cj + alpha * (cj - worst[j]));
+                const fr = fn(xr);
+                if (fr < vals[0]) {
+                    const xe = c.map((cj, j) => cj + gamma * (xr[j] - cj));
+                    const fe = fn(xe);
+                    if (fe < fr) { simplex[n] = xe; vals[n] = fe; }
+                    else { simplex[n] = xr; vals[n] = fr; }
+                } else if (fr < vals[n - 1]) {
+                    simplex[n] = xr; vals[n] = fr;
+                } else {
+                    const xc = c.map((cj, j) => cj + rho * (worst[j] - cj));
+                    const fc = fn(xc);
+                    if (fc < vals[n]) { simplex[n] = xc; vals[n] = fc; }
+                    else {
+                        const best = simplex[0];
+                        for (let i = 1; i <= n; i++) {
+                            simplex[i] = best.map((b, j) => b + sigma * (simplex[i][j] - b));
+                            vals[i] = fn(simplex[i]);
                         }
                     }
                 }
             }
+            let bi = 0;
+            for (let i = 1; i < vals.length; i++) if (vals[i] < vals[bi]) bi = i;
+            return simplex[bi];
+        }
 
-            // Generate forecasts
+        function mean(a) {
+            let s = 0;
+            for (let i = 0; i < a.length; i++) s += a[i];
+            return s / a.length;
+        }
+        function std(a) {
+            const m = mean(a);
+            let s = 0;
+            for (let i = 0; i < a.length; i++) s += (a[i] - m) ** 2;
+            return Math.sqrt(s / a.length);
+        }
+
+        function fitSARIMA(y, p, d, q, P, D, Q, m, horizon) {
+            if (!(m > 0)) { P = 0; D = 0; Q = 0; m = 0; }
+            const cpoly = diffPoly(d, D, m);
+            const w = applyPoly(y, cpoly);
+            const need = Math.max(p, q) + Math.max(P, Q) * Math.max(m, 1) + 8;
+            if (w.length < need) {
+                return { error: 'Not enough observations left after differencing for these orders. Lower d, D, or the AR/MA orders.' };
+            }
+            const withConst = d + D === 0;
+            const scale = std(w) || 1;
+            const linear = q === 0 && Q === 0 && (p === 0 || P === 0);
+
+            let phis = new Array(p).fill(0);
+            let Phis = new Array(P).fill(0);
+            let thetas = new Array(q).fill(0);
+            let Thetas = new Array(Q).fill(0);
+            let c = 0;
+            let refit = false;
+
+            function unpack(raw) {
+                const o = { phis: [], Phis: [], thetas: [], Thetas: [], c: 0 };
+                let k = 0;
+                for (let i = 0; i < p; i++) o.phis.push(Math.tanh(raw[k++]) * 0.98);
+                for (let i = 0; i < P; i++) o.Phis.push(Math.tanh(raw[k++]) * 0.98);
+                for (let i = 0; i < q; i++) o.thetas.push(Math.tanh(raw[k++]) * 0.98);
+                for (let i = 0; i < Q; i++) o.Thetas.push(Math.tanh(raw[k++]) * 0.98);
+                if (withConst) o.c = raw[k] * scale;
+                return o;
+            }
+            function sseOf(raw) {
+                const o = unpack(raw);
+                const ar = arPoly(o.phis, o.Phis, m);
+                const ma = maPoly(o.thetas, o.Thetas, m);
+                // stay inside the stationary (AR) and invertible (MA) region
+                if ((p + P > 1 && !arImpulseStable(ar)) || (q + Q > 1 && !arImpulseStable(ma))) return 1e18;
+                const r = residuals(w, ar, ma, o.c);
+                return r.count > 0 ? r.sse : 1e18;
+            }
+
+            if (linear) {
+                const lags = [];
+                for (let i = 1; i <= p; i++) lags.push(i);
+                for (let i = 1; i <= P; i++) lags.push(i * m);
+                const maxLag = lags.length ? Math.max(...lags) : 0;
+                const X = [], yy = [];
+                for (let t = maxLag; t < w.length; t++) {
+                    const row = lags.map(L => w[t - L]);
+                    if (withConst) row.push(1);
+                    X.push(row);
+                    yy.push(w[t]);
+                }
+                let beta = null;
+                if (X.length > lags.length && X[0].length > 0) beta = ols(X, yy);
+                if (beta) {
+                    lags.forEach((L, i) => {
+                        if (L <= p && p > 0 && P === 0) phis[L - 1] = beta[i];
+                        else Phis[L / m - 1] = beta[i];
+                    });
+                    if (withConst) c = beta[beta.length - 1];
+                } else if (withConst) {
+                    c = mean(w);
+                }
+                const arTry = arPoly(phis, Phis, m);
+                if ((p + P > 0) && !arImpulseStable(arTry)) refit = true;
+            }
+
+            if (!linear || refit) {
+                const dim = p + P + q + Q + (withConst ? 1 : 0);
+                if (dim === 0) {
+                    c = withConst ? mean(w) : 0;
+                } else {
+                    const starts = [new Array(dim).fill(0)];
+                    const neg = new Array(dim).fill(Math.atanh(-0.3 / 0.98));
+                    if (withConst) neg[dim - 1] = mean(w) / scale;
+                    starts.push(neg);
+                    let best = null, bestSse = Infinity;
+                    for (const x0 of starts) {
+                        const x = nelderMead(sseOf, x0, 500);
+                        const sse = sseOf(x);
+                        if (sse < bestSse) { bestSse = sse; best = x; }
+                    }
+                    const o = unpack(best);
+                    phis = o.phis; Phis = o.Phis; thetas = o.thetas; Thetas = o.Thetas; c = o.c;
+                }
+            }
+
+            const ar = arPoly(phis, Phis, m);
+            const ma = maPoly(thetas, Thetas, m);
+            const res = residuals(w, ar, ma, c);
+            const sigma2 = res.count > 0 ? res.sse / res.count : 0;
+            const sigma = Math.sqrt(sigma2);
+
+            const wExt = w.slice();
+            const eExt = res.e.slice();
+            for (let step = 0; step < horizon; step++) {
+                const t = w.length + step;
+                let pred = c;
+                for (let j = 1; j < ar.length; j++) if (t - j >= 0) pred += -ar[j] * wExt[t - j];
+                for (let j = 1; j < ma.length; j++) if (t - j >= 0 && t - j < eExt.length) pred += ma[j] * eExt[t - j];
+                wExt.push(pred);
+                eExt.push(0);
+            }
+
+            const yExt = y.slice();
             const forecasts = [];
-
-            for (let h = 1; h <= horizon; h++) {
-                let forecast = lastValue;
-
-                // 1. Add trend component (controlled by d)
-                if (d > 0) {
-                    forecast += trendRate * h;
-                }
-
-                // 2. Add seasonal component (only if m > 0)
-                if (m > 0) {
-                    const seasonIdx = (data.length - 1 + h) % m;
-                    let seasonalComponent = 0;
-
-                    if (D === 0 && P === 0 && Q === 0) {
-                        // No seasonal terms: seasonal pattern decays
-                        seasonalComponent = seasonalIndices[seasonIdx] * Math.exp(-h / (m * 2));
-                    } else {
-                        // With seasonal terms: pattern persists
-                        seasonalComponent = seasonalIndices[seasonIdx];
-
-                        // D adds seasonal growth
-                        if (D > 0) {
-                            seasonalComponent += seasonalGrowthRates[seasonIdx] * h * 0.8;
-                        }
-
-                        // P amplifies seasonal pattern
-                        if (P > 0) {
-                            seasonalComponent *= (1 + P * 0.15);
-                        }
-
-                        // Q smooths seasonal effects
-                        if (Q > 0) {
-                            seasonalComponent *= (1 - Q * 0.08);
-                        }
-                    }
-
-                    forecast += seasonalComponent;
-                }
-
-                // 3. Add AR effect (p)
-                if (p > 0) {
-                    // Recent short-term deviations
-                    const recentChange = data[data.length - 1] - data[data.length - 2];
-                    forecast += recentChange * p * 0.15 * Math.exp(-h / 6);
-                }
-
-                // 4. MA smoothing effect (q)
-                if (q > 0) {
-                    // MA smooths by dampening forecast deviations
-                    const deviation = forecast - lastValue;
-                    forecast = lastValue + deviation * (1 - q * 0.08);
-                }
-
-                // Ensure reasonable bounds
-                forecast = Math.max(forecast, lastValue * 0.5);
-                forecast = Math.min(forecast, lastValue * 2.5);
-
-                forecasts.push(forecast);
+            for (let step = 0; step < horizon; step++) {
+                const t = y.length + step;
+                let s = wExt[w.length + step];
+                for (let j = 1; j < cpoly.length; j++) s -= cpoly[j] * yExt[t - j];
+                yExt.push(s);
+                forecasts.push(s);
             }
 
-            return forecasts;
+            const fullAr = polyMul(ar, cpoly);
+            const psi = [1];
+            for (let j = 1; j < horizon; j++) {
+                let s = j < ma.length ? ma[j] : 0;
+                for (let i = 1; i < fullAr.length && i <= j; i++) s -= fullAr[i] * psi[j - i];
+                psi.push(s);
+            }
+            const z = 1.96;
+            const lower = [], upper = [];
+            let acc = 0;
+            for (let h = 0; h < horizon; h++) {
+                acc += psi[h] * psi[h];
+                const se = sigma * Math.sqrt(acc);
+                lower.push(forecasts[h] - z * se);
+                upper.push(forecasts[h] + z * se);
+            }
+
+            const names = [];
+            const params = [];
+            phis.forEach((v, i) => { names.push('φ' + sub(i + 1)); params.push(v); });
+            Phis.forEach((v, i) => { names.push('Φ' + sub(i + 1)); params.push(v); });
+            thetas.forEach((v, i) => { names.push('θ' + sub(i + 1)); params.push(v); });
+            Thetas.forEach((v, i) => { names.push('Θ' + sub(i + 1)); params.push(v); });
+            if (withConst) { names.push('c'); params.push(c); }
+
+            const coefs = phis.concat(Phis, thetas, Thetas);
+            const hitBound = coefs.some(v => Math.abs(v) > 0.97);
+            let note = 'Conditional least squares. The shaded band is a 95% prediction interval';
+            if (withConst) note += ', and a constant is included because the series is not differenced';
+            if (refit) note += '. Least squares was outside the stationarity region, so the coefficients were re-estimated inside (−1, 1)';
+            else if (hitBound) note += '. A coefficient sits on the (−1, 1) boundary';
+
+            return { forecasts, lower, upper, names, params, sigma2, note, error: null,
+                     e: res.e, wLen: w.length, kCoef: coefs.length + (withConst ? 1 : 0), ar, ma };
+        }
+
+        function sub(n) {
+            const d = '₀₁₂₃₄₅₆₇₈₉';
+            return String(n).replace(/[0-9]/g, ch => d[ch]);
         }
 
         function updateModel() {
@@ -605,25 +902,18 @@
             const Q = parseInt(document.getElementById('Q').value);
             const m = parseInt(document.getElementById('m').value);
             const horizon = parseInt(document.getElementById('forecast').value);
+            const seasonalIgnored = m === 0 && (P + D + Q) > 0;
+            const showP = m > 0 ? P : 0;
+            const showD = m > 0 ? D : 0;
+            const showQ = m > 0 ? Q : 0;
+            const mLabel = m > 0 ? `<sub>${m}</sub>` : '';
 
-            // Update model info
-            const mSubscript = m > 0 ? `₍${m}₎` : '';
             document.getElementById('model-info').innerHTML =
-                `Current Model: SARIMA(${p},${d},${q})(${P},${D},${Q})<sub>${m}</sub>`;
+                `Current Model: SARIMA(${p},${d},${q})(${showP},${showD},${showQ})${mLabel}`;
 
-            // Generate forecasts
-            const forecasts = simulateSARIMA(airlineData, p, d, q, P, D, Q, m, horizon);
+            const fit = fitSARIMA(airlineData, p, d, q, P, D, Q, m, horizon);
+            const fitInfo = document.getElementById('fit-info');
 
-            // Create forecast dates
-            const lastDate = dates[dates.length - 1];
-            const forecastDates = [];
-            for (let i = 1; i <= horizon; i++) {
-                const date = new Date(lastDate);
-                date.setMonth(date.getMonth() + i);
-                forecastDates.push(date);
-            }
-
-            // Plot
             const trace1 = {
                 x: dates,
                 y: airlineData,
@@ -632,36 +922,158 @@
                 line: {color: '#667eea', width: 3},
                 marker: {size: 4}
             };
-
-            const trace2 = {
-                x: forecastDates,
-                y: forecasts,
-                mode: 'lines+markers',
-                name: 'SARIMA Forecast',
-                line: {color: '#f5576c', width: 3, dash: 'dash'},
-                marker: {size: 5}
-            };
-
             const layout = {
                 title: {
-                    text: `Airline Passengers: SARIMA(${p},${d},${q})(${P},${D},${Q})<sub>${m}</sub> Forecast`,
+                    text: `Airline Passengers: SARIMA(${p},${d},${q})(${showP},${showD},${showQ})${mLabel} Forecast`,
                     font: {size: 20, color: '#667eea'}
                 },
-                xaxis: {
-                    title: 'Date',
-                    gridcolor: '#e0e0e0'
-                },
-                yaxis: {
-                    title: 'Number of Passengers (thousands)',
-                    gridcolor: '#e0e0e0'
-                },
+                xaxis: { title: 'Date', gridcolor: '#e0e0e0' },
+                yaxis: { title: 'Number of Passengers (thousands)', gridcolor: '#e0e0e0' },
                 hovermode: 'x unified',
                 plot_bgcolor: '#f8f9fa',
                 paper_bgcolor: 'white',
                 height: 500
             };
 
-            Plotly.newPlot('mainChart', [trace1, trace2], layout, {responsive: true});
+            if (fit.error) {
+                fitInfo.textContent = fit.error;
+                Plotly.newPlot('mainChart', [trace1], layout, {responsive: true});
+                return;
+            }
+
+            const coefs = fit.names.map((name, i) => name + ' = ' + fit.params[i].toFixed(3)).join(', ');
+            fitInfo.textContent = (coefs ? coefs + ' · ' : '') + 'σ² = ' + fit.sigma2.toFixed(1) + '. ' + fit.note
+                + (seasonalIgnored ? ' Seasonal orders are ignored because m = 0.' : '');
+
+            const lastDate = dates[dates.length - 1];
+            const forecastDates = [];
+            for (let i = 1; i <= horizon; i++) {
+                const date = new Date(lastDate);
+                date.setMonth(date.getMonth() + i);
+                forecastDates.push(date);
+            }
+
+            const band = {
+                x: forecastDates.concat(forecastDates.slice().reverse()),
+                y: fit.upper.concat(fit.lower.slice().reverse()),
+                fill: 'toself',
+                fillcolor: 'rgba(245, 87, 108, 0.18)',
+                line: {color: 'transparent'},
+                name: '95% interval',
+                hoverinfo: 'skip'
+            };
+            const trace2 = {
+                x: forecastDates,
+                y: fit.forecasts,
+                mode: 'lines+markers',
+                name: 'Forecast',
+                line: {color: '#f5576c', width: 3, dash: 'dash'},
+                marker: {size: 5}
+            };
+
+            Plotly.newPlot('mainChart', [trace1, band, trace2], layout, {responsive: true});
+        }
+
+
+        // ---------- Answer key: rank every (p, q, P, Q) for the current d, D, m by AICc ----------
+        // Each candidate is fitted by the same conditional least squares as Update Model. The residual
+        // variance for the criterion is taken over one common window (the one the largest candidate
+        // needs), so every model is judged on the same observations. d, D and m are kept as set:
+        // differencing changes the series being modelled, so criteria across d or D are not comparable.
+        function bfModelLabel(p, d, q, P, D, Q, m) {
+            return m > 0 ? `SARIMA(${p},${d},${q})(${P},${D},${Q})${sub(m)}` : `ARIMA(${p},${d},${q})`;
+        }
+
+        function bfSetOrder(id, v) {
+            document.getElementById(id).value = v;
+            document.getElementById(id + '-value').textContent = String(v);
+        }
+
+        function bfSearch() {
+            const d = parseInt(document.getElementById('d').value);
+            const D = parseInt(document.getElementById('D').value);
+            const m = parseInt(document.getElementById('m').value);
+            const horizon = parseInt(document.getElementById('forecast').value);
+            const seasonal = m > 0;
+            const maxP = 3, maxQ = 3, maxPs = seasonal ? 1 : 0, maxQs = seasonal ? 1 : 0;
+            const T0 = maxP + (seasonal ? maxPs * m : 0);
+            const results = [];
+            let rejected = 0;
+            for (let p = 0; p <= maxP; p++) for (let q = 0; q <= maxQ; q++)
+            for (let P = 0; P <= maxPs; P++) for (let Q = 0; Q <= maxQs; Q++) {
+                const fit = fitSARIMA(airlineData, p, d, q, P, D, Q, m, horizon);
+                if (fit.error) continue;
+                // like auto.arima, drop candidates whose estimated AR part is non-stationary
+                // or whose MA part is non-invertible (a root on or inside the unit circle)
+                if (!arImpulseStable(fit.ar) || !arImpulseStable(fit.ma)) { rejected++; continue; }
+                const n = fit.wLen - T0;
+                if (n < fit.kCoef + 4) continue;
+                let sse = 0;
+                for (let t = T0; t < fit.wLen; t++) sse += fit.e[t] * fit.e[t];
+                const k = fit.kCoef + 1;                       // coefficients + the residual variance
+                const aic = n * Math.log(sse / n) + 2 * k;
+                const aicc = aic + 2 * k * (k + 1) / (n - k - 1);
+                results.push({ p, q, P, Q, d, D, m, aicc, sigma2: sse / n, n, k: fit.kCoef,
+                               coefs: fit.names.map((nm, i) => nm + ' = ' + fit.params[i].toFixed(3)).join(', ') || 'no coefficients' });
+            }
+            results.sort((a, b) => a.aicc - b.aicc);
+            results.rejected = rejected;
+            return results;
+        }
+
+        function findBestFit() {
+            const btn = document.getElementById('bestFitBtn');
+            const before = { p: parseInt(document.getElementById('p').value), q: parseInt(document.getElementById('q').value),
+                             P: parseInt(document.getElementById('P').value), Q: parseInt(document.getElementById('Q').value) };
+            btn.disabled = true;
+            btn.textContent = '⏳ Fitting candidates…';
+            setTimeout(() => {
+                try {
+                    const t0 = performance.now();
+                    const results = bfSearch();
+                    const ms = Math.round(performance.now() - t0);
+                    const panel = document.getElementById('bestFitPanel');
+                    panel.style.display = 'block';
+                    if (!results.length) {
+                        panel.innerHTML = '<div class="bf-title">No candidate could be fitted with these d, D and m.</div>';
+                        return;
+                    }
+                    const best = results[0];
+                    bfSetOrder('p', best.p); bfSetOrder('q', best.q);
+                    bfSetOrder('P', best.P); bfSetOrder('Q', best.Q);
+                    updateModel();
+
+                    const m = best.m, d = best.d, D = best.D;
+                    const yourIdx = results.findIndex(r => r.p === before.p && r.q === before.q && r.P === before.P && r.Q === before.Q);
+                    const rows = results.slice(0, 6).map((r, i) => `
+                        <tr class="${i === 0 ? 'applied' : ''}">
+                            <td>${i + 1}</td>
+                            <td>${bfModelLabel(r.p, d, r.q, r.P, D, r.Q, m)}${i === 0 ? ' ← applied' : ''}</td>
+                            <td class="num">${r.aicc.toFixed(1)}</td>
+                            <td class="num">${(r.aicc - best.aicc).toFixed(1)}</td>
+                            <td class="num">${r.sigma2.toFixed(1)}</td>
+                            <td>${r.coefs}</td>
+                        </tr>`).join('');
+                    let yours = '';
+                    if (yourIdx > 5) {
+                        const r = results[yourIdx];
+                        yours = `<div class="bf-row">Your previous model ${bfModelLabel(r.p, d, r.q, r.P, D, r.Q, m)} ranked #${yourIdx + 1} of ${results.length} (ΔAICc = ${(r.aicc - best.aicc).toFixed(1)}).</div>`;
+                    } else if (yourIdx < 0) {
+                        yours = `<div class="bf-row">Your previous orders were outside the searched set (P or Q above 1).</div>`;
+                    }
+                    panel.innerHTML = `
+                        <div class="bf-title">⭐ Best fit by AICc among ${results.length} models with d = ${d}, D = ${D}${m > 0 ? ', m = ' + m : ''}${results.rejected ? ' (' + results.rejected + ' more were dropped as non-stationary or non-invertible)' : ''} · ${ms} ms</div>
+                        <table>
+                            <tr><th>#</th><th>Model</th><th>AICc</th><th>ΔAICc</th><th>σ²</th><th>Coefficients</th></tr>
+                            ${rows}
+                        </table>
+                        ${yours}
+                        <div class="bf-note">AICc = n·log(σ̂²) + 2k + 2k(k+1)/(n−k−1), with σ̂² the residual variance on a common window of n = ${best.n} observations and k the number of coefficients plus one for the variance. Lower is better; models within about 2 of the best are effectively tied, and the simpler one is usually preferred. Fitted by conditional least squares, so rankings can differ from exact-likelihood software (R's <code>auto.arima</code>, statsmodels) only among near-ties. See the note at the bottom of the page.</div>`;
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = '⭐ Find the Best Fit';
+                }
+            }, 30);
         }
 
         function resetToOptimal() {
