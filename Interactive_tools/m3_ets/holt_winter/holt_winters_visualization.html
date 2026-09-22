@@ -512,7 +512,7 @@
                     <h3>🎯 Forecast Equation</h3>
                     <div class="equation">ŷ<sub>t+h|t</sub> = ℓ<sub>t</sub> + h·b<sub>t</sub> + s<sub>t+h-m(k+1)</sub></div>
                     <div class="equation-description">
-                        Level + Trend + Seasonal component
+                        Level + trend + seasonal, with k = floor((h−1)/m). That picks the latest seasonal of the target month, including past the first year of the forecast.
                     </div>
                 </div>
                 
@@ -856,7 +856,10 @@
             const average = firstYear.reduce((a, b) => a + b, 0) / 12;
             
             // Calculate seasonal deviations
-            const seasonals = firstYear.map(val => (val - average).toFixed(0));
+            const seasonals = firstYear.map(val => Math.round(val - average));
+            // Integer rounding can leave a nonzero sum. Put the leftover in December
+            // so the twelve indices still sum to zero.
+            seasonals[11] -= seasonals.reduce((a, b) => a + b, 0);
             
             // Update input fields
             for (let i = 0; i < 12; i++) {
@@ -1033,9 +1036,9 @@
         
         function updateInfoCards(step, level, trend, seasonal) {
             document.getElementById('currentStep').textContent = step;
-            document.getElementById('currentLevel').textContent = level ? level.toFixed(1) : '-';
-            document.getElementById('currentTrend').textContent = trend ? trend.toFixed(2) : '-';
-            document.getElementById('currentSeason').textContent = seasonal ? seasonal.toFixed(1) : '-';
+            document.getElementById('currentLevel').textContent = Number.isFinite(level) ? level.toFixed(1) : '-';
+            document.getElementById('currentTrend').textContent = Number.isFinite(trend) ? trend.toFixed(2) : '-';
+            document.getElementById('currentSeason').textContent = Number.isFinite(seasonal) ? seasonal.toFixed(1) : '-';
             
             // Update trend indicator
             const indicator = document.getElementById('trendIndicator');

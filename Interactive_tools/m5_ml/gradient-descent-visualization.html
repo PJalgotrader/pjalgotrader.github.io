@@ -181,7 +181,7 @@
                 We have a simple linear model: <strong>y&#x0302; = w&middot;x + b</strong>. The goal is to find the
                 slope <strong>w</strong> and intercept <strong>b</strong> that minimize the
                 <strong>Mean Squared Error (MSE)</strong> over all training data.
-                Gradient descent starts at a random point and iteratively updates both parameters by moving in the direction
+                Gradient descent starts at the point you pick (bottom-right by default) and iteratively updates both parameters by moving in the direction
                 of the <strong>negative gradient</strong> — the steepest descent on the loss surface.
             </p>
             <p style="margin-top:8px;">
@@ -273,7 +273,7 @@
             <h3>Stochastic Gradient Descent (SGD)</h3>
             <p>
                 Instead of computing the gradient over <strong>all N data points</strong> each step,
-                SGD picks a <strong>single random sample</strong> (or a small mini-batch) and uses only that
+                SGD picks a <strong>single random sample</strong> and uses only that
                 to estimate the gradient. This makes each step much faster, but the path is
                 <strong>noisy and zigzags</strong> toward the optimum instead of following a smooth curve.
             </p>
@@ -469,18 +469,27 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 function updateLRIndicator(prefix, lrIdx) {
     const el = document.getElementById(prefix + '-lr-indicator');
     const lr = LR_OPTIONS[lrIdx];
+    const batch = prefix === 'gd';
     if (lr <= 0.01) {
         el.style.background = 'linear-gradient(135deg, #dbeafe, #bfdbfe)';
         el.innerHTML = '<span class="lr-tag" style="background:#2563eb;">Too Low</span>' +
             '<span class="lr-desc">A small learning rate requires many updates before reaching the minimum.</span>';
     } else if (lr <= 0.1) {
         el.style.background = 'linear-gradient(135deg, #dcfce7, #bbf7d0)';
-        el.innerHTML = '<span class="lr-tag" style="background:#059669;">Just Right</span>' +
-            '<span class="lr-desc">The optimal learning rate swiftly reaches the minimum point.</span>';
+        el.innerHTML = '<span class="lr-tag" style="background:#059669;">Converges</span>' +
+            (batch
+                ? '<span class="lr-desc">Reaches the minimum in a few dozen steps. 0.05 and 0.1 both do.</span>'
+                : '<span class="lr-desc">Each step uses one training row, so the path is noisy, and it still drifts toward the minimum.</span>');
+    } else if (lr <= 0.3 && batch) {
+        el.style.background = 'linear-gradient(135deg, #fef9c3, #fde68a)';
+        el.innerHTML = '<span class="lr-tag" style="background:#b45309;">Near the limit</span>' +
+            '<span class="lr-desc">0.3 still converges here. The largest stable full-data step on this loss is about 0.32.</span>';
     } else {
         el.style.background = 'linear-gradient(135deg, #fee2e2, #fecaca)';
-        el.innerHTML = '<span class="lr-tag" style="background:#dc2626;">Too High</span>' +
-            '<span class="lr-desc">Too large causes drastic updates which can lead to divergent behavior!</span>';
+        el.innerHTML = '<span class="lr-tag" style="background:#dc2626;">Diverges</span>' +
+            (batch
+                ? '<span class="lr-desc">0.5 is past the stability limit of this loss. The run stops when the step blows up.</span>'
+                : '<span class="lr-desc">One-sample steps at this size are unstable. The run stops when a step blows up.</span>');
     }
 }
 
@@ -523,14 +532,21 @@ function createEngine(prefix, isSGD) {
             grad = gradFull(cur.w, cur.b);
         }
 
-        let newW = cur.w - lr * grad.dw;
-        let newB = cur.b - lr * grad.db;
+        const newW = cur.w - lr * grad.dw;
+        const newB = cur.b - lr * grad.db;
+        const nextLoss = mse(newW, newB);
+        const blewUp = !Number.isFinite(newW) || !Number.isFinite(newB) || !Number.isFinite(nextLoss)
+            || nextLoss > 1e5 || Math.abs(newW) > 30 || Math.abs(newB) > 30;
+        if (blewUp) {
+            if (animTimer) { clearInterval(animTimer); animTimer = null; }
+            enableButtons(true);
+            document.getElementById(prefix + '-loss').textContent = 'diverged';
+            document.getElementById(prefix + '-w').textContent = '—';
+            document.getElementById(prefix + '-b').textContent = '—';
+            return;
+        }
 
-        // Clamp to prevent explosion
-        newW = Math.max(W_RANGE[0] - 2, Math.min(W_RANGE[1] + 2, newW));
-        newB = Math.max(B_RANGE[0] - 2, Math.min(B_RANGE[1] + 2, newB));
-
-        path.push({w: newW, b: newB, loss: mse(newW, newB), sampleIdx});
+        path.push({w: newW, b: newB, loss: nextLoss, sampleIdx});
         updateStatus();
         renderAll();
     }

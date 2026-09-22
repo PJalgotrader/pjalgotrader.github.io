@@ -664,31 +664,42 @@
 
             const traces = [scatterTrace];
 
-            // Add decision boundaries for Decision Tree
-            const splits = currentModel.getSplits();
-
-            const lag1Splits = splits.filter(s => s.feature === 'lag1');
-            const lag2Splits = splits.filter(s => s.feature === 'lag2');
-
-            lag1Splits.forEach((split, idx) => {
-                traces.push({
-                    x: [split.threshold, split.threshold],
-                    y: [Math.min(...lag2Values) - 20, Math.max(...lag2Values) + 20],
-                    mode: 'lines',
-                    line: { color: 'red', width: 2, dash: 'dash' },
-                    name: `Lag_1 Split ${idx + 1}`,
-                    showlegend: idx === 0
-                });
+            // Draw each split only inside the region where it applies.
+            const segments = [];
+            (function walk(node, box) {
+                if (!node || node.isLeaf) return;
+                if (node.feature === 'lag1') {
+                    segments.push({ feature: 'lag1', t: node.threshold, a: box.l2, b: box.r2 });
+                    walk(node.left, Object.assign({}, box, { r1: node.threshold }));
+                    walk(node.right, Object.assign({}, box, { l1: node.threshold }));
+                } else {
+                    segments.push({ feature: 'lag2', t: node.threshold, a: box.l1, b: box.r1 });
+                    walk(node.left, Object.assign({}, box, { r2: node.threshold }));
+                    walk(node.right, Object.assign({}, box, { l2: node.threshold }));
+                }
+            })(currentModel.tree, {
+                l1: Math.min(...lag1Values), r1: Math.max(...lag1Values),
+                l2: Math.min(...lag2Values), r2: Math.max(...lag2Values)
             });
 
-            lag2Splits.forEach((split, idx) => {
-                traces.push({
-                    x: [Math.min(...lag1Values) - 20, Math.max(...lag1Values) + 20],
-                    y: [split.threshold, split.threshold],
+            let sawLag1 = false, sawLag2 = false;
+            segments.forEach(seg => {
+                const first = seg.feature === 'lag1' ? !sawLag1 : !sawLag2;
+                if (seg.feature === 'lag1') sawLag1 = true; else sawLag2 = true;
+                traces.push(seg.feature === 'lag1' ? {
+                    x: [seg.t, seg.t],
+                    y: [seg.a, seg.b],
+                    mode: 'lines',
+                    line: { color: 'red', width: 2, dash: 'dash' },
+                    name: 'Lag_1 split',
+                    showlegend: first
+                } : {
+                    x: [seg.a, seg.b],
+                    y: [seg.t, seg.t],
                     mode: 'lines',
                     line: { color: 'blue', width: 2, dash: 'dash' },
-                    name: `Lag_2 Split ${idx + 1}`,
-                    showlegend: idx === 0
+                    name: 'Lag_2 split',
+                    showlegend: first
                 });
             });
 

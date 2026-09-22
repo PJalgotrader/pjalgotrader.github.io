@@ -669,7 +669,7 @@ function updateComplexityIndicator() {
         tag.style.background = '#2563eb';
         tag.textContent = 'Underfitting';
         desc.innerHTML = '<strong>Degree 0 (constant):</strong> Predicts the same value everywhere — just the mean. ' +
-            '<strong>High bias</strong> (misses all structure). <strong>Variance is only the variance of the sample mean</strong>, σ²/n, which is small but not zero: each draw estimates its own mean.';
+            '<strong>High bias</strong> (misses all structure). <strong>Variance is small but not zero</strong>: each draw has its own x values, so the fitted constant moves by more than σ²/n.';
     } else if (d === 1) {
         bar.style.background = 'linear-gradient(135deg, #dbeafe, #bfdbfe)';
         tag.style.background = '#2563eb';

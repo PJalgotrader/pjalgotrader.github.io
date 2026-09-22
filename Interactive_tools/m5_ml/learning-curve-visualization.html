@@ -154,6 +154,10 @@
             a <strong>large gap</strong> = high variance (overfitting),
             and <strong>both curves converging at low error</strong> = just right.
         </p>
+        <p style="margin-top:8px;">
+            These points are drawn from a cubic, <span style="font-family:ui-monospace,monospace;">0.15x³ − 0.5x² + 0.3x + 3</span>, plus noise with σ² = 4.
+            Degree 3 is the function that generated the data. The cubic term is small on [−3, 3], so a quadratic can land close to the noise floor too.
+        </p>
     </div>
 
     <!-- Controls -->
@@ -350,17 +354,21 @@ function computeLearningCurve(deg) {
             const shuffled = [...dataPool].sort(() => Math.random() - 0.5);
             const subset = shuffled.slice(0, size);
 
-            // K-Fold CV on this subset
-            const foldSize = Math.floor(size / K);
-            if (foldSize < 2) continue; // skip if folds too small
+            // K-Fold CV on this subset. Fold sizes differ by at most one.
+            const base = Math.floor(size / K);
+            if (base < 2) continue;
 
+            let valStart = 0;
             for (let k = 0; k < K; k++) {
-                const valStart = k * foldSize;
-                const valEnd = (k === K - 1) ? size : valStart + foldSize;
+                const valLen = base + (k < size % K ? 1 : 0);
+                const valEnd = valStart + valLen;
                 const valFold = subset.slice(valStart, valEnd);
                 const trainFold = [...subset.slice(0, valStart), ...subset.slice(valEnd)];
 
-                if (trainFold.length < deg + 1) continue;
+                if (trainFold.length < deg + 1 || valFold.length === 0) {
+                    valStart = valEnd;
+                    continue;
+                }
 
                 const tx = trainFold.map(d => d.x);
                 const txn = normalizeX(tx);
@@ -379,6 +387,7 @@ function computeLearningCurve(deg) {
                 const valPred = vxn.map(xn => evalPoly(coeffs, xn));
                 valErrSum += mse(vy, valPred);
                 count++;
+                valStart = valEnd;
             }
         }
 
@@ -432,40 +441,59 @@ function updateDiagnosis(trainErrors, valErrors, benchmarkMSE) {
     const finalVal = valErrors[valErrors.length - 1];
     const gap = finalVal - finalTrain;
 
-    if (currentDegree <= 2) {
+    const noise = noiseSd * noiseSd;
+    const peakVal = Math.max(...valErrors);
+    const peakNote = peakVal > finalVal * 2.5
+        ? ` With fewer points, validation error reached ${peakVal.toFixed(1)}.`
+        : '';
+
+    // Judge the right-hand end of the curve, not the degree slider.
+    const nearBenchmark = finalVal > benchmarkMSE * 0.75;
+    const nearNoise = finalVal < noise * 1.75;
+    const bigGap = gap > Math.max(2, 0.35 * Math.max(finalVal, 0.1));
+
+    if (nearBenchmark) {
         el.style.background = 'linear-gradient(135deg, #dbeafe, #bfdbfe)';
         el.innerHTML = `
             <span class="diag-tag" style="background:#2563eb;">High Bias</span>
             <div class="diag-text">
-                <strong>Both curves converge to high error</strong> — the gap is small (${gap.toFixed(1)}) but
-                both training (${finalTrain.toFixed(1)}) and validation (${finalVal.toFixed(1)}) error remain close to
-                the benchmark (${benchmarkMSE.toFixed(1)}).
-                The model is <strong>too simple</strong> to capture the true pattern.
-                <div class="diag-action">Remedy: Increase model complexity or add features. More data won't help much.</div>
+                At 100 points, training error is ${finalTrain.toFixed(1)} and validation error is ${finalVal.toFixed(1)}.
+                Both sit near the predict-the-mean benchmark (${benchmarkMSE.toFixed(1)}), and the gap is ${gap.toFixed(1)}.
+                The polynomial is too simple for this curve. More data will not close that gap.
+                <div class="diag-action">Remedy: increase the degree. The data were drawn from a cubic.</div>
             </div>`;
-    } else if (currentDegree === 3) {
-        el.style.background = 'linear-gradient(135deg, #dcfce7, #bbf7d0)';
-        el.innerHTML = `
-            <span class="diag-tag" style="background:#059669;">Just Right</span>
-            <div class="diag-text">
-                <strong>Both curves converge to low error well below the benchmark</strong>.
-                Training error (${finalTrain.toFixed(1)}) and validation error (${finalVal.toFixed(1)}) are far below
-                the predict-the-mean benchmark (${benchmarkMSE.toFixed(1)}).
-                The model captures the true pattern without overfitting.
-                <div class="diag-action">This is the sweet spot — good balance of bias and variance.</div>
-            </div>`;
-    } else {
-        const absGap = Math.abs(gap);
-        const gapDesc = gap > 0
-            ? `validation error (${finalVal.toFixed(1)}) is higher than training error (${finalTrain.toFixed(1)})`
-            : `training error (${finalTrain.toFixed(1)}) and validation error (${finalVal.toFixed(1)}) are close, but the model uses unnecessary complexity`;
+    } else if (bigGap) {
         el.style.background = 'linear-gradient(135deg, #fee2e2, #fecaca)';
         el.innerHTML = `
             <span class="diag-tag" style="background:#dc2626;">High Variance</span>
             <div class="diag-text">
-                <strong>Overfitting risk</strong> — ${gapDesc}.
-                Extra polynomial terms fit noise rather than the true pattern.
-                <div class="diag-action">Remedy: Collect more data, reduce complexity, or add regularization.</div>
+                Training error (${finalTrain.toFixed(1)}) is well below validation error (${finalVal.toFixed(1)}).
+                The gap is ${gap.toFixed(1)}. The noise floor is ${noise.toFixed(1)}.${peakNote}
+                Extra terms are fitting noise.
+                <div class="diag-action">Remedy: more data, a lower degree, or regularization.</div>
+            </div>`;
+    } else if (nearNoise) {
+        el.style.background = 'linear-gradient(135deg, #dcfce7, #bbf7d0)';
+        el.innerHTML = `
+            <span class="diag-tag" style="background:#059669;">Near the noise floor</span>
+            <div class="diag-text">
+                Training error ${finalTrain.toFixed(1)}, validation error ${finalVal.toFixed(1)}, gap ${gap.toFixed(1)}.
+                Validation error is close to σ² = ${noise.toFixed(1)} and well below the benchmark (${benchmarkMSE.toFixed(1)}).${peakNote}
+                ${currentDegree === 3
+                    ? 'Degree 3 is the function these points were drawn from.'
+                    : currentDegree < 3
+                        ? 'A lower degree can look this good here because the cubic term is small on [−3, 3]. Degree 3 is still the function that generated the data.'
+                        : 'At this sample size the extra terms are not hurting. Their cost shows up on the left of the curve, where the sample is small.'}
+                <div class="diag-action">Read the gap at the right edge, and the height of the curve at the left.</div>
+            </div>`;
+    } else {
+        el.style.background = 'linear-gradient(135deg, #fef9c3, #fde68a)';
+        el.innerHTML = `
+            <span class="diag-tag" style="background:#b45309;">Some bias left</span>
+            <div class="diag-text">
+                Training error ${finalTrain.toFixed(1)}, validation error ${finalVal.toFixed(1)}, gap ${gap.toFixed(1)}.
+                That is below the benchmark (${benchmarkMSE.toFixed(1)}) and still above the noise floor (${noise.toFixed(1)}).${peakNote}
+                <div class="diag-action">A higher degree can still pick up structure. Degree 3 matches the cubic these points came from.</div>
             </div>`;
     }
 }
@@ -537,7 +565,7 @@ function renderLearningCurve(sizes, trainErrors, valErrors, benchmarkMSE) {
 
     Plotly.react('chart-lc', traces, {
         margin: {t: 10, r: 30, b: 50, l: 60},
-        xaxis: {title: 'Training Set Size', gridcolor: '#f1f5f9', range: [0, 110]},
+        xaxis: {title: 'Sample size (about four fifths are used to fit)', gridcolor: '#f1f5f9', range: [0, 110]},
         yaxis: {title: 'Mean Squared Error', range: [0, yMax], gridcolor: '#f1f5f9'},
         legend: {x: 0.5, y: 0.99, bgcolor: 'rgba(255,255,255,0.9)', font: {size: 10}},
         plot_bgcolor: 'white', paper_bgcolor: 'white',

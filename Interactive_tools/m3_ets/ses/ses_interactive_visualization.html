@@ -776,8 +776,8 @@
             Plotly.newPlot('levelChart', [levelTrace], layout2);
             
             // Calculate and display metrics
-            if (trainForecastsToShow.length > 1) {
-                const trainErrors = trainForecastsToShow.slice(1).map((f, i) => Math.pow(trainData[i + 1] - f, 2));
+            if (trainForecastsToShow.length > 0) {
+                const trainErrors = trainForecastsToShow.map((f, i) => Math.pow(trainData[i] - f, 2));
                 const trainRMSE = Math.sqrt(trainErrors.reduce((a, b) => a + b, 0) / trainErrors.length);
                 document.getElementById('trainRMSE').textContent = trainRMSE.toFixed(1);
             }
