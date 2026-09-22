@@ -311,6 +311,31 @@
             animation: pulse 0.5s ease-in-out;
         }
 
+        .button-group { flex-wrap: wrap; }
+        .button-group button { white-space: nowrap; }
+
+        .bf-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            max-width: 760px;
+            margin: 16px auto 0 auto;
+            padding-top: 16px;
+            border-top: 1px dashed #cfc8b4;
+        }
+
+        .bf-actions button { white-space: nowrap; }
+
+        .bf-actions-label {
+            font-size: 0.78em;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #9C7A22;
+        }
+
         .bf-opt {
             display: inline-flex;
             align-items: center;
@@ -329,7 +354,7 @@
             border-left: 5px solid #D0A63C;
             border-radius: 10px;
             padding: 16px 20px;
-            margin: 0 0 24px 0;
+            margin: 18px 0 24px 0;
             line-height: 1.6;
             color: #333;
         }
@@ -442,6 +467,9 @@
             <button class="btn-secondary" onclick="stepOnce()" title="Advance exactly one observation, then stay paused">⏭️ Add 1 Step</button>
             <button class="btn-secondary" onclick="resetVisualization()">🔄 Reset</button>
             <button class="btn-primary" onclick="showFullFit()">⚡ Show Complete Fit</button>
+        </div>
+        <div class="bf-actions">
+            <span class="bf-actions-label">Answer key</span>
             <button class="btn-primary" id="bestFitBtn" onclick="findBestFit()" title="Search for the smoothing parameters that minimize the training one-step-ahead squared errors">⭐ Find the Best Fit</button>
             <label class="bf-opt" title="Search only over the smoothing parameters and keep the starting values you set above"><input type="checkbox" id="fixInit"> keep my starting values fixed</label>
         </div>
