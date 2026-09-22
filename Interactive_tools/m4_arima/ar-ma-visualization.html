@@ -412,7 +412,8 @@
                 <strong>Forecasting:</strong><br>
                 • Uses <span class="highlight">past values</span> to predict future<br>
                 • Multi-step forecasts decay toward long-run mean: c/(1-φ)<br>
-                • Forecast: ŷ<sub>t+h</sub> = c(1-φ<sup>h</sup>)/(1-φ) + φ<sup>h</sup>·y<sub>t</sub>
+                • Forecast: ŷ<sub>t+h</sub> = c(1-φ<sup>h</sup>)/(1-φ) + φ<sup>h</sup>·y<sub>t</sub><br>
+                • The series is started from its stationary distribution (mean c/(1−φ)), so the path is not a climb up from zero
             </p>
         </div>
 
@@ -527,10 +528,13 @@
             const n = parseInt(document.getElementById('ar-steps').value);
             const h = parseInt(document.getElementById('ar-forecast').value);
 
-            seriesData = [0];
-            errorTerms = [generateGaussian(0, sigma)];
+            // Start in the stationary distribution, mean c/(1-φ), so the
+            // chart is not a deterministic climb up from zero.
+            const mu = c / (1 - phi);
+            const statSd = sigma / Math.sqrt(1 - phi * phi);
+            seriesData = [mu + generateGaussian(0, statSd)];
+            errorTerms = [];
 
-            // Generate series
             for (let t = 1; t < n; t++) {
                 const epsilon = generateGaussian(0, sigma);
                 errorTerms.push(epsilon);

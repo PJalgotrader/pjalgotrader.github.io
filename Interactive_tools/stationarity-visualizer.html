@@ -454,7 +454,7 @@
             <div class="chart-header">
                 <div class="chart-title">
                     <h3>3. Cyclical/Seasonal Process</h3>
-                    <p>E[X_t | X_(t-1), X_(t-2), ...] = A·sin(ωt + φ) (time-varying pattern) → NON-STATIONARY</p>
+                    <p>E[X_t | X_(t-1), X_(t-2), ...] = A·sin(2πft + φ) (time-varying pattern) → NON-STATIONARY</p>
                 </div>
                 <div class="controls">
                     <div class="control-group">
@@ -462,7 +462,7 @@
                         <input type="number" id="cyclicalAmplitude" value="2" step="0.1" min="0.1">
                     </div>
                     <div class="control-group">
-                        <label>Frequency (ω)</label>
+                        <label>Frequency (f, cycles per step)</label>
                         <input type="number" id="cyclicalFrequency" value="0.1" step="0.01" min="0.01" max="0.5">
                     </div>
                     <div class="control-group">
@@ -488,8 +488,8 @@
             <ul>
                 <li><strong>White Noise:</strong> Conditional expectation is always μ regardless of conditioning set - perfectly stationary</li>
                 <li><strong>Random Walk:</strong> Conditional expectation depends on the most recent value - non-stationary</li>
-                <li><strong>Cyclical:</strong> Conditional expectation follows a predictable time-varying pattern - non-stationary but deterministic</li>
-                <li><strong>Multiple Series:</strong> Generate several realizations to show the consistency of these properties across different samples</li>
+                <li><strong>Cyclical:</strong> Conditional expectation is A·sin(2πft + φ). With f = 0.1 that is one cycle every 10 steps. The mean moves with time, so the process is not stationary. The dashed line is that mean; the heavy line, once you have two or more series, is their ensemble average.</li>
+                <li><strong>Multiple Series:</strong> Generate several realizations. The heavy line is their ensemble mean at each date, and each badge reports that series' time mean. For a random walk those two averages do not agree.</li>
             </ul>
         </div>
     </div>
@@ -531,17 +531,23 @@
         }
         
         // Generate random normal number using Box-Muller transform
+        function readNum(id, fallback) {
+            const v = parseFloat(document.getElementById(id).value);
+            return Number.isFinite(v) ? v : fallback;
+        }
+
         function randomNormal() {
-            const u = Math.random();
-            const v = Math.random();
+            let u = 0, v = 0;
+            while (u === 0) u = Math.random();
+            while (v === 0) v = Math.random();
             return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
         }
         
         // White Noise Functions
         function addWhiteNoise() {
-            const mean = parseFloat(document.getElementById('whiteNoiseMean').value) || 0;
-            const variance = parseFloat(document.getElementById('whiteNoiseVariance').value) || 1;
-            const length = parseInt(document.getElementById('whiteNoiseLength').value) || 100;
+            const mean = readNum('whiteNoiseMean', 0);
+            const variance = Math.max(0, readNum('whiteNoiseVariance', 1));
+            const length = Math.max(2, Math.round(readNum('whiteNoiseLength', 100)));
             
             const std = Math.sqrt(variance);
             const seriesData = [];
@@ -557,7 +563,9 @@
                 data: seriesData,
                 color: getRandomColor(),
                 name: `Series ${data.whiteNoise.length + 1}`,
-                mean: mean
+                mean: mean,
+                meanPath: seriesData.map(d => ({ t: d.t, value: mean })),
+                timeMean: seriesData.reduce((s, d) => s + d.value, 0) / seriesData.length
             };
             
             data.whiteNoise.push(series);
@@ -571,10 +579,10 @@
         
         // Random Walk Functions
         function addRandomWalk() {
-            const drift = parseFloat(document.getElementById('randomWalkDrift').value) || 0;
-            const variance = parseFloat(document.getElementById('randomWalkVariance').value) || 1;
-            const initial = parseFloat(document.getElementById('randomWalkInitial').value) || 0;
-            const length = parseInt(document.getElementById('randomWalkLength').value) || 100;
+            const drift = readNum('randomWalkDrift', 0);
+            const variance = Math.max(0, readNum('randomWalkVariance', 1));
+            const initial = readNum('randomWalkInitial', 0);
+            const length = Math.max(2, Math.round(readNum('randomWalkLength', 100)));
             
             const std = Math.sqrt(variance);
             const seriesData = [];
@@ -592,7 +600,9 @@
                 id: `rw_${seriesCounter}`,
                 data: seriesData,
                 color: getRandomColor(),
-                name: `Series ${data.randomWalk.length + 1}`
+                name: `Series ${data.randomWalk.length + 1}`,
+                meanPath: seriesData.map(d => ({ t: d.t, value: initial + drift * d.t })),
+                timeMean: seriesData.reduce((s, d) => s + d.value, 0) / seriesData.length
             };
             
             data.randomWalk.push(series);
@@ -606,10 +616,10 @@
         
         // Cyclical Functions
         function addCyclical() {
-            const amplitude = parseFloat(document.getElementById('cyclicalAmplitude').value) || 2;
-            const frequency = parseFloat(document.getElementById('cyclicalFrequency').value) || 0.1;
-            const phase = parseFloat(document.getElementById('cyclicalPhase').value) || 0;
-            const noise = parseFloat(document.getElementById('cyclicalNoise').value) || 0.2;
+            const amplitude = readNum('cyclicalAmplitude', 2);
+            const frequency = readNum('cyclicalFrequency', 0.1);
+            const phase = readNum('cyclicalPhase', 0);
+            const noise = readNum('cyclicalNoise', 0.2);
             const length = 100; // Fixed length for cyclical
             
             const seriesData = [];
@@ -625,7 +635,12 @@
                 id: `cy_${seriesCounter}`,
                 data: seriesData,
                 color: getRandomColor(),
-                name: `Series ${data.cyclical.length + 1}`
+                name: `Series ${data.cyclical.length + 1}`,
+                meanPath: seriesData.map(d => ({
+                    t: d.t,
+                    value: amplitude * Math.sin(2 * Math.PI * frequency * d.t + phase)
+                })),
+                timeMean: seriesData.reduce((s, d) => s + d.value, 0) / seriesData.length
             };
             
             data.cyclical.push(series);
@@ -667,10 +682,10 @@
                 .attr('transform', `translate(${margin.left},${margin.top})`);
             
             // Get all data points and setup scales
-            const allData = seriesData.flatMap(series => series.data);
+            const allData = seriesData.flatMap(series => series.data.concat(series.meanPath || []));
             const maxT = d3.max(allData, d => d.t);
             const [minY, maxY] = d3.extent(allData, d => d.value);
-            const yPadding = (maxY - minY) * 0.1;
+            const yPadding = (maxY - minY) * 0.1 || 1;
             
             const xScale = d3.scaleLinear()
                 .domain([0, maxT])
@@ -715,27 +730,39 @@
                 .selectAll('text')
                 .style('font-size', '12px');
             
-            // Reference line for white noise mean
-            if (type === 'whiteNoise' && seriesData.length > 0) {
-                const mean = seriesData[0].mean;
-                g.append('line')
-                    .attr('x1', 0)
-                    .attr('x2', width)
-                    .attr('y1', yScale(mean))
-                    .attr('y2', yScale(mean))
-                    .attr('stroke', '#16a34a')
-                    .attr('stroke-width', 2)
-                    .attr('stroke-dasharray', '5,5');
-                    
-                g.append('text')
-                    .attr('x', width - 10)
-                    .attr('y', yScale(mean) - 5)
-                    .attr('text-anchor', 'end')
-                    .style('font-size', '12px')
-                    .style('fill', '#16a34a')
-                    .text('Mean');
+            // Mean function of each series (μ, X_0 + δt, or A sin(2πft+φ)), then the ensemble average.
+            const meanLine = d3.line()
+                .x(d => xScale(d.t))
+                .y(d => yScale(d.value));
+            seriesData.forEach(series => {
+                if (!series.meanPath) return;
+                g.append('path')
+                    .datum(series.meanPath)
+                    .attr('fill', 'none')
+                    .attr('stroke', series.color)
+                    .attr('stroke-width', 1.5)
+                    .attr('stroke-dasharray', '5,4')
+                    .attr('opacity', 0.85)
+                    .attr('d', meanLine);
+            });
+            if (seriesData.length >= 2) {
+                const ens = [];
+                for (let t = 0; t <= maxT; t++) {
+                    const vals = [];
+                    seriesData.forEach(series => {
+                        const pt = series.data.find(d => d.t === t);
+                        if (pt) vals.push(pt.value);
+                    });
+                    if (vals.length >= 2) ens.push({ t, value: vals.reduce((a, b) => a + b, 0) / vals.length });
+                }
+                g.append('path')
+                    .datum(ens)
+                    .attr('fill', 'none')
+                    .attr('stroke', '#111827')
+                    .attr('stroke-width', 2.5)
+                    .attr('d', meanLine);
             }
-            
+
             // Draw lines
             const line = d3.line()
                 .x(d => xScale(d.t))
@@ -847,7 +874,9 @@
                     .style('background-color', series.color);
                     
                 badge.append('span')
-                    .text(series.name);
+                    .text(series.timeMean === undefined
+                        ? series.name
+                        : `${series.name} · time mean ${series.timeMean.toFixed(2)}`);
                     
                 badge.append('button')
                     .attr('class', 'remove-btn')

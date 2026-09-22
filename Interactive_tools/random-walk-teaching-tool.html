@@ -520,7 +520,7 @@
                 <select id="dist">
                     <option value="gaussian">Gaussian (bell curve)</option>
                     <option value="student">Student-t, fat tails (ν = 4)</option>
-                    <option value="coin">Coin flip (±σ every day)</option>
+                    <option value="coin">Coin flip (±1 daily σ)</option>
                     <option value="uniform">Uniform</option>
                 </select>
                 <div class="value-sub" id="distSub">all shapes are scaled to the same σ</div>
@@ -583,7 +583,7 @@
             <h3>Five things to try</h3>
             <ol>
                 <li><strong>Patterns from nothing.</strong> Set drift to 0 and add 25 paths. Find the most convincing uptrend, the cleanest "support level", the scariest crash. Every one of them came from a coin with no memory. The returns strip under the chart is the honest picture: no trend, no cycle, just noise. Trends live in the price chart only because it accumulates that noise.</li>
-                <li><strong>Uncertainty grows with √t, not t.</strong> The gold cone is the ±1σ√t and ±2σ√t band around the drift line. Drag the horizon from 252 to 1008 days: four times the days, but the cone ends only about twice as wide.</li>
+                <li><strong>Uncertainty grows with √t, not t.</strong> The gold cone is the ±1σ√t and ±2σ√t band around the drift line. Drag the horizon from 252 to 1008 days: four times the days, so the band is exactly twice as wide in log price (turn on Log scale). In dollars it widens by a bit more, because the center of the cone has drifted up too.</li>
                 <li><strong>The best forecast is today's price, plus drift.</strong> Click any day on the chart and the cone re-anchors there. Its center is just the last price drifting slowly upward, and no amount of history narrows the band. Nothing before the last price helps. This "naive" forecast is the benchmark that any ARIMA, exponential smoothing, or machine-learning model has to beat on financial data.</li>
                 <li><strong>Drift versus noise.</strong> At 8% drift and 20% volatility, about one path in three ends the year below where it started (histogram on the right). Stretch the horizon to 5 years and it drops to about one in five: the drift accumulates with t while the noise only grows with √t, so time is on the side of the drift.</li>
                 <li><strong>Fat tails.</strong> Switch the shock to Student-t. Same volatility, but a handful of days now carry most of the action: the crash days that Gaussian noise almost never produces. Then try the coin flip, the original textbook random walk. It still looks like a stock chart.</li>
@@ -1110,7 +1110,7 @@
             tag('median ' + fmtPrice(med), x(med), m.t + 20, GOLD_DARK);
 
             const above = finals.filter(f => f > P0).length / N;
-            cap.innerHTML = '<strong>' + N + ' paths</strong> · ' + (above * 100).toFixed(0) + '% ended above $100 (theory ' + (pTheory * 100).toFixed(0) + '%) · median ' + fmtPrice(med) +
+            cap.innerHTML = '<strong>' + N + ' paths</strong> · ' + (above * 100).toFixed(0) + '% ended above $100 (Gaussian theory ' + (pTheory * 100).toFixed(0) + '%) · median ' + fmtPrice(med) +
                 ' · 90% of paths finished between ' + fmtPrice(quantile(finals, 0.05)) + ' and ' + fmtPrice(quantile(finals, 0.95)) + '.';
         }
 

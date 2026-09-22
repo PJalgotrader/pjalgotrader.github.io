@@ -617,12 +617,12 @@
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">Training Loss Curves</div>
+                <div class="chart-title">Training Loss</div>
                 <div id="lossChart"></div>
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">Time Series Predictions Comparison</div>
+                <div class="chart-title">One-step test predictions (true lags, not a recursive path)</div>
                 <div id="forecastChart"></div>
             </div>
 
@@ -689,7 +689,8 @@
         }
 
         function invertPreprocessing(predictions, originalData, startIdx) {
-            // Un-difference and un-log
+            // predictions[i] estimates diff[startIdx + i] = log(y[startIdx+i+1]) - log(y[startIdx+i]).
+            // The anchor is y[startIdx], and the reconstructed level is y[startIdx+1].
             const result = [];
             for (let i = 0; i < predictions.length; i++) {
                 const prevLog = Math.log(originalData[startIdx + i]);
@@ -828,7 +829,6 @@
                 const historyDNN = await modelDNN.fit(XTrainDNN, YTrainDNN, {
                     epochs: epochs,
                     batchSize: 16,
-                    validationData: [XTestDNN, tf.tensor2d(YTestDNN_data, [YTestDNN_data.length, 1])],
                     verbose: 0
                 });
 
@@ -846,7 +846,6 @@
                 const historyRNN = await modelRNN.fit(XTrainRNN, YTrainRNN, {
                     epochs: epochs,
                     batchSize: 16,
-                    validationData: [XTestRNN, tf.tensor2d(YTestRNN_data, [YTestRNN_data.length, 1])],
                     verbose: 0
                 });
 
@@ -859,21 +858,23 @@
                 const predDNN = modelDNN.predict(XTestDNN).arraySync().map(x => x[0]);
                 const predRNN = modelRNN.predict(XTestRNN).arraySync().map(x => x[0]);
 
-                // Convert back to original scale if needed
-                // Use the test data from whichever model has more test samples (they might differ if lags differ)
-                const actualTestDNN = YTestDNN_data;
-                const actualTestRNN = YTestRNN_data;
+                // One-step test predictions. With preprocessing, undo log and differencing
+                // from the correct anchor so the levels line up with Jan–Dec 1960.
                 let finalPredDNN = predDNN;
                 let finalPredRNN = predRNN;
-                let actualTest = actualTestDNN; // Use DNN test data for plotting (should be similar)
+                let actualTest;
+                // plotTrainEnd is how many original observations sit before the test levels.
+                let plotTrainEnd = trainSize;
 
                 if (usePreprocessing) {
-                    const testStartIdx = trainSize;
-                    actualTest = originalData.slice(testStartIdx, testStartIdx + Math.min(YTestDNN_data.length, YTestRNN_data.length));
-                    finalPredDNN = invertPreprocessing(predDNN, originalData, testStartIdx - 1);
-                    finalPredRNN = invertPreprocessing(predRNN, originalData, testStartIdx - 1);
+                    // First test difference is diff[trainSize] = log(y[trainSize+1]) - log(y[trainSize]).
+                    const nPred = Math.min(predDNN.length, predRNN.length);
+                    finalPredDNN = invertPreprocessing(predDNN, originalData, trainSize);
+                    finalPredRNN = invertPreprocessing(predRNN, originalData, trainSize);
+                    actualTest = originalData.slice(trainSize + 1, trainSize + 1 + nPred);
+                    plotTrainEnd = trainSize + 1;
                 } else {
-                    actualTest = originalData.slice(trainSize, trainSize + Math.min(YTestDNN_data.length, YTestRNN_data.length));
+                    actualTest = originalData.slice(trainSize, trainSize + Math.min(predDNN.length, predRNN.length));
                 }
 
                 // Calculate metrics (trim to minimum length for fair comparison)
@@ -913,7 +914,7 @@
                 plotLossCurves(historyDNN.history, historyRNN.history);
 
                 // Plot forecasts (using trimmed data for fair comparison)
-                plotForecasts(originalData, trainSize, actualTestTrimmed, predDNNTrimmed, predRNNTrimmed);
+                plotForecasts(originalData, plotTrainEnd, actualTestTrimmed, predDNNTrimmed, predRNNTrimmed);
 
                 // Show results
                 results.style.display = 'block';
@@ -947,14 +948,6 @@
                 line: { color: '#3b82f6', width: 2 }
             };
 
-            const traceDNNVal = {
-                x: epochsDNN,
-                y: historyDNN.val_loss,
-                name: 'DNN Validation Loss',
-                mode: 'lines',
-                line: { color: '#3b82f6', width: 2, dash: 'dash' }
-            };
-
             const traceRNNTrain = {
                 x: epochsRNN,
                 y: historyRNN.loss,
@@ -963,23 +956,15 @@
                 line: { color: '#f97316', width: 2 }
             };
 
-            const traceRNNVal = {
-                x: epochsRNN,
-                y: historyRNN.val_loss,
-                name: 'RNN Validation Loss',
-                mode: 'lines',
-                line: { color: '#f97316', width: 2, dash: 'dash' }
-            };
-
             const layout = {
                 xaxis: { title: 'Epoch' },
-                yaxis: { title: 'Loss (MSE)', type: 'log' },
+                yaxis: { title: usePreprocessing ? 'Loss (MSE of log-differences)' : 'Loss (MSE)', type: 'log' },
                 hovermode: 'x unified',
                 showlegend: true,
                 legend: { x: 0.7, y: 1 }
             };
 
-            Plotly.newPlot('lossChart', [traceDNNTrain, traceDNNVal, traceRNNTrain, traceRNNVal], layout, { responsive: true });
+            Plotly.newPlot('lossChart', [traceDNNTrain, traceRNNTrain], layout, { responsive: true });
         }
 
         function plotForecasts(originalData, trainSize, actualTest, predDNN, predRNN) {
@@ -1005,7 +990,7 @@
             const tracePredDNN = {
                 x: testIndices,
                 y: predDNN,
-                name: 'DNN Predictions',
+                name: 'DNN one-step',
                 mode: 'lines',
                 line: { color: '#3b82f6', width: 3 }
             };
@@ -1013,7 +998,7 @@
             const tracePredRNN = {
                 x: testIndices,
                 y: predRNN,
-                name: 'RNN Predictions',
+                name: 'RNN one-step',
                 mode: 'lines',
                 line: { color: '#f97316', width: 3 }
             };

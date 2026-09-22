@@ -621,7 +621,7 @@
                 <p style="margin-top: 10px;">
                     <strong>How it works:</strong> Divide data into <strong>N</strong> groups, choose <strong>k</strong> as test groups
                     in each split. This produces <span class="formula">C(N, k)</span> splits. Each observation is tested
-                    <span class="formula">C(N&minus;1, k&minus;1)</span> times. Predictions are recombined into full backtest paths.
+                    <span class="formula">C(N&minus;1, k&minus;1)</span> times. Path p gives group g the forecast from the p-th split that tested g, so a repeated split number means those groups were held out together, and across the paths every out-of-sample forecast is used once.
                 </p>
             </div>
 
@@ -644,8 +644,8 @@
             <div class="legend">
                 <div class="legend-item"><div class="legend-swatch" style="background: #3b82f6;"></div> Train</div>
                 <div class="legend-item"><div class="legend-swatch" style="background: #f59e0b;"></div> Test</div>
-                <div class="legend-item"><div class="legend-swatch" style="background: #ef4444;"></div> Purge / Embargo</div>
             </div>
+            <p style="margin: 8px 0 0 0; color: #64748b; font-size: 0.9em;">Purging and the embargo, drawn on the first tab, sit around each test block before a path is scored. They are left off this diagram so the group assignment stays readable.</p>
 
             <div class="timeline-label">All C(N, k) Splits</div>
             <div class="viz-area" id="cpcv-viz"></div>
@@ -1041,47 +1041,19 @@
     }
 
     function buildBacktestPaths(n, k, combinations) {
-        // Each group needs to be covered exactly once in each path.
-        // For each group g, find all splits where g is in the test set.
-        const groupToSplits = {};
-        for (let g = 0; g < n; g++) {
-            groupToSplits[g] = [];
-            combinations.forEach((combo, idx) => {
-                if (combo.includes(g)) groupToSplits[g].push(idx);
-            });
-        }
-
-        // Greedy path construction
-        const nPaths = comb(n - 1, k - 1);
+        // de Prado: order the splits that test each group the way the combinations
+        // were generated. Path p uses the p-th of those splits for every group.
+        // The same split id on two groups means they were held out together.
+        const byGroup = Array.from({ length: n }, () => []);
+        combinations.forEach((combo, idx) => {
+            combo.forEach(g => byGroup[g].push(idx));
+        });
+        const nPaths = byGroup.length ? byGroup[0].length : 0;
         const paths = [];
-        const splitUsage = {}; // Track how many times each split is used per group
-        for (let g = 0; g < n; g++) {
-            splitUsage[g] = {};
-            groupToSplits[g].forEach(s => splitUsage[g][s] = 0);
-        }
-
         for (let p = 0; p < nPaths; p++) {
-            const path = []; // path[g] = split index that provides group g's test prediction
-            const usedSplits = new Set();
-
-            for (let g = 0; g < n; g++) {
-                // Find a split for group g not yet used in this path (prefer least globally used)
-                const candidates = groupToSplits[g].filter(s => !usedSplits.has(s));
-                if (candidates.length === 0) {
-                    // Fallback: just pick any
-                    path.push(groupToSplits[g][0]);
-                } else {
-                    // Pick the one used least
-                    candidates.sort((a, b) => splitUsage[g][a] - splitUsage[g][b]);
-                    const chosen = candidates[0];
-                    path.push(chosen);
-                    usedSplits.add(chosen);
-                    splitUsage[g][chosen]++;
-                }
-            }
-            paths.push(path);
+            const assign = byGroup.map(list => list[p]);
+            paths.push({ assign, splits: [...new Set(assign)] });
         }
-
         return paths;
     }
 
@@ -1105,7 +1077,7 @@
         for (let s = 0; s < combos.length; s++) {
             const y = 28 + s * (cellH + gap);
             const isHighlighted = highlightSplit === s;
-            const isInSelectedPath = selectedPath >= 0 && currentPaths[selectedPath] && currentPaths[selectedPath].includes(s);
+            const isInSelectedPath = selectedPath >= 0 && currentPaths[selectedPath] && currentPaths[selectedPath].splits.includes(s);
             let opacity = 1;
             if (highlightSplit >= 0 && !isHighlighted) opacity = 0.2;
             if (selectedPath >= 0 && !isInSelectedPath) opacity = 0.25;
@@ -1166,7 +1138,7 @@
 
             for (let g = 0; g < n; g++) {
                 const x = labelW + g * (cellW + gap);
-                const splitIdx = currentPaths[p][g];
+                const splitIdx = currentPaths[p].assign[g];
                 svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="5" fill="${pathColor}" opacity="0.8"/>`;
                 svg += `<text x="${x + cellW/2}" y="${y + cellH/2 + 4}" text-anchor="middle" font-size="9" font-weight="600" fill="white">Split ${splitIdx + 1}</text>`;
             }

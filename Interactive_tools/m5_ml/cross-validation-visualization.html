@@ -628,9 +628,10 @@
             <h3>K-Fold Cross Validation</h3>
             <p>
                 When we don't have enough data for a separate validation set, <strong>K-Fold CV</strong> solves the problem by
-                reusing data. The training data is split into <strong>K equal-sized folds</strong>. In each iteration, one fold
+                reusing data. The training data is split into <strong>K folds of equal size, or differing by one sample</strong>. In each iteration, one fold
                 is held out as the <em>validation set</em> and the remaining K−1 folds are used for training.
                 The final performance is the <strong>average across all K iterations</strong>.
+                The scores in this animation are placeholders, so the thing to watch is which observations are held out.
             </p>
         </div>
 
@@ -738,9 +739,9 @@
             <h3 style="color:#b45309;">Demo: Classification Example</h3>
             <p>
                 The simulation below demonstrates LOOCV on a <strong>classification</strong> task. In each iteration, the
-                single held-out sample is predicted as either <span style="color:#059669;font-weight:700;">correct (✓)</span>
-                or <span style="color:#dc2626;font-weight:700;">incorrect (✗)</span>. The final LOOCV accuracy is the
-                fraction of samples correctly classified.
+                single held-out sample is marked, at random, as either <span style="color:#059669;font-weight:700;">correct (✓)</span>
+                or <span style="color:#dc2626;font-weight:700;">incorrect (✗)</span>. Nothing is being classified. The final figure is just the
+                fraction of those random marks, so you can see how a LOOCV accuracy is averaged.
             </p>
             <p style="margin-top:8px;">
                 For <strong>regression</strong> tasks, the logic is the same — but instead of correct/incorrect, each
@@ -869,7 +870,22 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 // UTILITY: generate fake "scores" for educational demo
 // ============================================================
 function fakeScore() {
-    return (0.78 + Math.random() * 0.17).toFixed(3);  // 0.780 - 0.950
+    return (0.78 + Math.random() * 0.17).toFixed(3);  // placeholder, not a fitted model
+}
+
+// Folds differ in size by at most one. The first (n % k) folds are the larger ones.
+function foldIndex(i, n, k) {
+    const base = Math.floor(n / k);
+    const rem = n % k;
+    const big = rem * (base + 1);
+    if (i < big) return Math.floor(i / (base + 1));
+    return rem + Math.floor((i - big) / base);
+}
+
+function countsPerFold(nClass, k) {
+    const base = Math.floor(nClass / k);
+    const rem = nClass % k;
+    return Array.from({ length: k }, (_, f) => base + (f < rem ? 1 : 0));
 }
 
 const COLORS = {
@@ -902,10 +918,9 @@ function resetKFold() {
 function renderKFoldDataset(n, k) {
     const strip = document.getElementById('kfold-dataset');
     strip.innerHTML = '';
-    const foldSize = Math.ceil(n / k);
     const foldColors = ['#8b5cf6','#3b82f6','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#6366f1','#14b8a6','#f97316'];
     for (let i = 0; i < n; i++) {
-        const foldIdx = Math.min(Math.floor(i / foldSize), k - 1);
+        const foldIdx = foldIndex(i, n, k);
         const el = document.createElement('div');
         el.className = 'data-sample';
         el.style.background = foldColors[foldIdx % foldColors.length];
@@ -928,7 +943,6 @@ async function animateKFold() {
     diagram.innerHTML = '';
     document.getElementById('kfold-results').classList.remove('visible');
 
-    const foldSize = Math.ceil(n / k);
     const scores = [];
 
     for (let fold = 0; fold < k; fold++) {
@@ -946,7 +960,7 @@ async function animateKFold() {
         blocks.className = 'fold-blocks';
 
         for (let i = 0; i < n; i++) {
-            const foldIdx = Math.min(Math.floor(i / foldSize), k - 1);
+            const foldIdx = foldIndex(i, n, k);
             const block = document.createElement('div');
             block.className = 'fold-block';
             block.style.flex = '1';
@@ -963,7 +977,7 @@ async function animateKFold() {
 
         const scoreDiv = document.createElement('div');
         scoreDiv.className = 'fold-score';
-        scoreDiv.innerHTML = `Score: <span class="score-val">${score}</span>`;
+        scoreDiv.innerHTML = `Illustrative: <span class="score-val">${score}</span>`;
 
         row.appendChild(label);
         row.appendChild(blocks);
@@ -1032,8 +1046,8 @@ async function animateStratified() {
     document.getElementById('strat-results').classList.remove('visible');
 
     const nA = 9, nB = 21, n = 30;
-    const aPerFold = Math.floor(nA / k);
-    const bPerFold = Math.floor(nB / k);
+    const aCounts = countsPerFold(nA, k);
+    const bCounts = countsPerFold(nB, k);
     const scores = [];
 
     for (let fold = 0; fold < k; fold++) {
@@ -1053,15 +1067,14 @@ async function animateStratified() {
         // Build all folds for this iteration
         for (let f = 0; f < k; f++) {
             const isVal = f === fold;
-            // Each fold has aPerFold A's and bPerFold B's
-            const foldN = aPerFold + bPerFold;
+            const foldN = aCounts[f] + bCounts[f];
             const block = document.createElement('div');
             block.className = 'fold-block';
             block.style.flex = `${foldN}`;
 
             if (isVal) {
                 block.classList.add('val');
-                block.textContent = `Val (${aPerFold}A + ${bPerFold}B)`;
+                block.textContent = `Val (${aCounts[f]}A + ${bCounts[f]}B)`;
                 block.style.fontSize = '0.62em';
             } else {
                 block.classList.add('train');
@@ -1072,7 +1085,7 @@ async function animateStratified() {
 
         const scoreDiv = document.createElement('div');
         scoreDiv.className = 'fold-score';
-        scoreDiv.innerHTML = `Score: <span class="score-val">${score}</span>`;
+        scoreDiv.innerHTML = `Illustrative: <span class="score-val">${score}</span>`;
 
         row.appendChild(label);
         row.appendChild(blocks);
@@ -1089,7 +1102,7 @@ async function animateStratified() {
     const avg = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(3);
     const resultsBar = document.getElementById('strat-results');
     document.getElementById('strat-final-score').textContent = avg;
-    document.getElementById('strat-formula').textContent = `Each validation fold has ~${Math.round(nA/n*100)}% Class A and ~${Math.round(nB/n*100)}% Class B`;
+    document.getElementById('strat-formula').textContent = 'Class counts differ by at most one across folds. The numbers above are illustrative: no model is fit.';
     await delay(200);
     resultsBar.classList.add('visible');
 

@@ -813,7 +813,7 @@
         const resid = DECOMP.residuals;
         const n = resid.length;
 
-        // Fit AR(1) to decomposition residuals via Yule-Walker
+        // Fit AR(1) to decomposition residuals by conditional least squares
         const rMean = resid.reduce((a, b) => a + b, 0) / n;
         const centered = resid.map(r => r - rMean);
         let num = 0, den = 0;
@@ -823,27 +823,22 @@
         }
         const phi = den > 0 ? num / den : 0;
 
-        // Compute AR(1) innovations (eps_t = r_t - phi * r_{t-1})
-        const innovations = [centered[0]];
+        // Innovations start at t = 1. The first residual is not an innovation.
+        const innovations = [];
         for (let t = 1; t < n; t++) {
             innovations.push(centered[t] - phi * centered[t - 1]);
         }
-        // Center innovations
         const eMean = innovations.reduce((a, b) => a + b, 0) / innovations.length;
         const centeredInnov = innovations.map(e => e - eMean);
 
         // Generate bootstrap samples
         const results = [];
         for (let b = 0; b < B; b++) {
-            // Resample innovations i.i.d.
-            const bootInnov = centeredInnov.map(() =>
-                centeredInnov[Math.floor(Math.random() * centeredInnov.length)]
-            );
-
-            // Reconstruct residuals via AR(1): r*_t = phi * r*_{t-1} + eps*_t
-            const rStar = [bootInnov[0]];
+            const drawInnov = () => centeredInnov[Math.floor(Math.random() * centeredInnov.length)];
+            // r*_0 from the residual distribution, then the AR recursion on resampled innovations
+            const rStar = [centered[Math.floor(Math.random() * n)]];
             for (let t = 1; t < n; t++) {
-                rStar.push(phi * rStar[t - 1] + bootInnov[t]);
+                rStar.push(phi * rStar[t - 1] + drawInnov());
             }
 
             // Reconstruct full series: exp(Trend + Seasonal + r*)
@@ -871,7 +866,7 @@
         // Plot innovations
         Plotly.newPlot('arima-resid-chart', [
             {
-                x: MONTHS,
+                x: MONTHS.slice(1),
                 y: innovations,
                 type: 'bar',
                 marker: { color: innovations.map(r => r >= 0 ? 'rgba(59, 130, 246, 0.6)' : 'rgba(239, 68, 68, 0.6)') },
@@ -965,7 +960,9 @@
 
             svg += `<text x="0" y="${y + cellH/2 + 4}" font-size="10" font-weight="600" fill="${color}">Block ${b + 1} (i=${start + 1}):</text>`;
 
-            for (let j = 0; j < blockSize; j++) {
+            const remainder = seriesLen % blockSize;
+            const drawLen = (b === blockStarts.length - 1 && remainder !== 0) ? remainder : blockSize;
+            for (let j = 0; j < drawLen; j++) {
                 const idx = isCircular ? (start + j) % seriesLen : start + j;
                 if (idx >= seriesLen) break;
                 const x = labelW + idx * (cellW + gap);
@@ -973,8 +970,8 @@
             }
 
             // Show wrap-around for circular
-            if (isCircular && start + blockSize > seriesLen) {
-                const wrapCount = (start + blockSize) - seriesLen;
+            if (isCircular && start + drawLen > seriesLen) {
+                const wrapCount = (start + drawLen) - seriesLen;
                 for (let j = 0; j < wrapCount; j++) {
                     const x = labelW + j * (cellW + gap);
                     svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="1" fill="${color}" opacity="0.4" stroke="${color}" stroke-width="1" stroke-dasharray="2"/>`;

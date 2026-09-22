@@ -826,13 +826,11 @@
             await currentModel.fit(trainXTensor, trainYTensor, {
                 epochs: numEpochs,
                 batchSize: 16,
-                validationSplit: 0.1,
                 callbacks: {
                     onEpochEnd: (epoch, logs) => {
                         lossHistory.push({
                             epoch: epoch + 1,
-                            loss: logs.loss,
-                            valLoss: logs.val_loss
+                            loss: logs.loss
                         });
 
                         // Update loss plot every 10 epochs
@@ -933,7 +931,6 @@
         function updateLossPlot() {
             const epochs = lossHistory.map(h => h.epoch);
             const trainLoss = lossHistory.map(h => h.loss);
-            const valLoss = lossHistory.map(h => h.valLoss);
 
             const traces = [
                 {
@@ -942,13 +939,6 @@
                     mode: 'lines',
                     name: 'Training Loss',
                     line: { color: '#667eea', width: 2 }
-                },
-                {
-                    x: epochs,
-                    y: valLoss,
-                    mode: 'lines',
-                    name: 'Validation Loss',
-                    line: { color: '#f093fb', width: 2 }
                 }
             ];
 
@@ -1139,14 +1129,20 @@
                 importance.push(sum / weights[i].length);
             }
 
-            const lagLabels = Array.from({ length: numLags }, (_, i) => `Lag ${i + 1}`);
+            // features[0] is the oldest input, y[t-numLags]. Lag 1 means the previous month.
+            const lagLabels = [];
+            const importanceByLag = [];
+            for (let lag = 1; lag <= numLags; lag++) {
+                lagLabels.push('Lag ' + lag);
+                importanceByLag.push(importance[numLags - lag]);
+            }
 
             const trace = {
                 x: lagLabels,
-                y: importance,
+                y: importanceByLag,
                 type: 'bar',
                 marker: { color: '#764ba2' },
-                text: importance.map(v => v.toFixed(3)),
+                text: importanceByLag.map(v => v.toFixed(3)),
                 textposition: 'outside'
             };
 
