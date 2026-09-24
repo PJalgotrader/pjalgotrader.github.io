@@ -319,6 +319,12 @@
             display: block;
         }
 
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 1.8em;
@@ -370,7 +376,7 @@
     </div>
 
     <div class="container">
-        <p style="max-width: 760px; margin: 0 auto 25px auto; text-align: center; color: #555; line-height: 1.6; font-size: 1.05em;">Every control below retrains an actual feedforward neural network in your browser on the classic 1949&ndash;1960 airline-passenger counts, using your chosen number of lagged months as inputs. Watch the loss curve, the network diagram, and the forecast update after each run, and compare its error metrics against a simple linear-regression benchmark.</p>
+        <p style="max-width: 760px; margin: 0 auto 25px auto; text-align: center; color: #555; line-height: 1.6; font-size: 1.05em;">Set the controls below, then click Train Model to train an actual feedforward neural network in your browser on the classic 1949&ndash;1960 airline-passenger counts, using your chosen number of lagged months as inputs. Watch the loss curve, the network diagram, and the forecast update after each run, and compare its error metrics against a simple linear-regression benchmark.</p>
         <div class="intro">
             <h2>Understanding Deep Neural Networks for Time Series</h2>
             <p>
@@ -800,87 +806,92 @@
             statusMessage.className = 'status-message training';
             statusMessage.textContent = 'Training model... Please wait';
 
-            // Get parameters
-            const numLags = parseInt(document.getElementById('lagsSlider').value);
-            const numLayers = parseInt(document.getElementById('numLayersSelect').value);
-            const hiddenActivation = document.getElementById('hiddenActivationSelect').value;
-            const outputActivation = document.getElementById('outputActivationSelect').value;
+            let trainXTensor, trainYTensor, testXTensor, testYTensor;
+            try {
+                // Get parameters
+                const numLags = parseInt(document.getElementById('lagsSlider').value);
+                const numLayers = parseInt(document.getElementById('numLayersSelect').value);
+                const hiddenActivation = document.getElementById('hiddenActivationSelect').value;
+                const outputActivation = document.getElementById('outputActivationSelect').value;
 
-            // Prepare data
-            const { X, y } = createLaggedData(numLags);
-            const { trainX, trainY, testX, testY } = splitData(X, y);
+                // Prepare data
+                const { X, y } = createLaggedData(numLags);
+                const { trainX, trainY, testX, testY } = splitData(X, y);
 
-            // Convert to tensors
-            const trainXTensor = tf.tensor2d(trainX);
-            const trainYTensor = tf.tensor2d(trainY, [trainY.length, 1]);
-            const testXTensor = tf.tensor2d(testX);
-            const testYTensor = tf.tensor2d(testY, [testY.length, 1]);
+                // Convert to tensors
+                trainXTensor = tf.tensor2d(trainX);
+                trainYTensor = tf.tensor2d(trainY, [trainY.length, 1]);
+                testXTensor = tf.tensor2d(testX);
+                testYTensor = tf.tensor2d(testY, [testY.length, 1]);
 
-            // Build and train DNN
-            currentModel = buildModel(numLags, numLayers, hiddenActivation, outputActivation);
+                // Build and train DNN (first freeing the previous run's weights and optimizer state)
+                if (currentModel) currentModel.dispose();
+                currentModel = buildModel(numLags, numLayers, hiddenActivation, outputActivation);
 
-            lossHistory = [];
+                lossHistory = [];
 
-            const numEpochs = parseInt(document.getElementById('epochsSlider').value);
+                const numEpochs = parseInt(document.getElementById('epochsSlider').value);
 
-            await currentModel.fit(trainXTensor, trainYTensor, {
-                epochs: numEpochs,
-                batchSize: 16,
-                callbacks: {
-                    onEpochEnd: (epoch, logs) => {
-                        lossHistory.push({
-                            epoch: epoch + 1,
-                            loss: logs.loss
-                        });
+                await currentModel.fit(trainXTensor, trainYTensor, {
+                    epochs: numEpochs,
+                    batchSize: 16,
+                    callbacks: {
+                        onEpochEnd: (epoch, logs) => {
+                            lossHistory.push({
+                                epoch: epoch + 1,
+                                loss: logs.loss
+                            });
 
-                        // Update loss plot every 10 epochs
-                        const updateInterval = Math.max(10, Math.floor(numEpochs / 10));
-                        if ((epoch + 1) % updateInterval === 0 || epoch === 0) {
-                            updateLossPlot();
+                            // Update loss plot every 10 epochs
+                            const updateInterval = Math.max(10, Math.floor(numEpochs / 10));
+                            if ((epoch + 1) % updateInterval === 0 || epoch === 0) {
+                                updateLossPlot();
+                            }
                         }
                     }
-                }
-            });
+                });
 
-            // Get DNN predictions
-            const dnnTrainPred = await currentModel.predict(trainXTensor).array();
-            const dnnTestPred = await currentModel.predict(testXTensor).array();
-            const dnnTrainPredFlat = dnnTrainPred.map(x => x[0]);
-            const dnnTestPredFlat = dnnTestPred.map(x => x[0]);
+                // Get DNN predictions
+                const dnnTrainPred = tf.tidy(() => currentModel.predict(trainXTensor).arraySync());
+                const dnnTestPred = tf.tidy(() => currentModel.predict(testXTensor).arraySync());
+                const dnnTrainPredFlat = dnnTrainPred.map(x => x[0]);
+                const dnnTestPredFlat = dnnTestPred.map(x => x[0]);
 
-            // Train Linear Regression
-            const lr = new LinearRegression();
-            lr.fit(trainX, trainY);
-            const lrTrainPred = lr.predict(trainX);
-            const lrTestPred = lr.predict(testX);
+                // Train Linear Regression
+                const lr = new LinearRegression();
+                lr.fit(trainX, trainY);
+                const lrTrainPred = lr.predict(trainX);
+                const lrTestPred = lr.predict(testX);
 
-            // Calculate metrics
-            const dnnTrainMetrics = calculateMetrics(trainY, dnnTrainPredFlat);
-            const dnnTestMetrics = calculateMetrics(testY, dnnTestPredFlat);
-            const lrTrainMetrics = calculateMetrics(trainY, lrTrainPred);
-            const lrTestMetrics = calculateMetrics(testY, lrTestPred);
+                // Calculate metrics
+                const dnnTrainMetrics = calculateMetrics(trainY, dnnTrainPredFlat);
+                const dnnTestMetrics = calculateMetrics(testY, dnnTestPredFlat);
+                const lrTrainMetrics = calculateMetrics(trainY, lrTrainPred);
+                const lrTestMetrics = calculateMetrics(testY, lrTestPred);
 
-            // Update metrics display
-            updateMetrics(dnnTrainMetrics, dnnTestMetrics, lrTrainMetrics, lrTestMetrics);
+                // Update metrics display
+                updateMetrics(dnnTrainMetrics, dnnTestMetrics, lrTrainMetrics, lrTestMetrics);
 
-            // Update visualizations
-            updateLossPlot();
-            updateArchitecturePlot(numLags, numLayers);
-            await updateFeatureImportancePlot(numLags);
-            updateTimeseriesPlot(trainY, testY, dnnTrainPredFlat, dnnTestPredFlat, lrTrainPred, lrTestPred, numLags);
+                // Update visualizations
+                updateLossPlot();
+                updateArchitecturePlot(numLags, numLayers);
+                await updateFeatureImportancePlot(numLags);
+                await updateTimeseriesPlot(trainY, testY, dnnTrainPredFlat, dnnTestPredFlat, lrTrainPred, lrTestPred, numLags);
 
-            // Cleanup tensors
-            trainXTensor.dispose();
-            trainYTensor.dispose();
-            testXTensor.dispose();
-            testYTensor.dispose();
+                statusMessage.className = 'status-message complete';
+                statusMessage.textContent = 'Training complete! Explore the results below.';
 
-            statusMessage.className = 'status-message complete';
-            statusMessage.textContent = 'Training complete! Explore the results below.';
-            trainButton.disabled = false;
-            isTraining = false;
-
-            document.getElementById('metricsContainer').style.display = 'grid';
+                document.getElementById('metricsContainer').style.display = 'grid';
+            } catch (error) {
+                console.error('Training error:', error);
+                statusMessage.className = 'status-message error';
+                statusMessage.textContent = 'Error: ' + error.message;
+            } finally {
+                // Cleanup tensors
+                tf.dispose([trainXTensor, trainYTensor, testXTensor, testYTensor]);
+                trainButton.disabled = false;
+                isTraining = false;
+            }
         }
 
         // Update metrics display
@@ -1163,11 +1174,13 @@
 
             for (let h = 0; h < horizon; h++) {
                 const input = tf.tensor2d([recentData.slice(-numLags)]);
-                const prediction = await currentModel.predict(input).array();
+                const output = currentModel.predict(input);
+                const prediction = await output.array();
                 const predValue = prediction[0][0];
                 forecasts.push(predValue);
                 recentData.push(predValue);
                 input.dispose();
+                output.dispose();
             }
 
             return forecasts;
@@ -1178,7 +1191,7 @@
             const horizon = parseInt(document.getElementById('horizonSlider').value);
 
             // Get future forecasts (async operation handled in training function)
-            forecastFuture(horizon, numLags).then(futurePred => {
+            return forecastFuture(horizon, numLags).then(futurePred => {
                 const trainMonths = Array.from({ length: trainY.length }, (_, i) => `Month ${i + numLags + 1}`);
                 const testMonths = Array.from({ length: testY.length }, (_, i) => `Month ${trainY.length + i + numLags + 1}`);
                 const futureMonths = Array.from({ length: horizon }, (_, i) => `Month ${trainY.length + testY.length + i + numLags + 1}`);
