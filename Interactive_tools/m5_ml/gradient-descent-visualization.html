@@ -509,10 +509,14 @@ function createEngine(prefix, isSGD) {
         updateLRIndicator(prefix, parseInt(lrSlider.value));
     });
 
+    // A new starting point starts a new run
+    startSelect.addEventListener('change', reset);
+
     function getLR() { return LR_OPTIONS[parseInt(lrSlider.value)]; }
 
     function reset() {
         if (animTimer) { clearInterval(animTimer); animTimer = null; }
+        if (isSGD) document.getElementById('sgd-sample-label').textContent = '';
         const start = getStart(startSelect.value);
         path = [{w: start.w, b: start.b, loss: mse(start.w, start.b), sampleIdx: -1}];
         updateStatus();
