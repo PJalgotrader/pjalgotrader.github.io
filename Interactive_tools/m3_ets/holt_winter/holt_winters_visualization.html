@@ -778,6 +778,23 @@
         const testData = airlineData.slice(splitIndex);
         const trainTime = timeIndex.slice(0, splitIndex);
         const testTime = timeIndex.slice(splitIndex);
+
+        // Plotly never wraps chart titles: on narrow screens use a smaller font and wrap long titles by hand,
+        // starting a new line at " - " and whenever a line would outgrow the chart
+        function chartTitle(text) {
+            if (window.innerWidth >= 600) return text;
+            const maxChars = Math.floor((window.innerWidth - 150) / 7);
+            const lines = [];
+            text.split(' - ').forEach(part => {
+                let line = '';
+                part.split(' ').forEach(word => {
+                    if (line && (line + ' ' + word).length > maxChars) { lines.push(line); line = word; }
+                    else line = line ? line + ' ' + word : word;
+                });
+                lines.push(line);
+            });
+            return { text: lines.join('<br>'), font: { size: 14 } };
+        }
         
         // Global variables for animation
         let animationId = null;
@@ -1118,7 +1135,7 @@
             }
             
             const layout1 = {
-                title: 'Airline Passengers - Holt-Winters Method (Additive)',
+                title: chartTitle('Airline Passengers - Holt-Winters Method (Additive)'),
                 xaxis: { title: 'Time (Months)' },
                 yaxis: { title: 'Number of Passengers' },
                 showlegend: true,
@@ -1138,13 +1155,11 @@
                 mode: 'lines+markers',
                 name: 'Level Component (ℓ_t)',
                 line: { color: 'purple', width: 3 },
-                marker: { size: 8, color: 'purple' },
-                fill: 'tonexty',
-                fillcolor: 'rgba(147, 112, 219, 0.1)'
+                marker: { size: 8, color: 'purple' }
             };
             
             const layout2 = {
-                title: 'Level Component Evolution (ℓ_t) - Deseasonalized',
+                title: chartTitle('Level Component Evolution (ℓ_t) - Deseasonalized'),
                 xaxis: { title: 'Time (Months)' },
                 yaxis: { title: 'Level Value' },
                 showlegend: true,
@@ -1205,7 +1220,7 @@
             };
             
             const layout3 = {
-                title: 'Trend Component Evolution (b_t)',
+                title: chartTitle('Trend Component Evolution (b_t)'),
                 xaxis: { title: 'Time (Months)' },
                 yaxis: { title: 'Trend Value', zeroline: true },
                 showlegend: true,
@@ -1292,7 +1307,7 @@
             };
             
             const layout4 = {
-                title: 'Seasonal Component Evolution (s_t) - 12 Month Pattern',
+                title: chartTitle('Seasonal Component Evolution (s_t) - 12 Month Pattern'),
                 xaxis: { 
                     title: 'Time (Months)',
                     range: [-12, Math.max(trainData.length, 12)]
@@ -1698,7 +1713,7 @@
             ];
             
             const layout1 = {
-                title: 'Airline Passengers - Holt-Winters Method (Additive)',
+                title: chartTitle('Airline Passengers - Holt-Winters Method (Additive)'),
                 xaxis: { title: 'Time (Months)' },
                 yaxis: { title: 'Number of Passengers' },
                 showlegend: true,
@@ -1717,7 +1732,7 @@
             };
             
             const layout2 = {
-                title: 'Level Component Evolution (ℓ_t) - Deseasonalized',
+                title: chartTitle('Level Component Evolution (ℓ_t) - Deseasonalized'),
                 xaxis: { title: 'Time (Months)', range: [-1, trainData.length] },
                 yaxis: { title: 'Level Value' },
                 showlegend: true,
@@ -1751,7 +1766,7 @@
             };
             
             const layout3 = {
-                title: 'Trend Component Evolution (b_t)',
+                title: chartTitle('Trend Component Evolution (b_t)'),
                 xaxis: { title: 'Time (Months)', range: [-1, trainData.length] },
                 yaxis: { title: 'Trend Value' },
                 showlegend: true,
@@ -1803,7 +1818,7 @@
             };
             
             const layout4 = {
-                title: 'Seasonal Component Evolution (s_t) - 12 Month Pattern',
+                title: chartTitle('Seasonal Component Evolution (s_t) - 12 Month Pattern'),
                 xaxis: { 
                     title: 'Time (Months)',
                     range: [-12, Math.max(trainData.length, 12)]
