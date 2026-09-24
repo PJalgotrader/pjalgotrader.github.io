@@ -182,6 +182,11 @@
             border-color: #667eea;
         }
 
+        .control-group select:disabled, .control-group input[type="range"]:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .control-group .val {
             font-weight: 700;
             color: #667eea;
@@ -882,10 +887,13 @@ function foldIndex(i, n, k) {
     return rem + Math.floor((i - big) / base);
 }
 
-function countsPerFold(nClass, k) {
+// A class's counts differ by at most one across folds. Its extra samples go to the folds from
+// `start` on (wrapping around), so the next class can start where this one stopped and the
+// fold sizes also stay within one of each other.
+function countsPerFold(nClass, k, start = 0) {
     const base = Math.floor(nClass / k);
     const rem = nClass % k;
-    return Array.from({ length: k }, (_, f) => base + (f < rem ? 1 : 0));
+    return Array.from({ length: k }, (_, f) => base + ((f - start + k) % k < rem ? 1 : 0));
 }
 
 const COLORS = {
@@ -931,13 +939,11 @@ function renderKFoldDataset(n, k) {
     }
 }
 
-document.getElementById('btn-kfold').addEventListener('click', animateKFold);
+document.getElementById('btn-kfold').addEventListener('click', () => runLocked(['btn-kfold', 'k-slider', 'n-samples'], animateKFold));
 
 async function animateKFold() {
     const n = parseInt(nSamples.value);
     const k = parseInt(kSlider.value);
-    const btn = document.getElementById('btn-kfold');
-    btn.disabled = true;
 
     const diagram = document.getElementById('kfold-diagram');
     diagram.innerHTML = '';
@@ -1000,8 +1006,6 @@ async function animateKFold() {
     document.getElementById('kfold-formula').textContent = `CV = (${scoresStr}) / ${k}`;
     await delay(200);
     resultsBar.classList.add('visible');
-
-    btn.disabled = false;
 }
 
 // ============================================================
@@ -1034,12 +1038,10 @@ function renderStratDataset() {
     `;
 }
 
-document.getElementById('btn-stratified').addEventListener('click', animateStratified);
+document.getElementById('btn-stratified').addEventListener('click', () => runLocked(['btn-stratified', 'strat-k-slider'], animateStratified));
 
 async function animateStratified() {
     const k = parseInt(stratKSlider.value);
-    const btn = document.getElementById('btn-stratified');
-    btn.disabled = true;
 
     const diagram = document.getElementById('strat-fold-diagram');
     diagram.innerHTML = '';
@@ -1047,7 +1049,7 @@ async function animateStratified() {
 
     const nA = 9, nB = 21, n = 30;
     const aCounts = countsPerFold(nA, k);
-    const bCounts = countsPerFold(nB, k);
+    const bCounts = countsPerFold(nB, k, nA % k);   // B's extras start where A's stopped
     const scores = [];
 
     for (let fold = 0; fold < k; fold++) {
@@ -1105,14 +1107,12 @@ async function animateStratified() {
     document.getElementById('strat-formula').textContent = 'Class counts differ by at most one across folds. The numbers above are illustrative: no model is fit.';
     await delay(200);
     resultsBar.classList.add('visible');
-
-    btn.disabled = false;
 }
 
 // ============================================================
 // LOOCV
 // ============================================================
-document.getElementById('btn-loocv').addEventListener('click', animateLOOCV);
+document.getElementById('btn-loocv').addEventListener('click', () => runLocked(['btn-loocv', 'loocv-n'], animateLOOCV));
 document.getElementById('loocv-n').addEventListener('change', resetLOOCV);
 
 function resetLOOCV() {
@@ -1127,8 +1127,6 @@ function resetLOOCV() {
 
 async function animateLOOCV() {
     const n = parseInt(document.getElementById('loocv-n').value);
-    const btn = document.getElementById('btn-loocv');
-    btn.disabled = true;
 
     const grid = document.getElementById('loocv-grid');
     grid.innerHTML = '';
@@ -1191,8 +1189,6 @@ async function animateLOOCV() {
     document.getElementById('loocv-formula').textContent = `LOOCV Accuracy = ${correct} / ${n} = ${avg}`;
     await delay(200);
     resultsBar.classList.add('visible');
-
-    btn.disabled = false;
 }
 
 // ============================================================
@@ -1227,6 +1223,18 @@ function buildComparisonTable() {
 // INIT
 // ============================================================
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// While an animation runs, disable its Animate button and the controls that would reset its
+// diagram mid-run (the loop keeps the K and N it started with); re-enable them however it ends.
+async function runLocked(ids, animate) {
+    const els = ids.map(id => document.getElementById(id));
+    els.forEach(el => { el.disabled = true; });
+    try {
+        await animate();
+    } finally {
+        els.forEach(el => { el.disabled = false; });
+    }
+}
 
 resetKFold();
 renderStratDataset();
