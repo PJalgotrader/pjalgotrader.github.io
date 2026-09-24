@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
     <title>Hunt Ledger — Pedram Jahangiry</title>
-    <meta name="description" content="Hunt Ledger is a paper-trading book for a monthly research exercise: which small companies have an arithmetically possible path to ten times their value by 2030? Tracks multiple-to-date, CAGR needed, max drawdown, and SPY total return. Not investment advice.">
+    <meta name="description" content="Hunt Ledger is a paper-trading book for a monthly research exercise: which small companies have an arithmetically possible path to ten times their value by 2030? Leads with the day's return against SPY total return, and tracks multiple-to-date, CAGR needed, max drawdown and modeled trading costs. Not investment advice.">
     <meta name="theme-color" content="#0A1020">
     <link rel="canonical" href="https://pedramjahangiry.com/projects/hunt-ledger.html">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -56,7 +56,7 @@
                 <p>A paper-trading book for a monthly research exercise: which small companies have an arithmetically possible path to ten times their value by 2030, and what would have to be true for it to happen?</p>
                 <ul class="detail-links">
                     <li><a href="https://hunt-ledger-beta.vercel.app" target="_blank" rel="noopener noreferrer">Live book &#8599;</a></li>
-                    <li><a href="https://hunt-ledger-beta.vercel.app/history" target="_blank" rel="noopener noreferrer">Trade history &#8599;</a></li>
+                    <li><a href="https://hunt-ledger-beta.vercel.app/fills" target="_blank" rel="noopener noreferrer">Trade blotter &#8599;</a></li>
                 </ul>
             </div>
         </section>
@@ -95,17 +95,21 @@
                         <h3>A book that cannot cheat</h3>
                         <p>
                             The book starts with a notional $100,000 on August 21, 2026 and a matching $100,000 buy
-                            of SPY the same day. Each month it imports one CSV of names and integer weights that sum
-                            to one hundred, sells what dropped off, rebalances the rest to target, and records every
-                            fill at verified daily closes. Prices are never invented: a missing quote shows as unknown,
-                            and the import refuses to commit until quotes are complete.
+                            of SPY the same day. Each hunt imports one CSV of names and integer weights that sum
+                            to one hundred, sells what dropped off, and rebalances the rest to target. The same rules
+                            run in two books, monthly and biweekly.
                         </p>
                         <p>
-                            The equity curve is indexed at 1.00 against <strong>SPY total return</strong> (dividends
-                            reinvested), with a gold dashed path to 10&times; by 2030-12-31. Cards show
-                            <strong>multiple-to-date</strong>, the <strong>CAGR still needed</strong> to hit 10&times;,
-                            and <strong>max drawdown</strong>. Target and actual sector pies show drift; the history
-                            page is the trade blotter. Marks backfill session by session and persist in a database.
+                            The rules keep it honest. Fills happen at a <strong>final close on or after the hunt
+                            date</strong>, never at a price from before the idea existed, and every fill pays a
+                            <strong>modeled trading cost</strong> (10&nbsp;bps by default). Prices are never invented:
+                            a missing quote blocks the import, and a name that didn&rsquo;t trade is flagged stale.
+                        </p>
+                        <p>
+                            The page leads with the day&rsquo;s return against <strong>SPY total return</strong>, then
+                            <strong>multiple-to-date</strong> against the path to 10&times; by 2030-12-31, the
+                            <strong>CAGR still needed</strong>, and <strong>max drawdown</strong>. A weekday job marks
+                            both books after the close.
                         </p>
                         <p class="detail-meta">Next.js &middot; React &middot; TypeScript &middot; Supabase &middot; Yahoo Finance daily closes &middot; Vercel</p>
                     </div>
@@ -118,12 +122,12 @@
                 <p class="section-label">&sect; 02 &mdash; Screens</p>
                 <div class="shots">
                     <figure>
-                        <img src="../images/projects/hunt-ledger.webp" alt="The Hunt Ledger dashboard: NAV, cash, return versus SPY total return, multiple and CAGR to 10×, max drawdown, target and actual sector pies, an indexed equity chart with a 10× goal path, and the holdings table" width="1200" height="683" loading="lazy">
-                        <figcaption><strong>The book</strong>NAV, cash, hunt versus SPY (total return), multiple-to-date, CAGR needed to 10&times;, max drawdown, sector pies, the indexed equity curve with a 10&times; goal line, and holdings with drift from target.</figcaption>
+                        <img src="../images/projects/hunt-ledger.webp?v=2" alt="The Hunt Ledger dashboard: the latest session's return for the hunt, SPY total return and the difference; NAV; return since inception versus SPY; a 10× goal meter; CAGR needed, max drawdown and trading costs; and the indexed equity chart with the 10× path" width="1200" height="683" loading="lazy">
+                        <figcaption><strong>The book</strong>The day&rsquo;s return for the hunt, SPY (total return) and the gap between them first, then NAV, return since inception, a log-scale meter toward 10&times;, CAGR needed, max drawdown against SPY, trading costs, and the indexed equity curve with the 10&times; path.</figcaption>
                     </figure>
                     <figure>
-                        <img src="../images/projects/hunt-ledger-history.webp" alt="The Hunt Ledger history page listing every fill from each rebalance" width="1200" height="683" loading="lazy">
-                        <figcaption><strong>The blotter</strong>Every fill from every rebalance, including the seed buys, with a CSV download. Turnover is labeled as two-way (buys + sells) over NAV.</figcaption>
+                        <img src="../images/projects/hunt-ledger-history.webp?v=2" alt="The Hunt Ledger blotter listing every fill across the monthly and biweekly books, with side, shares, price, notional and cost" width="1200" height="683" loading="lazy">
+                        <figcaption><strong>The blotter</strong>Every fill from every rebalance in both books, including the seed buys, with its modeled cost and a CSV download. Turnover is labeled as two-way (buys + sells) over NAV.</figcaption>
                     </figure>
                 </div>
             </div>
