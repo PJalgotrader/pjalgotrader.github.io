@@ -358,7 +358,7 @@
         </div>
 
         <p style="max-width: 760px; margin: 0 auto 25px auto; text-align: center; color: #555; line-height: 1.6; font-size: 1.05em;">
-            Fit a seasonal ARIMA model to the classic Box-Jenkins airline passenger counts (monthly, 1949-1960) in your browser. Move the order sliders and the chart refits by conditional least squares: the dashed line is the forecast, and the band around it is a 95% prediction interval.
+            Fit a seasonal ARIMA model to the classic Box-Jenkins airline passenger counts (monthly, 1949-1960) in your browser. Set the orders with the sliders, then press Update Model and the chart refits by conditional least squares: the dashed line is the forecast, and the band around it is a 95% prediction interval.
         </p>
 
         <div class="controls">
@@ -665,19 +665,20 @@
             return { e, sse, count, burn };
         }
 
+        // Exact test that every root of the lag polynomial 1 + c₁B + … + c_nB^n lies outside the unit
+        // circle (a stationary AR part, or an invertible MA part), by the Schur–Cohn step-down
+        // recursion: the roots are all outside iff every reflection coefficient has |k| < 1.
+        // Zero coefficients (the gaps in a seasonal polynomial) just give k = 0.
         function arImpulseStable(ar) {
-            const T = Math.max(80, ar.length * 4);
-            const u = new Array(T).fill(0);
-            u[0] = 1;
-            for (let t = 1; t < T; t++) {
-                let s = 0;
-                for (let j = 1; j < ar.length && j <= t; j++) s -= ar[j] * u[t - j];
-                u[t] = s;
-                if (!Number.isFinite(u[t]) || Math.abs(u[t]) > 1e6) return false;
+            let a = ar.slice(1);
+            for (let n = a.length; n > 0; n--) {
+                const k = a[n - 1];
+                if (!Number.isFinite(k) || Math.abs(k) >= 1 - 1e-9) return false;
+                const next = new Array(n - 1);
+                for (let j = 0; j < n - 1; j++) next[j] = (a[j] - k * a[n - 2 - j]) / (1 - k * k);
+                a = next;
             }
-            let tail = 0;
-            for (let t = T - 15; t < T; t++) tail = Math.max(tail, Math.abs(u[t]));
-            return tail < 0.5;
+            return true;
         }
 
         function nelderMead(fn, x0, maxIter) {
@@ -998,14 +999,14 @@
             const maxP = 3, maxQ = 3, maxPs = seasonal ? 1 : 0, maxQs = seasonal ? 1 : 0;
             const T0 = maxP + (seasonal ? maxPs * m : 0);
             const results = [];
-            let rejected = 0;
+            const dropped = [];
             for (let p = 0; p <= maxP; p++) for (let q = 0; q <= maxQ; q++)
             for (let P = 0; P <= maxPs; P++) for (let Q = 0; Q <= maxQs; Q++) {
                 const fit = fitSARIMA(airlineData, p, d, q, P, D, Q, m, horizon);
                 if (fit.error) continue;
                 // like auto.arima, drop candidates whose estimated AR part is non-stationary
                 // or whose MA part is non-invertible (a root on or inside the unit circle)
-                if (!arImpulseStable(fit.ar) || !arImpulseStable(fit.ma)) { rejected++; continue; }
+                if (!arImpulseStable(fit.ar) || !arImpulseStable(fit.ma)) { dropped.push({ p, q, P, Q }); continue; }
                 const n = fit.wLen - T0;
                 if (n < fit.kCoef + 4) continue;
                 let sse = 0;
@@ -1017,7 +1018,8 @@
                                coefs: fit.names.map((nm, i) => nm + ' = ' + fit.params[i].toFixed(3)).join(', ') || 'no coefficients' });
             }
             results.sort((a, b) => a.aicc - b.aicc);
-            results.rejected = rejected;
+            results.rejected = dropped.length;
+            results.dropped = dropped;
             return results;
         }
 
@@ -1025,6 +1027,7 @@
             const btn = document.getElementById('bestFitBtn');
             const before = { p: parseInt(document.getElementById('p').value), q: parseInt(document.getElementById('q').value),
                              P: parseInt(document.getElementById('P').value), Q: parseInt(document.getElementById('Q').value) };
+            if (!(parseInt(document.getElementById('m').value) > 0)) { before.P = 0; before.Q = 0; }   // m = 0 ignores the seasonal orders
             btn.disabled = true;
             btn.textContent = '⏳ Fitting candidates…';
             setTimeout(() => {
@@ -1058,6 +1061,8 @@
                     if (yourIdx > 5) {
                         const r = results[yourIdx];
                         yours = `<div class="bf-row">Your previous model ${bfModelLabel(r.p, d, r.q, r.P, D, r.Q, m)} ranked #${yourIdx + 1} of ${results.length} (ΔAICc = ${(r.aicc - best.aicc).toFixed(1)}).</div>`;
+                    } else if (yourIdx < 0 && results.dropped.some(r => r.p === before.p && r.q === before.q && r.P === before.P && r.Q === before.Q)) {
+                        yours = `<div class="bf-row">Your previous model ${bfModelLabel(before.p, d, before.q, before.P, D, before.Q, m)} was fitted but dropped as non-stationary or non-invertible, so it is not ranked.</div>`;
                     } else if (yourIdx < 0) {
                         yours = `<div class="bf-row">Your previous orders were outside the searched set (P or Q above 1).</div>`;
                     }

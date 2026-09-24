@@ -48,6 +48,7 @@
         
         .header-links {
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
             justify-content: center;
             margin-bottom: 25px;
@@ -131,7 +132,7 @@
         
         .chart-title {
             flex: 1;
-            min-width: 300px;
+            min-width: min(300px, 100%);
         }
         
         .chart-title h3 {
@@ -517,6 +518,8 @@
         };
         
         let seriesCounter = 0;
+        // Per-chart name counters, so a name is never reused after a series is removed
+        const nameCounters = { whiteNoise: 0, randomWalk: 0, cyclical: 0 };
         
         // Color palette
         const colors = [
@@ -526,8 +529,10 @@
             '#0f766e', '#1e40af', '#be123c', '#7c3aed', '#ea580c'
         ];
         
-        function getRandomColor() {
-            return colors[Math.floor(Math.random() * colors.length)];
+        // First palette color not already used on this chart, so every series gets its own color
+        function getNextColor(type) {
+            const used = new Set(data[type].map(s => s.color));
+            return colors.find(c => !used.has(c)) || colors[data[type].length % colors.length];
         }
         
         // Generate random normal number using Box-Muller transform
@@ -561,8 +566,8 @@
             const series = {
                 id: `wn_${seriesCounter}`,
                 data: seriesData,
-                color: getRandomColor(),
-                name: `Series ${data.whiteNoise.length + 1}`,
+                color: getNextColor('whiteNoise'),
+                name: `Series ${++nameCounters.whiteNoise}`,
                 mean: mean,
                 meanPath: seriesData.map(d => ({ t: d.t, value: mean })),
                 timeMean: seriesData.reduce((s, d) => s + d.value, 0) / seriesData.length
@@ -574,6 +579,7 @@
         
         function clearWhiteNoise() {
             data.whiteNoise = [];
+            nameCounters.whiteNoise = 0;
             updateChart('whiteNoise');
         }
         
@@ -599,8 +605,8 @@
             const series = {
                 id: `rw_${seriesCounter}`,
                 data: seriesData,
-                color: getRandomColor(),
-                name: `Series ${data.randomWalk.length + 1}`,
+                color: getNextColor('randomWalk'),
+                name: `Series ${++nameCounters.randomWalk}`,
                 meanPath: seriesData.map(d => ({ t: d.t, value: initial + drift * d.t })),
                 timeMean: seriesData.reduce((s, d) => s + d.value, 0) / seriesData.length
             };
@@ -611,6 +617,7 @@
         
         function clearRandomWalk() {
             data.randomWalk = [];
+            nameCounters.randomWalk = 0;
             updateChart('randomWalk');
         }
         
@@ -634,8 +641,8 @@
             const series = {
                 id: `cy_${seriesCounter}`,
                 data: seriesData,
-                color: getRandomColor(),
-                name: `Series ${data.cyclical.length + 1}`,
+                color: getNextColor('cyclical'),
+                name: `Series ${++nameCounters.cyclical}`,
                 meanPath: seriesData.map(d => ({
                     t: d.t,
                     value: amplitude * Math.sin(2 * Math.PI * frequency * d.t + phase)
@@ -649,6 +656,7 @@
         
         function clearCyclical() {
             data.cyclical = [];
+            nameCounters.cyclical = 0;
             updateChart('cyclical');
         }
         
@@ -833,6 +841,8 @@
                     
                     hoverCircles.each(function(series, i) {
                         const dataPoint = series.data.find(d => d.t === closestT);
+                        // Hide the dot of a series that has no point at this time (a shorter series)
+                        d3.select(this).style('opacity', dataPoint ? 1 : 0);
                         if (dataPoint) {
                             d3.select(this)
                                 .attr('cx', xScale(dataPoint.t))

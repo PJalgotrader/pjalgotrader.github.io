@@ -448,6 +448,22 @@
 
         let currentModel = null;
 
+        // One tooltip shared by every tree node, so rebuilding the tree never leaves stale ones behind
+        const treeTooltip = document.createElement('div');
+        treeTooltip.style.position = 'fixed';
+        treeTooltip.style.display = 'none';
+        treeTooltip.style.background = 'rgba(0, 0, 0, 0.9)';
+        treeTooltip.style.color = 'white';
+        treeTooltip.style.padding = '12px 16px';
+        treeTooltip.style.borderRadius = '8px';
+        treeTooltip.style.fontSize = '13px';
+        treeTooltip.style.pointerEvents = 'none';
+        treeTooltip.style.zIndex = '10000';
+        treeTooltip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+        treeTooltip.style.lineHeight = '1.6';
+        treeTooltip.style.maxWidth = '300px';
+        document.body.appendChild(treeTooltip);
+
         function updateVisualization() {
             const depth = parseInt(document.getElementById('depthSlider').value);
 
@@ -462,6 +478,7 @@
         function updateTreeVisualization() {
             const container = document.getElementById('treeVisualization');
             container.innerHTML = '';
+            treeTooltip.style.display = 'none';
 
             const nodePositions = [];
             const edges = [];
@@ -472,44 +489,55 @@
                 return Math.max(getTreeDepth(node.left, depth + 1), getTreeDepth(node.right, depth + 1));
             }
 
+            function countLeaves(node) {
+                if (!node) return 0;
+                return node.isLeaf ? 1 : countLeaves(node.left) + countLeaves(node.right);
+            }
+
             const treeDepth = getTreeDepth(currentModel.tree);
+            const leafCount = countLeaves(currentModel.tree);
 
             // Dynamic sizing based on tree depth
-            const baseWidth = 1200;
-            const svgWidth = Math.max(baseWidth, baseWidth * Math.pow(1.3, treeDepth - 3));
             const verticalSpacing = Math.max(60, 100 - treeDepth * 5); // Reduce spacing for deeper trees
             const nodeWidth = Math.max(80, 120 - treeDepth * 5); // Smaller nodes for deeper trees
             const nodeHeight = 40;
             const fontSize = Math.max(9, 11 - treeDepth * 0.3);
+
+            // Each leaf gets its own slot, at least one node wide, so boxes never overlap.
+            // Small trees spread over 80% of the width; big trees widen the SVG and the box scrolls.
+            const minSlot = nodeWidth + 12;
+            const svgWidth = Math.max(container.clientWidth || 1200, leafCount * minSlot + 40);
+            const slotWidth = Math.max(minSlot, svgWidth * 0.8 / leafCount);
+            const firstSlotX = (svgWidth - leafCount * slotWidth) / 2;
 
             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             const svgHeight = (treeDepth + 1) * verticalSpacing + 40;
             svg.setAttribute('width', svgWidth);
             svg.setAttribute('height', svgHeight);
             svg.setAttribute('viewBox', `0 0 ${svgWidth} ${svgHeight}`);
-            svg.style.maxWidth = '100%';
-            svg.style.height = 'auto';
 
-            function calculatePositions(node, x, y, width, depth = 0) {
-                if (!node) return;
+            // Leaves fill the slots left to right; each parent sits centred over its two children
+            let nextLeaf = 0;
+            function calculatePositions(node, y, depth = 0) {
+                let x;
 
-                nodePositions.push({ node, x, y, depth });
-
-                if (!node.isLeaf) {
+                if (node.isLeaf) {
+                    x = firstSlotX + (nextLeaf++ + 0.5) * slotWidth;
+                } else {
                     const childY = y + verticalSpacing;
-                    const childWidth = width / 2;
-                    const leftX = x - width / 4;
-                    const rightX = x + width / 4;
+                    const leftX = calculatePositions(node.left, childY, depth + 1);
+                    const rightX = calculatePositions(node.right, childY, depth + 1);
+                    x = (leftX + rightX) / 2;
 
                     edges.push({ x1: x, y1: y + nodeHeight/2, x2: leftX, y2: childY - nodeHeight/2 });
                     edges.push({ x1: x, y1: y + nodeHeight/2, x2: rightX, y2: childY - nodeHeight/2 });
-
-                    calculatePositions(node.left, leftX, childY, childWidth, depth + 1);
-                    calculatePositions(node.right, rightX, childY, childWidth, depth + 1);
                 }
+
+                nodePositions.push({ node, x, y, depth });
+                return x;
             }
 
-            calculatePositions(currentModel.tree, svgWidth / 2, 40, svgWidth * 0.8);
+            const rootX = calculatePositions(currentModel.tree, 40);
 
             // Draw edges
             edges.forEach(edge => {
@@ -557,23 +585,10 @@
 
                 g.appendChild(text);
 
-                // Create tooltip
-                const tooltip = document.createElement('div');
-                tooltip.style.position = 'fixed';
-                tooltip.style.display = 'none';
-                tooltip.style.background = 'rgba(0, 0, 0, 0.9)';
-                tooltip.style.color = 'white';
-                tooltip.style.padding = '12px 16px';
-                tooltip.style.borderRadius = '8px';
-                tooltip.style.fontSize = '13px';
-                tooltip.style.pointerEvents = 'none';
-                tooltip.style.zIndex = '10000';
-                tooltip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-                tooltip.style.lineHeight = '1.6';
-                tooltip.style.maxWidth = '300px';
-
+                // Tooltip content for this node (shown in the shared tooltip)
+                let tooltipHtml;
                 if (node.isLeaf) {
-                    tooltip.innerHTML = `
+                    tooltipHtml = `
                         <div style="font-weight: 600; margin-bottom: 6px; color: #10b981;">Leaf Node</div>
                         <div><strong>Prediction:</strong> ${node.value.toFixed(2)} passengers</div>
                         <div style="margin-top: 6px; font-size: 11px; color: #ccc;">This is the average of all training samples that reached this leaf.</div>
@@ -581,7 +596,7 @@
                 } else {
                     const featureName = node.feature === 'lag1' ? 'Lag_1' : 'Lag_2';
                     const featureDesc = node.feature === 'lag1' ? 'Previous Month' : 'Two Months Ago';
-                    tooltip.innerHTML = `
+                    tooltipHtml = `
                         <div style="font-weight: 600; margin-bottom: 6px; color: #667eea;">Decision Node</div>
                         <div><strong>Split Condition:</strong> ${featureName} ≤ ${node.threshold.toFixed(2)}</div>
                         <div style="margin-top: 4px;"><strong>Feature:</strong> ${featureDesc} Passengers</div>
@@ -592,30 +607,30 @@
                     `;
                 }
 
-                document.body.appendChild(tooltip);
-
                 // Add hover events
                 g.addEventListener('mouseenter', (e) => {
                     rect.setAttribute('stroke-width', '3');
                     rect.setAttribute('fill', node.isLeaf ? '#b4f5d4' : '#c1d7f5');
-                    tooltip.style.display = 'block';
+                    treeTooltip.innerHTML = tooltipHtml;
+                    treeTooltip.style.display = 'block';
                 });
 
                 g.addEventListener('mousemove', (e) => {
-                    tooltip.style.left = (e.clientX + 15) + 'px';
-                    tooltip.style.top = (e.clientY - 10) + 'px';
+                    treeTooltip.style.left = (e.clientX + 15) + 'px';
+                    treeTooltip.style.top = (e.clientY - 10) + 'px';
                 });
 
                 g.addEventListener('mouseleave', () => {
                     rect.setAttribute('stroke-width', '2');
                     rect.setAttribute('fill', node.isLeaf ? '#d1fae5' : '#dbeafe');
-                    tooltip.style.display = 'none';
+                    treeTooltip.style.display = 'none';
                 });
 
                 svg.appendChild(g);
             });
 
             container.appendChild(svg);
+            container.scrollLeft = rootX - container.clientWidth / 2; // open wide trees on the root
         }
 
         function forecastFuture(steps) {

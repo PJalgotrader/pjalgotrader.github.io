@@ -55,6 +55,7 @@
         
         .header-links {
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
             justify-content: center;
             margin-bottom: 25px;
@@ -104,7 +105,7 @@
         
         .equations-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
             gap: 15px;
         }
         
@@ -433,6 +434,11 @@
         .bf-explain ul { padding-left: 22px; margin: 0 0 10px 0; }
         .bf-explain li { margin-bottom: 6px; }
         .bf-explain code { font-family: 'IBM Plex Mono', Menlo, Consolas, monospace; background: #fff; padding: 1px 5px; border-radius: 4px; }
+
+        /* Phones: stack the Parameter Guide columns (their inline grid style needs !important) */
+        @media (max-width: 600px) {
+            .guide-grid { grid-template-columns: 1fr !important; }
+        }
     </style>
 </head>
 <body>
@@ -620,10 +626,10 @@
 
         <div class="bf-explain">
             <h3>⭐ What does "Find the Best Fit" do?</h3>
-            <p>It asks one question: which values of α and β* make the one-step-ahead forecasts fit the training months best? For every candidate it runs the same recursion you watch in the animation across the 115 training months, adds up the squared errors between each forecast ŷ<sub>t</sub> and the actual y<sub>t</sub>, and keeps the candidate with the smallest total (the SSE). That is exactly the criterion <code>statsmodels</code> and R's <code>ets()</code> use when errors are additive, so the answer you get here is the answer you would get in Python or R.</p>
+            <p>It asks one question: which values of α and β* make the one-step-ahead forecasts fit the training months best? For every candidate it runs the same recursion you watch in the animation across the 115 training months, adds up the squared errors between each forecast ŷ<sub>t</sub> and the actual y<sub>t</sub>, and keeps the candidate with the smallest total (the SSE). That is exactly the criterion <code>statsmodels</code> and R's <code>ets()</code> use when errors are additive, and the search below keeps to statsmodels' default parameter region, so the answer you get here is the answer you would get in Python.</p>
             <ul>
                 <li><strong>Starting values.</strong> By default the initial level ℓ<sub>0</sub> and initial trend b<sub>0</sub> are estimated as well, not just the smoothing parameters. This needs no extra searching because the forecasts depend linearly on the starting values, so for any candidate α and β* the best starting values are an ordinary least-squares solution. Tick "keep my starting values fixed" to search only over the smoothing parameters and keep the sliders where you set them.</li>
-                <li><strong>Allowed region.</strong> The search uses the same parameter region as <code>statsmodels</code>: 0 ≤ α ≤ 1 and 0 ≤ β* ≤ α. The cap on β* keeps the trend from updating faster than the level it is built on, which is one of the conditions for the model's forecasts to stay stable (the "admissible" region in Hyndman's terminology). Without it the search can find a slightly lower training SSE with a very jumpy trend, but that is a fit to noise. Results are snapped to the sliders' 0.01 grid.</li>
+                <li><strong>Allowed region.</strong> The search uses the default parameter region of <code>statsmodels</code>: 0 ≤ α ≤ 1 and 0 ≤ β* ≤ α. The cap on β* is a statsmodels default rather than a textbook rule (Hyndman's usual region only asks for 0 ≤ β* ≤ 1). On the airline data it makes no difference: the best fit has β* = 0 either way. Results are snapped to the sliders' 0.01 grid.</li>
                 <li><strong>Training only.</strong> The test months play no part in the search. A lower training RMSE does not guarantee a lower test RMSE, and comparing the two after clicking the button is the point of the exercise.</li>
             </ul>
             <p><strong>What to look for.</strong> On the airline data the best training fit is α = 1 and β* = 0: the level is the last observation and the trend is frozen at its estimated starting slope. The result extrapolates a straight line through the seasonal swings, and its test RMSE is far worse than the default settings. Answers that sit on the edge of the allowed region are common and worth a discussion: they mean the data are pushing against the model's assumptions, here the missing seasonality.</p>
@@ -690,6 +696,8 @@
             document.getElementById('l0Value').textContent = l0;
             if (currentIteration > 0) {
                 resetVisualization();
+            } else {
+                initializeCharts();   // move the ℓ₀ marker before the run starts
             }
         });
         
@@ -698,6 +706,8 @@
             document.getElementById('b0Value').textContent = b0.toFixed(1);
             if (currentIteration > 0) {
                 resetVisualization();
+            } else {
+                initializeCharts();   // move the b₀ marker before the run starts
             }
         });
         
@@ -1073,7 +1083,7 @@
 
         const BF = {
             np: 2, dim: 2, labels: ['α', 'β*'],
-            admissible(sp) { return sp[1] <= sp[0] + 1e-9; },   // same region as statsmodels: the trend cannot update faster than the level
+            admissible(sp) { return sp[1] <= sp[0] + 1e-9; },   // statsmodels' default region: beta* <= alpha
             constraintText: '0 ≤ α ≤ 1, 0 ≤ β* ≤ α',
             toInit(p) { return [p[0], p[1]]; },
             currentInit() { return [l0, b0]; },
@@ -1445,7 +1455,7 @@
             <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px;">
                 <h3 style="color: #333; margin-bottom: 20px; font-size: 1.3em;">🎯 Dual Parameter Control: Level and Trend Components</h3>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                <div class="guide-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
                     <div style="background: #fff8f0; padding: 20px; border-radius: 8px; border-left: 4px solid #ff8c00;">
                         <h4 style="color: #ff8c00; margin-bottom: 12px;">📊 Alpha (α) - Level Smoothing</h4>
                         <p style="margin: 0 0 10px 0; line-height: 1.6; color: #555;">
@@ -1469,7 +1479,7 @@
                     </div>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div class="guide-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                     <div style="background: #f0fff4; padding: 20px; border-radius: 8px; border-left: 4px solid #22c55e;">
                         <h4 style="color: #22c55e; margin-bottom: 10px;">⚡ High α, Low β*</h4>
                         <p style="margin: 0; line-height: 1.6; color: #555;">
@@ -1478,9 +1488,9 @@
                     </div>
                     
                     <div style="background: #fdf2f8; padding: 20px; border-radius: 8px; border-left: 4px solid #ec4899;">
-                        <h4 style="color: #ec4899; margin-bottom: 10px;">🔄 Low α, High β* (outside the usual region)</h4>
+                        <h4 style="color: #ec4899; margin-bottom: 10px;">🔄 Low α, High β* (outside the optimizer's region)</h4>
                         <p style="margin: 0; line-height: 1.6; color: #555;">
-                            The admissible region used by Find Best Fit is β* ≤ α. With a small α and a large β* the trend can swing by tens of passengers a month while the level barely moves. The sliders will let you try it. The optimizer will not.
+                            Find Best Fit only searches β* ≤ α, the statsmodels default. With a small α and a large β* the trend can swing by tens of passengers a month while the level barely moves. The sliders will let you try it. The optimizer will not.
                         </p>
                     </div>
                 </div>
