@@ -57,6 +57,7 @@
             gap: 10px;
             justify-content: center;
             margin-bottom: 25px;
+            flex-wrap: wrap;
         }
 
         .header-links a {
@@ -385,7 +386,7 @@
         </div>
 
         <div class="button-group">
-            <button class="btn-primary" onclick="generateSeries()">🎲 Generate New Series</button>
+            <button class="btn-primary" onclick="generateNewSeries()">🎲 Generate New Series</button>
             <button class="btn-danger" onclick="clearChart()">🗑️ Clear</button>
         </div>
 
@@ -445,6 +446,7 @@
         let seriesData = [];
         let forecastData = [];
         let errorTerms = [];
+        let shocks = [];    // stored N(0,1) draws z_t; sliders rebuild the path from these (ε_t = σ·z_t)
 
         // Set canvas size
         function resizeCanvas() {
@@ -520,6 +522,11 @@
             return z0 * stdDev + mean;
         }
 
+        // Make sure at least len shocks are stored, extending the list (never redrawing it)
+        function ensureShocks(len) {
+            while (shocks.length < len) shocks.push(generateGaussian(0, 1));
+        }
+
         // Generate AR(1) series
         function generateAR1() {
             const phi = parseFloat(document.getElementById('ar-phi').value);
@@ -530,13 +537,14 @@
 
             // Start in the stationary distribution, mean c/(1-φ), so the
             // chart is not a deterministic climb up from zero.
+            ensureShocks(n);
             const mu = c / (1 - phi);
             const statSd = sigma / Math.sqrt(1 - phi * phi);
-            seriesData = [mu + generateGaussian(0, statSd)];
+            seriesData = [mu + statSd * shocks[0]];
             errorTerms = [];
 
             for (let t = 1; t < n; t++) {
-                const epsilon = generateGaussian(0, sigma);
+                const epsilon = sigma * shocks[t];
                 errorTerms.push(epsilon);
                 seriesData.push(c + phi * seriesData[t - 1] + epsilon);
             }
@@ -562,8 +570,9 @@
             errorTerms = [];
 
             // Generate n+1 error terms (need one extra for first observation)
+            ensureShocks(n + 1);
             for (let t = 0; t <= n; t++) {
-                errorTerms.push(generateGaussian(0, sigma));
+                errorTerms.push(sigma * shocks[t]);
             }
 
             // Generate series
@@ -581,7 +590,8 @@
             }
         }
 
-        // Generate series based on current model
+        // Generate series based on current model, from the stored shocks, so a slider
+        // change keeps the same underlying randomness
         function generateSeries() {
             if (currentModel === 'ar') {
                 generateAR1();
@@ -589,6 +599,12 @@
                 generateMA1();
             }
             drawChart();
+        }
+
+        // "Generate New Series": draw fresh shocks, then build the series from them
+        function generateNewSeries() {
+            shocks = [];
+            generateSeries();
         }
 
         // Draw the chart
