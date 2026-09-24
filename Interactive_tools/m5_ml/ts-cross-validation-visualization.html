@@ -384,6 +384,7 @@
 
         .comparison-table .check { color: #10b981; font-weight: 700; }
         .comparison-table .cross { color: #ef4444; font-weight: 700; }
+        .table-scroll { overflow-x: auto; }
 
         /* Toggle buttons for walk-forward subtypes */
         .sub-tabs {
@@ -449,6 +450,10 @@
             .controls { flex-direction: column; align-items: flex-start; }
             .stats-panel { flex-direction: column; }
         }
+
+        @media (max-width: 600px) {
+            .tabs { flex-wrap: wrap; }
+        }
     </style>
 </head>
 <body>
@@ -493,8 +498,8 @@
                     <strong>Purged K-Fold CV</strong> (from de Prado, 2018) fixes this with two mechanisms:
                 </p>
                 <ul>
-                    <li><strong>Purging:</strong> Remove training samples whose labels overlap with the test period &mdash; eliminates direct lookahead bias</li>
-                    <li><strong>Embargo:</strong> Remove a buffer of training samples <em>after</em> each test block &mdash; accounts for feature leakage (e.g., rolling averages that include test data)</li>
+                    <li><strong>Purging:</strong> Remove training samples whose labels overlap with the test labels, on <em>both</em> sides of each test block &mdash; eliminates direct lookahead bias</li>
+                    <li><strong>Embargo:</strong> Remove a further buffer of training samples <em>after</em> that purge &mdash; accounts for feature leakage (e.g., rolling averages that include test data)</li>
                 </ul>
             </div>
 
@@ -539,8 +544,9 @@
             <div class="key-insight">
                 <h4>Key Insight</h4>
                 <p>
-                    Purging removes training samples whose label resolution period overlaps the test set, while embargo
-                    removes samples immediately after the test set whose features may contain test-period information.
+                    Purging removes training samples on either side of the test set whose label resolution period overlaps
+                    the test labels, while embargo removes a further stretch of samples after that purge whose features may
+                    contain test-period information.
                     Together, they prevent <em>both</em> direct and indirect data leakage.
                 </p>
             </div>
@@ -665,6 +671,7 @@
             </div>
 
             <h3 style="margin-top: 32px; color: #1e293b;">Comparison of Methods</h3>
+            <div class="table-scroll">
             <table class="comparison-table">
                 <thead>
                     <tr>
@@ -686,7 +693,7 @@
                     <tr>
                         <td>Prevents label leakage</td>
                         <td class="cross">&#10007;</td>
-                        <td class="check">&#10003;</td>
+                        <td class="cross">&#10007; (needs a purge gap)</td>
                         <td class="check">&#10003;</td>
                         <td class="check">&#10003;</td>
                     </tr>
@@ -727,6 +734,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
@@ -776,10 +784,14 @@
         '#ec4899', '#6366f1', '#14b8a6', '#f97316', '#84cc16'
     ];
 
+    // Bumped whenever a tab's controls redraw it; a running animation on that tab then stops
+    const animRun = { purged: 0, walkforward: 0, cpcv: 0 };
+
     // ================== TAB 1: PURGED K-FOLD ==================
     const T_PURGED = 30; // total samples
 
     function updatePurged() {
+        animRun.purged++;
         const k = +document.getElementById('purged-k').value;
         const purge = +document.getElementById('purge-size').value;
         const embargo = +document.getElementById('embargo-size').value;
@@ -791,7 +803,8 @@
 
     function drawPurged(k, purgeSize, embargoSize, highlightFold = -1) {
         const container = document.getElementById('purged-viz');
-        const foldSize = Math.floor(T_PURGED / k);
+        // Balanced folds: the first T % k folds get one extra sample
+        const baseFold = Math.floor(T_PURGED / k), extraFolds = T_PURGED % k;
         const cellW = 30, cellH = 36, gap = 3, labelW = 100;
         const svgW = labelW + T_PURGED * (cellW + gap) + 20;
         const svgH = (k + 1) * (cellH + gap) + 40;
@@ -807,8 +820,8 @@
         // Each fold iteration
         for (let fold = 0; fold < k; fold++) {
             const y = 24 + fold * (cellH + gap);
-            const testStart = fold * foldSize;
-            const testEnd = fold === k - 1 ? T_PURGED : (fold + 1) * foldSize;
+            const testStart = fold * baseFold + Math.min(fold, extraFolds);
+            const testEnd = testStart + baseFold + (fold < extraFolds ? 1 : 0);
             const opacity = highlightFold >= 0 && highlightFold !== fold ? 0.2 : 1;
 
             svg += `<g class="iteration-row" opacity="${opacity}">`;
@@ -823,12 +836,13 @@
                     textColor = '#fff';
                     label = 'Test';
                 } else {
-                    // Check purge: before test block
-                    const isPurgedBefore = i >= testStart - purgeSize && i < testStart && i >= 0;
-                    // Check embargo: after test block
-                    const isEmbargoed = i >= testEnd && i < testEnd + embargoSize;
+                    // Check purge: labels overlap the test labels, on both sides of the test block
+                    const isPurged = (i >= testStart - purgeSize && i < testStart) ||
+                                     (i >= testEnd && i < testEnd + purgeSize);
+                    // Check embargo: a further buffer after the post-test purge
+                    const isEmbargoed = i >= testEnd + purgeSize && i < testEnd + purgeSize + embargoSize;
 
-                    if (isPurgedBefore) {
+                    if (isPurged) {
                         color = COLORS.purge;
                         textColor = '#fff';
                         label = 'P';
@@ -856,16 +870,17 @@
     }
 
     async function animatePurged() {
+        const run = ++animRun.purged;
         const k = +document.getElementById('purged-k').value;
         const purge = +document.getElementById('purge-size').value;
         const embargo = +document.getElementById('embargo-size').value;
         const btn = document.querySelector('#tab-purged .btn-animate');
         btn.disabled = true;
-        for (let fold = 0; fold < k; fold++) {
+        for (let fold = 0; fold < k && run === animRun.purged; fold++) {
             drawPurged(k, purge, embargo, fold);
             await new Promise(r => setTimeout(r, 800));
         }
-        drawPurged(k, purge, embargo);
+        if (run === animRun.purged) drawPurged(k, purge, embargo);
         btn.disabled = false;
     }
 
@@ -891,6 +906,7 @@
     }
 
     function updateWalkForward() {
+        animRun.walkforward++;
         const splits = +document.getElementById('wf-splits').value;
         const trainSize = +document.getElementById('wf-train').value;
         const testSize = +document.getElementById('wf-test').value;
@@ -973,16 +989,17 @@
     }
 
     async function animateWalkForward() {
+        const run = ++animRun.walkforward;
         const splits = +document.getElementById('wf-splits').value;
         const trainSize = +document.getElementById('wf-train').value;
         const testSize = +document.getElementById('wf-test').value;
         const btn = document.querySelector('#tab-walkforward .btn-animate');
         btn.disabled = true;
-        for (let s = 0; s < splits; s++) {
+        for (let s = 0; s < splits && run === animRun.walkforward; s++) {
             drawWalkForward(splits, trainSize, testSize, wfMode, s);
             await new Promise(r => setTimeout(r, 700));
         }
-        drawWalkForward(splits, trainSize, testSize, wfMode);
+        if (run === animRun.walkforward) drawWalkForward(splits, trainSize, testSize, wfMode);
         btn.disabled = false;
     }
 
@@ -992,6 +1009,7 @@
     let currentPaths = [];
 
     function updateCPCV() {
+        animRun.cpcv++;
         let n = +document.getElementById('cpcv-n').value;
         let k = +document.getElementById('cpcv-k').value;
         // Ensure k < n
@@ -1150,6 +1168,7 @@
     }
 
     function selectPath(p) {
+        animRun.cpcv++;
         selectedPath = p;
         const n = +document.getElementById('cpcv-n').value;
         const k = +document.getElementById('cpcv-k').value;
@@ -1158,6 +1177,7 @@
     }
 
     async function animateCPCV() {
+        const run = ++animRun.cpcv;
         const n = +document.getElementById('cpcv-n').value;
         const k = +document.getElementById('cpcv-k').value;
         const btn = document.querySelector('#tab-cpcv .btn-animate');
@@ -1165,24 +1185,26 @@
         selectedPath = -1;
 
         // Animate through splits
-        for (let s = 0; s < currentCombinations.length; s++) {
+        for (let s = 0; s < currentCombinations.length && run === animRun.cpcv; s++) {
             drawCPCV(n, k, s);
             await new Promise(r => setTimeout(r, 400));
         }
-        drawCPCV(n, k);
+        if (run === animRun.cpcv) drawCPCV(n, k);
 
         // Then animate through paths
-        await new Promise(r => setTimeout(r, 300));
-        for (let p = 0; p < currentPaths.length; p++) {
+        if (run === animRun.cpcv) await new Promise(r => setTimeout(r, 300));
+        for (let p = 0; p < currentPaths.length && run === animRun.cpcv; p++) {
             selectedPath = p;
             drawCPCV(n, k);
             drawCPCVPaths(n, k);
             await new Promise(r => setTimeout(r, 600));
         }
 
-        selectedPath = -1;
-        drawCPCV(n, k);
-        drawCPCVPaths(n, k);
+        if (run === animRun.cpcv) {
+            selectedPath = -1;
+            drawCPCV(n, k);
+            drawCPCVPaths(n, k);
+        }
         btn.disabled = false;
     }
 
