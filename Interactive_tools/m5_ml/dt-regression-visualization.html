@@ -790,6 +790,18 @@
             updateTimeseriesPlot();
         });
 
+        // The tree is drawn at its natural size, so lay it out again when the window width changes
+        let treeResizeTimer = null;
+        let treeLayoutWidth = window.innerWidth;
+        window.addEventListener('resize', function() {
+            if (window.innerWidth === treeLayoutWidth) return;   // ignore height-only changes (mobile toolbars)
+            clearTimeout(treeResizeTimer);
+            treeResizeTimer = setTimeout(function() {
+                treeLayoutWidth = window.innerWidth;
+                if (currentModel) updateTreeVisualization();
+            }, 150);
+        });
+
         // Initial visualization
         updateVisualization();
     </script>
