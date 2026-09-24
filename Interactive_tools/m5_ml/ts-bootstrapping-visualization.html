@@ -276,6 +276,7 @@
         @media (max-width: 600px) {
             .tabs { flex-wrap: wrap; }
             .tab-btn { padding: 10px 12px; font-size: 0.9em; }
+            .control-group { flex-wrap: wrap; }
         }
     </style>
 </head>
@@ -317,7 +318,7 @@
             <button class="tab-btn active" onclick="switchTab('mbb')">Moving Block (MBB)</button>
             <button class="tab-btn" onclick="switchTab('cbb')">Circular Block (CBB)</button>
             <button class="tab-btn" onclick="switchTab('sb')">Stationary (SB)</button>
-            <button class="tab-btn" onclick="switchTab('parametric')">Parametric (ARIMA)</button>
+            <button class="tab-btn" onclick="switchTab('parametric')">Parametric (AR(1))</button>
         </div>
 
         <!-- ============ TAB 1: MBB ============ -->
@@ -341,12 +342,12 @@
             <div class="controls">
                 <div class="control-group">
                     <label>Block size (m):</label>
-                    <input type="range" id="mbb-block" min="3" max="36" value="12" oninput="document.getElementById('mbb-block-val').textContent=this.value">
+                    <input type="range" id="mbb-block" min="3" max="36" value="12" oninput="document.getElementById('mbb-block-val').textContent=this.value" onchange="runMBB()">
                     <span class="val" id="mbb-block-val">12</span>
                 </div>
                 <div class="control-group">
                     <label>Bootstrap samples:</label>
-                    <input type="range" id="mbb-B" min="3" max="20" value="5" oninput="document.getElementById('mbb-B-val').textContent=this.value">
+                    <input type="range" id="mbb-B" min="3" max="20" value="5" oninput="document.getElementById('mbb-B-val').textContent=this.value" onchange="runMBB()">
                     <span class="val" id="mbb-B-val">5</span>
                 </div>
                 <button class="btn-run" onclick="runMBB()">&#9654; Generate</button>
@@ -388,12 +389,12 @@
             <div class="controls">
                 <div class="control-group">
                     <label>Block size (m):</label>
-                    <input type="range" id="cbb-block" min="3" max="36" value="12" oninput="document.getElementById('cbb-block-val').textContent=this.value">
+                    <input type="range" id="cbb-block" min="3" max="36" value="12" oninput="document.getElementById('cbb-block-val').textContent=this.value" onchange="runCBB()">
                     <span class="val" id="cbb-block-val">12</span>
                 </div>
                 <div class="control-group">
                     <label>Bootstrap samples:</label>
-                    <input type="range" id="cbb-B" min="3" max="20" value="5" oninput="document.getElementById('cbb-B-val').textContent=this.value">
+                    <input type="range" id="cbb-B" min="3" max="20" value="5" oninput="document.getElementById('cbb-B-val').textContent=this.value" onchange="runCBB()">
                     <span class="val" id="cbb-B-val">5</span>
                 </div>
                 <button class="btn-run" onclick="runCBB()">&#9654; Generate</button>
@@ -435,12 +436,12 @@
             <div class="controls">
                 <div class="control-group">
                     <label>Mean block length (1/p):</label>
-                    <input type="range" id="sb-mean" min="3" max="36" value="12" oninput="document.getElementById('sb-mean-val').textContent=this.value">
+                    <input type="range" id="sb-mean" min="3" max="36" value="12" oninput="document.getElementById('sb-mean-val').textContent=this.value" onchange="runSB()">
                     <span class="val" id="sb-mean-val">12</span>
                 </div>
                 <div class="control-group">
                     <label>Bootstrap samples:</label>
-                    <input type="range" id="sb-B" min="3" max="20" value="5" oninput="document.getElementById('sb-B-val').textContent=this.value">
+                    <input type="range" id="sb-B" min="3" max="20" value="5" oninput="document.getElementById('sb-B-val').textContent=this.value" onchange="runSB()">
                     <span class="val" id="sb-B-val">5</span>
                 </div>
                 <button class="btn-run" onclick="runSB()">&#9654; Generate</button>
@@ -461,7 +462,7 @@
             </div>
         </div>
 
-        <!-- ============ TAB 4: PARAMETRIC ARIMA ============ -->
+        <!-- ============ TAB 4: PARAMETRIC AR(1) ============ -->
         <div id="tab-parametric" class="tab-content">
             <div class="intro">
                 <h3>Parametric Bootstrap &mdash; Decomposition + AR(1)</h3>
@@ -483,7 +484,7 @@
             <div class="controls">
                 <div class="control-group">
                     <label>Bootstrap samples:</label>
-                    <input type="range" id="arima-B" min="3" max="20" value="5" oninput="document.getElementById('arima-B-val').textContent=this.value">
+                    <input type="range" id="arima-B" min="3" max="20" value="5" oninput="document.getElementById('arima-B-val').textContent=this.value" onchange="runARIMA()">
                     <span class="val" id="arima-B-val">5</span>
                 </div>
                 <button class="btn-run" onclick="runARIMA()">&#9654; Generate</button>
@@ -498,7 +499,7 @@
                 <p>
                     The parametric bootstrap is the <strong>most efficient when the model is correctly specified</strong>
                     &mdash; it generates smooth, model-consistent paths without block-boundary discontinuities. However,
-                    if the ARIMA model is misspecified, the bootstrap paths will not faithfully represent the true data
+                    if the AR(1) model is misspecified, the bootstrap paths will not faithfully represent the true data
                     generating process. Block methods (MBB, CBB, SB) are <strong>model-free</strong> and don't suffer
                     from this risk, making them more robust but less efficient.
                 </p>
@@ -515,7 +516,7 @@
                     <th>MBB</th>
                     <th>CBB</th>
                     <th>Stationary Bootstrap</th>
-                    <th>Parametric (ARIMA)</th>
+                    <th>Parametric (AR(1))</th>
                 </tr>
             </thead>
             <tbody>
@@ -669,6 +670,10 @@
         document.getElementById('tab-' + tab).classList.add('active');
         const tabs = ['mbb', 'cbb', 'sb', 'parametric'];
         document.querySelectorAll('.tab-btn')[tabs.indexOf(tab)].classList.add('active');
+        // Generate a tab's first samples the first time it is opened, so no tab starts empty
+        const firstRun = { mbb: ['mbb-chart', runMBB], cbb: ['cbb-chart', runCBB], sb: ['sb-chart', runSB], parametric: ['arima-chart', runARIMA] };
+        const [chartId, run] = firstRun[tab];
+        if (!document.getElementById(chartId).data) run();
     }
 
     // ================== MBB ==================

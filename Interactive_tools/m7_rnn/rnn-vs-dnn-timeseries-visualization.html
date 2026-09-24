@@ -234,6 +234,11 @@
             transform: translateX(30px);
         }
 
+        .toggle-switch.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .train-button {
             width: 100%;
             padding: 15px;
@@ -783,6 +788,7 @@
             const preprocess = usePreprocessing;
 
             trainBtn.disabled = true;
+            document.getElementById('preprocessToggle').classList.add('locked');   // the setting is fixed for this run
             results.style.display = 'none';
             statusMsg.innerHTML = '<div class="status-message info">🔄 Training models... This may take a minute.</div>';
 
@@ -939,6 +945,7 @@
                 // Cleanup tensors
                 tf.dispose([XTrainDNN, YTrainDNN, XTestDNN, XTrainRNN, YTrainRNN, XTestRNN]);
                 trainBtn.disabled = false;
+                document.getElementById('preprocessToggle').classList.remove('locked');
             }
         }
 

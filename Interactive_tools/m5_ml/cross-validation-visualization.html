@@ -736,7 +736,8 @@
             </p>
             <p style="margin-top:10px;">
                 The downside: it is <strong>computationally expensive</strong> — the model must be trained <strong>N times</strong>,
-                and the estimate can have <strong>high variance</strong> since each validation set is just a single observation.
+                and the estimate can have <strong>high variance</strong>: the N training sets overlap almost completely, so the N
+                fold errors are highly correlated and averaging them cancels out little of their noise.
             </p>
         </div>
 

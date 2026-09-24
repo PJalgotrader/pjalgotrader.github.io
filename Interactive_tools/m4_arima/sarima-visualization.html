@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Tune SARIMA orders p,d,q,P,D,Q and season length on the classic airline passenger series and watch how each parameter reshapes the live forecast in your browser, no install required.">
+    <meta name="description" content="Tune SARIMA orders p,d,q,P,D,Q and season length on the classic airline passenger series, then refit and see how each parameter reshapes the forecast in your browser, no install required.">
     <title>SARIMA Interactive Visualization - Airline Passengers</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <style>
@@ -248,7 +248,7 @@
 
         .parameter-guide {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
             gap: 20px;
             margin-top: 20px;
         }
@@ -501,7 +501,7 @@
                 <li><strong>Why d, D and m are not searched.</strong> Differencing changes the series being modelled, so residual variances of models with different d or D are not comparable and neither are their AICc values. In practice the differencing orders are chosen first, from plots and unit-root tests such as KPSS and OCSB, and only p, q, P, Q are ranked by an information criterion. That is exactly what R's <code>auto.arima</code> does. For this series d = 1 and D = 1 is the standard choice; try others and search again to see how the answer moves.</li>
                 <li><strong>Dropped candidates.</strong> A fit whose AR part is non-stationary or whose MA part is non-invertible is discarded rather than ranked, again following <code>auto.arima</code>. The panel says how many were dropped.</li>
                 <li><strong>Reading the table.</strong> Differences in AICc below about 2 are ties in practice, and among tied models the one with fewer parameters is preferred. With d = D = 1 the winner is a seven-coefficient SARIMA(3,1,3)(1,1,0)<sub>12</sub> that beats SARIMA(2,1,1)(0,1,0)<sub>12</sub>, the model <code>auto.arima</code> returns for this series, by only about three points. Compare their forecast bands before deciding the extra four coefficients are worth having. The default SARIMA(1,1,0)(0,1,0)<sub>12</sub> sits about five points behind with a single coefficient, which is why it makes a good classroom baseline.</li>
-                <li><strong>The lesson the criterion cannot give you.</strong> The seasonal swings in this series grow with the level, and no ARIMA on the raw counts can reproduce that. On log(y) the classic "airline model" SARIMA(0,1,1)(0,1,1)<sub>12</sub> wins with two coefficients. Model selection ranks the candidates you offer it; choosing the transformation is still your job.</li>
+                <li><strong>The lesson the criterion cannot give you.</strong> The seasonal swings in this series grow with the level, and no ARIMA on the raw counts can reproduce that. On log(y), R's <code>auto.arima</code> returns the classic "airline model" SARIMA(0,1,1)(0,1,1)<sub>12</sub>, with just two coefficients. Model selection ranks the candidates you offer it; choosing the transformation is still your job.</li>
                 <li><strong>Approximation.</strong> This tool uses conditional least squares while <code>statsmodels</code> and R use the exact Gaussian likelihood. On this series both give the same top five models by AICc and coefficients that agree to a few hundredths; rankings can differ only among near-ties.</li>
             </ul>
         </div>
@@ -923,10 +923,13 @@
                 line: {color: '#667eea', width: 3},
                 marker: {size: 4}
             };
+            // Plotly never wraps titles: on narrow screens break after the colon (and on the smallest, before "Forecast") and use a smaller font
+            const narrow = window.innerWidth < 700;
+            const tiny = window.innerWidth < 420;
             const layout = {
                 title: {
-                    text: `Airline Passengers: SARIMA(${p},${d},${q})(${showP},${showD},${showQ})${mLabel} Forecast`,
-                    font: {size: 20, color: '#667eea'}
+                    text: `Airline Passengers:${narrow ? '<br>' : ' '}SARIMA(${p},${d},${q})(${showP},${showD},${showQ})${mLabel}${tiny ? '<br>' : ' '}Forecast`,
+                    font: {size: narrow ? 15 : 20, color: '#667eea'}
                 },
                 xaxis: { title: 'Date', gridcolor: '#e0e0e0' },
                 yaxis: { title: 'Number of Passengers (thousands)', gridcolor: '#e0e0e0' },
