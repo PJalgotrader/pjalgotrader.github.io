@@ -662,6 +662,8 @@
         let trainData = {};
 
         function togglePreprocessing() {
+            // Ignore clicks while training; a run keeps the setting it started with
+            if (document.getElementById('trainBtn').disabled) return;
             const toggle = document.getElementById('preprocessToggle');
             toggle.classList.toggle('active');
             usePreprocessing = !usePreprocessing;
@@ -709,7 +711,7 @@
             return model;
         }
 
-        function buildRNNModel(inputShape, rnnUnits) {
+        function buildRNNModel(inputShape, rnnUnits, learningRate) {
             const model = tf.sequential();
             model.add(tf.layers.simpleRNN({
                 inputShape: [inputShape, 1],
@@ -717,7 +719,7 @@
                 returnSequences: false
             }));
             model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
-            model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
+            model.compile({ optimizer: tf.train.adam(learningRate), loss: 'meanSquaredError' });
             return model;
         }
 
@@ -777,11 +779,14 @@
             const trainBtn = document.getElementById('trainBtn');
             const statusMsg = document.getElementById('statusMessage');
             const results = document.getElementById('results');
+            // Snapshot the toggle so the whole run uses one preprocessing setting
+            const preprocess = usePreprocessing;
 
             trainBtn.disabled = true;
             results.style.display = 'none';
             statusMsg.innerHTML = '<div class="status-message info">🔄 Training models... This may take a minute.</div>';
 
+            let XTrainDNN, YTrainDNN, XTestDNN, XTrainRNN, YTrainRNN, XTestRNN;
             try {
                 // Get parameters
                 const dnnLags = parseInt(document.getElementById('dnnLags').value);
@@ -795,7 +800,7 @@
                 let processedData = airlineData;
                 let originalData = [...airlineData];
 
-                if (usePreprocessing) {
+                if (preprocess) {
                     const { diffData } = preprocessData(airlineData);
                     processedData = diffData;
                 }
@@ -821,10 +826,12 @@
                 statusMsg.innerHTML = '<div class="status-message info">🔄 Training DNN model...</div>';
                 const startDNN = Date.now();
 
-                const XTrainDNN = tf.tensor2d(XTrainDNN_data);
-                const YTrainDNN = tf.tensor2d(YTrainDNN_data, [YTrainDNN_data.length, 1]);
-                const XTestDNN = tf.tensor2d(XTestDNN_data);
+                XTrainDNN = tf.tensor2d(XTrainDNN_data);
+                YTrainDNN = tf.tensor2d(YTrainDNN_data, [YTrainDNN_data.length, 1]);
+                XTestDNN = tf.tensor2d(XTestDNN_data);
 
+                // Free the previous run's weights and optimizer state
+                if (modelDNN) modelDNN.dispose();
                 modelDNN = buildDNNModel(dnnLags, dnnLayer1, dnnLayer2);
                 const historyDNN = await modelDNN.fit(XTrainDNN, YTrainDNN, {
                     epochs: epochs,
@@ -838,11 +845,15 @@
                 statusMsg.innerHTML = '<div class="status-message info">🔄 Training RNN model...</div>';
                 const startRNN = Date.now();
 
-                const XTrainRNN = tf.tensor3d(XTrainRNN_data.map(x => x.map(v => [v])));
-                const YTrainRNN = tf.tensor2d(YTrainRNN_data, [YTrainRNN_data.length, 1]);
-                const XTestRNN = tf.tensor3d(XTestRNN_data.map(x => x.map(v => [v])));
+                XTrainRNN = tf.tensor3d(XTrainRNN_data.map(x => x.map(v => [v])));
+                YTrainRNN = tf.tensor2d(YTrainRNN_data, [YTrainRNN_data.length, 1]);
+                XTestRNN = tf.tensor3d(XTestRNN_data.map(x => x.map(v => [v])));
 
-                modelRNN = buildRNNModel(rnnSeqLength, rnnUnits);
+                // A tf.train.adam() optimizer isn't owned by its model, so free it explicitly
+                if (modelRNN) { modelRNN.optimizer.dispose(); modelRNN.dispose(); }
+                // Same optimizer settings as the companion notebook: Adam(learning_rate=0.1)
+                // for the raw-data RNN, default Adam (0.001) after log + differencing
+                modelRNN = buildRNNModel(rnnSeqLength, rnnUnits, preprocess ? 0.001 : 0.1);
                 const historyRNN = await modelRNN.fit(XTrainRNN, YTrainRNN, {
                     epochs: epochs,
                     batchSize: 16,
@@ -855,8 +866,8 @@
                 displayModelSummaries(modelDNN, modelRNN);
 
                 // Make predictions
-                const predDNN = modelDNN.predict(XTestDNN).arraySync().map(x => x[0]);
-                const predRNN = modelRNN.predict(XTestRNN).arraySync().map(x => x[0]);
+                const predDNN = tf.tidy(() => modelDNN.predict(XTestDNN).arraySync()).map(x => x[0]);
+                const predRNN = tf.tidy(() => modelRNN.predict(XTestRNN).arraySync()).map(x => x[0]);
 
                 // One-step test predictions. With preprocessing, undo log and differencing
                 // from the correct anchor so the levels line up with Jan–Dec 1960.
@@ -866,7 +877,7 @@
                 // plotTrainEnd is how many original observations sit before the test levels.
                 let plotTrainEnd = trainSize;
 
-                if (usePreprocessing) {
+                if (preprocess) {
                     // First test difference is diff[trainSize] = log(y[trainSize+1]) - log(y[trainSize]).
                     const nPred = Math.min(predDNN.length, predRNN.length);
                     finalPredDNN = invertPreprocessing(predDNN, originalData, trainSize);
@@ -910,33 +921,28 @@
                     document.getElementById('dnnMAPE').classList.remove('better');
                 }
 
+                // Show results before plotting so Plotly sizes the charts to the full width
+                results.style.display = 'block';
+
                 // Plot loss curves
-                plotLossCurves(historyDNN.history, historyRNN.history);
+                plotLossCurves(historyDNN.history, historyRNN.history, preprocess);
 
                 // Plot forecasts (using trimmed data for fair comparison)
                 plotForecasts(originalData, plotTrainEnd, actualTestTrimmed, predDNNTrimmed, predRNNTrimmed);
 
-                // Show results
-                results.style.display = 'block';
                 statusMsg.innerHTML = '<div class="status-message success">✅ Training complete! Check out the results below.</div>';
-
-                // Cleanup tensors
-                XTrainDNN.dispose();
-                YTrainDNN.dispose();
-                XTestDNN.dispose();
-                XTrainRNN.dispose();
-                YTrainRNN.dispose();
-                XTestRNN.dispose();
 
             } catch (error) {
                 console.error('Training error:', error);
                 statusMsg.innerHTML = `<div class="status-message warning">⚠️ Error: ${error.message}</div>`;
             } finally {
+                // Cleanup tensors
+                tf.dispose([XTrainDNN, YTrainDNN, XTestDNN, XTrainRNN, YTrainRNN, XTestRNN]);
                 trainBtn.disabled = false;
             }
         }
 
-        function plotLossCurves(historyDNN, historyRNN) {
+        function plotLossCurves(historyDNN, historyRNN, preprocess) {
             const epochsDNN = historyDNN.loss.map((_, i) => i + 1);
             const epochsRNN = historyRNN.loss.map((_, i) => i + 1);
 
@@ -958,7 +964,7 @@
 
             const layout = {
                 xaxis: { title: 'Epoch' },
-                yaxis: { title: usePreprocessing ? 'Loss (MSE of log-differences)' : 'Loss (MSE)', type: 'log' },
+                yaxis: { title: preprocess ? 'Loss (MSE of log-differences)' : 'Loss (MSE)', type: 'log' },
                 hovermode: 'x unified',
                 showlegend: true,
                 legend: { x: 0.7, y: 1 }
