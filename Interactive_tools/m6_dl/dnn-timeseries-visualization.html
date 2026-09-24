@@ -386,6 +386,9 @@
                 <strong>Key Concept:</strong> Unlike linear models, DNNs can learn nonlinear transformations through activation functions (ReLU, tanh). Each hidden layer learns increasingly abstract features. The model is trained using backpropagation with the Adam optimizer to minimize Mean Squared Error (MSE).
             </p>
             <p>
+                <strong>Scaling:</strong> The network trains on min&ndash;max scaled counts. Raw counts in the hundreds saturate tanh units and can switch ReLU units off for good, which shows up as a flat prediction line. The scaler is fitted on the training months only, so the training data lie between 0 and 1, while the test months, which climb past the training peak, land a little above 1. Predictions are converted back to passengers before any error is computed, so every metric and chart on this page is in passengers.
+            </p>
+            <p>
                 <strong>Benchmark:</strong> We compare DNN performance against Linear Regression to understand when the added complexity provides value.
             </p>
         </div>
@@ -567,6 +570,15 @@
 
         const testPeriod = 24;
         const trainPeriod = passengerData.length - testPeriod;
+
+        // The network trains on min-max scaled counts. The scaler is fitted on the training months only
+        // (the first trainPeriod values, which hold every training input and target), so the test months
+        // never influence it: training data lie in [0, 1] and later, higher months land a little above 1.
+        // Predictions are converted back to passengers before any error is computed.
+        const scaleMin = Math.min(...passengerData.slice(0, trainPeriod));
+        const scaleRange = Math.max(...passengerData.slice(0, trainPeriod)) - scaleMin;
+        const scale = v => (v - scaleMin) / scaleRange;
+        const unscale = v => v * scaleRange + scaleMin;
 
         let currentModel = null;
         let lossHistory = [];
@@ -822,11 +834,11 @@
                 const { X, y } = createLaggedData(numLags);
                 const { trainX, trainY, testX, testY } = splitData(X, y);
 
-                // Convert to tensors
-                trainXTensor = tf.tensor2d(trainX);
-                trainYTensor = tf.tensor2d(trainY, [trainY.length, 1]);
-                testXTensor = tf.tensor2d(testX);
-                testYTensor = tf.tensor2d(testY, [testY.length, 1]);
+                // Convert to tensors of scaled values (the linear-regression benchmark below uses the raw counts)
+                trainXTensor = tf.tensor2d(trainX.map(row => row.map(scale)));
+                trainYTensor = tf.tensor2d(trainY.map(scale), [trainY.length, 1]);
+                testXTensor = tf.tensor2d(testX.map(row => row.map(scale)));
+                testYTensor = tf.tensor2d(testY.map(scale), [testY.length, 1]);
 
                 // Build and train DNN (first freeing the previous run's weights and optimizer state)
                 if (currentModel) currentModel.dispose();
@@ -843,7 +855,7 @@
                         onEpochEnd: (epoch, logs) => {
                             lossHistory.push({
                                 epoch: epoch + 1,
-                                loss: logs.loss
+                                loss: logs.loss * scaleRange * scaleRange   // back to passengers², like the metrics
                             });
 
                             // Update loss plot every 10 epochs
@@ -858,8 +870,8 @@
                 // Get DNN predictions
                 const dnnTrainPred = tf.tidy(() => currentModel.predict(trainXTensor).arraySync());
                 const dnnTestPred = tf.tidy(() => currentModel.predict(testXTensor).arraySync());
-                const dnnTrainPredFlat = dnnTrainPred.map(x => x[0]);
-                const dnnTestPredFlat = dnnTestPred.map(x => x[0]);
+                const dnnTrainPredFlat = dnnTrainPred.map(x => unscale(x[0]));
+                const dnnTestPredFlat = dnnTestPred.map(x => unscale(x[0]));
 
                 // Train Linear Regression
                 const lr = new LinearRegression();
@@ -1179,10 +1191,10 @@
 
             for (let h = 0; h < horizon; h++) {
                 if (run !== forecastRun) break;   // superseded by a newer forecast or a new training run
-                const input = tf.tensor2d([recentData.slice(-numLags)]);
+                const input = tf.tensor2d([recentData.slice(-numLags).map(scale)]);
                 const output = currentModel.predict(input);
                 const prediction = await output.array();
-                const predValue = prediction[0][0];
+                const predValue = unscale(prediction[0][0]);
                 forecasts.push(predValue);
                 recentData.push(predValue);
                 input.dispose();
