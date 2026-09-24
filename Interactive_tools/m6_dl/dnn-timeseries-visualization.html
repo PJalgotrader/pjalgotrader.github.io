@@ -571,6 +571,8 @@
         let currentModel = null;
         let lossHistory = [];
         let isTraining = false;
+        let lastPlotArgs = null;   // the last run's plot inputs, so the horizon slider can re-forecast without retraining
+        let forecastRun = 0;       // bumped by every forecast and training run; an outdated forecast stops early
 
         // Initialize neuron controls
         function updateNeuronControls() {
@@ -799,6 +801,8 @@
         async function trainModel() {
             if (isTraining) return;
             isTraining = true;
+            forecastRun++;          // stop any horizon re-forecast still using the old model
+            lastPlotArgs = null;
 
             const trainButton = document.getElementById('trainButton');
             const statusMessage = document.getElementById('statusMessage');
@@ -876,7 +880,8 @@
                 updateLossPlot();
                 updateArchitecturePlot(numLags, numLayers);
                 await updateFeatureImportancePlot(numLags);
-                await updateTimeseriesPlot(trainY, testY, dnnTrainPredFlat, dnnTestPredFlat, lrTrainPred, lrTestPred, numLags);
+                lastPlotArgs = [trainY, testY, dnnTrainPredFlat, dnnTestPredFlat, lrTrainPred, lrTestPred, numLags];
+                await updateTimeseriesPlot(...lastPlotArgs);
 
                 statusMessage.className = 'status-message complete';
                 statusMessage.textContent = 'Training complete! Explore the results below.';
@@ -1168,11 +1173,12 @@
         }
 
         // Recursive forecasting
-        async function forecastFuture(horizon, numLags) {
+        async function forecastFuture(horizon, numLags, run) {
             const recentData = passengerData.slice(-numLags);
             const forecasts = [];
 
             for (let h = 0; h < horizon; h++) {
+                if (run !== forecastRun) break;   // superseded by a newer forecast or a new training run
                 const input = tf.tensor2d([recentData.slice(-numLags)]);
                 const output = currentModel.predict(input);
                 const prediction = await output.array();
@@ -1189,9 +1195,11 @@
         // Update timeseries plot
         function updateTimeseriesPlot(trainY, testY, dnnTrainPred, dnnTestPred, lrTrainPred, lrTestPred, numLags) {
             const horizon = parseInt(document.getElementById('horizonSlider').value);
+            const run = ++forecastRun;
 
             // Get future forecasts (async operation handled in training function)
-            return forecastFuture(horizon, numLags).then(futurePred => {
+            return forecastFuture(horizon, numLags, run).then(futurePred => {
+                if (run !== forecastRun) return;   // a newer forecast or training run has taken over
                 const trainMonths = Array.from({ length: trainY.length }, (_, i) => `Month ${i + numLags + 1}`);
                 const testMonths = Array.from({ length: testY.length }, (_, i) => `Month ${trainY.length + i + numLags + 1}`);
                 const futureMonths = Array.from({ length: horizon }, (_, i) => `Month ${trainY.length + testY.length + i + numLags + 1}`);
@@ -1272,6 +1280,11 @@
 
         document.getElementById('horizonSlider').addEventListener('input', function() {
             document.getElementById('horizonValue').textContent = this.value;
+        });
+
+        // After a run, releasing the horizon slider re-forecasts with the trained model
+        document.getElementById('horizonSlider').addEventListener('change', function() {
+            if (lastPlotArgs && !isTraining) updateTimeseriesPlot(...lastPlotArgs);
         });
 
         document.getElementById('epochsSlider').addEventListener('input', function() {
