@@ -111,6 +111,10 @@
             .controls { flex-direction: column; align-items: stretch; gap: 10px; }
             .insights-row { grid-template-columns: 1fr; }
         }
+        @media (max-width: 600px) {
+            .control-group { flex-wrap: wrap; }
+            .control-group label { white-space: normal; }
+        }
     </style>
 </head>
 <body>
@@ -416,6 +420,9 @@ degreeSlider.addEventListener('input', () => {
     updateComplexityBar();
 });
 
+// Releasing the slider refits the curves on the same data
+degreeSlider.addEventListener('change', () => computeAndRender(false));
+
 function updateComplexityBar() {
     document.querySelectorAll('.cx-step').forEach(el => {
         const d = parseInt(el.dataset.deg);
@@ -435,7 +442,7 @@ function updateComplexityBar() {
 // ============================================================
 // DIAGNOSIS
 // ============================================================
-function updateDiagnosis(trainErrors, valErrors, benchmarkMSE) {
+function updateDiagnosis(trainErrors, valErrors, benchmarkMSE, deg) {
     const el = document.getElementById('diagnosis');
     const finalTrain = trainErrors[trainErrors.length - 1];
     const finalVal = valErrors[valErrors.length - 1];
@@ -479,9 +486,9 @@ function updateDiagnosis(trainErrors, valErrors, benchmarkMSE) {
             <div class="diag-text">
                 Training error ${finalTrain.toFixed(1)}, validation error ${finalVal.toFixed(1)}, gap ${gap.toFixed(1)}.
                 Validation error is close to σ² = ${noise.toFixed(1)} and well below the benchmark (${benchmarkMSE.toFixed(1)}).${peakNote}
-                ${currentDegree === 3
+                ${deg === 3
                     ? 'Degree 3 is the function these points were drawn from.'
-                    : currentDegree < 3
+                    : deg < 3
                         ? 'A lower degree can look this good here because the cubic term is small on [−3, 3]. Degree 3 is still the function that generated the data.'
                         : 'At this sample size the extra terms are not hurting. Their cost shows up on the left of the curve, where the sample is small.'}
                 <div class="diag-action">Read the gap at the right edge, and the height of the curve at the left.</div>
@@ -574,7 +581,7 @@ function renderLearningCurve(sizes, trainErrors, valErrors, benchmarkMSE) {
     }, {responsive: true, displayModeBar: false});
 }
 
-function renderFitChart() {
+function renderFitChart(deg) {
     // Simulate one 5-fold CV split: train on 4 folds, highlight 1 validation fold
     const K = 5;
     const shuffled = [...dataPool].sort(() => Math.random() - 0.5);
@@ -585,7 +592,11 @@ function renderFitChart() {
     const tx = trainFold.map(d => d.x);
     const txn = normalizeX(tx);
     const ty = trainFold.map(d => d.y);
-    const coeffs = fitPoly(txn, ty, currentDegree);
+    const coeffs = fitPoly(txn, ty, deg);
+
+    // Keep every point in view: the cubic dips to about -6.5 at x = -3 and the noise reaches lower
+    const allY = dataPool.map(d => d.y);
+    const yRange = [Math.min(-8, Math.floor(Math.min(...allY)) - 1), Math.max(18, Math.ceil(Math.max(...allY)) + 1)];
 
     // Smooth prediction curve
     const plotX = [];
@@ -613,7 +624,7 @@ function renderFitChart() {
         },
         {
             x: plotX, y: plotYPred,
-            mode: 'lines', name: `Fitted (degree ${currentDegree})`,
+            mode: 'lines', name: `Fitted (degree ${deg})`,
             line: {color: '#667eea', width: 3}
         }
     ];
@@ -621,7 +632,7 @@ function renderFitChart() {
     Plotly.react('chart-fit', traces, {
         margin: {t: 10, r: 20, b: 50, l: 50},
         xaxis: {title: 'x', range: [X_MIN - 0.3, X_MAX + 0.3], gridcolor: '#f1f5f9'},
-        yaxis: {title: 'y', range: [-8, 18], gridcolor: '#f1f5f9'},
+        yaxis: {title: 'y', range: yRange, gridcolor: '#f1f5f9'},
         legend: {x: 0.01, y: 0.99, bgcolor: 'rgba(255,255,255,0.9)', font: {size: 10}},
         plot_bgcolor: 'white', paper_bgcolor: 'white'
     }, {responsive: true, displayModeBar: false});
@@ -630,32 +641,38 @@ function renderFitChart() {
 // ============================================================
 // MAIN — GENERATE & ANIMATE
 // ============================================================
-document.getElementById('btn-compute').addEventListener('click', computeAndRender);
+document.getElementById('btn-compute').addEventListener('click', () => computeAndRender(true));
 
-async function computeAndRender() {
+let renderRun = 0; // a newer run (e.g. the slider moved mid-animation) takes over from an older one
+
+async function computeAndRender(newData) {
+    const run = ++renderRun;
+    const deg = currentDegree; // one degree for the curves, the fit chart and the diagnosis
     const btn = document.getElementById('btn-compute');
     btn.disabled = true;
     btn.textContent = 'Computing...';
 
-    generatePool();
+    if (newData) generatePool();
 
     // Small delay to let UI update
     await new Promise(r => setTimeout(r, 50));
+    if (run !== renderRun) return;
 
-    const {sizes, trainErrors, valErrors, benchmarkMSE} = computeLearningCurve(currentDegree);
+    const {sizes, trainErrors, valErrors, benchmarkMSE} = computeLearningCurve(deg);
 
-    // Animate the curves building up
-    for (let i = 3; i <= sizes.length; i++) {
+    // Animate the curves building up (new data only; a degree change redraws in place)
+    for (let i = 3; newData && i <= sizes.length; i++) {
         const partialSizes = sizes.slice(0, i);
         const partialTrain = trainErrors.slice(0, i);
         const partialVal = valErrors.slice(0, i);
         renderLearningCurve(partialSizes, partialTrain, partialVal, benchmarkMSE);
         if (i < sizes.length && i % 3 === 0) await new Promise(r => setTimeout(r, 30));
+        if (run !== renderRun) return;
     }
 
     renderLearningCurve(sizes, trainErrors, valErrors, benchmarkMSE);
-    renderFitChart();
-    updateDiagnosis(trainErrors, valErrors, benchmarkMSE);
+    renderFitChart(deg);
+    updateDiagnosis(trainErrors, valErrors, benchmarkMSE, deg);
 
     btn.disabled = false;
     btn.textContent = 'Generate Learning Curves';
@@ -668,7 +685,7 @@ updateComplexityBar();
 generatePool();
 
 // Auto-run on load
-computeAndRender();
+computeAndRender(true);
 </script>
 
 </body>
