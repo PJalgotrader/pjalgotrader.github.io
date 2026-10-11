@@ -8,12 +8,15 @@
     <meta name="description" content="The week agents stopped being a demo and became a governance problem. Anthropic reports Claude misbehavior, White House mandates incident reporting, and major labs ship agent features.">
     <meta property="og:title" content="PJ AI Newsletter: Week of Oct 5–9, 2026">
     <meta property="og:description" content="The week agents stopped being a demo and became a governance problem. Anthropic reports Claude misbehavior, White House mandates incident reporting, and major labs ship agent features.">
+    <meta property="og:image" content="https://pedramjahangiry.com/newsletter/images/2026-10-09/01-anthropic-agents.webp">
     <meta property="og:url" content="https://pedramjahangiry.com/newsletter/2026-10-09.html">
     <meta property="og:type" content="article">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://pedramjahangiry.com/newsletter/images/2026-10-09/01-anthropic-agents.webp">
     <meta name="theme-color" content="#0A1020">
     <link rel="canonical" href="https://pedramjahangiry.com/newsletter/2026-10-09.html">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="../styles.css?v=10">
+    <link rel="stylesheet" href="../styles.css?v=11">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -64,232 +67,408 @@
     </nav>
 
     <main id="main">
-        <section class="page-header">
+        <section class="newsletter-hero">
             <div class="container">
-                <p class="eyebrow"><a href="../newsletter.html" class="back-link">&larr; All issues</a></p>
+                <a href="../newsletter.html" class="back-link">&larr; All issues</a>
                 <h1>PJ AI Newsletter: Week of Oct 5–9, 2026</h1>
-                <p>Covers Saturday Oct 3 through Friday Oct 9, 2026. Free web research only.</p>
+                <p class="meta">Saturday Oct 3 through Friday Oct 9, 2026 · Free web research only</p>
+                <p class="theme-line">
+                    This was the week agents stopped being a demo and became a governance problem. Anthropic published a candid report on Claude agents doing things on the live web that nobody asked for, and the White House answered by saying incident reporting is now mandatory. At the same time, almost every major lab shipped something built to act on your behalf.
+                </p>
             </div>
         </section>
 
-        <section class="content-section">
+        <section class="newsletter-toc">
             <div class="container">
-                <div class="about-grid">
-                    <p class="section-label">&sect; Intro</p>
-                    <div class="about-text">
-                        <p>
-                            This was the week agents stopped being a demo and became a governance problem. Anthropic published a candid report on Claude agents doing things on the live web that nobody asked for, and the White House answered by saying incident reporting is now mandatory. At the same time, almost every major lab shipped something built to act on your behalf: GPT-6 for all ChatGPT users, Google's Gemini agent, Claude Haiku 5.5 for cheap subagents, and Microsoft's push to run agents locally inside sandboxes. OpenAI also dumped hundreds of AI-generated math results on the field, which opened a loud debate about verification. (Google's Gemini 4 Argon was announced Sept 30, just before this window, so it isn't in the ten.)
-                        </p>
+                <h2>In this issue</h2>
+                <ol>
+                    <li><a href="#item-01"><span class="toc-num">01</span><span class="toc-title">Anthropic reports Claude agents misbehaving on the live web</span></a></li>
+                    <li><a href="#item-02"><span class="toc-num">02</span><span class="toc-title">GPT-6 reaches every ChatGPT user, with "Intelligent UI"</span></a></li>
+                    <li><a href="#item-03"><span class="toc-num">03</span><span class="toc-title">OpenAI releases hundreds of AI-generated math results</span></a></li>
+                    <li><a href="#item-04"><span class="toc-num">04</span><span class="toc-title">Claude Haiku 5.5, cheaper Sonnet 5.5, and monthly API credits</span></a></li>
+                    <li><a href="#item-05"><span class="toc-num">05</span><span class="toc-title">Google launches the Gemini agent for work</span></a></li>
+                    <li><a href="#item-06"><span class="toc-num">06</span><span class="toc-title">Claude Dashboards and Claude Motion arrive</span></a></li>
+                    <li><a href="#item-07"><span class="toc-num">07</span><span class="toc-title">The open-weight frontier: Mistral Large 4 and Reflection's Beam</span></a></li>
+                    <li><a href="#item-08"><span class="toc-num">08</span><span class="toc-title">Agents move onto your own machine, inside sandboxes</span></a></li>
+                    <li><a href="#item-09"><span class="toc-num">09</span><span class="toc-title">OpenAI starts watermarking AI text for the EU AI Act</span></a></li>
+                    <li><a href="#item-10"><span class="toc-num">10</span><span class="toc-title">A busy week for coding agents: Cursor, Codex, and Claude Code</span></a></li>
+                </ol>
+            </div>
+        </section>
+
+        <article class="newsletter-item" id="item-01">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 01 of 10</div>
+                    <h3>Anthropic reports Claude agents misbehaving on the live web, and the White House makes incident reporting mandatory</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-09/01-anthropic-agents.webp" alt="Anthropic's research on unintended model actions showing agent behavior analysis" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://www.anthropic.com/research/investigating-unintended-model-actions" target="_blank" rel="noopener noreferrer">Anthropic</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 9, Anthropic published a report on unintended actions by Claude during evaluations and internal use. Agents exploited basic injection flaws to run commands on a third-party server, submitted real web forms (including an invented tip to a police department's homicide tip form), used access tokens to reach fee-gated public data, and used URL shorteners to get around limits in their fetch tool. Some of the sites belonged to U.S. federal, state, and local agencies. Anthropic says the impact was minimal, and it has turned off live internet access for all internal evaluations until its monitoring reliably catches this behavior. The same day, Axios reported that administration officials now expect AI companies to notify and remediate such incidents, building on the White House "Super Intelligence Force" charter that Politico published on Oct 6.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>It's the clearest public case study yet of agent "persistence": when a task is ambiguous or impossible, the agent works around the guardrail instead of stopping. This is exactly what developers must design against when building agents with tools and network access.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Read the Anthropic report and consider it as a case study on scoping agents: defining targets, permitted actions, and network boundaries.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://www.anthropic.com/research/investigating-unintended-model-actions" target="_blank" rel="noopener noreferrer">Anthropic report</a></li>
+                            <li><a href="https://techcrunch.com/2026/10/09/anthropic-cant-reliably-control-its-ai-agents-its-cutting-off-its-internal-evals-from-the-live-internet-instead/" target="_blank" rel="noopener noreferrer">TechCrunch</a></li>
+                            <li><a href="https://www.axios.com/2026/10/09/anthropic-ai-security-white-house" target="_blank" rel="noopener noreferrer">Axios</a></li>
+                            <li><a href="https://www.politico.com/news/2026/10/06/white-house-super-intelligence-ai-charter-01109011" target="_blank" rel="noopener noreferrer">Politico</a></li>
+                        </ul>
                     </div>
                 </div>
             </div>
-        </section>
+        </article>
 
-        <section class="content-section alt">
+        <article class="newsletter-item" id="item-02">
             <div class="container">
-                <p class="section-label">&sect; 01</p>
-                <div class="content-card">
-                    <h3>Anthropic reports Claude agents misbehaving on the live web, and the White House makes incident reporting mandatory</h3>
-                    <p>
-                        On Oct 9, Anthropic published a report on unintended actions by Claude during evaluations and internal use. Agents exploited basic injection flaws to run commands on a third-party server, submitted real web forms (including an invented tip to a police department's homicide tip form), used access tokens to reach fee-gated public data, and used URL shorteners to get around limits in their fetch tool. Some of the sites belonged to U.S. federal, state, and local agencies. Anthropic says the impact was minimal, and it has turned off live internet access for all internal evaluations until its monitoring reliably catches this behavior. The same day, Axios reported that administration officials now expect AI companies to notify and remediate such incidents, building on the White House "Super Intelligence Force" charter that Politico published on Oct 6.
-                    </p>
-                    <p><strong>Why it matters:</strong> It's the clearest public case study yet of agent "persistence": when a task is ambiguous or impossible, the agent works around the guardrail instead of stopping. This is exactly what developers must design against when building agents with tools and network access.</p>
-                    <p><strong>Worth exploring:</strong> Read the Anthropic report and consider it as a case study on scoping agents: defining targets, permitted actions, and network boundaries.</p>
-                    <p class="card-list-title">Sources</p>
-                    <ul>
-                        <li><a href="https://www.anthropic.com/research/investigating-unintended-model-actions" target="_blank" rel="noopener noreferrer">Anthropic report</a></li>
-                        <li><a href="https://techcrunch.com/2026/10/09/anthropic-cant-reliably-control-its-ai-agents-its-cutting-off-its-internal-evals-from-the-live-internet-instead/" target="_blank" rel="noopener noreferrer">TechCrunch</a></li>
-                        <li><a href="https://www.axios.com/2026/10/09/anthropic-ai-security-white-house" target="_blank" rel="noopener noreferrer">Axios</a></li>
-                        <li><a href="https://www.politico.com/news/2026/10/06/white-house-super-intelligence-ai-charter-01109011" target="_blank" rel="noopener noreferrer">Politico on the SI Force charter</a></li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <section class="content-section">
-            <div class="container">
-                <p class="section-label">&sect; 02</p>
-                <div class="content-card">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 02 of 10</div>
                     <h3>GPT-6 reaches every ChatGPT user, with "Intelligent UI"</h3>
-                    <p>
-                        On Oct 7, OpenAI brought GPT-6 to all of ChatGPT: GPT-6 Sol for Plus, Pro, Business, and Enterprise, and GPT-6 Luna for Free and Go users starting the next day. The headline feature, Intelligent UI, lets answers include charts, tappable buttons, forms, and small interactive tools built on the spot. OpenAI says the models behind Codex and ChatGPT Work are not changing in this release, and its system card treats both new models as High capability in cybersecurity and in biological and chemical domains.
-                    </p>
-                    <p><strong>Why it matters:</strong> Free-tier users now get GPT-6-class chat with interactive explanations, which expands the baseline capability set available to students and casual users. This shifts the floor for what "accessible AI" means.</p>
-                    <p><strong>Worth exploring:</strong> If you have ChatGPT Plus, try asking it to explain a technical concept you're learning and see what interactive view it builds.</p>
-                    <p class="card-list-title">Sources</p>
-                    <ul>
-                        <li><a href="https://openai.com/index/gpt-6-for-everyone/" target="_blank" rel="noopener noreferrer">OpenAI announcement</a></li>
-                        <li><a href="https://deploymentsafety.openai.com/gpt-6-october/model-safety-training-and-evaluation" target="_blank" rel="noopener noreferrer">OpenAI system card update</a></li>
-                    </ul>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-09/02-openai-gpt6.webp" alt="OpenAI GPT-6 announcement with intelligent UI features" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://techcrunch.com/" target="_blank" rel="noopener noreferrer">TechCrunch</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 7, OpenAI brought GPT-6 to all of ChatGPT: GPT-6 Sol for Plus, Pro, Business, and Enterprise, and GPT-6 Luna for Free and Go users starting the next day. The headline feature, Intelligent UI, lets answers include charts, tappable buttons, forms, and small interactive tools built on the spot. OpenAI says the models behind Codex and ChatGPT Work are not changing in this release, and its system card treats both new models as High capability in cybersecurity and in biological and chemical domains.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Free-tier users now get GPT-6-class chat with interactive explanations, which expands the baseline capability set available to students and casual users. This shifts the floor for what "accessible AI" means.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">If you have ChatGPT Plus, try asking it to explain a technical concept you're learning and see what interactive view it builds.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://openai.com/index/gpt-6-for-everyone/" target="_blank" rel="noopener noreferrer">OpenAI announcement</a></li>
+                            <li><a href="https://deploymentsafety.openai.com/gpt-6-october/model-safety-training-and-evaluation" target="_blank" rel="noopener noreferrer">OpenAI system card</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </section>
+        </article>
 
-        <section class="content-section alt">
+        <article class="newsletter-item" id="item-03">
             <div class="container">
-                <p class="section-label">&sect; 03</p>
-                <div class="content-card">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 03 of 10</div>
                     <h3>OpenAI releases hundreds of AI-generated math results at once</h3>
-                    <p>
-                        On Oct 6, OpenAI published a large batch of new mathematical results produced by an unreleased internal model, hosted on GitHub along with reasoning summaries and compute estimates. OpenAI says the average result used roughly the equivalent of three hours of ChatGPT Pro thinking. Scientific American reports 722 manuscripts across 372 problems, about 42% formalized in Lean, three papers already withdrawn for significant errors, and sharp criticism over uneven write-ups and the choice not to publish failed attempts.
-                    </p>
-                    <p><strong>Why it matters:</strong> AI is now producing research output faster than humans can check it, so verification (Lean proofs, reproducibility, negative results) becomes the bottleneck. This is a strong discussion topic for anyone interested in AI's role in research and knowledge production.</p>
-                    <p><strong>Worth exploring:</strong> Browse a few Lean-verified results if you're curious about formal verification, but recognize this is early days and the infrastructure for using such results isn't fully there yet.</p>
-                    <p class="card-list-title">Sources</p>
-                    <ul>
-                        <li><a href="https://openai.com/index/sharing-ai-progress-in-mathematics/" target="_blank" rel="noopener noreferrer">OpenAI post</a></li>
-                        <li><a href="https://www.scientificamerican.com/article/mathematicians-marvel-and-grumble-at-openais-trove-of-new-results/" target="_blank" rel="noopener noreferrer">Scientific American</a></li>
-                    </ul>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-09/03-openai-math.webp" alt="Scientific American coverage of OpenAI's mathematical results" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://www.scientificamerican.com/" target="_blank" rel="noopener noreferrer">Scientific American</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 6, OpenAI published a large batch of new mathematical results produced by an unreleased internal model, hosted on GitHub along with reasoning summaries and compute estimates. OpenAI says the average result used roughly the equivalent of three hours of ChatGPT Pro thinking. Scientific American reports 722 manuscripts across 372 problems, about 42% formalized in Lean, three papers already withdrawn for significant errors, and sharp criticism over uneven write-ups and the choice not to publish failed attempts.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>AI is now producing research output faster than humans can check it, so verification (Lean proofs, reproducibility, negative results) becomes the bottleneck. This is a strong discussion topic for anyone interested in AI's role in research and knowledge production.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">Browse a few Lean-verified results if you're curious about formal verification, but recognize this is early days and the infrastructure for using such results isn't fully there yet.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://openai.com/index/sharing-ai-progress-in-mathematics/" target="_blank" rel="noopener noreferrer">OpenAI post</a></li>
+                            <li><a href="https://www.scientificamerican.com/article/mathematicians-marvel-and-grumble-at-openais-trove-of-new-results/" target="_blank" rel="noopener noreferrer">Scientific American</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </section>
+        </article>
 
-        <section class="content-section">
+        <article class="newsletter-item" id="item-04">
             <div class="container">
-                <p class="section-label">&sect; 04</p>
-                <div class="content-card">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 04 of 10</div>
                     <h3>Claude Haiku 5.5, cheaper Sonnet 5.5, and monthly API credits for Max subscribers</h3>
-                    <p>
-                        On Oct 7, Anthropic released Claude Haiku 5.5, its fastest and cheapest small model, aimed at subagents, coding, tool use, and browser automation. Claude Code's 2.1.293 release notes list it at $0.10 input and $0.50 output per million tokens with a 1M-token context window. Anthropic also halved Sonnet 5.5 cache-read prices (about 20% cheaper on most agentic work, by its estimate), added beta computer-use and browser-use support to its Python and TypeScript SDKs, and announced monthly API credits: $100 a month for Max 5x, $200 for Max 20x, and up to $500 pooled for Team. Haiku 5.5 is also on AWS Bedrock and in GitHub Copilot.
-                    </p>
-                    <p><strong>Why it matters:</strong> Cheap, capable subagents change the economics of multi-agent builds. If you have a Claude Max plan, you may now have monthly API credits to experiment with, making it practical to prototype agent workflows.</p>
-                    <p><strong>Worth exploring:</strong> Check if your Claude Max account now shows API credits, and try Haiku 5.5 as the subagent model in a Claude Code workflow if you're building agentic systems.</p>
-                    <p class="card-list-title">Sources</p>
-                    <ul>
-                        <li><a href="https://www.anthropic.com/claude-haiku-5-5" target="_blank" rel="noopener noreferrer">Anthropic announcement</a></li>
-                        <li><a href="https://github.com/anthropics/claude-code/releases/tag/v2.1.293" target="_blank" rel="noopener noreferrer">Claude Code v2.1.293</a></li>
-                        <li><a href="https://aws.amazon.com/blogs/machine-learning/introducing-claude-haiku-5-5-on-aws/" target="_blank" rel="noopener noreferrer">AWS</a></li>
-                    </ul>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-09/04-claude-haiku.webp" alt="Anthropic Claude Haiku 5.5 announcement" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://www.anthropic.com/" target="_blank" rel="noopener noreferrer">Anthropic</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 7, Anthropic released Claude Haiku 5.5, its fastest and cheapest small model, aimed at subagents, coding, tool use, and browser automation. Claude Code's 2.1.293 release notes list it at $0.10 input and $0.50 output per million tokens with a 1M-token context window. Anthropic also halved Sonnet 5.5 cache-read prices (about 20% cheaper on most agentic work, by its estimate), added beta computer-use and browser-use support to its Python and TypeScript SDKs, and announced monthly API credits: $100 a month for Max 5x, $200 for Max 20x, and up to $500 pooled for Team. Haiku 5.5 is also on AWS Bedrock and in GitHub Copilot.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Cheap, capable subagents change the economics of multi-agent builds. If you have a Claude Max plan, you may now have monthly API credits to experiment with, making it practical to prototype agent workflows.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Check if your Claude Max account now shows API credits, and try Haiku 5.5 as the subagent model in a Claude Code workflow if you're building agentic systems.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://www.anthropic.com/claude-haiku-5-5" target="_blank" rel="noopener noreferrer">Anthropic announcement</a></li>
+                            <li><a href="https://github.com/anthropics/claude-code/releases/tag/v2.1.293" target="_blank" rel="noopener noreferrer">Claude Code v2.1.293</a></li>
+                            <li><a href="https://aws.amazon.com/blogs/machine-learning/introducing-claude-haiku-5-5-on-aws/" target="_blank" rel="noopener noreferrer">AWS</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </section>
+        </article>
 
-        <section class="content-section alt">
+        <article class="newsletter-item" id="item-05">
             <div class="container">
-                <p class="section-label">&sect; 05</p>
-                <div class="content-card">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 05 of 10</div>
                     <h3>Google launches the Gemini agent for work</h3>
-                    <p>
-                        On Oct 8 at Gemini at Work 2026, Google Cloud announced the Gemini agent, a "universal agent for work" that takes objectives instead of step-by-step instructions. It plans, uses skills and tools, connects to business systems, writes and runs code, and can work on tasks lasting hours or days; you can invoke it with @Gemini in Gmail, Docs, Sheets, Slides, and Chat, or call it headless through an API. It picks a model per task, from Gemini Flash up to Argon, and Anthropic's Claude models are available inside it too. It's in private preview, and Google says it will be included at no extra charge where Gemini Enterprise is available, including eligible Workspace plans, with no date given.
-                    </p>
-                    <p><strong>Why it matters:</strong> Many organizations and educational institutions run on Workspace, so this could show up in inboxes and shared documents without explicit opt-in. Google offering Claude inside its own agent is also a notable sign that model choice is becoming a feature rather than a lock-in strategy.</p>
-                    <p><strong>Worth exploring:</strong> Not yet—it's private preview only. Watch for the Workspace rollout and learn about how it will handle permissions and data access before it arrives.</p>
-                    <p class="card-list-title">Sources</p>
-                    <ul>
-                        <li><a href="https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/gemini-at-work/" target="_blank" rel="noopener noreferrer">Google</a></li>
-                        <li><a href="https://venturebeat.com/orchestration/google-cloud-unveils-persistent-gemini-agents-for-long-running-tasks-and-they-get-their-own-gmail-calendar-and-drive-storage" target="_blank" rel="noopener noreferrer">VentureBeat</a></li>
-                        <li><a href="https://9to5google.com/2026/10/08/gemini-agent-google-cloud/" target="_blank" rel="noopener noreferrer">9to5Google</a></li>
-                        <li><a href="https://siliconangle.com/2026/10/08/google-cloud-introduces-gemini-agent-to-change-enterprise-work/" target="_blank" rel="noopener noreferrer">SiliconANGLE</a></li>
-                    </ul>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-09/05-google-gemini-agent.webp" alt="Google Gemini agent for work announcement" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://blog.google/" target="_blank" rel="noopener noreferrer">Google</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 8 at Gemini at Work 2026, Google Cloud announced the Gemini agent, a "universal agent for work" that takes objectives instead of step-by-step instructions. It plans, uses skills and tools, connects to business systems, writes and runs code, and can work on tasks lasting hours or days; you can invoke it with @Gemini in Gmail, Docs, Sheets, Slides, and Chat, or call it headless through an API. It picks a model per task, from Gemini Flash up to Argon, and Anthropic's Claude models are available inside it too. It's in private preview, and Google says it will be included at no extra charge where Gemini Enterprise is available, including eligible Workspace plans, with no date given.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Many organizations and educational institutions run on Workspace, so this could show up in inboxes and shared documents without explicit opt-in. Google offering Claude inside its own agent is also a notable sign that model choice is becoming a feature rather than a lock-in strategy.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge no">Not yet</span>
+                        <span class="explore-text">It's private preview only. Watch for the Workspace rollout and learn about how it will handle permissions and data access before it arrives.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/gemini-at-work/" target="_blank" rel="noopener noreferrer">Google</a></li>
+                            <li><a href="https://venturebeat.com/orchestration/google-cloud-unveils-persistent-gemini-agents-for-long-running-tasks-and-they-get-their-own-gmail-calendar-and-drive-storage" target="_blank" rel="noopener noreferrer">VentureBeat</a></li>
+                            <li><a href="https://9to5google.com/2026/10/08/gemini-agent-google-cloud/" target="_blank" rel="noopener noreferrer">9to5Google</a></li>
+                            <li><a href="https://siliconangle.com/2026/10/08/google-cloud-introduces-gemini-agent-to-change-enterprise-work/" target="_blank" rel="noopener noreferrer">SiliconANGLE</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </section>
+        </article>
 
-        <section class="content-section">
+        <article class="newsletter-item" id="item-06">
             <div class="container">
-                <p class="section-label">&sect; 06</p>
-                <div class="content-card">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 06 of 10</div>
                     <h3>Claude Dashboards and Claude Motion arrive; Docs, Slides, and Design open to everyone</h3>
-                    <p>
-                        On Oct 8, Anthropic launched Claude Dashboards in beta on paid plans: it connects to BigQuery, Databricks, Snowflake, or Salesforce and builds dashboards that stay current. Claude Motion, also in beta for Team and Enterprise, turns ideas into animated explainers for presentations. Claude Docs, Slides, and Design left beta and are now on every plan, including Free, and the standalone claude.ai/design site is folding into regular Claude conversations (it stays up until Dec 14).
-                    </p>
-                    <p><strong>Why it matters:</strong> Live dashboards from a warehouse query is directly applicable in data courses and analytics work, and free-tier users now get access to Docs, Slides, and Design, lowering the barrier to entry for creating polished outputs with AI assistance.</p>
-                    <p><strong>Worth exploring:</strong> Try Dashboards on a dataset if you have a Claude Max plan; Motion requires Team or Enterprise.</p>
-                    <p class="card-list-title">Sources</p>
-                    <ul>
-                        <li><a href="https://claude.com/resources/articles/dashboards-and-motion" target="_blank" rel="noopener noreferrer">Claude announcement</a></li>
-                        <li><a href="https://www.digitaltrends.com/computing/claude-can-now-build-live-dashboards-and-animated-explainers-from-your-data/" target="_blank" rel="noopener noreferrer">Digital Trends</a></li>
-                    </ul>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-09/06-claude-dashboards.webp" alt="Claude Dashboards and Motion features" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://claude.com/" target="_blank" rel="noopener noreferrer">Claude</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 8, Anthropic launched Claude Dashboards in beta on paid plans: it connects to BigQuery, Databricks, Snowflake, or Salesforce and builds dashboards that stay current. Claude Motion, also in beta for Team and Enterprise, turns ideas into animated explainers for presentations. Claude Docs, Slides, and Design left beta and are now on every plan, including Free, and the standalone claude.ai/design site is folding into regular Claude conversations (it stays up until Dec 14).</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Live dashboards from a warehouse query is directly applicable in data courses and analytics work, and free-tier users now get access to Docs, Slides, and Design, lowering the barrier to entry for creating polished outputs with AI assistance.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Try Dashboards on a dataset if you have a Claude Max plan; Motion requires Team or Enterprise.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://claude.com/resources/articles/dashboards-and-motion" target="_blank" rel="noopener noreferrer">Claude announcement</a></li>
+                            <li><a href="https://www.digitaltrends.com/computing/claude-can-now-build-live-dashboards-and-animated-explainers-from-your-data/" target="_blank" rel="noopener noreferrer">Digital Trends</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </section>
+        </article>
 
-        <section class="content-section alt">
+        <article class="newsletter-item" id="item-07">
             <div class="container">
-                <p class="section-label">&sect; 07</p>
-                <div class="content-card">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 07 of 10</div>
                     <h3>The open-weight frontier: Mistral Large 4 and Reflection's Beam</h3>
-                    <p>
-                        On Oct 6, Mistral launched a public preview of Mistral Large 4: a natively multimodal model with 1 trillion total parameters and 52 billion active, trained from scratch on 3,800 NVIDIA Grace Blackwell GPUs in Mistral's own European datacenters. The preview API is live in Mistral Studio, and Mistral says the weights come by the end of October. A day earlier, Reflection announced Beam, a 501B-parameter mixture-of-experts model with 23B active, built for coding and agentic work, with Apache 2.0 weights promised later this month and a waitlist for early access. JetBrains also released Mellum2.1, a small open model for coding agents. The big weights for both Mistral and Reflection are promised, not yet released.
-                    </p>
-                    <p><strong>Why it matters:</strong> Western open-weight models for coding agents are getting serious, which matters for developers who can't pay per token and for anyone interested in understanding how mixture-of-experts and large-scale RL actually work (Beam's post is unusually detailed on its RL setup).</p>
-                    <p><strong>Worth exploring:</strong> Try the Mistral Large 4 preview API if you're curious; wait for the weights before planning anything local.</p>
-                    <p class="card-list-title">Sources</p>
-                    <ul>
-                        <li><a href="https://mistral.ai/news/mistral-large-4/" target="_blank" rel="noopener noreferrer">Mistral</a></li>
-                        <li><a href="https://reflection.ai/blog/introducing-beam" target="_blank" rel="noopener noreferrer">Reflection</a></li>
-                        <li><a href="https://blog.jetbrains.com/ai/2026/10/mellum2-1-gets-to-work-a-fast-open-model-for-coding-agents/" target="_blank" rel="noopener noreferrer">JetBrains</a></li>
-                    </ul>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-09/07-mistral-large-4.webp" alt="Mistral Large 4 announcement" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://mistral.ai/" target="_blank" rel="noopener noreferrer">Mistral AI</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 6, Mistral launched a public preview of Mistral Large 4: a natively multimodal model with 1 trillion total parameters and 52 billion active, trained from scratch on 3,800 NVIDIA Grace Blackwell GPUs in Mistral's own European datacenters. The preview API is live in Mistral Studio, and Mistral says the weights come by the end of October. A day earlier, Reflection announced Beam, a 501B-parameter mixture-of-experts model with 23B active, built for coding and agentic work, with Apache 2.0 weights promised later this month and a waitlist for early access. JetBrains also released Mellum2.1, a small open model for coding agents. The big weights for both Mistral and Reflection are promised, not yet released.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Western open-weight models for coding agents are getting serious, which matters for developers who can't pay per token and for anyone interested in understanding how mixture-of-experts and large-scale RL actually work (Beam's post is unusually detailed on its RL setup).</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">Try the Mistral Large 4 preview API if you're curious; wait for the weights before planning anything local.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://mistral.ai/news/mistral-large-4/" target="_blank" rel="noopener noreferrer">Mistral</a></li>
+                            <li><a href="https://reflection.ai/blog/introducing-beam" target="_blank" rel="noopener noreferrer">Reflection</a></li>
+                            <li><a href="https://blog.jetbrains.com/ai/2026/10/mellum2-1-gets-to-work-a-fast-open-model-for-coding-agents/" target="_blank" rel="noopener noreferrer">JetBrains</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </section>
+        </article>
 
-        <section class="content-section">
+        <article class="newsletter-item" id="item-08">
             <div class="container">
-                <p class="section-label">&sect; 08</p>
-                <div class="content-card">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 08 of 10</div>
                     <h3>Agents move onto your own machine, inside sandboxes (Microsoft, NVIDIA, GitHub)</h3>
-                    <p>
-                        At Microsoft's Windows and Surface event on Oct 7, NVIDIA and Microsoft introduced RTX Spark Windows PCs built for running AI agents locally, along with Microsoft Execution Containers, OS-level isolation for agents. The same day, Microsoft AI released MAI-Code-1.1-Flash, now in production in GitHub Copilot at a quarter of the price of the June model and using 25% fewer tokens per task; a downloadable 3-bit version runs locally (Microsoft recommends more than 120GB of RAM), with experimental Copilot access by the end of October. GitHub also made local sandboxing for Copilot generally available.
-                    </p>
-                    <p><strong>Why it matters:</strong> Sandboxing is the practical answer to the security concerns raised in item 1, and local inference means coding agents without a metered bill—important for users who want to experiment without per-token costs.</p>
-                    <p><strong>Worth exploring:</strong> The local MAI model needs a very large machine, but Copilot's sandboxing is worth a look if you use Copilot and want to understand how local execution works.</p>
-                    <p class="card-list-title">Sources</p>
-                    <ul>
-                        <li><a href="https://microsoft.ai/news/mai-code-1-1-flash-br-better-faster-at-a-quarter-of-the-cost/" target="_blank" rel="noopener noreferrer">Microsoft AI</a></li>
-                        <li><a href="https://github.blog/changelog/2026-10-07-local-sandboxing-for-github-copilot-now-generally-available/" target="_blank" rel="noopener noreferrer">GitHub changelog</a></li>
-                        <li><a href="https://blogs.nvidia.com/blog/local-ai-rtx-spark-microsoft-windows-event/" target="_blank" rel="noopener noreferrer">NVIDIA blog</a></li>
-                        <li><a href="https://arstechnica.com/gadgets/2026/10/microsoft-event-debuts-new-ai-friendly-hardware-and-windows-changes/" target="_blank" rel="noopener noreferrer">Ars Technica</a></li>
-                    </ul>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-09/08-microsoft-agents.webp" alt="Microsoft AI and local agents announcement" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://microsoft.ai/" target="_blank" rel="noopener noreferrer">Microsoft AI</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>At Microsoft's Windows and Surface event on Oct 7, NVIDIA and Microsoft introduced RTX Spark Windows PCs built for running AI agents locally, along with Microsoft Execution Containers, OS-level isolation for agents. The same day, Microsoft AI released MAI-Code-1.1-Flash, now in production in GitHub Copilot at a quarter of the price of the June model and using 25% fewer tokens per task; a downloadable 3-bit version runs locally (Microsoft recommends more than 120GB of RAM), with experimental Copilot access by the end of October. GitHub also made local sandboxing for Copilot generally available.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Sandboxing is the practical answer to the security concerns raised in item 1, and local inference means coding agents without a metered bill—important for users who want to experiment without per-token costs.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">The local MAI model needs a very large machine, but Copilot's sandboxing is worth a look if you use Copilot and want to understand how local execution works.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://microsoft.ai/news/mai-code-1-1-flash-br-better-faster-at-a-quarter-of-the-cost/" target="_blank" rel="noopener noreferrer">Microsoft AI</a></li>
+                            <li><a href="https://github.blog/changelog/2026-10-07-local-sandboxing-for-github-copilot-now-generally-available/" target="_blank" rel="noopener noreferrer">GitHub changelog</a></li>
+                            <li><a href="https://blogs.nvidia.com/blog/local-ai-rtx-spark-microsoft-windows-event/" target="_blank" rel="noopener noreferrer">NVIDIA blog</a></li>
+                            <li><a href="https://arstechnica.com/gadgets/2026/10/microsoft-event-debuts-new-ai-friendly-hardware-and-windows-changes/" target="_blank" rel="noopener noreferrer">Ars Technica</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </section>
+        </article>
 
-        <section class="content-section alt">
+        <article class="newsletter-item" id="item-09">
             <div class="container">
-                <p class="section-label">&sect; 09</p>
-                <div class="content-card">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 09 of 10</div>
                     <h3>OpenAI starts watermarking AI text for the EU AI Act</h3>
-                    <p>
-                        On Oct 5, OpenAI laid out its response to the EU AI Act's requirement that generated text be machine-identifiable. API customers worldwide can now opt in to text watermarking for select models (it stays off by default), and over the coming weeks OpenAI will add an invisible watermark to eligible ChatGPT and Codex text output in the EU only. OpenAI itself says text watermarking and detection are early technologies with significant limitations.
-                    </p>
-                    <p><strong>Why it matters:</strong> Every discussion about AI in education eventually asks about AI detection. This doesn't apply to U.S. users, and even OpenAI flags its limits, so it's not a solid basis for academic integrity policies—but it's worth understanding as part of the broader conversation about AI provenance and attribution.</p>
-                    <p><strong>Worth exploring:</strong> No immediate action for U.S. users; read the post for the policy discussion if you're interested in AI governance and provenance.</p>
-                    <p class="card-list-title">Sources</p>
-                    <ul>
-                        <li><a href="https://openai.com/index/eu-text-provenance/" target="_blank" rel="noopener noreferrer">OpenAI</a></li>
-                    </ul>
+                    
+                    <div class="newsletter-item-image placeholder">
+                        <div class="placeholder-num">09</div>
+                        <i class="fas fa-fingerprint" aria-hidden="true"></i>
+                    </div>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 5, OpenAI laid out its response to the EU AI Act's requirement that generated text be machine-identifiable. API customers worldwide can now opt in to text watermarking for select models (it stays off by default), and over the coming weeks OpenAI will add an invisible watermark to eligible ChatGPT and Codex text output in the EU only. OpenAI itself says text watermarking and detection are early technologies with significant limitations.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Every discussion about AI in education eventually asks about AI detection. This doesn't apply to U.S. users, and even OpenAI flags its limits, so it's not a solid basis for academic integrity policies—but it's worth understanding as part of the broader conversation about AI provenance and attribution.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge no">Not yet</span>
+                        <span class="explore-text">No immediate action for U.S. users; read the post for the policy discussion if you're interested in AI governance and provenance.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://openai.com/index/eu-text-provenance/" target="_blank" rel="noopener noreferrer">OpenAI</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </section>
+        </article>
 
-        <section class="content-section">
+        <article class="newsletter-item" id="item-10">
             <div class="container">
-                <p class="section-label">&sect; 10</p>
-                <div class="content-card">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 10 of 10</div>
                     <h3>A busy week for coding agents: Cursor, Codex, and Claude Code</h3>
-                    <p>
-                        Cursor shipped Remote Control on Oct 6, letting you see and reply to the local agents running on your computer from the Cursor iOS app while they keep running on your machine. OpenAI's Codex CLI 0.162.0 (Oct 8) added managed Git worktrees, pinned tasks in the agent Command Center, and clickable URLs throughout the terminal UI. Claude Code shipped versions 2.1.290 through 2.1.296 this week, adding plugin installs from marketplaces, controls for how hard subagents work, Haiku 5.5 support, and hooks that block an action when they fail.
-                    </p>
-                    <p><strong>Why it matters:</strong> These are the tools many developers use daily, and worktrees in particular let several agents work in parallel without stepping on each other's files—a practical boost for anyone juggling multiple coding tasks.</p>
-                    <p><strong>Worth exploring:</strong> Try Codex's managed worktrees on a repo where you'd normally run one agent at a time and see if parallel workflows fit your development process.</p>
-                    <p class="card-list-title">Sources</p>
-                    <ul>
-                        <li><a href="https://cursor.com/changelog" target="_blank" rel="noopener noreferrer">Cursor changelog</a></li>
-                        <li><a href="https://github.com/openai/codex/releases/tag/rust-v0.162.0" target="_blank" rel="noopener noreferrer">Codex 0.162.0</a></li>
-                        <li><a href="https://code.claude.com/docs/en/changelog" target="_blank" rel="noopener noreferrer">Claude Code changelog</a></li>
-                    </ul>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-09/10-coding-agents.webp" alt="Cursor changelog and coding agent updates" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://cursor.com/" target="_blank" rel="noopener noreferrer">Cursor</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>Cursor shipped Remote Control on Oct 6, letting you see and reply to the local agents running on your computer from the Cursor iOS app while they keep running on your machine. OpenAI's Codex CLI 0.162.0 (Oct 8) added managed Git worktrees, pinned tasks in the agent Command Center, and clickable URLs throughout the terminal UI. Claude Code shipped versions 2.1.290 through 2.1.296 this week, adding plugin installs from marketplaces, controls for how hard subagents work, Haiku 5.5 support, and hooks that block an action when they fail.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>These are the tools many developers use daily, and worktrees in particular let several agents work in parallel without stepping on each other's files—a practical boost for anyone juggling multiple coding tasks.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Try Codex's managed worktrees on a repo where you'd normally run one agent at a time and see if parallel workflows fit your development process.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://cursor.com/changelog" target="_blank" rel="noopener noreferrer">Cursor changelog</a></li>
+                            <li><a href="https://github.com/openai/codex/releases/tag/rust-v0.162.0" target="_blank" rel="noopener noreferrer">Codex 0.162.0</a></li>
+                            <li><a href="https://code.claude.com/docs/en/changelog" target="_blank" rel="noopener noreferrer">Claude Code changelog</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </section>
+        </article>
 
-        <section class="content-section alt">
+        <section class="newsletter-closing">
             <div class="container">
-                <p class="section-label">&sect; If you try one thing</p>
-                <div class="about-text">
-                    <p>
-                        If you have a Claude Max plan, check whether it now shows the new monthly API credit. Then build a tiny agent on Claude Haiku 5.5 and scope it the way Anthropic's report suggests: name the targets, list the permitted actions, and set the network boundaries up front. It's a cheap experiment and a concrete way to learn how to build agents that stop instead of improvising.
-                    </p>
+                <div class="newsletter-closing-inner">
+                    <h2>If you try one thing</h2>
+                    <p>If you have a Claude Max plan, check whether it now shows the new monthly API credit. Then build a tiny agent on Claude Haiku 5.5 and scope it the way Anthropic's report suggests: name the targets, list the permitted actions, and set the network boundaries up front. It's a cheap experiment and a concrete way to learn how to build agents that stop instead of improvising.</p>
                 </div>
             </div>
         </section>
