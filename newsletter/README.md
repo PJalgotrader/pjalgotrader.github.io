@@ -48,13 +48,30 @@ For each of the 10 items:
 ### 3. Add entry to newsletter.html
 
 1. Open `../newsletter.html`
-2. Add a new content card at the **top** of the issues list (reverse chronological)
-3. Include:
-   - Thumbnail image from item 1
-   - Date range in the card-label
-   - Headline/teaser (h3)
-   - Short description (p)
-   - Link to new issue page
+2. Add a new row in the `.newsletter-list` div, **below** the latest issue (after the first item)
+3. Remove the `latest` class from the previous first item and add it to your new one
+4. Structure for each row:
+
+```html
+<a href="newsletter/YYYY-MM-DD.html" class="newsletter-list-item latest">
+    <div class="newsletter-list-thumb">
+        <img src="newsletter/images/YYYY-MM-DD/01-filename.webp" alt="Week of [date range]" width="80" height="80">
+    </div>
+    <div class="newsletter-list-content">
+        <div class="newsletter-list-meta">
+            <span class="newsletter-list-badge">Latest</span>
+            <span class="newsletter-list-date">[Date range, e.g. Oct 12–16, 2026]</span>
+        </div>
+        <h3 class="newsletter-list-title">[Issue headline]</h3>
+        <p class="newsletter-list-desc">[One-line teaser, max 2 lines will show]</p>
+    </div>
+</a>
+```
+
+The list is reverse chronological: newest at top. Each row is compact (~100px tall) with:
+- Small 80x80px thumbnail from item 1
+- Date badge and "Latest" pill on newest issue only
+- Title and short teaser (auto-truncates to 2 lines on desktop, 1 line on mobile)
 
 ## File structure
 
