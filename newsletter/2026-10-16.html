@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>PJ AI Newsletter: Week of Oct 12-16, 2026 | Pedram Jahangiry</title>
+    <meta name="description" content="This was the week the frontier got wider and the leash got shorter. Regulators, auditors, and sandboxes closed in on agents.">
+    <meta property="og:title" content="PJ AI Newsletter: Week of Oct 12-16, 2026">
+    <meta property="og:description" content="This was the week the frontier got wider and the leash got shorter. Regulators, auditors, and sandboxes closed in on agents.">
+    <meta property="og:image" content="https://pedramjahangiry.com/newsletter/images/2026-10-16/01-gemini-4-argon.webp">
+    <meta property="og:url" content="https://pedramjahangiry.com/newsletter/2026-10-16.html">
+    <meta property="og:type" content="article">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://pedramjahangiry.com/newsletter/images/2026-10-16/01-gemini-4-argon.webp">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="canonical" href="https://pedramjahangiry.com/newsletter/2026-10-16.html">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="../styles.css?v=12">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="../index.html">Pedram&nbsp;Jahangiry</a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="../index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../visualizations.html" class="nav-link">Interactive Tools</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../teaching.html" class="nav-link">Teaching</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../polls.html" class="nav-link">Polls</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../projects.html" class="nav-link">Projects</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../newsletter.html" class="nav-link active">Newsletter</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../contact.html" class="nav-link">Contact</a>
+                </li>
+            </ul>
+            <div class="nav-right">
+                <button class="theme-toggle" aria-label="Switch color theme">
+                    <i class="fas fa-sun icon-sun" aria-hidden="true"></i>
+                    <i class="fas fa-moon icon-moon" aria-hidden="true"></i>
+                </button>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main id="main">
+        <section class="newsletter-hero">
+            <div class="container">
+                <a href="../newsletter.html" class="back-link">&larr; All issues</a>
+                <h1>PJ AI Newsletter: Week of Oct 12-16, 2026</h1>
+                <p class="meta">Saturday Oct 10 through Friday Oct 16, 2026 · Collected by Pedram</p>
+                <p class="theme-line">
+                    This was the week the frontier got wider and the leash got shorter. Google made Gemini 4 Argon generally available, Meta shipped both a paid frontier model and an 816B open-weight model, Nvidia and Microsoft pushed their own model and chip stacks, and coding agents kept changing how software gets reviewed and merged. At the same time, the EU, the FTC, and eight US states all moved on the big labs within about 48 hours, Anthropic invited outside evaluators inside its walls, and "put the controls outside the model" became the common thread from Satya Nadella to Perplexity. If you build with agents, the message is clear: capability is cheap and plentiful this week, but containment, logging, and review are becoming the real work.
+                </p>
+            </div>
+        </section>
+
+        <section class="newsletter-toc">
+            <div class="container">
+                <h2>In this issue</h2>
+                <ol>
+                    <li><a href="#item-01"><span class="toc-num">01</span><span class="toc-title">Gemini 4 Argon goes generally available at introductory $2/$10 pricing</span></a></li>
+                    <li><a href="#item-02"><span class="toc-num">02</span><span class="toc-title">Meta plays both sides: paid Muse Wonder and open-weight Muse Spark Open</span></a></li>
+                    <li><a href="#item-03"><span class="toc-num">03</span><span class="toc-title">Regulators converge: EU AI Act requests, FTC demands, and eight state lawsuits</span></a></li>
+                    <li><a href="#item-04"><span class="toc-num">04</span><span class="toc-title">Anthropic embeds METR evaluators inside the company, with no veto on publishing</span></a></li>
+                    <li><a href="#item-05"><span class="toc-num">05</span><span class="toc-title">Claude Code Review goes GA as Anthropic says agents outgrew git</span></a></li>
+                    <li><a href="#item-06"><span class="toc-num">06</span><span class="toc-title">Nvidia releases open Nemotron 3.5 Super VL and a 24GB local agent model</span></a></li>
+                    <li><a href="#item-07"><span class="toc-num">07</span><span class="toc-title">Microsoft builds its own stack: 2.8T-parameter MAI-Base-2 and Maia 300 chips</span></a></li>
+                    <li><a href="#item-08"><span class="toc-num">08</span><span class="toc-title">Containment moves outside the model: Nadella's essay and Perplexity's open sandbox</span></a></li>
+                    <li><a href="#item-09"><span class="toc-num">09</span><span class="toc-title">OpenAI's week: GPT-Live 1.1, new voice tools, and free GPT-Rosalind seats for university labs</span></a></li>
+                    <li><a href="#item-10"><span class="toc-num">10</span><span class="toc-title">SpaceXSI bundles Grok, Cursor, and X Premium into one subscription</span></a></li>
+                </ol>
+            </div>
+        </section>
+
+        <article class="newsletter-item" id="item-01">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 01 of 10</div>
+                    <h3>Gemini 4 Argon goes generally available at introductory $2/$10 pricing</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-16/01-gemini-4-argon.webp" alt="Gemini 4 Argon launch graphic with a large number 4" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-argon/" target="_blank" rel="noopener noreferrer">Google</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>Google made Gemini 4 Argon generally available on Oct 13: in the paid Gemini API and AI Studio, for Google AI Pro and Ultra subscribers in the Gemini app and AI Mode in Search, and for Ultra subscribers in Google Antigravity. API pricing is $2 per million input tokens and $10 per million output tokens through Nov 30, 2026, then $4 and $20; there is no free tier. Argon uses a unified 1M-token window shared by input, thinking, and output, and a new "long decode" mode lets a single response run far past 64K tokens. GitHub made it generally available in Copilot the same day for Pro+, Max, Business, and Enterprise users, with a gradual rollout.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>A frontier model built for long coding and agentic jobs is now in widely used developer tools, at a discounted price for the next six weeks.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Run one of your hardest real coding or analysis tasks through it before the introductory price doubles on Dec 1.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-argon/" target="_blank" rel="noopener noreferrer">Google announcement</a></li>
+                            <li><a href="https://blog.google/innovation-and-ai/technology/developers-tools/build-with-gemini-4-argon/" target="_blank" rel="noopener noreferrer">Google developer post</a></li>
+                            <li><a href="https://ai.google.dev/gemini-api/docs/latest-model" target="_blank" rel="noopener noreferrer">Gemini API docs</a></li>
+                            <li><a href="https://github.blog/changelog/2026-10-13-gemini-4-argon-in-github-copilot/" target="_blank" rel="noopener noreferrer">GitHub changelog</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-02">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 02 of 10</div>
+                    <h3>Meta plays both sides: paid Muse Wonder and open-weight Muse Spark Open</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-16/02-meta-muse.webp" alt="Meta graphic reading Muse Spark Open Weights, the most capable US open-weight model to date" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://research.meta.ai/blog/muse-spark-open" target="_blank" rel="noopener noreferrer">Meta</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 12 Meta Superintelligence Labs introduced Muse Wonder and Muse Wonder Full, which it calls its most capable models, aimed at personal and professional agents with features it calls Active Memory and Active Focus. Wonder is available through the Meta Model API and Muse Code, Wonder Full only for Muse Code subscribers, and Meta says a full safety report is "available soon." On Oct 15 Meta released the weights of Muse Spark Open, an 816B-parameter mixture-of-experts model (42B active) with a 1M-token context window and text, image, audio, and video input, which Meta calls "the most capable US open-weight model to date" (a vendor claim). It ships under the Muse Model License with limited commercial terms, is on Hugging Face and several hosted APIs, and Meta says it is optimized to run on two M5 Ultra Mac Studios using MLX.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Meta now competes at the closed frontier and in open weights at the same time, which gives researchers and hobbyists a frontier-scale open model to study and fine-tune, though self-hosting is expensive.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">Try Muse Spark Open through a hosted provider like OpenRouter or Together rather than self-hosting, and read the license before using it commercially.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://research.meta.ai/blog/muse-spark-open" target="_blank" rel="noopener noreferrer">Meta: Muse Spark Open</a></li>
+                            <li><a href="https://research.meta.ai/blog/muse-wonder" target="_blank" rel="noopener noreferrer">Meta: Muse Wonder</a></li>
+                            <li><a href="https://huggingface.co/meta-models/Muse-Spark-Open-816B-A42B" target="_blank" rel="noopener noreferrer">Hugging Face model page</a></li>
+                            <li><a href="https://dev.meta.ai/docs/muse-spark-open" target="_blank" rel="noopener noreferrer">Meta developer docs</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-03">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 03 of 10</div>
+                    <h3>Regulators converge: EU AI Act requests, FTC demands, and eight state lawsuits</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-16/03-euronews-regulators.webp" alt="EU digital chief Henna Virkkunen speaking at a podium, from Euronews coverage" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://www.euronews.com/2026/10/14/eus-ai-rules-face-first-enforcement-test-over-lab-incidents" target="_blank" rel="noopener noreferrer">Euronews</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 14 at the International AI Summit in Dublin, EU digital chief Henna Virkkunen said the AI Office had sent its first AI Act requests for information to OpenAI and Anthropic, covering security, external evaluation, and monitoring after summer incidents in which agents escaped testing environments. The same day the FTC sent civil investigative demands to both companies seeking records on safety incidents, safeguards, and privacy policies, which an FTC spokesperson confirmed to CBS News. Also on Oct 14, Iowa, Kansas, Nebraska, West Virginia, Arkansas, Arizona, Idaho, and Montana each sued OpenAI in state court, alleging ChatGPT harmed children and deceived parents; OpenAI pointed to its age-specific protections. These are requests and allegations, not findings of wrongdoing.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Agent incidents during testing now carry legal exposure on two continents, and lawyers are already arguing over whether the AI Act's research exemption covers an agent that escapes its sandbox.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge no">Not yet</span>
+                        <span class="explore-text">Nothing to try, but the research-exemption debate is a useful case study in AI governance.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://www.euronews.com/2026/10/14/eus-ai-rules-face-first-enforcement-test-over-lab-incidents" target="_blank" rel="noopener noreferrer">Euronews</a></li>
+                            <li><a href="https://www.cbsnews.com/news/ftc-subpoenas-anthropic-openai-consumer-protection/" target="_blank" rel="noopener noreferrer">CBS News</a></li>
+                            <li><a href="https://www.cnbc.com/2026/10/14/openai-sued-by-8-states-over-chatgpt-safety-concerns-.html" target="_blank" rel="noopener noreferrer">CNBC</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-04">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 04 of 10</div>
+                    <h3>Anthropic embeds METR evaluators inside the company, with no veto on publishing</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-16/04-anthropic-metr.webp" alt="Anthropic illustration of blue circular patterns beside black concentric rings" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://www.anthropic.com/news/an-update-on-independent-evaluators" target="_blank" rel="noopener noreferrer">Anthropic</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 15 Anthropic said it had onboarded six staff from the nonprofit evaluator METR with company hardware, office space, and access to internal tools "roughly on par" with its own risk assessment teams. METR will publish its analysis of Anthropic's risk levels, incidents, or practices; Anthropic cannot veto publication but can require redactions in predefined categories such as customer data, privileged legal material, and model architecture. Anthropic described a three-tier access scheme, said SecureBio is reviewing the chemical and biological weapons chapter of its August risk report, and said it is in early talks with others, including Hugging Face. It added that "every frontier AI company should do the same."</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>This is a concrete template for independent AI auditing, modeled on resident bank examiners, arriving just as regulators demand more outside scrutiny.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge no">Not yet</span>
+                        <span class="explore-text">Nothing to run. Worth reading as a model of what "independent evaluation" can actually look like.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://www.anthropic.com/news/an-update-on-independent-evaluators" target="_blank" rel="noopener noreferrer">Anthropic</a></li>
+                            <li><a href="https://techcrunch.com/2026/10/15/anthropic-is-letting-metr-researchers-look-under-the-hood-with-employee-level-access/" target="_blank" rel="noopener noreferrer">TechCrunch</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-05">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 05 of 10</div>
+                    <h3>Claude Code Review goes GA as Anthropic says agents outgrew git</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-16/05-claude-code-review.webp" alt="Claude illustration of a hand holding a checkmark badge" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://claude.com/resources/articles/code-review-is-now-generally-available" target="_blank" rel="noopener noreferrer">Claude</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>Anthropic took Code Review out of research preview for Claude Team and Enterprise plans on Oct 15: most reviews now finish about 3x faster (roughly 6 to 10 minutes instead of 20), and admins can pick Quick, Standard, or Deep per repository. In an Oct 13 engineering post, Anthropic said daily merged changes grew from about 2,500 in May to more than 30,000 in September, so a team of seven built Scion, an in-house version control system, and migrated its monorepo off git in five months; it says Scion's CPU and memory footprint is 200x smaller than its old git mirrors, and it is not releasing Scion publicly. Separately, Phoronix reported on Oct 11 that Linus Torvalds pushed an experimental kernel branch whose code, tests, and first-draft cover letter were done with Claude Code "under my direction."</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>The bottleneck is moving from writing code to reviewing and merging it, and Anthropic's engineers say their key job was often telling Claude "no," a lesson for anyone working with coding agents.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">Code Review needs a Team or Enterprise plan, but the Scion post is free and is the best read of the week.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://claude.com/resources/articles/code-review-is-now-generally-available" target="_blank" rel="noopener noreferrer">Claude: Code Review GA</a></li>
+                            <li><a href="https://www.anthropic.com/engineering/redesigning-source-control" target="_blank" rel="noopener noreferrer">Anthropic engineering blog</a></li>
+                            <li><a href="https://www.phoronix.com/news/Linus-Torvalds-Claude-Code" target="_blank" rel="noopener noreferrer">Phoronix</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-06">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 06 of 10</div>
+                    <h3>Nvidia releases open Nemotron 3.5 Super VL and a 24GB local agent model</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-16/06-nvidia-nemotron.webp" alt="Nvidia graphic of a globe with icons for web, code, charts, and video agents" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://blogs.nvidia.com/blog/nemotron-3-5-super-vl/" target="_blank" rel="noopener noreferrer">NVIDIA</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 15 Nvidia released Nemotron 3.5 Super VL, an open 120B-parameter mixture-of-experts model (12B active) for multimodal agents that read web pages, PDFs, tables, and charts, shipped with open weights, open datasets, and training recipes. Nvidia says it is "5x faster than the next best" open agentic model in its class and comparable in accuracy to its largest reasoning model at about one-fifth the size; those are vendor claims. Alongside it, Nemotron 3.5 Bolt 74B-A9B uses native 2-bit quantization to fit in 24GB of memory and is available now with llama.cpp, Ollama, LM Studio, Unsloth, and vLLM support, with a 4GB Bolt E4B model due Oct 23.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Open weights plus open data and recipes make this unusually easy to learn from, and a capable agent model that fits on a single 24GB GPU is a real option for local, private projects.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">If you have a 24GB GPU or a DGX Spark, pull Bolt 74B into Ollama or LM Studio and point a local agent at it.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://blogs.nvidia.com/blog/nemotron-3-5-super-vl/" target="_blank" rel="noopener noreferrer">NVIDIA blog</a></li>
+                            <li><a href="https://developer.nvidia.com/blog/nvidia-nemotron-3-5-super-vl-powers-specialized-agents-with-multimodal-reasoning/" target="_blank" rel="noopener noreferrer">NVIDIA developer blog</a></li>
+                            <li><a href="https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16" target="_blank" rel="noopener noreferrer">Hugging Face model page</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-07">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 07 of 10</div>
+                    <h3>Microsoft builds its own stack: 2.8T-parameter MAI-Base-2 and Maia 300 chips</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-16/07-microsoft-mai.webp" alt="Microsoft AI header reading Frontier Pre-training at Microsoft AI over a painted sky" width="1200" height="620">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://microsoft.ai/news/frontier-pre-training-at-microsoft-ai/" target="_blank" rel="noopener noreferrer">Microsoft AI</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 15 Microsoft AI said it had finished pre-training MAI-Base-2, a mixture-of-experts model with 2.8 trillion total and 80 billion active parameters, trained on 16,000 GB200 GPUs over 38 days in August and September on a roughly 50T-token mix with native vision data. Microsoft says it beats every open-weight model it tested on held-out evaluations and estimates its recipe is 4.2 to 12.3x more pre-training-FLOPs-efficient than DeepSeek-V4-Pro-Base, based on fitted scaling laws; the model is still in post-training and Microsoft plans to license weights to trusted partners through Foundry. On Oct 12 Microsoft said its Maia chips will become the primary inference system for its products, with Maia 300 deployments starting in 2027 and a claimed 40% more tokens per megawatt than leading GPU systems.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Microsoft is reducing its dependence on both OpenAI and Nvidia, and its pre-training write-up (hyperparameter scaling laws, Muon at scale, MoE engineering) is rare, detailed technical material.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">There is nothing to run yet, but the pre-training post is worth reading if you follow how frontier models are built.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://microsoft.ai/news/frontier-pre-training-at-microsoft-ai/" target="_blank" rel="noopener noreferrer">Microsoft AI</a></li>
+                            <li><a href="https://blogs.microsoft.com/blog/2026/10/12/microsoft-to-expand-azure-maia-system-to-multi-gigawatt-deployments/" target="_blank" rel="noopener noreferrer">Microsoft blog: Maia</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-08">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 08 of 10</div>
+                    <h3>Containment moves outside the model: Nadella's essay and Perplexity's open sandbox</h3>
+                    
+                    <div class="newsletter-item-image placeholder">
+                        <div class="placeholder-num">08</div>
+                        <i class="fas fa-shield-halved" aria-hidden="true"></i>
+                    </div>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 10 Satya Nadella published "Models as Insider Risks in the Super Intelligence Era," arguing that companies should treat both closed and open models like powerful insiders who might err or be compromised, with controls that sit outside the model. His principles include model diversity, tamper-proof logs of every meaningful action, independent auditability, incident disclosure, and containment: "Think of it like an emergency brake." On Oct 15 Perplexity open-sourced SPACE, the sandbox platform behind its Computer agent, under Apache 2.0; it runs agent and user code in isolated Firecracker microVMs, and Semafor reported that CoreWeave, Akamai, and Crusoe agreed to offer it to customers.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>"Don't trust the model, contain it" is becoming the default architecture for agents, and anyone building agents should treat sandboxing and logging as core skills, not afterthoughts.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">If you run coding agents with real credentials, SPACE is a free, production-tested reference design to study.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://snscratchpad.com/posts/models-as-insider-risks/" target="_blank" rel="noopener noreferrer">Nadella essay</a></li>
+                            <li><a href="https://github.com/perplexityai/SPACE" target="_blank" rel="noopener noreferrer">Perplexity SPACE on GitHub</a></li>
+                            <li><a href="https://www.perplexity.ai/hub/blog/open-sourcing-space" target="_blank" rel="noopener noreferrer">Perplexity blog</a></li>
+                            <li><a href="https://www.semafor.com/article/10/15/2026/perplexity-to-give-away-its-ai-security-software" target="_blank" rel="noopener noreferrer">Semafor</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-09">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 09 of 10</div>
+                    <h3>OpenAI's week: GPT-Live 1.1, new voice tools, and free GPT-Rosalind seats for university labs</h3>
+                    
+                    <div class="newsletter-item-image placeholder">
+                        <div class="placeholder-num">09</div>
+                        <i class="fas fa-flask" aria-hidden="true"></i>
+                    </div>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 15 OpenAI introduced the Rosalind Academic Plan: eligible labs at US universities can get up to 30 ChatGPT Business Standard seats at no cost for up to 12 months, with GPT-Rosalind (its life sciences model) available after trusted-access approval; research data is not used for training by default, and API access is not included. The same day it rolled out GPT-Live-1.1 and a smaller GPT-Live-1.1 Quip in ChatGPT Voice, and added native Decisions integration to GPT-Live for developers; on Oct 16 it released prompt-to-voice to all API customers, letting you create a custom voice from a text description. Separately, GPT-5.5 retired from Codex for ChatGPT sign-in users on Oct 14, with GPT-6.1 Sol as the suggested replacement.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>The academic plan is directly useful to university life-science labs, and anyone with Codex scripts or configs pinned to gpt-5.5 needs to update them.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Pass the Rosalind plan along to life-science researchers, and check your Codex configs for gpt-5.5.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://openai.com/index/introducing-the-rosalind-academic-plan/" target="_blank" rel="noopener noreferrer">OpenAI: Rosalind Academic Plan</a></li>
+                            <li><a href="https://openai.com/products/release-notes/" target="_blank" rel="noopener noreferrer">OpenAI release notes</a></li>
+                            <li><a href="https://learn.chatgpt.com/docs/changelog" target="_blank" rel="noopener noreferrer">ChatGPT changelog</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-10">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 10 of 10</div>
+                    <h3>SpaceXSI bundles Grok, Cursor, and X Premium into one subscription</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-16/10-x-subscription.webp" alt="The X Subscription title card with icons for Grok, Grok Bot, Cursor, and X" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://x.ai/news/x-subscription" target="_blank" rel="noopener noreferrer">xAI</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>SpaceXSI (formerly xAI) introduced The X Subscription, one plan covering Grok, Grok Bot, Cursor, and X Premium, in tiers of Free, Plus ($8/month), Premium ($30/month), Super ($100/month), and Ultra ($200/month); TechCrunch covered it on Oct 13. The company says Premium includes the benefits of SuperGrok, Cursor Pro, and X Premium+, previously $90 a month combined, with a shared pool of Grok model usage across Grok and Cursor. Third-party models in Cursor remain available on Premium and above but are billed separately at API list prices through top-ups, and existing subscribers can keep their current plans.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Coding-agent pricing is now being bundled with chat and social, and the bundle nudges Cursor users toward Grok models by making other models pay-as-you-go.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">It looks like good value if you mostly use Grok models in Cursor; if you rely on Claude or GPT inside Cursor, estimate your top-up costs first.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://x.ai/news/x-subscription" target="_blank" rel="noopener noreferrer">xAI announcement</a></li>
+                            <li><a href="https://techcrunch.com/2026/10/13/spacexsi-bundles-x-premium-grok-and-cursor-into-one-subscription/" target="_blank" rel="noopener noreferrer">TechCrunch</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <section class="newsletter-closing">
+            <div class="container">
+                <div class="newsletter-closing-inner">
+                    <h2>If you try one thing</h2>
+                    <p>Pick one real task from your own work, such as a messy refactor or a long data-cleaning script, and run it through Gemini 4 Argon (in the Gemini API, AI Studio, or Copilot) side by side with the model you use now. Compare cost, time, and how often you had to say "no." The $2/$10 introductory pricing ends Nov 30, so this is the cheapest week to find out whether Argon earns a spot in your toolkit.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p class="footer-note">&copy; 2026 Pedram Jahangiry &mdash; all residuals are my own.</p>
+            <div class="social-links">
+                <a href="https://x.com/PedramJahangiry" target="_blank" aria-label="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://www.linkedin.com/in/pedram-jahangiry-cfa-5778015a/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="https://github.com/PJalgotrader" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                <a href="mailto:pedram.jahangiry@usu.edu" aria-label="Email"><i class="fas fa-envelope"></i></a>
+            </div>
+            <p class="colophon">Set in Fraunces, Inter &amp; IBM Plex Mono &middot; hand&#8209;built, zero frameworks &middot; Logan, Utah &mdash; 41.74&deg;&nbsp;N, 111.81&deg;&nbsp;W</p>
+        </div>
+    </footer>
+
+    <script src="../script.js?v=3"></script>
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>
