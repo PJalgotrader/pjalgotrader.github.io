@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="Grow the training set and watch training vs. validation error separate into bias, variance and the noise floor. Polynomial degree 0 to 10, ridge penalty, noise slider, live fits and diagnosis, in your browser, no install.">
 <title>Learning Curves Interactive Tool | Dr. Pedram Jahangiry</title>
+<script>
+// Apply a saved light/dark choice before first paint; otherwise follow the device setting.
+try { const t = localStorage.getItem("lc-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -45,7 +49,10 @@ header{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:
 h1{font-family:var(--f-display); font-weight:700; font-size:clamp(30px, 5vw, 46px); line-height:1.05; margin:6px 0 8px; letter-spacing:-.01em; text-wrap:balance}
 .lede{margin:0; max-width:62ch; color:var(--muted); font-size:16px}
 .lede b{color:var(--ink); font-weight:600}
-.byline{font-size:13px; color:var(--muted); display:flex; gap:6px 14px; flex-wrap:wrap}
+.byline{font-size:13px; color:var(--muted); display:flex; gap:6px 14px; flex-wrap:wrap; align-items:center}
+.theme-btn{width:34px; height:34px; display:grid; place-items:center; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); cursor:pointer; padding:0}
+.theme-btn:hover{border-color:var(--muted)}
+.theme-btn svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
 .byline strong{color:var(--ink); font-weight:600}
 
 .panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r)}
@@ -159,7 +166,8 @@ footer{font-size:12.5px; color:var(--muted); max-width:90ch}
     <div class="byline"><strong>Dr. Pedram Jahangiry</strong>
       <a href="https://pedramjahangiry.com/" target="_blank" rel="noopener">Website</a>
       <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" rel="noopener">YouTube</a>
-      <a href="https://github.com/pjalgotrader" target="_blank" rel="noopener">GitHub</a></div>
+      <a href="https://github.com/pjalgotrader" target="_blank" rel="noopener">GitHub</a>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><svg id="themeIcon" viewBox="0 0 24 24"></svg></button></div>
   </header>
 
   <section class="panel controls" aria-label="Model settings">
@@ -820,7 +828,23 @@ function renderText() {
 function render() { if (!sim) return; renderText(); drawLearning(); drawFit(); }
 
 new ResizeObserver(() => render()).observe($(".bench"));
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { syncThemeBtn(); render(); });
+// ---------- Light / dark toggle ----------
+const SUN = '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>';
+const MOON = '<path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/>';
+const isDark = () => { const t = document.documentElement.getAttribute("data-theme"); return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
+function syncThemeBtn() {
+  const dark = isDark(), label = dark ? "Switch to light theme" : "Switch to dark theme";
+  $("#themeIcon").innerHTML = dark ? SUN : MOON;
+  $("#themeBtn").setAttribute("aria-label", label); $("#themeBtn").title = label;
+}
+$("#themeBtn").addEventListener("click", () => {
+  const next = isDark() ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  try { localStorage.setItem("lc-theme", next); } catch (e) {}
+  syncThemeBtn();
+});
+syncThemeBtn();
 new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 if (document.fonts) document.fonts.ready.then(render);
 update();
