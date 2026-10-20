@@ -12,7 +12,7 @@
 /* Layout: a lab bench. Controls on top, two linked instruments side by side, the verdict strip beneath, field notes last. */
 :root{
   --bg:#EEF1F5; --surface:#FFFFFF; --ink:#141B26; --muted:#5A6577; --line:#D6DCE5; --grid:#E6EAF0;
-  --train:#1E5BC6; --val:#D2560E; --truth:#1E8C5A;
+  --train:#1E5BC6; --val:#D97A0B; --bench:#C8213B; --truth:#1E8C5A;
   --bias-fg:#7A4E00; --bias-bg:#FFF0D2; --var-fg:#A0213B; --var-bg:#FDE3E8; --good-fg:#15623C; --good-bg:#DCF2E5;
   --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --f-body:"Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -21,12 +21,12 @@
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#0E131B; --surface:#151C27; --ink:#E5EAF1; --muted:#97A3B5; --line:#2A3445; --grid:#1D2532;
-  --train:#70A4FF; --val:#FF8B47; --truth:#4CC38A;
+  --train:#70A4FF; --val:#FFA53D; --bench:#FF5C74; --truth:#4CC38A;
   --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
   color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#0E131B; --surface:#151C27; --ink:#E5EAF1; --muted:#97A3B5; --line:#2A3445; --grid:#1D2532;
-  --train:#70A4FF; --val:#FF8B47; --truth:#4CC38A;
+  --train:#70A4FF; --val:#FFA53D; --bench:#FF5C74; --truth:#4CC38A;
   --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
   color-scheme:dark }
 
@@ -49,7 +49,7 @@ h1{font-family:var(--f-display); font-weight:700; font-size:clamp(30px, 5vw, 46p
 .byline strong{color:var(--ink); font-weight:600}
 
 .panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r)}
-.controls{display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr); gap:18px 28px; padding:18px 20px}
+.controls{display:grid; grid-template-columns:minmax(0,1.5fr) repeat(3, minmax(0,1fr)); gap:18px 28px; padding:18px 20px}
 .ctl{display:flex; flex-direction:column; gap:8px; min-width:0}
 .ctl-label{display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
 .ctl-label output{font-family:var(--f-mono); font-size:13px; text-transform:none; letter-spacing:0; color:var(--ink); font-weight:600}
@@ -84,7 +84,7 @@ input[type=range]{width:100%; accent-color:var(--train); margin:4px 0}
 .sw.dash{border-top-style:dashed; border-top-width:2px}
 .sw.faint{opacity:.35; border-top-width:2px}
 .sw.dot{width:8px; height:8px; border:none; border-radius:50%; background:currentColor}
-.c-ink{color:var(--ink)} .c-train{color:var(--train)} .c-val{color:var(--val)} .c-truth{color:var(--truth)} .c-muted{color:var(--muted)}
+.c-ink{color:var(--ink)} .c-train{color:var(--train)} .c-val{color:var(--val)} .c-bench{color:var(--bench)} .c-truth{color:var(--truth)} .c-muted{color:var(--muted)}
 .scrub{display:flex; align-items:center; gap:12px}
 .scrub label{font-size:13px; color:var(--muted); white-space:nowrap}
 .scrub label output{font-family:var(--f-mono); color:var(--ink); font-weight:600; font-size:14px; display:inline-block; min-width:3ch}
@@ -123,7 +123,7 @@ input[type=range]{width:100%; accent-color:var(--train); margin:4px 0}
 footer{font-size:12.5px; color:var(--muted); max-width:90ch}
 
 @media (max-width: 900px){
-  .controls{grid-template-columns:1fr 1fr}
+  .controls{grid-template-columns:repeat(3, minmax(0,1fr))}
   .controls .ctl:first-child{grid-column:1 / -1}
   .bench{grid-template-columns:1fr}
   .verdict{grid-template-columns:repeat(2, minmax(0,1fr))}
@@ -171,6 +171,11 @@ footer{font-size:12.5px; color:var(--muted); max-width:90ch}
       <input type="range" id="sig" min="0.5" max="3" step="0.25" value="2">
       <div class="hint">Sets the noise floor σ² = <span class="mono" id="floorOut">4.00</span>. No model can beat it.</div>
     </div>
+    <div class="ctl">
+      <label class="ctl-label" for="vp"><span>Validation size</span><output id="vpOut">30% of n</output></label>
+      <input type="range" id="vp" min="10" max="100" step="10" value="30">
+      <div class="hint" id="vpHint">Fresh points held out to score the model.</div>
+    </div>
     <div class="row-actions">
       <span class="lbl">Try</span>
       <button class="chip" data-preset="under">Underfit</button>
@@ -190,6 +195,7 @@ footer{font-size:12.5px; color:var(--muted); max-width:90ch}
       <div class="legend">
         <span class="c-train"><i class="sw"></i>Training error</span>
         <span class="c-val"><i class="sw"></i>Validation error</span>
+        <span class="c-bench"><i class="sw"></i>Benchmark: predict the average</span>
         <span class="c-muted"><i class="sw dash"></i>Noise floor σ²</span>
         <span class="c-muted" id="pinLegend" hidden><i class="sw dash" style="opacity:.7"></i><span id="pinName"></span></span>
       </div>
@@ -205,26 +211,27 @@ footer{font-size:12.5px; color:var(--muted); max-width:90ch}
       <h2><span>What the model learns at n = <span id="nOut2">30</span></span></h2>
       <div class="legend">
         <span class="c-train"><i class="sw dot"></i>Training points</span>
-        <span class="c-val"><i class="sw dot"></i>Validation points <span class="c-muted">(100 of 500)</span></span>
+        <span class="c-val"><i class="sw dot"></i>Validation points <span class="c-muted" id="valCount"></span></span>
         <span class="c-ink"><i class="sw"></i><span id="fitName">Average fit</span></span>
         <span class="c-ink" id="faintLegend"><i class="sw faint"></i>Fits on 24 other samples</span>
         <span class="c-truth"><i class="sw dash"></i>True function</span>
       </div>
       <div class="plot"><canvas id="fit" aria-label="Fitted models at the chosen training set size"></canvas></div>
       <label class="toggle"><input type="checkbox" id="showFits" checked> Show fits from other random samples</label>
-      <p class="caption">Blue points train the model; orange points score it. Spread of the faint lines is <b>variance</b>. Distance between the average fit and the dashed truth is <b>bias</b>.</p>
+      <p class="caption">Blue points train the model; orange points are held out to score it. Spread of the faint lines is <b>variance</b>. Distance between the average fit and the dashed truth is <b>bias</b>.</p>
     </div>
   </section>
 
   <section class="panel verdict" aria-live="polite">
     <div class="read"><span class="k">Training error</span><span class="v c-train" id="rTr">–</span><span class="s">MSE on the n points it saw</span></div>
-    <div class="read"><span class="k">Validation error</span><span class="v c-val" id="rVa">–</span><span class="s">MSE on 500 fresh points</span></div>
+    <div class="read"><span class="k">Validation error</span><span class="v c-val" id="rVa">–</span><span class="s" id="rVaSub">MSE on held-out points</span></div>
     <div class="read"><span class="k">Gap</span><span class="v" id="rGap">–</span><span class="s">validation minus training</span></div>
     <div class="read"><span class="k">Noise floor</span><span class="v c-muted" id="rFl">–</span><span class="s">σ², irreducible</span></div>
     <div class="diag">
       <span class="pill" id="pill">–</span>
       <p id="dText"></p>
       <p class="more" id="dMore"></p>
+      <p class="more" id="dBench"></p>
     </div>
   </section>
 
@@ -271,17 +278,18 @@ footer{font-size:12.5px; color:var(--muted); max-width:90ch}
     <div class="panel key"><h4>Variance shrinks with n. Bias does not.</h4>
       <p>Press play on degree 10. At n = 10 the faint fits fly everywhere and the gap is huge. By n = 150 they have calmed down. Now try degree 1: the fits agree with each other from the start, but they all miss the curve in the same way, at every n.</p></div>
     <div class="panel key"><h4>The noise floor is a hard limit.</h4>
-      <p>Validation error can approach σ² but never go below it, because no model can predict the random noise. Drop σ to 0.5 and the floor falls, so even the small cubic term suddenly matters and degree 2 starts to look biased.</p></div>
+      <p>On average, validation error can approach σ² but not go below it, because no model can predict the random noise. A small validation set gives a noisy score that can dip under the floor by luck. Raise the validation size and the orange curve steadies. Drop σ to 0.5 and the floor falls, so even the small cubic term suddenly matters and degree 2 starts to look biased.</p></div>
   </section>
 
-  <footer>Data: y = 0.15x³ − 0.5x² + 0.3x + 3 + ε, with x uniform on [−3, 3] and ε ~ N(0, σ²). Degree 3 is the shape that generated the data (green dot on the selector). Each point on the learning curve is the median over 40 independent training sets of size n; the shaded bands show the 10th to 90th percentile. Validation error is measured on 500 fresh points. Switching degree, λ, or σ reuses the same random draws, so comparisons are fair.</footer>
+  <footer>Data: y = 0.15x³ − 0.5x² + 0.3x + 3 + ε, with x uniform on [−3, 3] and ε ~ N(0, σ²). Degree 3 is the shape that generated the data (green dot on the selector). Each point on the learning curve is the median over 40 independent training sets of size n; the shaded bands show the 10th to 90th percentile. The red benchmark always predicts the average of the training y values and is scored on the same validation sets. Each training set gets its own fresh validation set, sized as a percentage of n (30% by default), so small n also means a small, noisy validation score. Switching degree, λ, σ, or validation size reuses the same random draws, so comparisons are fair.</footer>
 </div>
 
 <script>
 // ---------- Simulation core ----------
 const TRUE_F = x => 0.15 * x * x * x - 0.5 * x * x + 0.3 * x + 3;
 const NGRID = [2,3,4,5,6,7,8,9,10,11,12,14,16,18,20,23,26,30,34,38,42,46,50,55,60,66,72,80,88,96,105,115,125,137,150];
-const REPS = 40, NVAL = 500, MAXDEG = 10;
+const REPS = 40, MAXDEG = 10;
+const valSize = (n, pct) => Math.max(1, Math.round(n * pct / 100));
 const LAMS = [0, 1e-4, 1e-3, 1e-2, 0.1, 1, 10];
 
 function mulberry32(a) {
@@ -297,23 +305,24 @@ function gauss(rng) {
   return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rng());
 }
 
-// Raw random draws depend only on the seed, so switching degree, ridge or noise
-// reuses the same training sets. That keeps comparisons fair.
+// Raw random draws depend only on the seed, so switching degree, ridge, noise or
+// validation size reuses the same training sets. That keeps comparisons fair.
+// Each training set gets its own validation pool of n fresh points; the
+// validation set is the first k = pct% of n of them (up to 100%).
 function makeDraws(seed) {
   const rng = mulberry32(seed * 7919 + 13);
-  const vx = new Float64Array(NVAL), vz = new Float64Array(NVAL);
-  for (let i = 0; i < NVAL; i++) { vx[i] = -3 + 6 * rng(); vz[i] = gauss(rng); }
-  const xs = [], zs = [];
+  const xs = [], zs = [], vxs = [], vzs = [];
   for (let g = 0; g < NGRID.length; g++) {
-    const n = NGRID[g], rx = [], rz = [];
+    const n = NGRID[g], rx = [], rz = [], rvx = [], rvz = [];
     for (let r = 0; r < REPS; r++) {
-      const x = new Float64Array(n), z = new Float64Array(n);
+      const x = new Float64Array(n), z = new Float64Array(n), vx = new Float64Array(n), vz = new Float64Array(n);
       for (let i = 0; i < n; i++) { x[i] = -3 + 6 * rng(); z[i] = gauss(rng); }
-      rx.push(x); rz.push(z);
+      for (let i = 0; i < n; i++) { vx[i] = -3 + 6 * rng(); vz[i] = gauss(rng); }
+      rx.push(x); rz.push(z); rvx.push(vx); rvz.push(vz);
     }
-    xs.push(rx); zs.push(rz);
+    xs.push(rx); zs.push(rz); vxs.push(rvx); vzs.push(rvz);
   }
-  return { vx, vz, xs, zs };
+  return { xs, zs, vxs, vzs };
 }
 
 function powers(x, deg, out) {
@@ -368,25 +377,27 @@ function quantile(sorted, q) {
   return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
 }
 
-function simulate(draws, deg, lam, sigma) {
-  const { vx, vz, xs, zs } = draws;
-  const vy = new Float64Array(NVAL);
-  for (let i = 0; i < NVAL; i++) vy[i] = TRUE_F(vx[i]) + sigma * vz[i];
-  const out = { train: [], val: [], coefs: [] };
+function simulate(draws, deg, lam, sigma, pct) {
+  const { xs, zs, vxs, vzs } = draws;
+  const out = { train: [], val: [], bench: [], coefs: [] };
   for (let g = 0; g < NGRID.length; g++) {
-    const trs = [], vas = [], cs = [];
+    const trs = [], vas = [], bns = [], cs = [];
     for (let r = 0; r < REPS; r++) {
       const x = xs[g][r], z = zs[g][r], n = x.length;
       const y = new Float64Array(n);
       for (let i = 0; i < n; i++) y[i] = TRUE_F(x[i]) + sigma * z[i];
       const c = fitPoly(x, y, deg, lam);
       let st = 0; for (let i = 0; i < n; i++) { const e = y[i] - predict(c, x[i]); st += e * e; }
-      let sv = 0; for (let i = 0; i < NVAL; i++) { const e = vy[i] - predict(c, vx[i]); sv += e * e; }
-      trs.push(st / n); vas.push(sv / NVAL); cs.push(c);
+      const vx = vxs[g][r], vz = vzs[g][r], k = valSize(n, pct);
+      let ybar = 0; for (let i = 0; i < n; i++) ybar += y[i]; ybar /= n;
+      let sv = 0, sb = 0;
+      for (let i = 0; i < k; i++) { const yv = TRUE_F(vx[i]) + sigma * vz[i], e = yv - predict(c, vx[i]), eb = yv - ybar; sv += e * e; sb += eb * eb; }
+      trs.push(st / n); vas.push(sv / k); bns.push(sb / k); cs.push(c);
     }
     const ts = trs.slice().sort((a, b) => a - b), vs = vas.slice().sort((a, b) => a - b);
     out.train.push({ med: quantile(ts, .5), lo: quantile(ts, .1), hi: quantile(ts, .9) });
     out.val.push({ med: quantile(vs, .5), lo: quantile(vs, .1), hi: quantile(vs, .9) });
+    out.bench.push({ med: quantile(bns.slice().sort((a, b) => a - b), .5) });
     out.coefs.push(cs);
   }
   return out;
@@ -415,8 +426,8 @@ function diagnose(sim, gIdx, sigma) {
 const $ = s => document.querySelector(s);
 const NAMES = ["Constant","Linear","Quadratic","Cubic","Quartic","Quintic","Degree 6","Degree 7","Degree 8","Degree 9","Degree 10"];
 const LAM_LABELS = ["0","0.0001","0.001","0.01","0.1","1","10"];
-const NFAINT = 24, NVAL_SHOWN = 100;
-const state = { deg: 3, lamIdx: 0, sigma: 2, seed: 7, g: NGRID.indexOf(30), showFits: true, pin: null };
+const NFAINT = 24;
+const state = { deg: 3, lamIdx: 0, sigma: 2, valPct: 30, seed: 7, g: NGRID.indexOf(30), showFits: true, pin: null };
 let draws = makeDraws(state.seed), sim = null, raf = 0, playTimer = 0;
 
 // ---------- UI wiring ----------
@@ -431,6 +442,7 @@ for (let d = 0; d <= 10; d++) {
 $("#nRange").max = NGRID.length - 1;
 $("#lam").addEventListener("input", e => { state.lamIdx = +e.target.value; update(); });
 $("#sig").addEventListener("input", e => { state.sigma = +e.target.value; update(); });
+$("#vp").addEventListener("input", e => { state.valPct = +e.target.value; update(); });
 $("#nRange").addEventListener("input", e => { stopPlay(); state.g = +e.target.value; render(); });
 $("#showFits").addEventListener("change", e => { state.showFits = e.target.checked; render(); });
 $("#reseed").addEventListener("click", () => { state.seed++; draws = makeDraws(state.seed); state.pin = null; update(); });
@@ -475,7 +487,7 @@ function stopPlay() {
 
 function update() {
   cancelAnimationFrame(raf);
-  raf = requestAnimationFrame(() => { sim = simulate(draws, state.deg, LAMS[state.lamIdx], state.sigma); render(); });
+  raf = requestAnimationFrame(() => { sim = simulate(draws, state.deg, LAMS[state.lamIdx], state.sigma, state.valPct); render(); });
 }
 
 // ---------- Drawing helpers ----------
@@ -509,7 +521,7 @@ function axes(ctx, m, w, h, xt, yt, sx, sy, xl, yl, C) {
 }
 function colors() {
   return { ink: css("--ink"), muted: css("--muted"), line: css("--line"), grid: css("--grid"), surface: css("--surface"),
-    train: css("--train"), val: css("--val"), truth: css("--truth") };
+    train: css("--train"), val: css("--val"), bench: css("--bench"), truth: css("--truth") };
 }
 
 // ---------- Learning curve ----------
@@ -542,6 +554,7 @@ function drawLearning() {
   ctx.setLineDash([6, 5]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1.4;
   ctx.beginPath(); ctx.moveTo(m.l, sy(s2)); ctx.lineTo(w - m.r, sy(s2)); ctx.stroke(); ctx.setLineDash([]);
   if (state.pin) { line(state.pin.train, rgba(C.train, .6), 1.6, [3, 4]); line(state.pin.val, rgba(C.val, .6), 1.6, [3, 4]); }
+  line(sim.bench.map(o => o.med), C.bench, 2);
   line(sim.train.map(o => o.med), C.train, 2.6);
   line(sim.val.map(o => o.med), C.val, 2.6);
   ctx.restore();
@@ -551,6 +564,8 @@ function drawLearning() {
     ctx.fillStyle = rgba(C.surface, .88); ctx.fillRect(x0 - 4, y - 8, tw + 8, 16);
     ctx.fillStyle = col; ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(txt, x0, y);
   };
+  const bEnd = sim.bench[NGRID.length - 1].med;
+  if (bEnd < Y1) tag("benchmark", w - m.r - 6, sy(bEnd) - 12, "right", C.bench, `600 11px ${css("--f-mono")}`);
   tag(`noise floor σ² = ${s2.toFixed(2)}`, w - m.r - 6, sy(s2) + 12, "right", C.muted, `11px ${css("--f-mono")}`);
 
   // cursor at current n
@@ -592,10 +607,11 @@ function drawFit() {
     ctx.stroke(); ctx.setLineDash([]);
   };
   ctx.save(); ctx.beginPath(); ctx.rect(m.l, m.t, w - m.l - m.r, h - m.t - m.b); ctx.clip();
-  // validation points: a fixed 100 of the 500, drawn behind everything
-  ctx.fillStyle = rgba(C.val, .55);
-  for (let i = 0; i < NVAL_SHOWN; i++) {
-    ctx.beginPath(); ctx.arc(sx(draws.vx[i]), sy(TRUE_F(draws.vx[i]) + sig * draws.vz[i]), 2.6, 0, 7); ctx.fill();
+  // validation points for this training sample: k = valPct% of n, drawn behind the fits
+  const vx = draws.vxs[g][0], vz = draws.vzs[g][0], kv = valSize(NGRID[g], state.valPct);
+  for (let i = 0; i < kv; i++) {
+    ctx.beginPath(); ctx.arc(sx(vx[i]), sy(TRUE_F(vx[i]) + sig * vz[i]), 3.6, 0, 7);
+    ctx.fillStyle = rgba(C.val, .85); ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = C.surface; ctx.stroke();
   }
   if (state.showFits) for (let r = 1; r <= NFAINT; r++) curve(x => predict(cs[r], x), rgba(C.ink, .16), 1.2);
   curve(TRUE_F, C.truth, 2.4, [7, 5]);
@@ -620,6 +636,11 @@ function renderText() {
   $("#degname").innerHTML = `<b>Degree ${state.deg}</b> · ${NAMES[state.deg]}` + (state.deg === 3 ? " · the shape that generated the data" : "") + ` · ${state.deg + 1} coefficients`;
   $("#pinLegend").hidden = !state.pin; $("#unpin").disabled = !state.pin; if (state.pin) $("#pinName").textContent = state.pin.label;
   $("#faintLegend").hidden = !state.showFits;
+  const kv = valSize(n, state.valPct);
+  $("#vpOut").textContent = state.valPct + "% of n"; $("#vp").value = state.valPct;
+  $("#vpHint").textContent = `At n = ${n}, that is ${kv} fresh point${kv === 1 ? "" : "s"} held out to score the model.`;
+  $("#valCount").textContent = `(${kv})`;
+  $("#rVaSub").textContent = `MSE on ${kv} held-out point${kv === 1 ? "" : "s"}`;
   $("#fitName").textContent = state.showFits ? "Average fit" : "Fit on these training points";
 
   const pill = $("#pill"); let cls, title, text;
@@ -635,6 +656,11 @@ function renderText() {
   else if (d.biasHigh) more = `<b>More data?</b> No. Both curves have flattened. More data cannot fix a model that is too simple.`;
   else more = `<b>More data?</b> Not much. Going to n = 150 would only lower validation error to about ${fmt(d.vaEnd)}.`;
   $("#dMore").innerHTML = more;
+  const bm = sim.bench[state.g].med; let bt;
+  if (state.deg === 0 && state.lamIdx === 0) bt = `<b>Benchmark:</b> a constant model is the benchmark. It predicts the training average, so its validation error (${fmt(bm)}) is the bar every other model has to clear.`;
+  else if (d.va < bm) bt = `<b>Benchmark:</b> predicting the training average scores ${fmt(bm)}. This model is ${Math.round((1 - d.va / bm) * 100)}% lower, so it has learned real structure.`;
+  else bt = `<b>Benchmark:</b> predicting the training average scores ${fmt(bm)}. This model does <b>worse</b> than that, which is a red flag. It is fitting noise.`;
+  $("#dBench").innerHTML = bt;
 }
 
 function render() { if (!sim) return; renderText(); drawLearning(); drawFit(); }
