@@ -1,694 +1,642 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Drag a polynomial-degree slider from 0 to 5 and watch training vs. validation error diagnose bias, variance, or a good fit, live in your browser, no install.">
-    <title>Learning Curves Interactive Tool | Dr. Pedram Jahangiry</title>
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0A1020 0%, #1B2A4A 100%);
-            min-height: 100vh; padding: 20px;
-        }
-        .header { text-align: center; color: white; padding: 30px 20px 20px; margin-bottom: 25px; }
-        .header h1 { font-size: 2.4em; margin-bottom: 8px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
-        .header .subtitle { font-size: 1.15em; opacity: 0.9; margin-bottom: 5px; }
-        .header .attribution { font-size: 1.05em; margin: 12px 0; opacity: 0.95; }
-        .header .links { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
-        .header .links a {
-            display: inline-flex; align-items: center; gap: 8px; color: white;
-            text-decoration: none; padding: 9px 18px; border-radius: 8px;
-            transition: all 0.3s ease; font-size: 0.88em; font-weight: 600;
-        }
-        .header .links a:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .btn-website { background: linear-gradient(135deg, #667eea, #764ba2); }
-        .btn-youtube { background: linear-gradient(135deg, #ff0000, #cc0000); }
-        .btn-github { background: linear-gradient(135deg, #333, #000); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Grow the training set and watch training vs. validation error separate into bias, variance and the noise floor. Polynomial degree 0 to 10, ridge penalty, noise slider, live fits and diagnosis, in your browser, no install.">
+<title>Learning Curves Interactive Tool | Dr. Pedram Jahangiry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a lab bench. Controls on top, two linked instruments side by side, the verdict strip beneath, field notes last. */
+:root{
+  --bg:#EEF1F5; --surface:#FFFFFF; --ink:#141B26; --muted:#5A6577; --line:#D6DCE5; --grid:#E6EAF0;
+  --train:#1E5BC6; --val:#D2560E; --truth:#1E8C5A;
+  --bias-fg:#7A4E00; --bias-bg:#FFF0D2; --var-fg:#A0213B; --var-bg:#FDE3E8; --good-fg:#15623C; --good-bg:#DCF2E5;
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E131B; --surface:#151C27; --ink:#E5EAF1; --muted:#97A3B5; --line:#2A3445; --grid:#1D2532;
+  --train:#70A4FF; --val:#FF8B47; --truth:#4CC38A;
+  --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0E131B; --surface:#151C27; --ink:#E5EAF1; --muted:#97A3B5; --line:#2A3445; --grid:#1D2532;
+  --train:#70A4FF; --val:#FF8B47; --truth:#4CC38A;
+  --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
+  color-scheme:dark }
 
-        .container {
-            max-width: 1300px; margin: 0 auto; background: white;
-            border-radius: 20px; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-        }
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:28px 48px}
+.wrap{max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:20px}
+a{color:var(--train)}
+:focus-visible{outline:2px solid var(--train); outline-offset:2px}
 
-        .intro {
-            border-radius: 12px; padding: 20px 24px; margin-bottom: 20px;
-            border-left: 5px solid #667eea; background: linear-gradient(135deg, #f0f4ff, #e8ecff);
-        }
-        .intro h3 { color: #4338ca; margin-bottom: 8px; font-size: 1.1em; }
-        .intro p { color: #475569; line-height: 1.65; font-size: 0.92em; }
+header{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:12px 24px}
+.eyebrow{font-family:var(--f-mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+h1{font-family:var(--f-display); font-weight:700; font-size:clamp(30px, 5vw, 46px); line-height:1.05; margin:6px 0 8px; letter-spacing:-.01em; text-wrap:balance}
+.lede{margin:0; max-width:62ch; color:var(--muted); font-size:16px}
+.lede b{color:var(--ink); font-weight:600}
+.byline{font-size:13px; color:var(--muted); display:flex; gap:6px 14px; flex-wrap:wrap}
+.byline strong{color:var(--ink); font-weight:600}
 
-        .controls {
-            display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-            margin-bottom: 18px; padding: 18px 20px; background: #f8fafc; border-radius: 12px;
-        }
-        .control-group { display: flex; align-items: center; gap: 8px; }
-        .control-group label { font-weight: 600; color: #334155; font-size: 0.9em; white-space: nowrap; }
-        .control-group input[type="range"] { width: 130px; cursor: pointer; }
-        .val { font-weight: 700; color: #667eea; min-width: 28px; text-align: center; font-size: 1em; }
-        .btn {
-            padding: 10px 22px; border: none; border-radius: 8px; font-size: 0.9em;
-            font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-family: inherit;
-        }
-        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .btn-run { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r)}
+.controls{display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr); gap:18px 28px; padding:18px 20px}
+.ctl{display:flex; flex-direction:column; gap:8px; min-width:0}
+.ctl-label{display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.ctl-label output{font-family:var(--f-mono); font-size:13px; text-transform:none; letter-spacing:0; color:var(--ink); font-weight:600}
+.degrees{display:grid; grid-template-columns:repeat(11, minmax(0,1fr)); gap:4px}
+.degrees button{font-family:var(--f-mono); font-size:14px; padding:8px 0; border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:6px; cursor:pointer; position:relative}
+.degrees button:hover{border-color:var(--muted)}
+.degrees button[aria-pressed="true"]{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+.degrees button.true::after{content:""; position:absolute; left:50%; bottom:3px; width:4px; height:4px; margin-left:-2px; border-radius:50%; background:var(--truth)}
+.degname{font-size:13px; color:var(--muted)}
+.degname b{color:var(--ink); font-weight:600}
+input[type=range]{width:100%; accent-color:var(--train); margin:4px 0}
+.hint{font-size:12.5px; color:var(--muted)}
+.row-actions{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding-top:14px; border-top:1px solid var(--line)}
+.row-actions .lbl{font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin-right:4px}
+.chip{font:500 13px var(--f-body); padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer}
+.chip:hover{border-color:var(--muted)}
+.spacer{flex:1}
+.btn{font:600 13px var(--f-body); padding:7px 14px; border-radius:7px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer}
+.btn:hover{border-color:var(--muted)}
+.btn:disabled{opacity:.45; cursor:default}
 
-        /* Diagnosis card */
-        .diagnosis {
-            padding: 16px 22px; border-radius: 12px; margin-bottom: 20px;
-            display: flex; align-items: center; gap: 14px; transition: all 0.4s ease;
-        }
-        .diagnosis .diag-tag {
-            padding: 6px 16px; border-radius: 6px; font-weight: 700;
-            font-size: 0.85em; color: white; white-space: nowrap;
-        }
-        .diagnosis .diag-text { color: #334155; font-size: 0.9em; line-height: 1.6; }
-        .diagnosis .diag-text strong { color: #1e293b; }
-        .diagnosis .diag-action {
-            margin-top: 6px; font-size: 0.85em; color: #475569;
-            padding: 6px 12px; background: rgba(255,255,255,0.6); border-radius: 6px;
-            display: inline-block;
-        }
+.bench{display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:20px}
+.inst{padding:16px 18px 14px; display:flex; flex-direction:column; gap:10px; min-width:0}
+.inst h2{font-family:var(--f-display); font-weight:500; font-size:19px; margin:0; display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap}
+.inst h2 small{font-family:var(--f-mono); font-size:12px; color:var(--muted); font-weight:400}
+.plot{position:relative; height:clamp(270px, 34vw, 370px)}
+.plot canvas{position:absolute; inset:0; width:100%; height:100%; display:block}
+#lc{cursor:ew-resize; touch-action:pan-y}
+.legend{display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12.5px; color:var(--muted)}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.sw{width:18px; height:0; border-top:3px solid currentColor; display:inline-block}
+.sw.dash{border-top-style:dashed; border-top-width:2px}
+.sw.faint{opacity:.35; border-top-width:2px}
+.sw.dot{width:8px; height:8px; border:none; border-radius:50%; background:var(--ink)}
+.c-train{color:var(--train)} .c-val{color:var(--val)} .c-truth{color:var(--truth)} .c-muted{color:var(--muted)}
+.scrub{display:flex; align-items:center; gap:12px}
+.scrub label{font-size:13px; color:var(--muted); white-space:nowrap}
+.scrub label output{font-family:var(--f-mono); color:var(--ink); font-weight:600; font-size:14px; display:inline-block; min-width:3ch}
+.play{width:38px; height:34px; flex:none; border-radius:7px; border:1px solid var(--ink); background:var(--ink); color:var(--surface); cursor:pointer; display:grid; place-items:center}
+.play svg{width:14px; height:14px; fill:currentColor}
+.toggle{display:inline-flex; gap:8px; align-items:center; font-size:13px; color:var(--muted); cursor:pointer}
+.caption{font-size:13px; color:var(--muted); margin:0}
 
-        /* Charts */
-        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-        .chart-box { border: 2px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
-        .chart-box .chart-title {
-            padding: 9px 16px; font-weight: 700; font-size: 0.88em; color: #334155;
-            background: #f8fafc; border-bottom: 1px solid #e2e8f0;
-        }
+.verdict{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)) minmax(0,2.3fr); align-items:stretch}
+.read{padding:14px 18px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:2px; min-width:0}
+.read .k{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600}
+.read .v{font-family:var(--f-mono); font-size:24px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1.2}
+.read .s{font-size:12px; color:var(--muted)}
+.diag{padding:14px 20px; display:flex; flex-direction:column; gap:6px; min-width:0}
+.pill{align-self:flex-start; font:600 12.5px var(--f-body); letter-spacing:.03em; padding:4px 11px; border-radius:999px}
+.pill.bias{color:var(--bias-fg); background:var(--bias-bg)}
+.pill.var{color:var(--var-fg); background:var(--var-bg)}
+.pill.good{color:var(--good-fg); background:var(--good-bg)}
+.pill.both{color:var(--var-fg); background:var(--bias-bg)}
+.diag p{margin:0; font-size:14px}
+.diag .more b{font-weight:600}
 
-        /* Complexity indicator */
-        .complexity-indicator {
-            display: flex; justify-content: center; gap: 0; margin-bottom: 18px;
-        }
-        .cx-step {
-            flex: 1; padding: 10px 8px; text-align: center; font-size: 0.78em;
-            font-weight: 600; transition: all 0.3s ease; cursor: default;
-            border: 2px solid #e2e8f0; position: relative;
-        }
-        .cx-step:first-child { border-radius: 8px 0 0 8px; }
-        .cx-step:last-child { border-radius: 0 8px 8px 0; }
-        .cx-step .cx-label { color: #64748b; }
-        .cx-step .cx-desc { color: #94a3b8; font-size: 0.9em; margin-top: 2px; }
-        .cx-step.active { z-index: 1; transform: scaleY(1.05); }
+.notes{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:20px}
+.case{padding:18px; display:flex; flex-direction:column; gap:10px; min-width:0}
+.case h3{font-family:var(--f-display); font-weight:500; font-size:18px; margin:0}
+.case svg{width:100%; max-width:100%; height:auto; background:var(--bg); border-radius:6px}
+.case dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:4px 12px; font-size:13.5px}
+.case dt{color:var(--muted); font-weight:600}
+.case dd{margin:0}
+.case button{align-self:flex-start}
+.keys{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:20px}
+.key{padding:16px 18px}
+.key h4{margin:0 0 4px; font-size:14.5px; font-weight:600}
+.key p{margin:0; color:var(--muted); font-size:14px; max-width:62ch}
+.mono{font-family:var(--f-mono); font-size:.92em}
+footer{font-size:12.5px; color:var(--muted); max-width:90ch}
 
-        /* Key insight boxes */
-        .insights-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
-        .insight-box {
-            padding: 14px 18px; border-radius: 10px; border: 2px solid #e2e8f0;
-        }
-        .insight-box h4 { font-size: 0.88em; margin-bottom: 6px; }
-        .insight-box p { font-size: 0.82em; color: #475569; line-height: 1.5; }
-
-        @media (max-width: 900px) {
-            .header h1 { font-size: 1.5em; }
-            .container { padding: 18px; }
-            .charts-grid { grid-template-columns: 1fr; }
-            .controls { flex-direction: column; align-items: stretch; gap: 10px; }
-            .insights-row { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 600px) {
-            .control-group { flex-wrap: wrap; }
-            .control-group label { white-space: normal; }
-            .complexity-indicator { flex-wrap: wrap; }
-            .cx-step { flex: 1 1 30%; }
-            .cx-step:first-child, .cx-step:last-child { border-radius: 0; }
-        }
-    </style>
+@media (max-width: 900px){
+  .controls{grid-template-columns:1fr 1fr}
+  .controls .ctl:first-child{grid-column:1 / -1}
+  .bench{grid-template-columns:1fr}
+  .verdict{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .read:nth-child(2n){border-right:none}
+  .read{border-bottom:1px solid var(--line)}
+  .diag{grid-column:1 / -1}
+  .notes{grid-template-columns:1fr}
+}
+@media (max-width: 560px){
+  .controls{grid-template-columns:1fr}
+  .degrees{grid-template-columns:repeat(6, minmax(0,1fr))}
+  .keys{grid-template-columns:1fr}
+  .read .v{font-size:20px}
+  .spacer{display:none}
+}
+</style>
 </head>
 <body>
-
-<div class="header">
-    <h1>The Learning Curve</h1>
-    <div class="subtitle">Module 5 — Machine Learning for Time Series Forecasting</div>
-    <div class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</div>
-    <div class="links">
-        <a href="https://pedramjahangiry.com/" class="btn-website">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            Website
-        </a>
-        <a href="https://www.youtube.com/@pedramjahangiry" class="btn-youtube">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.8zM9.6 15.6V8.4L16 12l-6.4 3.6z"/></svg>
-            YouTube
-        </a>
-        <a href="https://github.com/pjalgotrader" class="btn-github">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12c0 5.3 3.4 9.8 8.2 11.4.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 24 12C24 5.4 18.6 0 12 0z"/></svg>
-            GitHub
-        </a>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Module 5 · Machine Learning for Time Series Forecasting</div>
+      <h1>The Learning Curve</h1>
+      <p class="lede">Do we need more data, or a different model? Pick a model, then <b>grow the training set</b> and watch where training and validation error settle. The gap between them is variance. How far they sit above the noise floor is bias.</p>
     </div>
-</div>
+    <div class="byline"><strong>Dr. Pedram Jahangiry</strong>
+      <a href="https://pedramjahangiry.com/" target="_blank" rel="noopener">Website</a>
+      <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" rel="noopener">YouTube</a>
+      <a href="https://github.com/pjalgotrader" target="_blank" rel="noopener">GitHub</a></div>
+  </header>
 
-<p style="max-width: 760px; margin: 0 auto 25px auto; text-align: center; color: #555; line-height: 1.6; font-size: 1.05em;">Pick a polynomial degree from constant to quintic, then watch two curves unfold: training error, which rises as more data makes a perfect fit harder, and validation error, which falls as the model generalizes better. The gap between them, read alongside the fitted curve beside it, is the standard visual diagnostic for deciding whether a model needs more data, more complexity, or less.</p>
-
-<div class="container">
-
-    <div class="intro">
-        <h3>Do We Need to Collect More Data?</h3>
-        <p>
-            A <strong>learning curve</strong> plots model performance (error) against <strong>training set size</strong>.
-            As we add more training data, the <span style="color:#2563eb;font-weight:600;">training error</span>
-            typically <em>increases</em> (harder to fit more points perfectly) while the
-            <span style="color:#059669;font-weight:600;">validation error</span> typically <em>decreases</em>
-            (more data = better generalization).
-        </p>
-        <p style="margin-top:8px;">
-            The <strong>gap</strong> between the two curves tells you everything:
-            a <strong>small gap at high error</strong> = high bias (underfitting),
-            a <strong>large gap</strong> = high variance (overfitting),
-            and <strong>both curves converging at low error</strong> = just right.
-        </p>
-        <p style="margin-top:8px;">
-            These points are drawn from a cubic, <span style="font-family:ui-monospace,monospace;">0.15x³ − 0.5x² + 0.3x + 3</span>, plus noise with σ² = 4.
-            Degree 3 is the function that generated the data. The cubic term is small on [−3, 3], so a quadratic can land close to the noise floor too.
-        </p>
+  <section class="panel controls" aria-label="Model settings">
+    <div class="ctl">
+      <div class="ctl-label"><span>Model complexity · polynomial degree</span></div>
+      <div class="degrees" id="degrees"></div>
+      <div class="degname" id="degname"></div>
     </div>
-
-    <!-- Controls -->
-    <div class="controls">
-        <div class="control-group">
-            <label>Model Complexity (Polynomial Degree):</label>
-            <input type="range" id="degree-slider" min="0" max="5" value="3" />
-            <span class="val" id="degree-val">3</span>
-        </div>
-        <button class="btn btn-run" id="btn-compute">Generate Learning Curves</button>
+    <div class="ctl">
+      <label class="ctl-label" for="lam"><span>Ridge penalty λ</span><output id="lamOut">0</output></label>
+      <input type="range" id="lam" min="0" max="6" step="1" value="0">
+      <div class="hint">Shrinks the coefficients. A bigger λ trades variance for bias.</div>
     </div>
+    <div class="ctl">
+      <label class="ctl-label" for="sig"><span>Noise σ</span><output id="sigOut">2.0</output></label>
+      <input type="range" id="sig" min="0.5" max="3" step="0.25" value="2">
+      <div class="hint">Sets the noise floor σ² = <span class="mono" id="floorOut">4.00</span>. No model can beat it.</div>
+    </div>
+    <div class="row-actions">
+      <span class="lbl">Try</span>
+      <button class="chip" data-preset="under">Underfit</button>
+      <button class="chip" data-preset="right">Just right</button>
+      <button class="chip" data-preset="over">Overfit</button>
+      <button class="chip" data-preset="tamed">Overfit, tamed by ridge</button>
+      <span class="spacer"></span>
+      <button class="btn" id="pin">Pin curves to compare</button>
+      <button class="btn" id="unpin" disabled>Clear pin</button>
+      <button class="btn" id="reseed">New random data</button>
+    </div>
+  </section>
 
-    <!-- Complexity bar -->
-    <div class="complexity-indicator" id="cx-indicator">
-        <div class="cx-step" data-deg="0">
-            <div class="cx-label">Degree 0</div>
-            <div class="cx-desc">Constant</div>
-        </div>
-        <div class="cx-step" data-deg="1">
-            <div class="cx-label">Degree 1</div>
-            <div class="cx-desc">Linear</div>
-        </div>
-        <div class="cx-step" data-deg="2">
-            <div class="cx-label">Degree 2</div>
-            <div class="cx-desc">Quadratic</div>
-        </div>
-        <div class="cx-step active" data-deg="3">
-            <div class="cx-label">Degree 3</div>
-            <div class="cx-desc">Cubic ✓</div>
-        </div>
-        <div class="cx-step" data-deg="4">
-            <div class="cx-label">Degree 4</div>
-            <div class="cx-desc">Quartic</div>
-        </div>
-        <div class="cx-step" data-deg="5">
-            <div class="cx-label">Degree 5</div>
-            <div class="cx-desc">Quintic</div>
-        </div>
+  <section class="bench">
+    <div class="panel inst">
+      <h2>Error vs training set size <small>median of 40 random training sets</small></h2>
+      <div class="legend">
+        <span class="c-train"><i class="sw"></i>Training error</span>
+        <span class="c-val"><i class="sw"></i>Validation error</span>
+        <span class="c-muted"><i class="sw dash"></i>Noise floor σ²</span>
+        <span class="c-muted" id="pinLegend" hidden><i class="sw dash" style="opacity:.7"></i><span id="pinName"></span></span>
+      </div>
+      <div class="plot"><canvas id="lc" aria-label="Learning curve chart. Drag to change the training set size."></canvas></div>
+      <div class="scrub">
+        <button class="play" id="play" aria-label="Play: grow the training set"><svg id="playIcon" viewBox="0 0 14 14"><path d="M3 1.5v11l9-5.5z"/></svg></button>
+        <label for="nRange">n = <output id="nOut">30</output></label>
+        <input type="range" id="nRange" min="0" max="34" step="1">
+      </div>
     </div>
 
-    <!-- Diagnosis -->
-    <div class="diagnosis" id="diagnosis"></div>
-
-    <!-- Charts -->
-    <div class="charts-grid">
-        <div class="chart-box">
-            <div class="chart-title">Learning Curve — Error vs Training Set Size</div>
-            <div id="chart-lc" style="height:440px;"></div>
-        </div>
-        <div class="chart-box">
-            <div class="chart-title">Current Model Fit (One CV Fold)</div>
-            <div id="chart-fit" style="height:440px;"></div>
-        </div>
+    <div class="panel inst">
+      <h2><span>What the model learns at n = <span id="nOut2">30</span></span></h2>
+      <div class="legend">
+        <span><i class="sw dot"></i>One training sample</span>
+        <span class="c-train"><i class="sw"></i>Average fit</span>
+        <span class="c-train" id="faintLegend"><i class="sw faint"></i>Fits on 24 other samples</span>
+        <span class="c-truth"><i class="sw dash"></i>True function</span>
+      </div>
+      <div class="plot"><canvas id="fit" aria-label="Fitted models at the chosen training set size"></canvas></div>
+      <label class="toggle"><input type="checkbox" id="showFits" checked> Show fits from other random samples</label>
+      <p class="caption">Spread of the faint lines is <b>variance</b>. Distance between the average fit and the dashed truth is <b>bias</b>.</p>
     </div>
+  </section>
 
-    <!-- Key insights -->
-    <div class="insights-row">
-        <div class="insight-box" style="border-color:#2563eb;">
-            <h4 style="color:#2563eb;">High Bias (Underfitting)</h4>
-            <p>
-                Both curves converge to a <strong>high error</strong>.
-                The gap between them is <strong>small</strong>.
-                Adding more data <strong>won't help</strong> — the model is too simple.
-                <strong>Fix:</strong> increase model complexity, add features.
-            </p>
-        </div>
-        <div class="insight-box" style="border-color:#dc2626;">
-            <h4 style="color:#dc2626;">High Variance (Overfitting)</h4>
-            <p>
-                Training error is <strong>low</strong> but validation error is <strong>high</strong>.
-                The gap between them is <strong>large</strong>.
-                Adding more data <strong>can help</strong> — it gives the model less room to memorize.
-                <strong>Fix:</strong> more data, reduce complexity, regularize.
-            </p>
-        </div>
+  <section class="panel verdict" aria-live="polite">
+    <div class="read"><span class="k">Training error</span><span class="v c-train" id="rTr">–</span><span class="s">MSE on the n points it saw</span></div>
+    <div class="read"><span class="k">Validation error</span><span class="v c-val" id="rVa">–</span><span class="s">MSE on 500 fresh points</span></div>
+    <div class="read"><span class="k">Gap</span><span class="v" id="rGap">–</span><span class="s">validation minus training</span></div>
+    <div class="read"><span class="k">Noise floor</span><span class="v c-muted" id="rFl">–</span><span class="s">σ², irreducible</span></div>
+    <div class="diag">
+      <span class="pill" id="pill">–</span>
+      <p id="dText"></p>
+      <p class="more" id="dMore"></p>
     </div>
+  </section>
 
+  <section class="notes">
+    <article class="panel case">
+      <h3>High bias</h3>
+      <svg viewBox="0 0 160 84" aria-hidden="true">
+        <line x1="10" y1="64" x2="152" y2="64" stroke="var(--muted)" stroke-dasharray="4 3" stroke-width="1.2" fill="none"/>
+        <path d="M10 70 C 40 40, 80 32, 152 31" stroke="var(--train)" stroke-width="2.5" fill="none"/>
+        <path d="M10 8 C 40 22, 80 27, 152 28" stroke="var(--val)" stroke-width="2.5" fill="none"/>
+      </svg>
+      <dl><dt>You see</dt><dd>Both curves meet quickly, far above the floor. Small gap.</dd>
+        <dt>More data?</dt><dd>No. The curves are already flat.</dd>
+        <dt>Fix</dt><dd>More complexity, more features, less λ.</dd></dl>
+      <button class="btn" data-preset="under">Show me</button>
+    </article>
+    <article class="panel case">
+      <h3>High variance</h3>
+      <svg viewBox="0 0 160 84" aria-hidden="true">
+        <line x1="10" y1="64" x2="152" y2="64" stroke="var(--muted)" stroke-dasharray="4 3" stroke-width="1.2" fill="none"/>
+        <path d="M10 80 C 50 78, 100 72, 152 69" stroke="var(--train)" stroke-width="2.5" fill="none"/>
+        <path d="M14 4 C 30 30, 80 46, 152 53" stroke="var(--val)" stroke-width="2.5" fill="none"/>
+      </svg>
+      <dl><dt>You see</dt><dd>Training error near zero, validation error high. Big gap.</dd>
+        <dt>More data?</dt><dd>Yes. Validation is still falling.</dd>
+        <dt>Fix</dt><dd>More data, lower degree, or raise λ.</dd></dl>
+      <button class="btn" data-preset="over">Show me</button>
+    </article>
+    <article class="panel case">
+      <h3>Good fit</h3>
+      <svg viewBox="0 0 160 84" aria-hidden="true">
+        <line x1="10" y1="56" x2="152" y2="56" stroke="var(--muted)" stroke-dasharray="4 3" stroke-width="1.2" fill="none"/>
+        <path d="M10 78 C 40 64, 90 60, 152 58" stroke="var(--train)" stroke-width="2.5" fill="none"/>
+        <path d="M10 10 C 40 42, 90 51, 152 53" stroke="var(--val)" stroke-width="2.5" fill="none"/>
+      </svg>
+      <dl><dt>You see</dt><dd>Both curves squeeze the noise floor from either side.</dd>
+        <dt>More data?</dt><dd>A little, with fast diminishing returns.</dd>
+        <dt>Fix</dt><dd>Nothing big. You are near the best possible.</dd></dl>
+      <button class="btn" data-preset="right">Show me</button>
+    </article>
+  </section>
+
+  <section class="keys">
+    <div class="panel key"><h4>Variance shrinks with n. Bias does not.</h4>
+      <p>Press play on degree 10. At n = 10 the faint fits fly everywhere and the gap is huge. By n = 150 they have calmed down. Now try degree 1: the fits agree with each other from the start, but they all miss the curve in the same way, at every n.</p></div>
+    <div class="panel key"><h4>The noise floor is a hard limit.</h4>
+      <p>Validation error can approach σ² but never go below it, because no model can predict the random noise. Drop σ to 0.5 and the floor falls, so even the small cubic term suddenly matters and degree 2 starts to look biased.</p></div>
+  </section>
+
+  <footer>Data: y = 0.15x³ − 0.5x² + 0.3x + 3 + ε, with x uniform on [−3, 3] and ε ~ N(0, σ²). Degree 3 is the shape that generated the data (green dot on the selector). Each point on the learning curve is the median over 40 independent training sets of size n; the shaded bands show the 10th to 90th percentile. Validation error is measured on 500 fresh points. Switching degree, λ, or σ reuses the same random draws, so comparisons are fair.</footer>
 </div>
 
 <script>
-// ============================================================
-// TRUE FUNCTION & DATA GENERATION
-// ============================================================
-const X_MIN = -3, X_MAX = 3;
+// ---------- Simulation core ----------
+const TRUE_F = x => 0.15 * x * x * x - 0.5 * x * x + 0.3 * x + 3;
+const NGRID = [2,3,4,5,6,7,8,9,10,11,12,14,16,18,20,23,26,30,34,38,42,46,50,55,60,66,72,80,88,96,105,115,125,137,150];
+const REPS = 40, NVAL = 500, MAXDEG = 10;
+const LAMS = [0, 1e-4, 1e-3, 1e-2, 0.1, 1, 10];
 
-function trueF(x) {
-    return 0.15 * x * x * x - 0.5 * x * x + 0.3 * x + 3;
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function gauss(rng) {
+  let u = 0; while (u === 0) u = rng();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rng());
 }
 
-function randn() {
-    let u = 0, v = 0;
-    while (u === 0) u = Math.random();
-    while (v === 0) v = Math.random();
-    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-}
-
-// Generate a large pool of data
-const POOL_SIZE = 100;
-let dataPool = [];
-const noiseSd = 2.0;
-
-function generatePool() {
-    dataPool = [];
-    for (let i = 0; i < POOL_SIZE; i++) {
-        const x = X_MIN + (X_MAX - X_MIN) * Math.random();
-        const y = trueF(x) + noiseSd * randn();
-        dataPool.push({x, y});
+// Raw random draws depend only on the seed, so switching degree, ridge or noise
+// reuses the same training sets. That keeps comparisons fair.
+function makeDraws(seed) {
+  const rng = mulberry32(seed * 7919 + 13);
+  const vx = new Float64Array(NVAL), vz = new Float64Array(NVAL);
+  for (let i = 0; i < NVAL; i++) { vx[i] = -3 + 6 * rng(); vz[i] = gauss(rng); }
+  const xs = [], zs = [];
+  for (let g = 0; g < NGRID.length; g++) {
+    const n = NGRID[g], rx = [], rz = [];
+    for (let r = 0; r < REPS; r++) {
+      const x = new Float64Array(n), z = new Float64Array(n);
+      for (let i = 0; i < n; i++) { x[i] = -3 + 6 * rng(); z[i] = gauss(rng); }
+      rx.push(x); rz.push(z);
     }
-    // Sort by x for nice visualization
-    // Shuffle before train/test split so test isn't concentrated in one region
-    dataPool.sort(() => Math.random() - 0.5);
+    xs.push(rx); zs.push(rz);
+  }
+  return { vx, vz, xs, zs };
 }
 
-// ============================================================
-// POLYNOMIAL FITTING (normalized x)
-// ============================================================
-function normalizeX(xArr) {
-    return xArr.map(x => (x - X_MIN) / (X_MAX - X_MIN));
+function powers(x, deg, out) {
+  const z = x / 3; let v = 1;
+  for (let k = 0; k <= deg; k++) { out[k] = v; v *= z; }
+  return out;
 }
 
-function fitPoly(xNorm, yArr, deg) {
-    const n = xNorm.length;
-    const p = deg + 1;
-    const XtX = Array.from({length: p}, () => new Float64Array(p));
-    const XtY = new Float64Array(p);
-    for (let i = 0; i < n; i++) {
-        const row = new Float64Array(p);
-        row[0] = 1;
-        for (let d = 1; d < p; d++) row[d] = row[d-1] * xNorm[i];
-        for (let j = 0; j < p; j++) {
-            XtY[j] += row[j] * yArr[i];
-            for (let k = j; k < p; k++) XtX[j][k] += row[j] * row[k];
-        }
+// Minimise (1/n)||y - Xb||^2 + lam * ||b without intercept||^2
+function fitPoly(x, y, deg, lam) {
+  const p = deg + 1, n = x.length;
+  const A = Array.from({ length: p }, () => new Float64Array(p + 1));
+  const phi = new Float64Array(p);
+  for (let i = 0; i < n; i++) {
+    powers(x[i], deg, phi);
+    for (let a = 0; a < p; a++) {
+      const pa = phi[a];
+      for (let b = a; b < p; b++) A[a][b] += pa * phi[b];
+      A[a][p] += pa * y[i];
     }
-    for (let j = 0; j < p; j++)
-        for (let k = 0; k < j; k++) XtX[j][k] = XtX[k][j];
-    for (let j = 0; j < p; j++) XtX[j][j] += 1e-10;
-    const A = XtX.map(r => Array.from(r));
-    const b = Array.from(XtY);
-    for (let col = 0; col < p; col++) {
-        let maxV = Math.abs(A[col][col]), maxR = col;
-        for (let r = col+1; r < p; r++) if (Math.abs(A[r][col]) > maxV) { maxV = Math.abs(A[r][col]); maxR = r; }
-        [A[col], A[maxR]] = [A[maxR], A[col]];
-        [b[col], b[maxR]] = [b[maxR], b[col]];
-        for (let r = col+1; r < p; r++) {
-            const f = A[r][col] / A[col][col];
-            for (let k = col; k < p; k++) A[r][k] -= f * A[col][k];
-            b[r] -= f * b[col];
-        }
+  }
+  for (let a = 0; a < p; a++) {
+    for (let b = a; b < p; b++) { A[a][b] /= n; A[b][a] = A[a][b]; }
+    A[a][p] /= n;
+    A[a][a] += (a === 0 ? 0 : lam) + 1e-7;
+  }
+  for (let c = 0; c < p; c++) {
+    let piv = c;
+    for (let r = c + 1; r < p; r++) if (Math.abs(A[r][c]) > Math.abs(A[piv][c])) piv = r;
+    [A[c], A[piv]] = [A[piv], A[c]];
+    const d = A[c][c] || 1e-12;
+    for (let r = c + 1; r < p; r++) {
+      const f = A[r][c] / d;
+      if (f) for (let k = c; k <= p; k++) A[r][k] -= f * A[c][k];
     }
-    const coeffs = new Float64Array(p);
-    for (let i = p-1; i >= 0; i--) {
-        let s = b[i];
-        for (let j = i+1; j < p; j++) s -= A[i][j] * coeffs[j];
-        coeffs[i] = s / A[i][i];
+  }
+  const coef = new Float64Array(p);
+  for (let r = p - 1; r >= 0; r--) {
+    let s = A[r][p];
+    for (let k = r + 1; k < p; k++) s -= A[r][k] * coef[k];
+    coef[r] = s / (A[r][r] || 1e-12);
+  }
+  return coef;
+}
+function predict(coef, x) {
+  const z = x / 3; let s = 0;
+  for (let k = coef.length - 1; k >= 0; k--) s = s * z + coef[k];
+  return s;
+}
+function quantile(sorted, q) {
+  const pos = (sorted.length - 1) * q, lo = Math.floor(pos), hi = Math.ceil(pos);
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
+}
+
+function simulate(draws, deg, lam, sigma) {
+  const { vx, vz, xs, zs } = draws;
+  const vy = new Float64Array(NVAL);
+  for (let i = 0; i < NVAL; i++) vy[i] = TRUE_F(vx[i]) + sigma * vz[i];
+  const out = { train: [], val: [], coefs: [] };
+  for (let g = 0; g < NGRID.length; g++) {
+    const trs = [], vas = [], cs = [];
+    for (let r = 0; r < REPS; r++) {
+      const x = xs[g][r], z = zs[g][r], n = x.length;
+      const y = new Float64Array(n);
+      for (let i = 0; i < n; i++) y[i] = TRUE_F(x[i]) + sigma * z[i];
+      const c = fitPoly(x, y, deg, lam);
+      let st = 0; for (let i = 0; i < n; i++) { const e = y[i] - predict(c, x[i]); st += e * e; }
+      let sv = 0; for (let i = 0; i < NVAL; i++) { const e = vy[i] - predict(c, vx[i]); sv += e * e; }
+      trs.push(st / n); vas.push(sv / NVAL); cs.push(c);
     }
-    return Array.from(coeffs);
+    const ts = trs.slice().sort((a, b) => a - b), vs = vas.slice().sort((a, b) => a - b);
+    out.train.push({ med: quantile(ts, .5), lo: quantile(ts, .1), hi: quantile(ts, .9) });
+    out.val.push({ med: quantile(vs, .5), lo: quantile(vs, .1), hi: quantile(vs, .9) });
+    out.coefs.push(cs);
+  }
+  return out;
 }
 
-function evalPoly(coeffs, xNorm) {
-    let y = 0, xp = 1;
-    for (let d = 0; d < coeffs.length; d++) { y += coeffs[d] * xp; xp *= xNorm; }
-    return y;
+// Error of the constant model at infinite data: sigma^2 + Var(f). Used to fix the y axis.
+const VAR_F = (() => {
+  let s = 0, s2 = 0; const N = 4000;
+  for (let i = 0; i < N; i++) { const v = TRUE_F(-3 + 6 * (i + .5) / N); s += v; s2 += v * v; }
+  return s2 / N - (s / N) ** 2;
+})();
+
+function diagnose(sim, gIdx, sigma) {
+  const s2 = sigma * sigma, last = NGRID.length - 1;
+  const tr = sim.train[gIdx].med, va = sim.val[gIdx].med, gap = va - tr;
+  const trEnd = sim.train[last].med, vaEnd = sim.val[last].med;
+  const biasSq = Math.max(0, (trEnd + vaEnd) / 2 - s2);
+  const biasHigh = biasSq > 0.25 * s2;
+  const varHigh = gap > 0.5 * s2;
+  const drop = va - vaEnd;
+  return { tr, va, gap, s2, biasSq, biasHigh, varHigh, drop, isLast: gIdx === last, vaEnd };
 }
 
-function mse(yTrue, yPred) {
-    let s = 0;
-    for (let i = 0; i < yTrue.length; i++) { const e = yTrue[i] - yPred[i]; s += e * e; }
-    return s / yTrue.length;
+
+
+const $ = s => document.querySelector(s);
+const NAMES = ["Constant","Linear","Quadratic","Cubic","Quartic","Quintic","Degree 6","Degree 7","Degree 8","Degree 9","Degree 10"];
+const LAM_LABELS = ["0","0.0001","0.001","0.01","0.1","1","10"];
+const NFAINT = 24;
+const state = { deg: 3, lamIdx: 0, sigma: 2, seed: 7, g: NGRID.indexOf(30), showFits: true, pin: null };
+let draws = makeDraws(state.seed), sim = null, raf = 0, playTimer = 0;
+
+// ---------- UI wiring ----------
+const degWrap = $("#degrees");
+for (let d = 0; d <= 10; d++) {
+  const b = document.createElement("button");
+  b.textContent = d; b.id = "deg" + d; b.title = NAMES[d] + (d === 3 ? " (true shape)" : "");
+  if (d === 3) b.classList.add("true");
+  b.addEventListener("click", () => { state.deg = d; update(); });
+  degWrap.appendChild(b);
 }
-
-// ============================================================
-// LEARNING CURVE COMPUTATION
-// ============================================================
-function computeLearningCurve(deg) {
-    const K = 5; // K-Fold CV
-
-    // Training sizes to evaluate (use all 200 data points now)
-    const sizes = [];
-    const minSize = Math.max(deg + 2, 20);
-    for (let s = minSize; s <= 100; s += 2) sizes.push(s);
-    if (sizes[sizes.length - 1] !== 100) sizes.push(100);
-
-    const trainErrors = [];
-    const valErrors = [];
-    const MC = 30; // Monte Carlo repetitions per size
-
-    for (const size of sizes) {
-        let trainErrSum = 0, valErrSum = 0;
-        let count = 0;
-
-        for (let rep = 0; rep < MC; rep++) {
-            // Random subset of dataPool of this size
-            const shuffled = [...dataPool].sort(() => Math.random() - 0.5);
-            const subset = shuffled.slice(0, size);
-
-            // K-Fold CV on this subset. Fold sizes differ by at most one.
-            const base = Math.floor(size / K);
-            if (base < 2) continue;
-
-            let valStart = 0;
-            for (let k = 0; k < K; k++) {
-                const valLen = base + (k < size % K ? 1 : 0);
-                const valEnd = valStart + valLen;
-                const valFold = subset.slice(valStart, valEnd);
-                const trainFold = [...subset.slice(0, valStart), ...subset.slice(valEnd)];
-
-                if (trainFold.length < deg + 1 || valFold.length === 0) {
-                    valStart = valEnd;
-                    continue;
-                }
-
-                const tx = trainFold.map(d => d.x);
-                const txn = normalizeX(tx);
-                const ty = trainFold.map(d => d.y);
-                const vx = valFold.map(d => d.x);
-                const vxn = normalizeX(vx);
-                const vy = valFold.map(d => d.y);
-
-                const coeffs = fitPoly(txn, ty, deg);
-
-                // Training error (on training fold)
-                const trainPred = txn.map(xn => evalPoly(coeffs, xn));
-                trainErrSum += mse(ty, trainPred);
-
-                // CV validation error (on held-out fold)
-                const valPred = vxn.map(xn => evalPoly(coeffs, xn));
-                valErrSum += mse(vy, valPred);
-                count++;
-                valStart = valEnd;
-            }
-        }
-
-        trainErrors.push(trainErrSum / count);
-        valErrors.push(valErrSum / count);
-    }
-
-    // Common sense benchmark: predict the mean → MSE = variance of y
-    const allY = dataPool.map(d => d.y);
-    const yMean = allY.reduce((a, b) => a + b, 0) / allY.length;
-    const benchmarkMSE = allY.reduce((s, y) => s + (y - yMean) ** 2, 0) / allY.length;
-
-    return {sizes, trainErrors, valErrors, benchmarkMSE};
-}
-
-// ============================================================
-// CONTROLS
-// ============================================================
-const degreeSlider = document.getElementById('degree-slider');
-const degreeVal = document.getElementById('degree-val');
-let currentDegree = 3;
-
-degreeSlider.addEventListener('input', () => {
-    currentDegree = parseInt(degreeSlider.value);
-    degreeVal.textContent = currentDegree;
-    updateComplexityBar();
+$("#nRange").max = NGRID.length - 1;
+$("#lam").addEventListener("input", e => { state.lamIdx = +e.target.value; update(); });
+$("#sig").addEventListener("input", e => { state.sigma = +e.target.value; update(); });
+$("#nRange").addEventListener("input", e => { stopPlay(); state.g = +e.target.value; render(); });
+$("#showFits").addEventListener("change", e => { state.showFits = e.target.checked; render(); });
+$("#reseed").addEventListener("click", () => { state.seed++; draws = makeDraws(state.seed); state.pin = null; update(); });
+$("#pin").addEventListener("click", () => {
+  state.pin = { label: `Pinned: degree ${state.deg}` + (state.lamIdx ? `, λ ${LAM_LABELS[state.lamIdx]}` : "") + `, σ ${state.sigma}`,
+    train: sim.train.map(o => o.med), val: sim.val.map(o => o.med) };
+  render();
 });
+$("#unpin").addEventListener("click", () => { state.pin = null; render(); });
 
-// Releasing the slider refits the curves on the same data
-degreeSlider.addEventListener('change', () => computeAndRender(false));
+const PRESETS = {
+  under: { deg: 1, lamIdx: 0, sigma: 2, n: 60 },
+  right: { deg: 3, lamIdx: 0, sigma: 2, n: 60 },
+  over:  { deg: 10, lamIdx: 0, sigma: 2, n: 20 },
+  tamed: { deg: 10, lamIdx: 3, sigma: 2, n: 20 }
+};
+document.querySelectorAll("[data-preset]").forEach(b => b.addEventListener("click", () => {
+  const p = PRESETS[b.dataset.preset];
+  stopPlay();
+  Object.assign(state, { deg: p.deg, lamIdx: p.lamIdx, sigma: p.sigma, g: NGRID.indexOf(p.n) });
+  update();
+  if (b.closest(".case")) $(".bench").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+}));
 
-function updateComplexityBar() {
-    document.querySelectorAll('.cx-step').forEach(el => {
-        const d = parseInt(el.dataset.deg);
-        el.classList.toggle('active', d === currentDegree);
-        if (d < currentDegree) {
-            el.style.background = '#dbeafe'; el.style.borderColor = '#93c5fd';
-        } else if (d === currentDegree) {
-            if (d <= 2) { el.style.background = '#bfdbfe'; el.style.borderColor = '#2563eb'; }
-            else if (d === 3) { el.style.background = '#bbf7d0'; el.style.borderColor = '#059669'; }
-            else { el.style.background = '#fecaca'; el.style.borderColor = '#dc2626'; }
-        } else {
-            el.style.background = '#f8fafc'; el.style.borderColor = '#e2e8f0';
-        }
-    });
+$("#play").addEventListener("click", () => playTimer ? stopPlay() : startPlay());
+function startPlay() {
+  if (state.g >= NGRID.length - 1) state.g = 0;
+  $("#playIcon").innerHTML = '<path d="M3 1.5h3v11H3zM8 1.5h3v11H8z"/>';
+  $("#play").setAttribute("aria-label", "Pause");
+  playTimer = setInterval(() => {
+    if (state.g >= NGRID.length - 1) { stopPlay(); return; }
+    state.g++; render();
+  }, 170);
+  render();
+}
+function stopPlay() {
+  if (!playTimer) return;
+  clearInterval(playTimer); playTimer = 0;
+  $("#playIcon").innerHTML = '<path d="M3 1.5v11l9-5.5z"/>';
+  $("#play").setAttribute("aria-label", "Play: grow the training set");
 }
 
-// ============================================================
-// DIAGNOSIS
-// ============================================================
-function updateDiagnosis(trainErrors, valErrors, benchmarkMSE, deg) {
-    const el = document.getElementById('diagnosis');
-    const finalTrain = trainErrors[trainErrors.length - 1];
-    const finalVal = valErrors[valErrors.length - 1];
-    const gap = finalVal - finalTrain;
-
-    const noise = noiseSd * noiseSd;
-    const peakVal = Math.max(...valErrors);
-    const peakNote = peakVal > finalVal * 2.5
-        ? ` With fewer points, validation error reached ${peakVal.toFixed(1)}.`
-        : '';
-
-    // Judge the right-hand end of the curve, not the degree slider.
-    const nearBenchmark = finalVal > benchmarkMSE * 0.75;
-    const nearNoise = finalVal < noise * 1.75;
-    const bigGap = gap > Math.max(2, 0.35 * Math.max(finalVal, 0.1));
-
-    if (nearBenchmark) {
-        el.style.background = 'linear-gradient(135deg, #dbeafe, #bfdbfe)';
-        el.innerHTML = `
-            <span class="diag-tag" style="background:#2563eb;">High Bias</span>
-            <div class="diag-text">
-                At 100 points, training error is ${finalTrain.toFixed(1)} and validation error is ${finalVal.toFixed(1)}.
-                Both sit near the predict-the-mean benchmark (${benchmarkMSE.toFixed(1)}), and the gap is ${gap.toFixed(1)}.
-                The polynomial is too simple for this curve. More data will not close that gap.
-                <div class="diag-action">Remedy: increase the degree. The data were drawn from a cubic.</div>
-            </div>`;
-    } else if (bigGap) {
-        el.style.background = 'linear-gradient(135deg, #fee2e2, #fecaca)';
-        el.innerHTML = `
-            <span class="diag-tag" style="background:#dc2626;">High Variance</span>
-            <div class="diag-text">
-                Training error (${finalTrain.toFixed(1)}) is well below validation error (${finalVal.toFixed(1)}).
-                The gap is ${gap.toFixed(1)}. The noise floor is ${noise.toFixed(1)}.${peakNote}
-                Extra terms are fitting noise.
-                <div class="diag-action">Remedy: more data, a lower degree, or regularization.</div>
-            </div>`;
-    } else if (nearNoise) {
-        el.style.background = 'linear-gradient(135deg, #dcfce7, #bbf7d0)';
-        el.innerHTML = `
-            <span class="diag-tag" style="background:#059669;">Near the noise floor</span>
-            <div class="diag-text">
-                Training error ${finalTrain.toFixed(1)}, validation error ${finalVal.toFixed(1)}, gap ${gap.toFixed(1)}.
-                Validation error is close to σ² = ${noise.toFixed(1)} and well below the benchmark (${benchmarkMSE.toFixed(1)}).${peakNote}
-                ${deg === 3
-                    ? 'Degree 3 is the function these points were drawn from.'
-                    : deg < 3
-                        ? 'A lower degree can look this good here because the cubic term is small on [−3, 3]. Degree 3 is still the function that generated the data.'
-                        : 'At this sample size the extra terms are not hurting. Their cost shows up on the left of the curve, where the sample is small.'}
-                <div class="diag-action">Read the gap at the right edge, and the height of the curve at the left.</div>
-            </div>`;
-    } else {
-        el.style.background = 'linear-gradient(135deg, #fef9c3, #fde68a)';
-        el.innerHTML = `
-            <span class="diag-tag" style="background:#b45309;">Some bias left</span>
-            <div class="diag-text">
-                Training error ${finalTrain.toFixed(1)}, validation error ${finalVal.toFixed(1)}, gap ${gap.toFixed(1)}.
-                That is below the benchmark (${benchmarkMSE.toFixed(1)}) and still above the noise floor (${noise.toFixed(1)}).${peakNote}
-                <div class="diag-action">A higher degree can still pick up structure. Degree 3 matches the cubic these points came from.</div>
-            </div>`;
-    }
+function update() {
+  cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(() => { sim = simulate(draws, state.deg, LAMS[state.lamIdx], state.sigma); render(); });
 }
 
-// ============================================================
-// RENDER CHARTS
-// ============================================================
-function renderLearningCurve(sizes, trainErrors, valErrors, benchmarkMSE) {
-    const traces = [
-        {
-            x: sizes, y: trainErrors,
-            mode: 'lines+markers', name: 'Training Error',
-            line: {color: '#2563eb', width: 3},
-            marker: {size: 5},
-            fill: 'tonexty',
-            fillcolor: 'rgba(37,99,235,0.0)' // invisible fill, we add the gap fill next
-        },
-        {
-            x: sizes, y: valErrors,
-            mode: 'lines+markers', name: 'CV Score (Validation)',
-            line: {color: '#059669', width: 3},
-            marker: {size: 5}
-        },
-        // Common sense benchmark: predict the mean
-        {
-            x: [sizes[0], sizes[sizes.length - 1]],
-            y: [benchmarkMSE, benchmarkMSE],
-            mode: 'lines', name: 'Benchmark (Predict ȳ)',
-            line: {color: '#dc2626', width: 2, dash: 'dash'}
-        },
-        // Irreducible error floor
-        {
-            x: [sizes[0], sizes[sizes.length - 1]],
-            y: [noiseSd * noiseSd, noiseSd * noiseSd],
-            mode: 'lines', name: 'Irreducible Error (σ²)',
-            line: {color: '#f59e0b', width: 2, dash: 'dot'}
-        }
-    ];
+// ---------- Drawing helpers ----------
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function rgba(hex, a) {
+  const h = hex.replace("#", ""); const v = parseInt(h.length === 3 ? h.split("").map(c => c + c).join("") : h, 16);
+  return `rgba(${(v >> 16) & 255},${(v >> 8) & 255},${v & 255},${a})`;
+}
+function prep(cv) {
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const ctx = cv.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+  return { ctx, w, h };
+}
+function niceStep(range, target) {
+  const raw = range / target, mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag;
+  return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * mag;
+}
+const fmt = v => !isFinite(v) ? "–" : Math.abs(v) >= 1000 ? v.toExponential(1) : v >= 100 ? v.toFixed(0) : v.toFixed(2);
 
-    // Gap shading between curves
-    const gapX = [...sizes, ...sizes.slice().reverse()];
-    const gapY = [...valErrors, ...trainErrors.slice().reverse()];
-    traces.splice(0, 0, {
-        x: gapX, y: gapY,
-        fill: 'toself',
-        fillcolor: 'rgba(239,68,68,0.1)',
-        line: {color: 'transparent'},
-        name: 'Gap (Variance indicator)',
-        showlegend: true,
-        hoverinfo: 'skip'
-    });
-
-    // Annotation for the gap at the end
-    const lastIdx = sizes.length - 1;
-    const gapVal = valErrors[lastIdx] - trainErrors[lastIdx];
-
-    // Dynamic cap: 85th percentile of all error values
-    const allErrors = [...trainErrors, ...valErrors].sort((a, b) => a - b);
-    const p85 = allErrors[Math.floor(allErrors.length * 0.85)];
-    const yMax = Math.max(p85 * 1.15, benchmarkMSE * 1.3); // at least 1.3x benchmark
-
-    const annotations = [{
-        x: sizes[lastIdx], y: (valErrors[lastIdx] + trainErrors[lastIdx]) / 2,
-        text: `Gap: ${gapVal.toFixed(1)}`,
-        showarrow: true, arrowhead: 0, ax: 40, ay: 0,
-        font: {size: 11, color: '#dc2626', weight: 'bold'},
-        bgcolor: 'rgba(255,255,255,0.8)', bordercolor: '#dc2626', borderwidth: 1
-    }];
-
-    Plotly.react('chart-lc', traces, {
-        margin: {t: 10, r: 30, b: 50, l: 60},
-        xaxis: {title: 'Sample size (about four fifths are used to fit)', gridcolor: '#f1f5f9', range: [0, 110]},
-        yaxis: {title: 'Mean Squared Error', range: [0, yMax], gridcolor: '#f1f5f9'},
-        legend: {x: 0.5, y: 0.99, bgcolor: 'rgba(255,255,255,0.9)', font: {size: 10}},
-        plot_bgcolor: 'white', paper_bgcolor: 'white',
-        annotations: annotations,
-        hovermode: 'x unified'
-    }, {responsive: true, displayModeBar: false});
+function axes(ctx, m, w, h, xt, yt, sx, sy, xl, yl, C) {
+  ctx.font = `11px ${css("--f-mono")}`; ctx.fillStyle = C.muted; ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  yt.forEach(v => { const y = Math.round(sy(v)) + .5; ctx.beginPath(); ctx.moveTo(m.l, y); ctx.lineTo(w - m.r, y); ctx.stroke(); ctx.fillText(v.label ?? v, m.l - 8, y); });
+  ctx.textAlign = "center"; ctx.textBaseline = "top";
+  xt.forEach(v => { const x = Math.round(sx(v)) + .5; ctx.beginPath(); ctx.moveTo(x, m.t); ctx.lineTo(x, h - m.b); ctx.stroke(); ctx.fillText(v, x, h - m.b + 7); });
+  ctx.strokeStyle = C.line; ctx.beginPath(); ctx.moveTo(m.l + .5, m.t); ctx.lineTo(m.l + .5, h - m.b + .5); ctx.lineTo(w - m.r, h - m.b + .5); ctx.stroke();
+  ctx.font = `12px ${css("--f-body")}`; ctx.fillStyle = C.muted;
+  ctx.fillText(xl, m.l + (w - m.l - m.r) / 2, h - 18);
+  ctx.save(); ctx.translate(14, m.t + (h - m.t - m.b) / 2); ctx.rotate(-Math.PI / 2); ctx.textBaseline = "middle"; ctx.fillText(yl, 0, 0); ctx.restore();
+}
+function colors() {
+  return { ink: css("--ink"), muted: css("--muted"), line: css("--line"), grid: css("--grid"), surface: css("--surface"),
+    train: css("--train"), val: css("--val"), truth: css("--truth") };
 }
 
-function renderFitChart(deg) {
-    // Simulate one 5-fold CV split: train on 4 folds, highlight 1 validation fold
-    const K = 5;
-    const shuffled = [...dataPool].sort(() => Math.random() - 0.5);
-    const foldSize = Math.floor(shuffled.length / K);
-    const valFold = shuffled.slice(0, foldSize);
-    const trainFold = shuffled.slice(foldSize);
+// ---------- Learning curve ----------
+let lcMap = null;
+function drawLearning() {
+  const cv = $("#lc"), { ctx, w, h } = prep(cv), C = colors();
+  const m = { l: 52, r: 16, t: 14, b: 44 };
+  const s2 = state.sigma * state.sigma;
+  const yRaw = (s2 + VAR_F) * 1.55, ys = niceStep(yRaw, 5), Y1 = Math.ceil(yRaw / ys) * ys;
+  const X1 = 150;
+  const sx = v => m.l + v / X1 * (w - m.l - m.r), sy = v => h - m.b - v / Y1 * (h - m.t - m.b);
+  lcMap = { m, w, X1 };
+  const yt = []; for (let v = 0; v <= Y1 + 1e-9; v += ys) yt.push(+v.toFixed(6));
+  axes(ctx, m, w, h, [0, 25, 50, 75, 100, 125, 150], yt, sx, sy, "Training set size n", "Mean squared error", C);
 
-    const tx = trainFold.map(d => d.x);
-    const txn = normalizeX(tx);
-    const ty = trainFold.map(d => d.y);
-    const coeffs = fitPoly(txn, ty, deg);
+  ctx.save(); ctx.beginPath(); ctx.rect(m.l, m.t - 2, w - m.l - m.r, h - m.t - m.b + 2); ctx.clip();
+  const band = (ser, col) => {
+    ctx.beginPath();
+    ser.forEach((o, i) => { const x = sx(NGRID[i]), y = sy(Math.min(o.hi, Y1 * 3)); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    for (let i = ser.length - 1; i >= 0; i--) ctx.lineTo(sx(NGRID[i]), sy(Math.min(ser[i].lo, Y1 * 3)));
+    ctx.closePath(); ctx.fillStyle = rgba(col, .13); ctx.fill();
+  };
+  const line = (vals, col, width, dash) => {
+    ctx.beginPath(); ctx.setLineDash(dash || []); ctx.lineWidth = width; ctx.strokeStyle = col; ctx.lineJoin = "round";
+    vals.forEach((v, i) => { const x = sx(NGRID[i]), y = sy(Math.min(v, Y1 * 3)); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    ctx.stroke(); ctx.setLineDash([]);
+  };
+  band(sim.train, C.train); band(sim.val, C.val);
+  // noise floor
+  ctx.setLineDash([6, 5]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(m.l, sy(s2)); ctx.lineTo(w - m.r, sy(s2)); ctx.stroke(); ctx.setLineDash([]);
+  if (state.pin) { line(state.pin.train, rgba(C.train, .6), 1.6, [3, 4]); line(state.pin.val, rgba(C.val, .6), 1.6, [3, 4]); }
+  line(sim.train.map(o => o.med), C.train, 2.6);
+  line(sim.val.map(o => o.med), C.val, 2.6);
+  ctx.restore();
 
-    // Keep every point in view: the cubic dips to about -6.5 at x = -3 and the noise reaches lower
-    const allY = dataPool.map(d => d.y);
-    const yRange = [Math.min(-8, Math.floor(Math.min(...allY)) - 1), Math.max(18, Math.ceil(Math.max(...allY)) + 1)];
+  const tag = (txt, x, y, align, col, font) => {
+    ctx.font = font; const tw = ctx.measureText(txt).width, x0 = align === "right" ? x - tw : x;
+    ctx.fillStyle = rgba(C.surface, .88); ctx.fillRect(x0 - 4, y - 8, tw + 8, 16);
+    ctx.fillStyle = col; ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(txt, x0, y);
+  };
+  tag(`noise floor σ² = ${s2.toFixed(2)}`, w - m.r - 6, sy(s2) + 12, "right", C.muted, `11px ${css("--f-mono")}`);
 
-    // Smooth prediction curve
-    const plotX = [];
-    for (let i = 0; i < 100; i++) plotX.push(X_MIN + (X_MAX - X_MIN) * i / 99);
-    const plotXN = normalizeX(plotX);
-    const plotYPred = plotXN.map(xn => evalPoly(coeffs, xn));
-    const plotYTrue = plotX.map(trueF);
+  // cursor at current n
+  const n = NGRID[state.g], cx = sx(n), tr = sim.train[state.g].med, va = sim.val[state.g].med;
+  ctx.strokeStyle = rgba(C.ink, .35); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(Math.round(cx) + .5, m.t); ctx.lineTo(Math.round(cx) + .5, h - m.b); ctx.stroke();
+  const yTr = sy(Math.min(tr, Y1)), yVa = sy(Math.min(va, Y1)), clipped = va > Y1;
+  const right = cx < w - m.r - 90, bx = right ? cx + 12 : cx - 12;
+  ctx.strokeStyle = C.ink; ctx.lineWidth = 1.2; ctx.beginPath();
+  ctx.moveTo(bx, yVa); ctx.lineTo(bx, yTr); ctx.moveTo(bx - 4, yVa); ctx.lineTo(bx + 4, yVa); ctx.moveTo(bx - 4, yTr); ctx.lineTo(bx + 4, yTr); ctx.stroke();
+  if (yTr - yVa > 14) tag(`gap ${fmt(va - tr)}`, bx + (right ? 8 : -8), (yTr + yVa) / 2, right ? "left" : "right", C.ink, `600 11.5px ${css("--f-mono")}`);
+  [[yTr, C.train], [yVa, C.val]].forEach(([y, c]) => { ctx.beginPath(); ctx.arc(cx, y, 4.5, 0, 7); ctx.fillStyle = c; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = C.surface; ctx.stroke(); });
+  if (clipped) { ctx.fillStyle = C.val; ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.font = `600 11px ${css("--f-mono")}`; ctx.fillText(`▲ ${fmt(va)}`, cx, m.t + 8); }
+}
+function nFromPointer(e) {
+  if (!lcMap) return;
+  const r = $("#lc").getBoundingClientRect(), { m, w, X1 } = lcMap;
+  const v = (e.clientX - r.left - m.l) / (w - m.l - m.r) * X1;
+  let best = 0; NGRID.forEach((n, i) => { if (Math.abs(n - v) < Math.abs(NGRID[best] - v)) best = i; });
+  if (best !== state.g) { state.g = best; render(); }
+}
+let dragging = false;
+$("#lc").addEventListener("pointerdown", e => { dragging = true; stopPlay(); $("#lc").setPointerCapture(e.pointerId); nFromPointer(e); });
+$("#lc").addEventListener("pointermove", e => { if (dragging) nFromPointer(e); });
+["pointerup", "pointercancel"].forEach(t => $("#lc").addEventListener(t, () => dragging = false));
 
-    const traces = [
-        {
-            x: tx, y: ty,
-            mode: 'markers', name: `Training Fold (${trainFold.length})`,
-            marker: {size: 5, color: '#94a3b8', opacity: 0.5}
-        },
-        {
-            x: valFold.map(d => d.x), y: valFold.map(d => d.y),
-            mode: 'markers', name: `Validation Fold (${valFold.length})`,
-            marker: {size: 8, color: '#059669', symbol: 'diamond', opacity: 0.8,
-                     line: {color: 'white', width: 1}}
-        },
-        {
-            x: plotX, y: plotYTrue,
-            mode: 'lines', name: 'True Function',
-            line: {color: '#000', width: 2.5, dash: 'dash'}
-        },
-        {
-            x: plotX, y: plotYPred,
-            mode: 'lines', name: `Fitted (degree ${deg})`,
-            line: {color: '#667eea', width: 3}
-        }
-    ];
+// ---------- Fit plot ----------
+function drawFit() {
+  const cv = $("#fit"), { ctx, w, h } = prep(cv), C = colors();
+  const m = { l: 44, r: 14, t: 14, b: 44 }, sig = state.sigma;
+  const Y0 = Math.floor(-6.45 - 2 * sig - .5), Y1 = Math.ceil(3.45 + 2 * sig + .5);
+  const sx = v => m.l + (v + 3) / 6 * (w - m.l - m.r), sy = v => h - m.b - (v - Y0) / (Y1 - Y0) * (h - m.t - m.b);
+  const st = niceStep(Y1 - Y0, 5), yt = []; for (let v = Math.ceil(Y0 / st) * st; v <= Y1; v += st) yt.push(+v.toFixed(6));
+  axes(ctx, m, w, h, [-3, -2, -1, 0, 1, 2, 3], yt, sx, sy, "x", "y", C);
 
-    Plotly.react('chart-fit', traces, {
-        margin: {t: 10, r: 20, b: 50, l: 50},
-        xaxis: {title: 'x', range: [X_MIN - 0.3, X_MAX + 0.3], gridcolor: '#f1f5f9'},
-        yaxis: {title: 'y', range: yRange, gridcolor: '#f1f5f9'},
-        legend: {x: 0.01, y: 0.99, bgcolor: 'rgba(255,255,255,0.9)', font: {size: 10}},
-        plot_bgcolor: 'white', paper_bgcolor: 'white'
-    }, {responsive: true, displayModeBar: false});
+  const g = state.g, cs = sim.coefs[g], K = 140, xsP = Array.from({ length: K }, (_, i) => -3 + 6 * i / (K - 1));
+  const curve = (fn, col, width, dash) => {
+    ctx.beginPath(); ctx.setLineDash(dash || []); ctx.strokeStyle = col; ctx.lineWidth = width; ctx.lineJoin = "round";
+    xsP.forEach((x, i) => { const y = sy(Math.max(Y0 - 50, Math.min(Y1 + 50, fn(x)))); i ? ctx.lineTo(sx(x), y) : ctx.moveTo(sx(x), y); });
+    ctx.stroke(); ctx.setLineDash([]);
+  };
+  ctx.save(); ctx.beginPath(); ctx.rect(m.l, m.t, w - m.l - m.r, h - m.t - m.b); ctx.clip();
+  if (state.showFits) for (let r = 1; r <= NFAINT; r++) curve(x => predict(cs[r], x), rgba(C.train, .2), 1.2);
+  curve(TRUE_F, C.truth, 2.2, [7, 5]);
+  if (state.showFits) curve(x => { let s = 0; for (const c of cs) s += predict(c, x); return s / cs.length; }, C.train, 3);
+  else curve(x => predict(cs[0], x), C.train, 3);
+  const px = draws.xs[g][0], pz = draws.zs[g][0];
+  for (let i = 0; i < px.length; i++) {
+    ctx.beginPath(); ctx.arc(sx(px[i]), sy(TRUE_F(px[i]) + sig * pz[i]), 3.6, 0, 7);
+    ctx.fillStyle = C.ink; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = C.surface; ctx.stroke();
+  }
+  ctx.restore();
 }
 
-// ============================================================
-// MAIN — GENERATE & ANIMATE
-// ============================================================
-document.getElementById('btn-compute').addEventListener('click', () => computeAndRender(true));
+// ---------- Readouts and diagnosis ----------
+function renderText() {
+  const d = diagnose(sim, state.g, state.sigma), n = NGRID[state.g];
+  $("#nOut").textContent = n; $("#nOut2").textContent = n; $("#nRange").value = state.g;
+  $("#rTr").textContent = fmt(d.tr); $("#rVa").textContent = fmt(d.va); $("#rGap").textContent = fmt(d.gap); $("#rFl").textContent = d.s2.toFixed(2);
+  $("#lamOut").textContent = LAM_LABELS[state.lamIdx]; $("#lam").value = state.lamIdx;
+  $("#sigOut").textContent = state.sigma.toFixed(2).replace(/0$/, ""); $("#sig").value = state.sigma; $("#floorOut").textContent = d.s2.toFixed(2);
+  for (let k = 0; k <= 10; k++) $("#deg" + k).setAttribute("aria-pressed", k === state.deg);
+  $("#degname").innerHTML = `<b>Degree ${state.deg}</b> · ${NAMES[state.deg]}` + (state.deg === 3 ? " · the shape that generated the data" : "") + ` · ${state.deg + 1} coefficients`;
+  $("#pinLegend").hidden = !state.pin; $("#unpin").disabled = !state.pin; if (state.pin) $("#pinName").textContent = state.pin.label;
+  $("#faintLegend").hidden = !state.showFits;
 
-let renderRun = 0; // a newer run (e.g. the slider moved mid-animation) takes over from an older one
+  const pill = $("#pill"); let cls, title, text;
+  if (d.biasHigh && d.varHigh) { cls = "both"; title = "High bias and high variance"; text = `The curves end well above the floor and still disagree at n = ${n}. The model is both too rigid and too data hungry.`; }
+  else if (d.biasHigh) { cls = "bias"; title = "High bias · underfitting"; text = `Even with lots of data the error settles about ${fmt(d.biasSq)} above the noise floor. The model is too simple for this shape. Try a higher degree or a smaller λ.`; }
+  else if (d.varHigh) { cls = "var"; title = "High variance · overfitting"; text = `Training error is ${fmt(d.tr)} but validation error is ${fmt(d.va)}. The model is memorising these ${n} points. Collect more data, lower the degree, or raise λ.`; }
+  else { cls = "good"; title = "Good fit"; text = `Both errors sit close to the noise floor of ${d.s2.toFixed(2)}. This is about as well as any model can do here.`; }
+  pill.className = "pill " + cls; pill.textContent = title; $("#dText").textContent = text;
 
-async function computeAndRender(newData) {
-    const run = ++renderRun;
-    const deg = currentDegree; // one degree for the curves, the fit chart and the diagnosis
-    const btn = document.getElementById('btn-compute');
-    btn.disabled = true;
-    btn.textContent = 'Computing...';
-
-    if (newData) generatePool();
-
-    // Small delay to let UI update
-    await new Promise(r => setTimeout(r, 50));
-    if (run !== renderRun) return;
-
-    const {sizes, trainErrors, valErrors, benchmarkMSE} = computeLearningCurve(deg);
-
-    // Animate the curves building up (new data only; a degree change redraws in place)
-    for (let i = 3; newData && i <= sizes.length; i++) {
-        const partialSizes = sizes.slice(0, i);
-        const partialTrain = trainErrors.slice(0, i);
-        const partialVal = valErrors.slice(0, i);
-        renderLearningCurve(partialSizes, partialTrain, partialVal, benchmarkMSE);
-        if (i < sizes.length && i % 3 === 0) await new Promise(r => setTimeout(r, 30));
-        if (run !== renderRun) return;
-    }
-
-    renderLearningCurve(sizes, trainErrors, valErrors, benchmarkMSE);
-    renderFitChart(deg);
-    updateDiagnosis(trainErrors, valErrors, benchmarkMSE, deg);
-
-    btn.disabled = false;
-    btn.textContent = 'Generate Learning Curves';
+  let more;
+  if (d.isLast) more = `<b>More data?</b> This is the largest training set in the demo. Validation error has settled at ${fmt(d.va)}.`;
+  else if (d.drop > 0.25 * d.s2) more = `<b>More data?</b> Yes. Validation error is still falling and drops to about ${fmt(d.vaEnd)} by n = 150.`;
+  else if (d.biasHigh) more = `<b>More data?</b> No. Both curves have flattened. More data cannot fix a model that is too simple.`;
+  else more = `<b>More data?</b> Not much. Going to n = 150 would only lower validation error to about ${fmt(d.vaEnd)}.`;
+  $("#dMore").innerHTML = more;
 }
 
-// ============================================================
-// INIT
-// ============================================================
-updateComplexityBar();
-generatePool();
+function render() { if (!sim) return; renderText(); drawLearning(); drawFit(); }
 
-// Auto-run on load
-computeAndRender(true);
+new ResizeObserver(() => render()).observe($(".bench"));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+if (document.fonts) document.fonts.ready.then(render);
+update();
 </script>
 
 <!-- Cloudflare Web Analytics -->
