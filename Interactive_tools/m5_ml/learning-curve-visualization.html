@@ -53,7 +53,7 @@ h1{font-family:var(--f-display); font-weight:700; font-size:clamp(30px, 5vw, 46p
 .ctl{display:flex; flex-direction:column; gap:8px; min-width:0}
 .ctl-label{display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
 .ctl-label output{font-family:var(--f-mono); font-size:13px; text-transform:none; letter-spacing:0; color:var(--ink); font-weight:600}
-.degrees{display:grid; grid-template-columns:repeat(11, minmax(0,1fr)); gap:4px}
+.degrees{display:grid; grid-template-columns:repeat(13, minmax(0,1fr)); gap:4px}
 .degrees button{font-family:var(--f-mono); font-size:14px; padding:8px 0; border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:6px; cursor:pointer; position:relative}
 .degrees button:hover{border-color:var(--muted)}
 .degrees button[aria-pressed="true"]{background:var(--ink); color:var(--surface); border-color:var(--ink)}
@@ -62,6 +62,13 @@ h1{font-family:var(--f-display); font-weight:700; font-size:clamp(30px, 5vw, 46p
 .degname b{color:var(--ink); font-weight:600}
 input[type=range]{width:100%; accent-color:var(--train); margin:4px 0}
 .hint{font-size:12.5px; color:var(--muted)}
+.mode{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; padding-bottom:14px; border-bottom:1px solid var(--line)}
+.seg{display:inline-flex; gap:2px; padding:3px; border:1px solid var(--line); border-radius:9px; background:var(--bg)}
+.seg button{font:600 13px var(--f-body); border:0; background:transparent; color:var(--muted); padding:6px 14px; border-radius:6px; cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); outline:1px solid var(--line)}
+.mode .hint{flex:1 1 280px; min-width:0}
+input[type=range]:disabled{opacity:.4}
+.sw.dot2{border-top-style:dotted; border-top-width:2px}
 .row-actions{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding-top:14px; border-top:1px solid var(--line)}
 .row-actions .lbl{font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin-right:4px}
 .chip{font:500 13px var(--f-body); padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer}
@@ -134,7 +141,7 @@ footer{font-size:12.5px; color:var(--muted); max-width:90ch}
 }
 @media (max-width: 560px){
   .controls{grid-template-columns:1fr}
-  .degrees{grid-template-columns:repeat(6, minmax(0,1fr))}
+  .degrees{grid-template-columns:repeat(7, minmax(0,1fr))}
   .keys{grid-template-columns:1fr}
   .read .v{font-size:20px}
   .spacer{display:none}
@@ -156,6 +163,13 @@ footer{font-size:12.5px; color:var(--muted); max-width:90ch}
   </header>
 
   <section class="panel controls" aria-label="Model settings">
+    <div class="mode">
+      <div class="seg" role="group" aria-label="View">
+        <button id="mExp" aria-pressed="true">Experiment</button>
+        <button id="mTh" aria-pressed="false">Theory view</button>
+      </div>
+      <span class="hint" id="modeHint"></span>
+    </div>
     <div class="ctl">
       <div class="ctl-label"><span>Model complexity · polynomial degree</span></div>
       <div class="degrees" id="degrees"></div>
@@ -191,12 +205,13 @@ footer{font-size:12.5px; color:var(--muted); max-width:90ch}
 
   <section class="bench">
     <div class="panel inst">
-      <h2>Error vs training set size <small>median of 40 random training sets</small></h2>
+      <h2>Error vs training set size <small id="lcSub">median of 40 random training sets</small></h2>
       <div class="legend">
         <span class="c-train"><i class="sw"></i>Training error</span>
         <span class="c-val"><i class="sw"></i>Validation error</span>
         <span class="c-bench"><i class="sw"></i>Benchmark: predict the average</span>
         <span class="c-muted"><i class="sw dash"></i>Noise floor σ²</span>
+        <span class="c-muted" id="thLegend" hidden><i class="sw dot2"></i>Theory formula</span>
         <span class="c-muted" id="pinLegend" hidden><i class="sw dash" style="opacity:.7"></i><span id="pinName"></span></span>
       </div>
       <div class="plot"><canvas id="lc" aria-label="Learning curve chart. Drag to change the training set size."></canvas></div>
@@ -211,14 +226,14 @@ footer{font-size:12.5px; color:var(--muted); max-width:90ch}
       <h2><span>What the model learns at n = <span id="nOut2">30</span></span></h2>
       <div class="legend">
         <span class="c-train"><i class="sw dot"></i>Training points</span>
-        <span class="c-val"><i class="sw dot"></i>Validation points <span class="c-muted" id="valCount"></span></span>
+        <span class="c-val" id="valLegend"><i class="sw dot"></i>Validation points <span class="c-muted" id="valCount"></span></span>
         <span class="c-ink"><i class="sw"></i><span id="fitName">Average fit</span></span>
         <span class="c-ink" id="faintLegend"><i class="sw faint"></i>Fits on 24 other samples</span>
         <span class="c-truth"><i class="sw dash"></i>True function</span>
       </div>
       <div class="plot"><canvas id="fit" aria-label="Fitted models at the chosen training set size"></canvas></div>
       <label class="toggle"><input type="checkbox" id="showFits" checked> Show fits from other random samples</label>
-      <p class="caption">Blue points train the model; orange points are held out to score it. Spread of the faint lines is <b>variance</b>. Distance between the average fit and the dashed truth is <b>bias</b>.</p>
+      <p class="caption"><span id="capLead">Blue points train the model; orange points are held out to score it.</span> Spread of the faint lines is <b>variance</b>. Distance between the average fit and the dashed truth is <b>bias</b>.</p>
     </div>
   </section>
 
@@ -281,14 +296,14 @@ footer{font-size:12.5px; color:var(--muted); max-width:90ch}
       <p>On average, validation error can approach σ² but not go below it, because no model can predict the random noise. A small validation set gives a noisy score that can dip under the floor by luck. Raise the validation size and the orange curve steadies. Drop σ to 0.5 and the floor falls, so even the small cubic term suddenly matters and degree 2 starts to look biased.</p></div>
   </section>
 
-  <footer>Data: y = 0.15x³ − 0.5x² + 0.3x + 3 + ε, with x uniform on [−3, 3] and ε ~ N(0, σ²). Degree 3 is the shape that generated the data (green dot on the selector). Each point on the learning curve is the median over 40 independent training sets of size n; the shaded bands show the 10th to 90th percentile. The red benchmark always predicts the average of the training y values and is scored on the same validation sets. Each training set gets its own fresh validation set, sized as a percentage of n (30% by default), so small n also means a small, noisy validation score. Switching degree, λ, σ, or validation size reuses the same random draws, so comparisons are fair.</footer>
+  <footer>Data: y = 0.15x³ − 0.5x² + 0.3x + 3 + ε, with x uniform on [−3, 3] and ε ~ N(0, σ²). Degree 3 is the shape that generated the data (green dot on the selector). Each point on the learning curve is the median over 40 independent training sets of size n; the shaded bands show the 10th to 90th percentile. The red benchmark always predicts the average of the training y values and is scored on the same validation sets. Each training set gets its own fresh validation set, sized as a percentage of n (30% by default), so small n also means a small, noisy validation score. Switching degree, λ, σ, or validation size reuses the same random draws, so comparisons are fair. <b>Theory view</b> starts at σ = 1, uses 600 training sets per point, and scores each fit with its exact expected error over all x instead of a validation sample. Its dotted lines are the textbook formulas: training ≈ (σ² + b²)(1 − p/n) and validation ≈ (σ² + b²)(1 + p/(n − p − 1)), where p is the number of coefficients and b² is the bias of the best possible fit of that degree. They hold for λ = 0 and start once n &gt; p + 1.</footer>
 </div>
 
 <script>
 // ---------- Simulation core ----------
 const TRUE_F = x => 0.15 * x * x * x - 0.5 * x * x + 0.3 * x + 3;
 const NGRID = [2,3,4,5,6,7,8,9,10,11,12,14,16,18,20,23,26,30,34,38,42,46,50,55,60,66,72,80,88,96,105,115,125,137,150];
-const REPS = 40, MAXDEG = 10;
+const REPS = 40, MAXDEG = 12, TREPS = 600, TKEEP = 25;
 const valSize = (n, pct) => Math.max(1, Math.round(n * pct / 100));
 const LAMS = [0, 1e-4, 1e-3, 1e-2, 0.1, 1, 10];
 
@@ -410,6 +425,91 @@ const VAR_F = (() => {
   return s2 / N - (s / N) ** 2;
 })();
 
+// ---------- Theory view ----------
+// Truth in the z = x/3 basis, and moments of z ~ U(-1, 1).
+const T_COEF = [3, 0.9, -4.5, 4.05];
+const EZ = m => (m % 2 ? 0 : 1 / (m + 1));
+const MEAN_F = (() => { let s = 0; const N = 4000; for (let i = 0; i < N; i++) s += TRUE_F(-3 + 6 * (i + .5) / N); return s / N; })();
+const EF2 = VAR_F + MEAN_F * MEAN_F;
+// E_z[a(z) b(z)] for two coefficient vectors
+function qform(a, b) { let s = 0; for (let j = 0; j < a.length; j++) for (let k = 0; k < b.length; k++) s += a[j] * b[k] * EZ(j + k); return s; }
+const B2 = {};
+function bias2(deg) {
+  if (B2[deg] !== undefined) return B2[deg];
+  const N = 2001, x = new Float64Array(N), y = new Float64Array(N);
+  for (let i = 0; i < N; i++) { x[i] = -3 + 6 * i / (N - 1); y[i] = TRUE_F(x[i]); }
+  const c = fitPoly(x, y, deg, 0); let s = 0;
+  for (let i = 0; i < N; i++) { const e = y[i] - predict(c, x[i]); s += e * e; }
+  return (B2[deg] = s / N);
+}
+function makeTheoryDraws(seed) {
+  const rng = mulberry32(seed * 104729 + 71), xs = [], zs = [];
+  for (let g = 0; g < NGRID.length; g++) {
+    const n = NGRID[g], rx = [], rz = [];
+    for (let r = 0; r < TREPS; r++) {
+      const x = new Float64Array(n), z = new Float64Array(n);
+      for (let i = 0; i < n; i++) { x[i] = -3 + 6 * rng(); z[i] = gauss(rng); }
+      rx.push(x); rz.push(z);
+    }
+    xs.push(rx); zs.push(rz);
+  }
+  return { xs, zs };
+}
+// Ridge fits are linear in y = f + sigma*z, so fit f and z once per (degree, lambda)
+// and recombine for any sigma: every error below is a quadratic in sigma.
+function prepTheory(dr, deg, lam) {
+  const p = deg + 1, tpad = new Float64Array(Math.max(p, 4)); T_COEF.forEach((v, i) => tpad[i] = v);
+  const G = [];
+  for (let g = 0; g < NGRID.length; g++) {
+    const n = NGRID[g], q = new Float64Array(TREPS * 9), keepF = [], keepZ = [];
+    const avgF = new Float64Array(p), avgZ = new Float64Array(p);
+    for (let r = 0; r < TREPS; r++) {
+      const x = dr.xs[g][r], z = dr.zs[g][r], f = new Float64Array(n);
+      for (let i = 0; i < n; i++) f[i] = TRUE_F(x[i]);
+      const cf = fitPoly(x, f, deg, lam), cz = fitPoly(x, z, deg, lam);
+      let A = 0, B = 0, C = 0, mz = 0;
+      for (let i = 0; i < n; i++) { const rf = f[i] - predict(cf, x[i]), rz = z[i] - predict(cz, x[i]); A += rf * rf; B += rf * rz; C += rz * rz; mz += z[i]; }
+      let mf = 0; for (let i = 0; i < n; i++) mf += f[i];
+      const d = new Float64Array(tpad.length); for (let k = 0; k < d.length; k++) d[k] = (cf[k] || 0) - tpad[k];
+      const o = r * 9;
+      q[o] = A / n; q[o + 1] = B / n; q[o + 2] = C / n;
+      q[o + 3] = qform(d, d); q[o + 4] = qform(d, cz); q[o + 5] = qform(cz, cz);
+      q[o + 6] = mf / n; q[o + 7] = mz / n;
+      for (let k = 0; k < p; k++) { avgF[k] += cf[k] / TREPS; avgZ[k] += cz[k] / TREPS; }
+      if (r < TKEEP) { keepF.push(cf); keepZ.push(cz); }
+    }
+    G.push({ n, q, keepF, keepZ, avgF, avgZ });
+  }
+  return { deg, lam, G };
+}
+function simulateTheory(pre, sigma) {
+  const s2 = sigma * sigma, p = pre.deg + 1, b2 = pre.lam === 0 ? bias2(pre.deg) : null;
+  const out = { train: [], val: [], bench: [], coefs: [], avg: [], theory: { tr: [], va: [] }, firstOk: 0 };
+  const comb = (cf, cz) => { const c = new Float64Array(cf.length); for (let k = 0; k < c.length; k++) c[k] = cf[k] + sigma * cz[k]; return c; };
+  let first = -1;
+  pre.G.forEach((G, g) => {
+    const n = G.n, ok = n > p + 1, trs = new Float64Array(TREPS), vas = new Float64Array(TREPS), bns = new Float64Array(TREPS);
+    for (let r = 0; r < TREPS; r++) {
+      const o = r * 9, q = G.q;
+      trs[r] = q[o] + 2 * sigma * q[o + 1] + s2 * q[o + 2];
+      vas[r] = s2 + q[o + 3] + 2 * sigma * q[o + 4] + s2 * q[o + 5];
+      const yb = q[o + 6] + sigma * q[o + 7];
+      bns[r] = s2 + EF2 - 2 * yb * MEAN_F + yb * yb;
+    }
+    trs.sort(); vas.sort(); bns.sort();
+    const st = a => ({ med: quantile(a, .5), lo: quantile(a, .1), hi: quantile(a, .9) });
+    const nan = { med: NaN, lo: NaN, hi: NaN };
+    out.train.push(ok ? st(trs) : nan); out.val.push(ok ? st(vas) : nan); out.bench.push({ med: quantile(bns, .5) });
+    out.coefs.push(G.keepF.map((cf, i) => comb(cf, G.keepZ[i]))); out.avg.push(comb(G.avgF, G.avgZ));
+    const s = s2 + (b2 ?? 0);
+    out.theory.tr.push(ok && b2 !== null ? s * (1 - p / n) : NaN);
+    out.theory.va.push(ok && b2 !== null ? s * (1 + p / (n - p - 1)) : NaN);
+    if (ok && first < 0) first = g;
+  });
+  out.firstOk = first;
+  return out;
+}
+
 function diagnose(sim, gIdx, sigma) {
   const s2 = sigma * sigma, last = NGRID.length - 1;
   const tr = sim.train[gIdx].med, va = sim.val[gIdx].med, gap = va - tr;
@@ -424,15 +524,16 @@ function diagnose(sim, gIdx, sigma) {
 
 
 const $ = s => document.querySelector(s);
-const NAMES = ["Constant","Linear","Quadratic","Cubic","Quartic","Quintic","Degree 6","Degree 7","Degree 8","Degree 9","Degree 10"];
+const NAMES = ["Constant","Linear","Quadratic","Cubic","Quartic","Quintic","Degree 6","Degree 7","Degree 8","Degree 9","Degree 10","Degree 11","Degree 12"];
 const LAM_LABELS = ["0","0.0001","0.001","0.01","0.1","1","10"];
 const NFAINT = 24;
-const state = { deg: 3, lamIdx: 0, sigma: 2, valPct: 30, seed: 7, g: NGRID.indexOf(30), showFits: true, pin: null };
+const state = { deg: 3, lamIdx: 0, sigma: 2, valPct: 30, seed: 7, g: NGRID.indexOf(30), showFits: true, pin: null, mode: "exp" };
 let draws = makeDraws(state.seed), sim = null, raf = 0, playTimer = 0;
+let thDraws = null, thCache = new Map();
 
 // ---------- UI wiring ----------
 const degWrap = $("#degrees");
-for (let d = 0; d <= 10; d++) {
+for (let d = 0; d <= MAXDEG; d++) {
   const b = document.createElement("button");
   b.textContent = d; b.id = "deg" + d; b.title = NAMES[d] + (d === 3 ? " (true shape)" : "");
   if (d === 3) b.classList.add("true");
@@ -445,22 +546,38 @@ $("#sig").addEventListener("input", e => { state.sigma = +e.target.value; update
 $("#vp").addEventListener("input", e => { state.valPct = +e.target.value; update(); });
 $("#nRange").addEventListener("input", e => { stopPlay(); state.g = +e.target.value; render(); });
 $("#showFits").addEventListener("change", e => { state.showFits = e.target.checked; render(); });
-$("#reseed").addEventListener("click", () => { state.seed++; draws = makeDraws(state.seed); state.pin = null; update(); });
+$("#reseed").addEventListener("click", () => { state.seed++; draws = makeDraws(state.seed); thDraws = null; thCache.clear(); state.pin = null; update(); });
+function setMode(m) {
+  if (m === state.mode) return;
+  stopPlay(); state.mode = m; state.pin = null;
+  state.sigma = m === "theory" ? 1 : 2;
+  update();
+}
+$("#mExp").addEventListener("click", () => setMode("exp"));
+$("#mTh").addEventListener("click", () => setMode("theory"));
 $("#pin").addEventListener("click", () => {
-  state.pin = { label: `Pinned: degree ${state.deg}` + (state.lamIdx ? `, λ ${LAM_LABELS[state.lamIdx]}` : "") + `, σ ${state.sigma}`,
+  state.pin = { label: `Pinned: degree ${state.deg}` + (state.lamIdx ? `, λ ${LAM_LABELS[state.lamIdx]}` : "") + `, σ ${state.sigma}` + (state.mode === "theory" ? " (theory)" : ""),
     train: sim.train.map(o => o.med), val: sim.val.map(o => o.med) };
   render();
 });
 $("#unpin").addEventListener("click", () => { state.pin = null; render(); });
 
 const PRESETS = {
-  under: { deg: 1, lamIdx: 0, sigma: 2, n: 60 },
-  right: { deg: 3, lamIdx: 0, sigma: 2, n: 60 },
-  over:  { deg: 10, lamIdx: 0, sigma: 2, n: 20 },
-  tamed: { deg: 10, lamIdx: 3, sigma: 2, n: 20 }
+  exp: {
+    under: { deg: 1, lamIdx: 0, sigma: 2, n: 60 },
+    right: { deg: 3, lamIdx: 0, sigma: 2, n: 60 },
+    over:  { deg: 10, lamIdx: 0, sigma: 2, n: 20 },
+    tamed: { deg: 10, lamIdx: 3, sigma: 2, n: 20 }
+  },
+  theory: {
+    under: { deg: 1, lamIdx: 0, sigma: 1, n: 60 },
+    right: { deg: 3, lamIdx: 0, sigma: 1, n: 60 },
+    over:  { deg: 12, lamIdx: 0, sigma: 1, n: 30 },
+    tamed: { deg: 12, lamIdx: 3, sigma: 1, n: 30 }
+  }
 };
 document.querySelectorAll("[data-preset]").forEach(b => b.addEventListener("click", () => {
-  const p = PRESETS[b.dataset.preset];
+  const p = PRESETS[state.mode][b.dataset.preset];
   stopPlay();
   Object.assign(state, { deg: p.deg, lamIdx: p.lamIdx, sigma: p.sigma, g: NGRID.indexOf(p.n) });
   update();
@@ -487,7 +604,18 @@ function stopPlay() {
 
 function update() {
   cancelAnimationFrame(raf);
-  raf = requestAnimationFrame(() => { sim = simulate(draws, state.deg, LAMS[state.lamIdx], state.sigma, state.valPct); render(); });
+  raf = requestAnimationFrame(() => {
+    if (state.mode === "theory") {
+      if (!thDraws) thDraws = makeTheoryDraws(state.seed);
+      const key = state.deg + "|" + state.lamIdx;
+      if (!thCache.has(key)) thCache.set(key, prepTheory(thDraws, state.deg, LAMS[state.lamIdx]));
+      sim = simulateTheory(thCache.get(key), state.sigma);
+    } else {
+      sim = simulate(draws, state.deg, LAMS[state.lamIdx], state.sigma, state.valPct);
+      sim.firstOk = 0;
+    }
+    render();
+  });
 }
 
 // ---------- Drawing helpers ----------
@@ -530,7 +658,10 @@ function drawLearning() {
   const cv = $("#lc"), { ctx, w, h } = prep(cv), C = colors();
   const m = { l: 52, r: 16, t: 14, b: 44 };
   const s2 = state.sigma * state.sigma;
-  const yRaw = (s2 + VAR_F) * 1.55, ys = niceStep(yRaw, 5), Y1 = Math.ceil(yRaw / ys) * ys;
+  const th = state.mode === "theory";
+  // Theory view zooms in around the noise floor so the textbook shapes are visible.
+  const yRaw = th ? Math.max(3 * s2, 1.9 * (s2 + (state.lamIdx ? 0 : bias2(state.deg))), 2.2 * s2) : (s2 + VAR_F) * 1.55;
+  const ys = niceStep(yRaw, 5), Y1 = Math.ceil(yRaw / ys) * ys;
   const X1 = 150;
   const sx = v => m.l + v / X1 * (w - m.l - m.r), sy = v => h - m.b - v / Y1 * (h - m.t - m.b);
   lcMap = { m, w, X1 };
@@ -539,14 +670,16 @@ function drawLearning() {
 
   ctx.save(); ctx.beginPath(); ctx.rect(m.l, m.t - 2, w - m.l - m.r, h - m.t - m.b + 2); ctx.clip();
   const band = (ser, col) => {
+    const i0 = ser.findIndex(o => isFinite(o.hi)); if (i0 < 0) return;
     ctx.beginPath();
-    ser.forEach((o, i) => { const x = sx(NGRID[i]), y = sy(Math.min(o.hi, Y1 * 3)); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
-    for (let i = ser.length - 1; i >= 0; i--) ctx.lineTo(sx(NGRID[i]), sy(Math.min(ser[i].lo, Y1 * 3)));
-    ctx.closePath(); ctx.fillStyle = rgba(col, .13); ctx.fill();
+    for (let i = i0; i < ser.length; i++) { const x = sx(NGRID[i]), y = sy(Math.min(ser[i].hi, Y1 * 3)); i > i0 ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    for (let i = ser.length - 1; i >= i0; i--) ctx.lineTo(sx(NGRID[i]), sy(Math.min(ser[i].lo, Y1 * 3)));
+    ctx.closePath(); ctx.fillStyle = rgba(col, th ? .06 : .13); ctx.fill();
   };
   const line = (vals, col, width, dash) => {
     ctx.beginPath(); ctx.setLineDash(dash || []); ctx.lineWidth = width; ctx.strokeStyle = col; ctx.lineJoin = "round";
-    vals.forEach((v, i) => { const x = sx(NGRID[i]), y = sy(Math.min(v, Y1 * 3)); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    let pen = false;
+    vals.forEach((v, i) => { if (!isFinite(v)) { pen = false; return; } const x = sx(NGRID[i]), y = sy(Math.min(v, Y1 * 3)); pen ? ctx.lineTo(x, y) : ctx.moveTo(x, y); pen = true; });
     ctx.stroke(); ctx.setLineDash([]);
   };
   band(sim.train, C.train); band(sim.val, C.val);
@@ -555,6 +688,7 @@ function drawLearning() {
   ctx.beginPath(); ctx.moveTo(m.l, sy(s2)); ctx.lineTo(w - m.r, sy(s2)); ctx.stroke(); ctx.setLineDash([]);
   if (state.pin) { line(state.pin.train, rgba(C.train, .6), 1.6, [3, 4]); line(state.pin.val, rgba(C.val, .6), 1.6, [3, 4]); }
   line(sim.bench.map(o => o.med), C.bench, 2);
+  if (th && sim.theory) { line(sim.theory.tr, C.muted, 1.8, [2, 4]); line(sim.theory.va, C.muted, 1.8, [2, 4]); }
   line(sim.train.map(o => o.med), C.train, 2.6);
   line(sim.val.map(o => o.med), C.val, 2.6);
   ctx.restore();
@@ -566,11 +700,13 @@ function drawLearning() {
   };
   const bEnd = sim.bench[NGRID.length - 1].med;
   if (bEnd < Y1) tag("benchmark", w - m.r - 6, sy(bEnd) - 12, "right", C.bench, `600 11px ${css("--f-mono")}`);
+  else tag(`benchmark ≈ ${fmt(bEnd)}, above this view ▲`, w - m.r - 6, m.t + 10, "right", C.bench, `600 11px ${css("--f-mono")}`);
   tag(`noise floor σ² = ${s2.toFixed(2)}`, w - m.r - 6, sy(s2) + 12, "right", C.muted, `11px ${css("--f-mono")}`);
 
   // cursor at current n
   const n = NGRID[state.g], cx = sx(n), tr = sim.train[state.g].med, va = sim.val[state.g].med;
   ctx.strokeStyle = rgba(C.ink, .35); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(Math.round(cx) + .5, m.t); ctx.lineTo(Math.round(cx) + .5, h - m.b); ctx.stroke();
+  if (!isFinite(va)) { tag(`needs n > ${state.deg + 2}`, cx + 8, h - m.b - 16, "left", C.muted, `600 11px ${css("--f-mono")}`); return; }
   const yTr = sy(Math.min(tr, Y1)), yVa = sy(Math.min(va, Y1)), clipped = va > Y1;
   const right = cx < w - m.r - 90, bx = right ? cx + 12 : cx - 12;
   ctx.strokeStyle = C.ink; ctx.lineWidth = 1.2; ctx.beginPath();
@@ -608,16 +744,18 @@ function drawFit() {
   };
   ctx.save(); ctx.beginPath(); ctx.rect(m.l, m.t, w - m.l - m.r, h - m.t - m.b); ctx.clip();
   // validation points for this training sample: k = valPct% of n, drawn behind the fits
-  const vx = draws.vxs[g][0], vz = draws.vzs[g][0], kv = valSize(NGRID[g], state.valPct);
+  const thv = state.mode === "theory", D = thv ? thDraws : draws;
+  const vx = thv ? [] : draws.vxs[g][0], vz = thv ? [] : draws.vzs[g][0], kv = thv ? 0 : valSize(NGRID[g], state.valPct);
   for (let i = 0; i < kv; i++) {
     ctx.beginPath(); ctx.arc(sx(vx[i]), sy(TRUE_F(vx[i]) + sig * vz[i]), 3.6, 0, 7);
     ctx.fillStyle = rgba(C.val, .85); ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = C.surface; ctx.stroke();
   }
   if (state.showFits) for (let r = 1; r <= NFAINT; r++) curve(x => predict(cs[r], x), rgba(C.ink, .16), 1.2);
   curve(TRUE_F, C.truth, 2.4, [7, 5]);
-  if (state.showFits) curve(x => { let s = 0; for (const c of cs) s += predict(c, x); return s / cs.length; }, C.ink, 3);
+  if (state.showFits && thv) curve(x => predict(sim.avg[g], x), C.ink, 3);
+  else if (state.showFits) curve(x => { let s = 0; for (const c of cs) s += predict(c, x); return s / cs.length; }, C.ink, 3);
   else curve(x => predict(cs[0], x), C.ink, 3);
-  const px = draws.xs[g][0], pz = draws.zs[g][0];
+  const px = D.xs[g][0], pz = D.zs[g][0];
   for (let i = 0; i < px.length; i++) {
     ctx.beginPath(); ctx.arc(sx(px[i]), sy(TRUE_F(px[i]) + sig * pz[i]), 4, 0, 7);
     ctx.fillStyle = C.train; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = C.surface; ctx.stroke();
@@ -627,21 +765,37 @@ function drawFit() {
 
 // ---------- Readouts and diagnosis ----------
 function renderText() {
-  const d = diagnose(sim, state.g, state.sigma), n = NGRID[state.g];
+  const d = diagnose(sim, state.g, state.sigma), n = NGRID[state.g], th = state.mode === "theory";
+  $("#mExp").setAttribute("aria-pressed", !th); $("#mTh").setAttribute("aria-pressed", th);
+  $("#modeHint").textContent = th
+    ? "Theory view: 600 training sets per point, exact validation error, and the textbook formulas as dotted lines. Close to what you would see on average."
+    : "Experiment: 40 training sets per point, each scored on its own held-out sample. What one real study looks like.";
+  $("#lcSub").textContent = th ? "median of 600 training sets · exact validation error" : "median of 40 random training sets";
+  $("#thLegend").hidden = !th || state.lamIdx > 0;
+  $("#valLegend").hidden = th; $("#vp").disabled = th;
+  $("#capLead").textContent = th ? "Blue points train the model. Validation error is computed exactly over every x, the quantity the theory formula describes." : "Blue points train the model; orange points are held out to score it.";
   $("#nOut").textContent = n; $("#nOut2").textContent = n; $("#nRange").value = state.g;
   $("#rTr").textContent = fmt(d.tr); $("#rVa").textContent = fmt(d.va); $("#rGap").textContent = fmt(d.gap); $("#rFl").textContent = d.s2.toFixed(2);
   $("#lamOut").textContent = LAM_LABELS[state.lamIdx]; $("#lam").value = state.lamIdx;
   $("#sigOut").textContent = state.sigma.toFixed(2).replace(/0$/, ""); $("#sig").value = state.sigma; $("#floorOut").textContent = d.s2.toFixed(2);
-  for (let k = 0; k <= 10; k++) $("#deg" + k).setAttribute("aria-pressed", k === state.deg);
+  for (let k = 0; k <= MAXDEG; k++) $("#deg" + k).setAttribute("aria-pressed", k === state.deg);
   $("#degname").innerHTML = `<b>Degree ${state.deg}</b> · ${NAMES[state.deg]}` + (state.deg === 3 ? " · the shape that generated the data" : "") + ` · ${state.deg + 1} coefficients`;
   $("#pinLegend").hidden = !state.pin; $("#unpin").disabled = !state.pin; if (state.pin) $("#pinName").textContent = state.pin.label;
   $("#faintLegend").hidden = !state.showFits;
   const kv = valSize(n, state.valPct);
   $("#vpOut").textContent = state.valPct + "% of n"; $("#vp").value = state.valPct;
-  $("#vpHint").textContent = `At n = ${n}, that is ${kv} fresh point${kv === 1 ? "" : "s"} held out to score the model.`;
+  $("#vpHint").textContent = th ? "Not used in theory view. Validation error is computed exactly." : `At n = ${n}, that is ${kv} fresh point${kv === 1 ? "" : "s"} held out to score the model.`;
   $("#valCount").textContent = `(${kv})`;
-  $("#rVaSub").textContent = `MSE on ${kv} held-out point${kv === 1 ? "" : "s"}`;
   $("#fitName").textContent = state.showFits ? "Average fit" : "Fit on these training points";
+  $("#rVaSub").textContent = th ? "expected MSE over all x" : `MSE on ${kv} held-out point${kv === 1 ? "" : "s"}`;
+  if (!isFinite(d.va)) {
+    const p = state.deg + 1;
+    ["#rTr", "#rVa", "#rGap"].forEach(s => $(s).textContent = "–");
+    const pill = $("#pill"); pill.className = "pill var"; pill.textContent = "Too few points to fit";
+    $("#dText").textContent = `A degree ${state.deg} polynomial has ${p} coefficients. With n = ${n} points it can pass through every one, so training error is zero and validation error explodes. The theory curves start at n = ${p + 2}.`;
+    $("#dMore").innerHTML = ""; $("#dBench").innerHTML = "";
+    return;
+  }
 
   const pill = $("#pill"); let cls, title, text;
   if (d.biasHigh && d.varHigh) { cls = "both"; title = "High bias and high variance"; text = `The curves end well above the floor and still disagree at n = ${n}. The model is both too rigid and too data hungry.`; }
