@@ -83,8 +83,8 @@ input[type=range]{width:100%; accent-color:var(--train); margin:4px 0}
 .sw{width:18px; height:0; border-top:3px solid currentColor; display:inline-block}
 .sw.dash{border-top-style:dashed; border-top-width:2px}
 .sw.faint{opacity:.35; border-top-width:2px}
-.sw.dot{width:8px; height:8px; border:none; border-radius:50%; background:var(--ink)}
-.c-train{color:var(--train)} .c-val{color:var(--val)} .c-truth{color:var(--truth)} .c-muted{color:var(--muted)}
+.sw.dot{width:8px; height:8px; border:none; border-radius:50%; background:currentColor}
+.c-ink{color:var(--ink)} .c-train{color:var(--train)} .c-val{color:var(--val)} .c-truth{color:var(--truth)} .c-muted{color:var(--muted)}
 .scrub{display:flex; align-items:center; gap:12px}
 .scrub label{font-size:13px; color:var(--muted); white-space:nowrap}
 .scrub label output{font-family:var(--f-mono); color:var(--ink); font-weight:600; font-size:14px; display:inline-block; min-width:3ch}
@@ -204,14 +204,15 @@ footer{font-size:12.5px; color:var(--muted); max-width:90ch}
     <div class="panel inst">
       <h2><span>What the model learns at n = <span id="nOut2">30</span></span></h2>
       <div class="legend">
-        <span><i class="sw dot"></i>One training sample</span>
-        <span class="c-train"><i class="sw"></i>Average fit</span>
-        <span class="c-train" id="faintLegend"><i class="sw faint"></i>Fits on 24 other samples</span>
+        <span class="c-train"><i class="sw dot"></i>Training points</span>
+        <span class="c-val"><i class="sw dot"></i>Validation points <span class="c-muted">(100 of 500)</span></span>
+        <span class="c-ink"><i class="sw"></i><span id="fitName">Average fit</span></span>
+        <span class="c-ink" id="faintLegend"><i class="sw faint"></i>Fits on 24 other samples</span>
         <span class="c-truth"><i class="sw dash"></i>True function</span>
       </div>
       <div class="plot"><canvas id="fit" aria-label="Fitted models at the chosen training set size"></canvas></div>
       <label class="toggle"><input type="checkbox" id="showFits" checked> Show fits from other random samples</label>
-      <p class="caption">Spread of the faint lines is <b>variance</b>. Distance between the average fit and the dashed truth is <b>bias</b>.</p>
+      <p class="caption">Blue points train the model; orange points score it. Spread of the faint lines is <b>variance</b>. Distance between the average fit and the dashed truth is <b>bias</b>.</p>
     </div>
   </section>
 
@@ -414,7 +415,7 @@ function diagnose(sim, gIdx, sigma) {
 const $ = s => document.querySelector(s);
 const NAMES = ["Constant","Linear","Quadratic","Cubic","Quartic","Quintic","Degree 6","Degree 7","Degree 8","Degree 9","Degree 10"];
 const LAM_LABELS = ["0","0.0001","0.001","0.01","0.1","1","10"];
-const NFAINT = 24;
+const NFAINT = 24, NVAL_SHOWN = 100;
 const state = { deg: 3, lamIdx: 0, sigma: 2, seed: 7, g: NGRID.indexOf(30), showFits: true, pin: null };
 let draws = makeDraws(state.seed), sim = null, raf = 0, playTimer = 0;
 
@@ -591,14 +592,19 @@ function drawFit() {
     ctx.stroke(); ctx.setLineDash([]);
   };
   ctx.save(); ctx.beginPath(); ctx.rect(m.l, m.t, w - m.l - m.r, h - m.t - m.b); ctx.clip();
-  if (state.showFits) for (let r = 1; r <= NFAINT; r++) curve(x => predict(cs[r], x), rgba(C.train, .2), 1.2);
-  curve(TRUE_F, C.truth, 2.2, [7, 5]);
-  if (state.showFits) curve(x => { let s = 0; for (const c of cs) s += predict(c, x); return s / cs.length; }, C.train, 3);
-  else curve(x => predict(cs[0], x), C.train, 3);
+  // validation points: a fixed 100 of the 500, drawn behind everything
+  ctx.fillStyle = rgba(C.val, .55);
+  for (let i = 0; i < NVAL_SHOWN; i++) {
+    ctx.beginPath(); ctx.arc(sx(draws.vx[i]), sy(TRUE_F(draws.vx[i]) + sig * draws.vz[i]), 2.6, 0, 7); ctx.fill();
+  }
+  if (state.showFits) for (let r = 1; r <= NFAINT; r++) curve(x => predict(cs[r], x), rgba(C.ink, .16), 1.2);
+  curve(TRUE_F, C.truth, 2.4, [7, 5]);
+  if (state.showFits) curve(x => { let s = 0; for (const c of cs) s += predict(c, x); return s / cs.length; }, C.ink, 3);
+  else curve(x => predict(cs[0], x), C.ink, 3);
   const px = draws.xs[g][0], pz = draws.zs[g][0];
   for (let i = 0; i < px.length; i++) {
-    ctx.beginPath(); ctx.arc(sx(px[i]), sy(TRUE_F(px[i]) + sig * pz[i]), 3.6, 0, 7);
-    ctx.fillStyle = C.ink; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = C.surface; ctx.stroke();
+    ctx.beginPath(); ctx.arc(sx(px[i]), sy(TRUE_F(px[i]) + sig * pz[i]), 4, 0, 7);
+    ctx.fillStyle = C.train; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = C.surface; ctx.stroke();
   }
   ctx.restore();
 }
@@ -614,6 +620,7 @@ function renderText() {
   $("#degname").innerHTML = `<b>Degree ${state.deg}</b> · ${NAMES[state.deg]}` + (state.deg === 3 ? " · the shape that generated the data" : "") + ` · ${state.deg + 1} coefficients`;
   $("#pinLegend").hidden = !state.pin; $("#unpin").disabled = !state.pin; if (state.pin) $("#pinName").textContent = state.pin.label;
   $("#faintLegend").hidden = !state.showFits;
+  $("#fitName").textContent = state.showFits ? "Average fit" : "Fit on these training points";
 
   const pill = $("#pill"); let cls, title, text;
   if (d.biasHigh && d.varHigh) { cls = "both"; title = "High bias and high variance"; text = `The curves end well above the floor and still disagree at n = ${n}. The model is both too rigid and too data hungry.`; }
