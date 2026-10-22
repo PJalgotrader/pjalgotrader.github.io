@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="How LightGBM speeds up gradient boosting: exact vs histogram split finding, and GOSS row sampling with top_rate, other_rate and an error concentration control. In your browser, no install.">
+<title>Histogram vs GOSS Splitting Interactive Tool | Dr. Pedram Jahangiry</title>
+<script>
+// Apply a saved light/dark choice before first paint; otherwise follow the device setting.
+try { const t = localStorage.getItem("split-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: same family as the Bagging and Boosting labs. A short primer, then one wide workbench per trick, the comparison table, and key ideas. */
+:root{
+  --bg:#EEF1F5; --surface:#FFFFFF; --ink:#141B26; --muted:#5A6577; --line:#D6DCE5; --grid:#E6EAF0; --band:#F4F6F9; --tile:#F4F6F9;
+  --train:#1E5BC6; --val:#D97A0B; --bench:#C8213B; --truth:#1E8C5A;
+  --kept:#D2541F; --samp:#6A5FD1; --skip:#CDD3DC; --pos:#1E8C5A; --neg:#6A5FD1;
+  --bias-fg:#7A4E00; --bias-bg:#FFF0D2; --var-fg:#A0213B; --var-bg:#FDE3E8; --good-fg:#15623C; --good-bg:#DCF2E5;
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E131B; --surface:#151C27; --ink:#E5EAF1; --muted:#97A3B5; --line:#2A3445; --grid:#1D2532; --band:#19212D; --tile:#1B2330;
+  --train:#70A4FF; --val:#FFA53D; --bench:#FF5C74; --truth:#4CC38A;
+  --kept:#FF7A45; --samp:#9D94FF; --skip:#344055; --pos:#4CC38A; --neg:#9D94FF;
+  --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0E131B; --surface:#151C27; --ink:#E5EAF1; --muted:#97A3B5; --line:#2A3445; --grid:#1D2532; --band:#19212D; --tile:#1B2330;
+  --train:#70A4FF; --val:#FFA53D; --bench:#FF5C74; --truth:#4CC38A;
+  --kept:#FF7A45; --samp:#9D94FF; --skip:#344055; --pos:#4CC38A; --neg:#9D94FF;
+  --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:28px 48px}
+.wrap{max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:20px}
+a{color:var(--train)}
+:focus-visible{outline:2px solid var(--train); outline-offset:2px}
+
+header{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:12px 24px}
+.eyebrow{font-family:var(--f-mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+h1{font-family:var(--f-display); font-weight:700; font-size:clamp(30px, 5vw, 46px); line-height:1.05; margin:6px 0 8px; letter-spacing:-.01em; text-wrap:balance}
+.lede{margin:0; max-width:66ch; color:var(--muted); font-size:16px}
+.lede b{color:var(--ink); font-weight:600}
+.byline{font-size:13px; color:var(--muted); display:flex; gap:6px 14px; flex-wrap:wrap; align-items:center}
+.byline strong{color:var(--ink); font-weight:600}
+.theme-btn{width:34px; height:34px; display:grid; place-items:center; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); cursor:pointer; padding:0}
+.theme-btn:hover{border-color:var(--muted)}
+.theme-btn svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r)}
+.controls{display:grid; grid-template-columns:minmax(0,1.1fr) repeat(3, minmax(0,1fr)); gap:18px 28px; padding:18px 20px}
+.ctl{display:flex; flex-direction:column; gap:8px; min-width:0}
+.ctl-label{display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.ctl-label output{font-family:var(--f-mono); font-size:13px; text-transform:none; letter-spacing:0; color:var(--ink); font-weight:600}
+.depths{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:4px}
+.depths button{font-family:var(--f-mono); font-size:14px; padding:8px 0; border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:6px; cursor:pointer}
+.depths button:hover{border-color:var(--muted)}
+.depths button[aria-pressed="true"]{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+.depname{font-size:13px; color:var(--muted)}
+.depname b{color:var(--ink); font-weight:600}
+input[type=range]{width:100%; accent-color:var(--train); margin:4px 0}
+.hint{font-size:12.5px; color:var(--muted)}
+.mode{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; padding-bottom:14px; border-bottom:1px solid var(--line)}
+.lbl{font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.seg{display:inline-flex; gap:2px; padding:3px; border:1px solid var(--line); border-radius:9px; background:var(--bg); align-self:flex-start; max-width:100%; flex-wrap:wrap}
+.seg button{font:600 13px var(--f-body); border:0; background:transparent; color:var(--muted); padding:6px 12px; border-radius:6px; cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); outline:1px solid var(--line)}
+.mode .hint{flex:1 1 300px; min-width:0}
+.row-actions{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding-top:14px; border-top:1px solid var(--line)}
+.row-actions .lbl{margin-right:4px}
+.chip{font:500 13px var(--f-body); padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer}
+.chip:hover{border-color:var(--muted)}
+.spacer{flex:1}
+.btn{font:600 13px var(--f-body); padding:7px 14px; border-radius:7px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer; display:inline-flex; align-items:center; gap:6px}
+.btn:hover{border-color:var(--muted)}
+.btn svg{width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+
+.bench{display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:20px}
+.inst{padding:16px 18px 14px; display:flex; flex-direction:column; gap:10px; min-width:0}
+.inst h2, .work h2{font-family:var(--f-display); font-weight:500; font-size:19px; margin:0; display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap}
+.inst h2 small, .work h2 small{font-family:var(--f-mono); font-size:12px; color:var(--muted); font-weight:400}
+.plot{position:relative; height:clamp(260px, 30vw, 330px)}
+.plot.short{height:clamp(170px, 18vw, 200px)}
+.plot.tall{height:clamp(300px, 34vw, 360px)}
+.plot canvas{position:absolute; inset:0; width:100%; height:100%; display:block}
+#err{cursor:ew-resize; touch-action:pan-y}
+.legend{display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12.5px; color:var(--muted)}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.sw{width:18px; height:0; border-top:3px solid currentColor; display:inline-block}
+.sw.dash{border-top-style:dashed; border-top-width:2px}
+.sw.dot{width:8px; height:8px; border:none; border-radius:50%; background:currentColor}
+.sw.sq{width:10px; height:10px; border:none; border-radius:2px; background:currentColor}
+.c-ink{color:var(--ink)} .c-train{color:var(--train)} .c-val{color:var(--val)} .c-bench{color:var(--bench)} .c-truth{color:var(--truth)} .c-muted{color:var(--muted)}
+.c-kept{color:var(--kept)} .c-samp{color:var(--samp)} .c-skip{color:var(--skip)} .c-pos{color:var(--pos)} .c-neg{color:var(--neg)}
+.scrub{display:flex; align-items:center; gap:12px}
+.scrub label{font-size:13px; color:var(--muted); white-space:nowrap}
+.scrub label output{font-family:var(--f-mono); color:var(--ink); font-weight:600; font-size:14px; display:inline-block; min-width:3ch}
+.play{width:38px; height:34px; flex:none; border-radius:7px; border:1px solid var(--ink); background:var(--ink); color:var(--surface); cursor:pointer; display:grid; place-items:center}
+.play svg{width:14px; height:14px; fill:currentColor}
+.inst-bar{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 16px}
+.caption{font-size:13px; color:var(--muted); margin:0}
+.nexttree{font-size:13.5px; margin:0; padding:10px 12px; background:var(--tile); border-radius:8px}
+.nexttree b{font-family:var(--f-mono); font-weight:600}
+
+.verdict{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)) minmax(0,2.3fr); align-items:stretch}
+.read{padding:14px 18px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:2px; min-width:0}
+.read .k{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600}
+.read .v{font-family:var(--f-mono); font-size:24px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1.2}
+.read .s{font-size:12px; color:var(--muted)}
+.diag{padding:14px 20px; display:flex; flex-direction:column; gap:6px; min-width:0}
+.pill{align-self:flex-start; font:600 12.5px var(--f-body); letter-spacing:.03em; padding:4px 11px; border-radius:999px}
+.pill.bias{color:var(--bias-fg); background:var(--bias-bg)}
+.pill.var{color:var(--var-fg); background:var(--var-bg)}
+.pill.good{color:var(--good-fg); background:var(--good-bg)}
+.diag p{margin:0; font-size:14px}
+
+.split-head{display:flex; flex-direction:column; gap:4px}
+.split-head h2{font-family:var(--f-display); font-weight:700; font-size:clamp(22px, 3vw, 28px); margin:0; letter-spacing:-.01em}
+.split-head p{margin:0; color:var(--muted); max-width:72ch}
+.workbench{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px}
+.work{padding:16px 18px; display:flex; flex-direction:column; gap:12px; min-width:0}
+.work-ctl{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:6px 12px; align-items:center}
+.work-ctl label{font-size:13px; color:var(--muted); white-space:nowrap}
+.work-ctl output{font-family:var(--f-mono); font-weight:600; min-width:4ch; text-align:right}
+.tiles{display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px}
+.tile{background:var(--tile); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:2px; min-width:0}
+.tile .k{font-size:12.5px; color:var(--muted)}
+.tile .v{font-family:var(--f-mono); font-size:20px; font-weight:600; font-variant-numeric:tabular-nums}
+.tile .v.good{color:var(--good-fg)} .tile .v.bad{color:var(--var-fg)}
+
+.tablewrap{overflow-x:auto}
+table{width:100%; border-collapse:collapse; font-size:14px; min-width:560px}
+th, td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:top}
+thead th{font-size:12px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); font-weight:600}
+tbody th{font-weight:600; white-space:nowrap}
+tbody tr:last-child th, tbody tr:last-child td{border-bottom:none}
+code{font-family:var(--f-mono); font-size:.9em; background:var(--tile); padding:1px 5px; border-radius:4px}
+.codeblock{font-family:var(--f-mono); font-size:13px; background:var(--tile); border-radius:8px; padding:12px 14px; overflow-x:auto; white-space:pre; margin:0}
+
+.keys{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:20px}
+.key{padding:16px 18px}
+.key h3{margin:0 0 4px; font-size:14.5px; font-weight:600}
+.key p{margin:0; color:var(--muted); font-size:14px; max-width:62ch}
+footer{font-size:12.5px; color:var(--muted); max-width:90ch}
+
+@media (max-width: 980px){
+  .controls{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .bench, .workbench{grid-template-columns:1fr}
+  .verdict{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .read:nth-child(2n){border-right:none}
+  .read{border-bottom:1px solid var(--line)}
+  .diag{grid-column:1 / -1}
+}
+@media (max-width: 560px){
+  .controls{grid-template-columns:1fr}
+  .keys{grid-template-columns:1fr}
+  .read .v{font-size:20px}
+  .spacer{display:none}
+}
+.prime{padding:16px 20px}
+.prime h2{font-family:var(--f-display); font-weight:500; font-size:19px; margin:0 0 6px}
+.prime p{margin:0; max-width:80ch}
+.mono{font-family:var(--f-mono); font-size:.92em}
+.work-top{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:10px 16px}
+.work-top h2{margin-top:2px}
+.work .tiles{grid-template-columns:repeat(auto-fit, minmax(170px, 1fr))}
+.work .work-ctl{max-width:720px}
+.explain{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px 24px}
+.explain p{margin:0; font-size:14px; color:var(--muted)}
+.explain b{color:var(--ink)}
+.verdict-line{margin:0; font-size:14px; display:flex; flex-wrap:wrap; align-items:center; gap:8px}
+@media (max-width: 760px){ .explain{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Module 5 · Machine Learning for Time Series Forecasting</div>
+      <h1>Histogram vs GOSS Splitting</h1>
+      <p class="lede">A boosted model builds hundreds of trees, and every tree has to search for its best splits. That search is where the time goes. LightGBM cuts it two ways: <b>histograms</b> test fewer thresholds, and <b>GOSS</b> looks at fewer rows. Turn the knobs and see what each one saves and what it costs.</p>
+    </div>
+    <div class="byline"><strong>Dr. Pedram Jahangiry</strong>
+      <a href="https://pedramjahangiry.com/" target="_blank" rel="noopener">Website</a>
+      <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" rel="noopener">YouTube</a>
+      <a href="https://github.com/pjalgotrader" target="_blank" rel="noopener">GitHub</a>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><svg id="themeIcon" viewBox="0 0 24 24"></svg></button></div>
+  </header>
+
+  <section class="panel prime">
+    <h2>One thing to know first</h2>
+    <p>In gradient boosting each row carries a <b>gradient</b>: how wrong the current model is on that row, and in which direction. For squared error it is just the residual with the sign flipped. A good split puts rows that need pushing up on one side and rows that need pushing down on the other. Its quality, the <b>gain</b>, depends only on the gradient sums in each child: <span class="mono">G<sub>L</sub>²/n<sub>L</sub> + G<sub>R</sub>²/n<sub>R</sub> − G²/n</span>. Both tricks below are clever ways to get those sums cheaply.</p>
+  </section>
+
+  <section class="panel work">
+    <div class="work-top">
+      <div>
+        <div class="eyebrow">Trick 1</div>
+        <h2>Histogram split finding <small>fewer thresholds to test</small></h2>
+      </div>
+      <button class="btn" id="newData"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>New random data</button>
+    </div>
+    <div class="work-ctl">
+      <label for="bins">Bins</label>
+      <input type="range" id="bins" min="2" max="40" step="1" value="8">
+      <output id="binsOut">8</output>
+    </div>
+    <div class="tiles">
+      <div class="tile"><span class="k">Splits to test, exact vs histogram</span><span class="v" id="h1">–</span></div>
+      <div class="tile"><span class="k">Best split, exact vs histogram</span><span class="v" id="h2">–</span></div>
+      <div class="tile"><span class="k">Gain the histogram keeps</span><span class="v" id="h3">–</span></div>
+      <div class="tile"><span class="k">Same feature, 1 million rows</span><span class="v" id="h4">–</span></div>
+    </div>
+    <div class="legend">
+      <span class="c-ink"><i class="sw dash"></i>Best exact split</span>
+      <span class="c-kept"><i class="sw"></i>Best histogram split</span>
+      <span><i class="sw sq c-pos"></i><i class="sw sq c-neg"></i>Gradient sum per bin</span>
+    </div>
+    <div class="plot tall"><canvas id="hv" aria-label="Sixty rows of one feature, every exact candidate threshold, histogram bins with their gradient sums, and the best split under each method"></canvas></div>
+    <div class="explain">
+      <p><b>Exact.</b> Sort the rows by the feature, then try every gap between two neighbors. That is up to n − 1 thresholds per feature, per node, per tree.</p>
+      <p><b>Histogram.</b> Drop each row into a bin once, add up gradients per bin, and try only the bin edges. The bars are those sums. The best edge is usually right next to the best exact split, so almost no gain is lost. Push the bins down to 2 or 3 to see where it breaks.</p>
+    </div>
+  </section>
+
+  <section class="panel work">
+    <div class="work-top">
+      <div>
+        <div class="eyebrow">Trick 2</div>
+        <h2>GOSS: gradient-based one-side sampling <small>fewer rows per tree</small></h2>
+      </div>
+      <button class="btn" id="resample"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>Resample</button>
+    </div>
+    <div class="work-ctl">
+      <label for="ga">top_rate (a)</label>
+      <input type="range" id="ga" min="0.05" max="0.5" step="0.05" value="0.2">
+      <output id="gaOut">0.20</output>
+      <label for="gb">other_rate (b)</label>
+      <input type="range" id="gb" min="0.05" max="0.5" step="0.05" value="0.1">
+      <output id="gbOut">0.10</output>
+      <label for="conc">Error concentration</label>
+      <input type="range" id="conc" min="0" max="1" step="0.1" value="0.8">
+      <output id="concOut">high</output>
+    </div>
+    <div class="tiles">
+      <div class="tile"><span class="k">Rows used</span><span class="v" id="g1">–</span></div>
+      <div class="tile"><span class="k">Weight on sampled rows</span><span class="v" id="g2">–</span></div>
+      <div class="tile"><span class="k">Typical error, GOSS</span><span class="v" id="g3">–</span></div>
+      <div class="tile"><span class="k">Typical error, random</span><span class="v" id="g4">–</span></div>
+    </div>
+    <div class="legend">
+      <span class="c-kept"><i class="sw sq"></i>Always kept</span>
+      <span class="c-samp"><i class="sw sq"></i>Sampled, upweighted</span>
+      <span class="c-skip"><i class="sw sq"></i>Skipped this round</span>
+    </div>
+    <div class="plot tall"><canvas id="gv" aria-label="Fifty rows sorted by gradient size, colored by whether GOSS keeps, samples, or skips them"></canvas></div>
+    <p class="verdict-line" id="gVerdict"></p>
+    <div class="explain">
+      <p><b>The idea.</b> Rows with big gradients are where the model is most wrong, so they matter most for the next split. GOSS always keeps the top a share of them. From the rest it samples a b share and multiplies their gradients by (1 − a)/b, so the totals stay about right.</p>
+      <p><b>The error tiles.</b> Each method estimates the total gradient with the same number of rows, 500 times. The tile shows the typical miss as a share of the total absolute gradient. Random sampling sometimes drops a big row and swings wildly. GOSS never does. Slide the concentration to low and the advantage disappears, because when every row is about equally wrong there is nothing special to keep.</p>
+    </div>
+  </section>
+
+  <section class="panel work">
+    <h2>Histogram vs GOSS <small>two different savings</small></h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th scope="col"></th><th scope="col">Histogram</th><th scope="col">GOSS</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">What it cuts</th><td>Candidate thresholds</td><td>Rows per tree</td></tr>
+          <tr><th scope="row">How</th><td>Bucket feature values, test only the bin edges</td><td>Keep the large gradient rows, sample and upweight the rest</td></tr>
+          <tr><th scope="row">In LightGBM</th><td>Always on, <code>max_bin</code> defaults to 255</td><td>Optional, the default strategy is bagging</td></tr>
+          <tr><th scope="row">Risk</th><td>Too few bins blur a fine split</td><td>Upweighted small rows add noise and can overfit on small data</td></tr>
+          <tr><th scope="row">Pays off when</th><td>Almost always, it is cheap and nearly lossless</td><td>Data is large and a minority of rows carries most of the error</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre class="codeblock">import lightgbm as lgb
+model = lgb.LGBMRegressor(max_bin=255, data_sample_strategy="goss", top_rate=0.2, other_rate=0.1)</pre>
+    <p class="caption">Older LightGBM versions turned GOSS on with <code>boosting_type="goss"</code> instead. GOSS cannot be combined with bagging, so leave <code>bagging_fraction</code> at 1.</p>
+  </section>
+
+  <section class="keys">
+    <div class="panel key"><h3>Why speed matters here</h3><p>Boosting is sequential. Tree 200 cannot start until tree 199 is done, so you cannot just throw more machines at it. Making each split search cheaper is how LightGBM and XGBoost's hist mode train in seconds instead of hours.</p></div>
+    <div class="panel key"><h3>LightGBM's other tricks</h3><p>It also grows trees leaf-wise, splitting whichever leaf gains most instead of a whole level at a time, and bundles sparse features that are rarely nonzero together. Leaf-wise growth is fast and accurate but needs <code>num_leaves</code> or <code>max_depth</code> to keep it from overfitting.</p></div>
+    <div class="panel key"><h3>See it on real data</h3><p>The <a href="https://pedramjahangiry.com/Interactive_tools/m5_ml/boosting-visualization.html" target="_blank" rel="noopener">Boosting lab</a> runs both tricks inside a real model on the airline passengers data, using the model's actual residuals at every round.</p></div>
+    <div class="panel key"><h3>And the parallel cousin</h3><p><a href="https://pedramjahangiry.com/Interactive_tools/m5_ml/bagging-visualization.html" target="_blank" rel="noopener">Bagging</a> also samples rows, but uniformly and with replacement, to make trees different from each other. GOSS samples rows by importance, to make each tree cheaper.</p></div>
+  </section>
+
+  <footer>Data: synthetic. The histogram panel uses 60 rows of one feature whose gradients flip sign near 6.3, plus noise. The GOSS panel uses 50 rows whose gradient sizes range from evenly spread to dominated by a few rows, set by the concentration slider. The 1 million row tile assumes every row has a distinct value. Gain is computed for squared error, where every row has the same hessian.</footer>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function setup(cv){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);c.font='11px '+css('--f-mono');return{c,w:r.width,h:r.height};}
+const S={dSeed:11,bins:8,a:0.2,b:0.1,conc:0.8,gSeed:1};
+
+/* Trick 1: histogram */
+const NH=60;let pts=[],tot=0,base=0,exact=null,mids=[];
+function genH(){const r=mulberry(S.dSeed);pts=[];for(let i=0;i<NH;i++){const x=r()*10;pts.push({x,g:(x<6.3?-1:1.4)+(r()-0.5)*1.8,j:r()});}pts.sort((a,b)=>a.x-b.x);
+  tot=pts.reduce((s,p)=>s+p.g,0);base=tot*tot/NH;exact={g:-1,t:0};mids=[];let GL=0;
+  for(let k=0;k<NH-1;k++){GL+=pts[k].g;const t=(pts[k].x+pts[k+1].x)/2;mids.push(t);const g=gain(GL,k+1,tot-GL,NH-k-1);if(g>exact.g)exact={g,t};}}
+const gain=(GL,nL,GR,nR)=>GL*GL/nL+GR*GR/nR-base;
+function drawH(){const B=S.bins;$('binsOut').textContent=B;const w0=10/B,Gs=new Array(B).fill(0),Cs=new Array(B).fill(0);
+  pts.forEach(p=>{const b=Math.min(B-1,Math.floor(p.x/w0));Gs[b]+=p.g;Cs[b]++;});
+  let hb={g:-1,t:0},gl=0,nl=0,tested=0;for(let b=1;b<B;b++){gl+=Gs[b-1];nl+=Cs[b-1];if(nl===0||nl===NH)continue;tested++;const g=gain(gl,nl,tot-gl,NH-nl);if(g>hb.g)hb={g,t:b*w0};}
+  $('h1').textContent=`${NH-1} vs ${tested}`;$('h2').textContent=`${exact.t.toFixed(2)} vs ${hb.t.toFixed(2)}`;$('h3').textContent=Math.round(Math.max(0,hb.g)/exact.g*100)+'%';$('h4').textContent=`999,999 vs ${B-1}`;
+  const {c,w,h}=setup($('hv'));const L=40,R=w-16,sx=x=>L+x/10*(R-L);
+  c.strokeStyle=css('--muted');c.globalAlpha=.55;c.setLineDash([3,3]);c.lineWidth=1;for(let b=0;b<=B;b++){c.beginPath();c.moveTo(sx(b*w0),18);c.lineTo(sx(b*w0),h-26);c.stroke();}c.setLineDash([]);c.globalAlpha=1;
+  c.fillStyle=css('--muted');c.textAlign='left';c.textBaseline='alphabetic';c.fillText(`${NH} rows of one feature`,L,12);
+  const dotTop=26,dotH=Math.min(60,h*0.2);c.fillStyle=css('--ink');pts.forEach(p=>{c.beginPath();c.arc(sx(p.x),dotTop+p.j*dotH,4,0,7);c.fill();});
+  const tickY=dotTop+dotH+18;c.strokeStyle=css('--muted');mids.forEach(t=>{c.beginPath();c.moveTo(sx(t),tickY-6);c.lineTo(sx(t),tickY+6);c.stroke();});
+  c.fillStyle=css('--muted');c.textBaseline='top';c.fillText('exact method tests every gap',L,tickY+10);
+  const zero=tickY+30+(h-26-(tickY+30))/2,half=(h-26-(tickY+30))/2-6,mx=Math.max(...Gs.map(Math.abs))||1;
+  c.strokeStyle=css('--line');c.beginPath();c.moveTo(L,zero);c.lineTo(R,zero);c.stroke();
+  Gs.forEach((g,b)=>{const hh=g/mx*half,x0=sx(b*w0)+2,ww=Math.max(1,sx(w0)-L-4);c.fillStyle=g>=0?css('--pos'):css('--neg');c.beginPath();if(c.roundRect)c.roundRect(x0,g>=0?zero-hh:zero,ww,Math.max(1,Math.abs(hh)),3);else c.rect(x0,g>=0?zero-hh:zero,ww,Math.max(1,Math.abs(hh)));c.fill();});
+  c.save();c.strokeStyle=css('--ink');c.lineWidth=1.8;c.setLineDash([6,4]);c.beginPath();c.moveTo(sx(exact.t),18);c.lineTo(sx(exact.t),h-26);c.stroke();c.restore();
+  c.strokeStyle=css('--kept');c.lineWidth=2.6;c.beginPath();c.moveTo(sx(hb.t),18);c.lineTo(sx(hb.t),h-26);c.stroke();
+  c.fillStyle=css('--muted');c.textAlign='center';c.textBaseline='top';for(let x=0;x<=10;x+=2)c.fillText(x,sx(x),h-18);}
+
+/* Trick 2: GOSS */
+const NG=50;let grad=[],ord=[];
+function genG(){const r=mulberry(5),c=S.conc;const raw=[];for(let i=0;i<NG;i++){const big=i<8;const sign=big?(i===5?-1:1):(r()<0.42?1:-1);
+    const small=0.15+r()*0.8,bigMag=3+r()*3;raw.push(sign*(big?(1-c)*small*1.4+c*bigMag:small));}
+  grad=raw;ord=[...grad.keys()].sort((p,q)=>Math.abs(grad[q])-Math.abs(grad[p]));$('concOut').textContent=c<=0.2?'low':c<0.6?'medium':'high';}
+function shuffle(a,r){const b=a.slice();for(let i=b.length-1;i>0;i--){const k=Math.floor(r()*(i+1));[b[i],b[k]]=[b[k],b[i]];}return b;}
+function drawG(){const a=S.a,b=S.b;$('gaOut').textContent=a.toFixed(2);$('gbOut').textContent=b.toFixed(2);
+  const K=Math.round(a*NG),Sm=Math.max(1,Math.min(Math.round(b*NG),NG-K)),wt=(NG-K)/Sm,m=K+Sm,rest=ord.slice(K);
+  const r=mulberry(S.gSeed*9973),pick=new Set(shuffle(rest,r).slice(0,Sm));
+  const {c,w,h}=setup($('gv'));const L=16,R=w-16,base=h-26,top=40,bw=(R-L)/NG,mx=Math.abs(grad[ord[0]])||1;
+  ord.forEach((i,k)=>{const hh=Math.abs(grad[i])/mx*(base-top);c.fillStyle=k<K?css('--kept'):pick.has(i)?css('--samp'):css('--skip');c.fillRect(L+k*bw+1,base-hh,Math.max(1,bw-2),Math.max(1,hh));});
+  const X=L+K*bw;c.strokeStyle=css('--muted');c.lineWidth=1.3;c.setLineDash([5,4]);c.beginPath();c.moveTo(X,top-14);c.lineTo(X,base);c.stroke();c.setLineDash([]);
+  c.fillStyle=css('--muted');c.textAlign='left';c.textBaseline='alphabetic';c.fillText(`${NG} rows sorted by |gradient|, biggest errors on the left`,L,14);
+  c.fillStyle=css('--ink');c.fillText(`top ${K} kept | ${Sm} of the other ${NG-K} sampled`,Math.min(X+6,R-240),top-2);
+  c.fillStyle=css('--muted');c.textBaseline='top';c.fillText('large gradient',L,base+8);c.textAlign='right';c.fillText('small gradient',R,base+8);
+  const tru=grad.reduce((s,v)=>s+v,0),absTot=grad.reduce((s,v)=>s+Math.abs(v),0),topSum=ord.slice(0,K).reduce((s,i)=>s+grad[i],0),all=[...grad.keys()];
+  const rr=mulberry(S.gSeed*31+7);let eg=0,er=0;const T=500;
+  for(let t=0;t<T;t++){const sg=shuffle(rest,rr).slice(0,Sm).reduce((s,i)=>s+grad[i],0);eg+=Math.abs(topSum+wt*sg-tru);const sr=shuffle(all,rr).slice(0,m).reduce((s,i)=>s+grad[i],0);er+=Math.abs(sr*NG/m-tru);}
+  const pg=eg/T/absTot*100,pr=er/T/absTot*100;$('g1').textContent=`${m} of ${NG}`;$('g2').textContent='×'+wt.toFixed(1);$('g3').textContent=Math.round(pg)+'%';$('g4').textContent=Math.round(pr)+'%';
+  $('g3').className='v '+(pg<pr*0.85?'good':pg>pr*1.15?'bad':'');$('g4').className='v '+(pr<pg*0.85?'good':pr>pg*1.15?'bad':'');
+  const v=$('gVerdict');if(pg<pr*0.85)v.innerHTML=`<span class="pill good">GOSS wins</span> Same ${m} rows, but GOSS misses by ${Math.round(pg)}% where random sampling misses by ${Math.round(pr)}%. Keeping the big rows removes most of the luck.`;
+  else if(pg>pr*1.15)v.innerHTML=`<span class="pill var">GOSS loses</span> With errors spread evenly there are no special rows to keep, and the ×${wt.toFixed(1)} weight on sampled rows only adds noise. Random sampling does better here.`;
+  else v.innerHTML=`<span class="pill bias">About even</span> The errors are not concentrated enough for GOSS to have an edge. This is what real airline residuals look like in the Boosting lab.`;}
+
+$('bins').oninput=e=>{S.bins=+e.target.value;drawH();};
+$('newData').onclick=()=>{S.dSeed++;genH();drawH();};
+const onG=()=>{S.a=+$('ga').value;S.b=+$('gb').value;drawG();};$('ga').oninput=onG;$('gb').oninput=onG;
+$('conc').oninput=e=>{S.conc=+e.target.value;genG();drawG();};
+$('resample').onclick=()=>{S.gSeed++;drawG();};
+
+const SUN='<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>',MOON='<path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/>';
+const isDark=()=>{const t=document.documentElement.getAttribute('data-theme');return t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;};
+function syncThemeBtn(){const d=isDark(),label=d?'Switch to light theme':'Switch to dark theme';$('themeIcon').innerHTML=d?SUN:MOON;$('themeBtn').setAttribute('aria-label',label);$('themeBtn').title=label;}
+$('themeBtn').onclick=()=>{const next=isDark()?'light':'dark';document.documentElement.setAttribute('data-theme',next);try{localStorage.setItem('split-theme',next);}catch(e){}syncThemeBtn();};
+const redraw=()=>{drawH();drawG();};
+let rz;new ResizeObserver(()=>{cancelAnimationFrame(rz);rz=requestAnimationFrame(redraw);}).observe(document.querySelector('.wrap'));
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{syncThemeBtn();redraw();});
+new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(redraw);
+syncThemeBtn();genH();genG();redraw();
+})();
+</script>
+
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>

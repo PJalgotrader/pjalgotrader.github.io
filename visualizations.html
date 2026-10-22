@@ -96,16 +96,18 @@
                         <a class="glance-item" href="Interactive_tools/m5_ml/gradient-descent-visualization.html" target="_blank" rel="noopener"><span>11</span>Gradient Descent &amp; SGD</a>
                         <a class="glance-item" href="Interactive_tools/m5_ml/dt-regression-visualization.html" target="_blank" rel="noopener"><span>12</span>Decision Trees for Time Series</a>
                         <a class="glance-item" href="Interactive_tools/m5_ml/bagging-visualization.html" target="_blank" rel="noopener"><span>13</span>Bagging</a>
+                        <a class="glance-item" href="Interactive_tools/m5_ml/boosting-visualization.html" target="_blank" rel="noopener"><span>14</span>Boosting</a>
+                        <a class="glance-item" href="Interactive_tools/m5_ml/histogram-goss-visualization.html" target="_blank" rel="noopener"><span>15</span>Histogram vs GOSS Splitting</a>
                     </div>
                     <div class="glance-group">
                         <p class="glance-cat">Leakage &amp; dependence</p>
-                        <a class="glance-item" href="Interactive_tools/m5_ml/ts-cross-validation-visualization.html" target="_blank" rel="noopener"><span>14</span>Time Series Cross-Validation</a>
-                        <a class="glance-item" href="Interactive_tools/m5_ml/ts-bootstrapping-visualization.html" target="_blank" rel="noopener"><span>15</span>Time Series Bootstrapping</a>
+                        <a class="glance-item" href="Interactive_tools/m5_ml/ts-cross-validation-visualization.html" target="_blank" rel="noopener"><span>16</span>Time Series Cross-Validation</a>
+                        <a class="glance-item" href="Interactive_tools/m5_ml/ts-bootstrapping-visualization.html" target="_blank" rel="noopener"><span>17</span>Time Series Bootstrapping</a>
                     </div>
                     <div class="glance-group">
                         <p class="glance-cat">Deep learning</p>
-                        <a class="glance-item" href="Interactive_tools/m6_dl/dnn-timeseries-visualization.html" target="_blank" rel="noopener"><span>16</span>Deep Neural Networks, Live</a>
-                        <a class="glance-item" href="Interactive_tools/m7_rnn/rnn-vs-dnn-timeseries-visualization.html" target="_blank" rel="noopener"><span>17</span>RNN vs DNN</a>
+                        <a class="glance-item" href="Interactive_tools/m6_dl/dnn-timeseries-visualization.html" target="_blank" rel="noopener"><span>18</span>Deep Neural Networks, Live</a>
+                        <a class="glance-item" href="Interactive_tools/m7_rnn/rnn-vs-dnn-timeseries-visualization.html" target="_blank" rel="noopener"><span>19</span>RNN vs DNN</a>
                     </div>
                     <div class="glance-group">
                         <p class="glance-cat">From around the web</p>
@@ -229,10 +231,26 @@
                     </span>
                     <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
                 </a>
+                <a class="index-row" href="Interactive_tools/m5_ml/boosting-visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">14</span>
+                    <span class="index-body">
+                        <span class="index-title">Boosting</span>
+                        <span class="index-desc">Small trees added one round at a time on the airline-passengers data &mdash; watch each tree fit the residuals, see training and test error part ways, and find the round where early stopping should quit.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
+                <a class="index-row" href="Interactive_tools/m5_ml/histogram-goss-visualization.html" target="_blank" rel="noopener">
+                    <span class="index-num">15</span>
+                    <span class="index-body">
+                        <span class="index-title">Histogram vs GOSS Splitting</span>
+                        <span class="index-desc">How LightGBM finds splits fast &mdash; histograms test fewer thresholds, GOSS looks at fewer rows. Dial the bins, top_rate, and other_rate, and see when GOSS wins and when it doesn&rsquo;t.</span>
+                    </span>
+                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
+                </a>
 
                 <p class="section-label">&sect; 05 &mdash; Leakage &amp; dependence <span class="section-note" style="text-transform: none; letter-spacing: 0.03em;">&mdash; where honest backtests live or die</span></p>
                 <a class="index-row" href="Interactive_tools/m5_ml/ts-cross-validation-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">14</span>
+                    <span class="index-num">16</span>
                     <span class="index-body">
                         <span class="index-title">Time Series Cross-Validation</span>
                         <span class="index-desc">Purged K-Fold with embargo, Walk-Forward windows, and Combinatorial Purged CV with backtest-path reconstruction &mdash; the machinery that keeps evaluations honest.</span>
@@ -240,7 +258,7 @@
                     <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
                 </a>
                 <a class="index-row" href="Interactive_tools/m5_ml/ts-bootstrapping-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">15</span>
+                    <span class="index-num">17</span>
                     <span class="index-body">
                         <span class="index-title">Time Series Bootstrapping</span>
                         <span class="index-desc">Moving Block, Circular Block, Stationary, and parametric AR(1) bootstraps &mdash; resampling dependent data without destroying its structure.</span>
@@ -250,7 +268,7 @@
 
                 <p class="section-label">&sect; 06 &mdash; Deep learning</p>
                 <a class="index-row" href="Interactive_tools/m6_dl/dnn-timeseries-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">16</span>
+                    <span class="index-num">18</span>
                     <span class="index-body">
                         <span class="index-title">Deep Neural Networks, Live</span>
                         <span class="index-desc">Configure layers, neurons, activations, and lags, then train in your browser with TensorFlow.js &mdash; live loss curves, feature importance, and a linear-regression benchmark to keep the hype honest.</span>
@@ -258,7 +276,7 @@
                     <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
                 </a>
                 <a class="index-row" href="Interactive_tools/m7_rnn/rnn-vs-dnn-timeseries-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">17</span>
+                    <span class="index-num">19</span>
                     <span class="index-body">
                         <span class="index-title">RNN vs DNN</span>
                         <span class="index-desc">Train both side by side and discover the key lesson: preprocessing (log + differencing) turns RNN performance from poor to excellent on non-stationary data.</span>

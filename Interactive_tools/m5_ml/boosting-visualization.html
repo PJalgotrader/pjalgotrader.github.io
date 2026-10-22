@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Gradient boosting on the airline passengers data: add small trees one round at a time, watch each tree fit the residuals, and find the best round with early stopping. Histogram and GOSS split finding on the model's real residuals. In your browser, no install.">
+<title>Boosting Interactive Tool | Dr. Pedram Jahangiry</title>
+<script>
+// Apply a saved light/dark choice before first paint; otherwise follow the device setting.
+try { const t = localStorage.getItem("boost-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: the same lab bench as the Learning Curve and Bagging labs. Controls, forecast and error instruments, the verdict strip, then a split-finding workbench (histogram and GOSS), a comparison table, and key ideas. */
+:root{
+  --bg:#EEF1F5; --surface:#FFFFFF; --ink:#141B26; --muted:#5A6577; --line:#D6DCE5; --grid:#E6EAF0; --band:#F4F6F9; --tile:#F4F6F9;
+  --train:#1E5BC6; --val:#D97A0B; --bench:#C8213B; --truth:#1E8C5A;
+  --kept:#D2541F; --samp:#6A5FD1; --skip:#CDD3DC; --pos:#1E8C5A; --neg:#6A5FD1;
+  --bias-fg:#7A4E00; --bias-bg:#FFF0D2; --var-fg:#A0213B; --var-bg:#FDE3E8; --good-fg:#15623C; --good-bg:#DCF2E5;
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E131B; --surface:#151C27; --ink:#E5EAF1; --muted:#97A3B5; --line:#2A3445; --grid:#1D2532; --band:#19212D; --tile:#1B2330;
+  --train:#70A4FF; --val:#FFA53D; --bench:#FF5C74; --truth:#4CC38A;
+  --kept:#FF7A45; --samp:#9D94FF; --skip:#344055; --pos:#4CC38A; --neg:#9D94FF;
+  --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0E131B; --surface:#151C27; --ink:#E5EAF1; --muted:#97A3B5; --line:#2A3445; --grid:#1D2532; --band:#19212D; --tile:#1B2330;
+  --train:#70A4FF; --val:#FFA53D; --bench:#FF5C74; --truth:#4CC38A;
+  --kept:#FF7A45; --samp:#9D94FF; --skip:#344055; --pos:#4CC38A; --neg:#9D94FF;
+  --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:28px 48px}
+.wrap{max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:20px}
+a{color:var(--train)}
+:focus-visible{outline:2px solid var(--train); outline-offset:2px}
+
+header{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:12px 24px}
+.eyebrow{font-family:var(--f-mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+h1{font-family:var(--f-display); font-weight:700; font-size:clamp(30px, 5vw, 46px); line-height:1.05; margin:6px 0 8px; letter-spacing:-.01em; text-wrap:balance}
+.lede{margin:0; max-width:66ch; color:var(--muted); font-size:16px}
+.lede b{color:var(--ink); font-weight:600}
+.byline{font-size:13px; color:var(--muted); display:flex; gap:6px 14px; flex-wrap:wrap; align-items:center}
+.byline strong{color:var(--ink); font-weight:600}
+.theme-btn{width:34px; height:34px; display:grid; place-items:center; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); cursor:pointer; padding:0}
+.theme-btn:hover{border-color:var(--muted)}
+.theme-btn svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r)}
+.controls{display:grid; grid-template-columns:minmax(0,1.1fr) repeat(3, minmax(0,1fr)); gap:18px 28px; padding:18px 20px}
+.ctl{display:flex; flex-direction:column; gap:8px; min-width:0}
+.ctl-label{display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.ctl-label output{font-family:var(--f-mono); font-size:13px; text-transform:none; letter-spacing:0; color:var(--ink); font-weight:600}
+.depths{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:4px}
+.depths button{font-family:var(--f-mono); font-size:14px; padding:8px 0; border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:6px; cursor:pointer}
+.depths button:hover{border-color:var(--muted)}
+.depths button[aria-pressed="true"]{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+.depname{font-size:13px; color:var(--muted)}
+.depname b{color:var(--ink); font-weight:600}
+input[type=range]{width:100%; accent-color:var(--train); margin:4px 0}
+.hint{font-size:12.5px; color:var(--muted)}
+.mode{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; padding-bottom:14px; border-bottom:1px solid var(--line)}
+.lbl{font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.seg{display:inline-flex; gap:2px; padding:3px; border:1px solid var(--line); border-radius:9px; background:var(--bg); align-self:flex-start; max-width:100%; flex-wrap:wrap}
+.seg button{font:600 13px var(--f-body); border:0; background:transparent; color:var(--muted); padding:6px 12px; border-radius:6px; cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); outline:1px solid var(--line)}
+.mode .hint{flex:1 1 300px; min-width:0}
+.row-actions{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding-top:14px; border-top:1px solid var(--line)}
+.row-actions .lbl{margin-right:4px}
+.chip{font:500 13px var(--f-body); padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer}
+.chip:hover{border-color:var(--muted)}
+.spacer{flex:1}
+.btn{font:600 13px var(--f-body); padding:7px 14px; border-radius:7px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer; display:inline-flex; align-items:center; gap:6px}
+.btn:hover{border-color:var(--muted)}
+.btn svg{width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+
+.bench{display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:20px}
+.inst{padding:16px 18px 14px; display:flex; flex-direction:column; gap:10px; min-width:0}
+.inst h2, .work h2{font-family:var(--f-display); font-weight:500; font-size:19px; margin:0; display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap}
+.inst h2 small, .work h2 small{font-family:var(--f-mono); font-size:12px; color:var(--muted); font-weight:400}
+.plot{position:relative; height:clamp(260px, 30vw, 330px)}
+.plot.short{height:clamp(170px, 18vw, 200px)}
+.plot.tall{height:clamp(300px, 34vw, 360px)}
+.plot canvas{position:absolute; inset:0; width:100%; height:100%; display:block}
+#err{cursor:ew-resize; touch-action:pan-y}
+.legend{display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12.5px; color:var(--muted)}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.sw{width:18px; height:0; border-top:3px solid currentColor; display:inline-block}
+.sw.dash{border-top-style:dashed; border-top-width:2px}
+.sw.dot{width:8px; height:8px; border:none; border-radius:50%; background:currentColor}
+.sw.sq{width:10px; height:10px; border:none; border-radius:2px; background:currentColor}
+.c-ink{color:var(--ink)} .c-train{color:var(--train)} .c-val{color:var(--val)} .c-bench{color:var(--bench)} .c-truth{color:var(--truth)} .c-muted{color:var(--muted)}
+.c-kept{color:var(--kept)} .c-samp{color:var(--samp)} .c-skip{color:var(--skip)} .c-pos{color:var(--pos)} .c-neg{color:var(--neg)}
+.scrub{display:flex; align-items:center; gap:12px}
+.scrub label{font-size:13px; color:var(--muted); white-space:nowrap}
+.scrub label output{font-family:var(--f-mono); color:var(--ink); font-weight:600; font-size:14px; display:inline-block; min-width:3ch}
+.play{width:38px; height:34px; flex:none; border-radius:7px; border:1px solid var(--ink); background:var(--ink); color:var(--surface); cursor:pointer; display:grid; place-items:center}
+.play svg{width:14px; height:14px; fill:currentColor}
+.inst-bar{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 16px}
+.caption{font-size:13px; color:var(--muted); margin:0}
+.nexttree{font-size:13.5px; margin:0; padding:10px 12px; background:var(--tile); border-radius:8px}
+.nexttree b{font-family:var(--f-mono); font-weight:600}
+
+.verdict{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)) minmax(0,2.3fr); align-items:stretch}
+.read{padding:14px 18px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:2px; min-width:0}
+.read .k{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600}
+.read .v{font-family:var(--f-mono); font-size:24px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1.2}
+.read .s{font-size:12px; color:var(--muted)}
+.diag{padding:14px 20px; display:flex; flex-direction:column; gap:6px; min-width:0}
+.pill{align-self:flex-start; font:600 12.5px var(--f-body); letter-spacing:.03em; padding:4px 11px; border-radius:999px}
+.pill.bias{color:var(--bias-fg); background:var(--bias-bg)}
+.pill.var{color:var(--var-fg); background:var(--var-bg)}
+.pill.good{color:var(--good-fg); background:var(--good-bg)}
+.diag p{margin:0; font-size:14px}
+
+.split-head{display:flex; flex-direction:column; gap:4px}
+.split-head h2{font-family:var(--f-display); font-weight:700; font-size:clamp(22px, 3vw, 28px); margin:0; letter-spacing:-.01em}
+.split-head p{margin:0; color:var(--muted); max-width:72ch}
+.workbench{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px}
+.work{padding:16px 18px; display:flex; flex-direction:column; gap:12px; min-width:0}
+.work-ctl{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:6px 12px; align-items:center}
+.work-ctl label{font-size:13px; color:var(--muted); white-space:nowrap}
+.work-ctl output{font-family:var(--f-mono); font-weight:600; min-width:4ch; text-align:right}
+.tiles{display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px}
+.tile{background:var(--tile); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:2px; min-width:0}
+.tile .k{font-size:12.5px; color:var(--muted)}
+.tile .v{font-family:var(--f-mono); font-size:20px; font-weight:600; font-variant-numeric:tabular-nums}
+.tile .v.good{color:var(--good-fg)} .tile .v.bad{color:var(--var-fg)}
+
+.tablewrap{overflow-x:auto}
+table{width:100%; border-collapse:collapse; font-size:14px; min-width:560px}
+th, td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:top}
+thead th{font-size:12px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); font-weight:600}
+tbody th{font-weight:600; white-space:nowrap}
+tbody tr:last-child th, tbody tr:last-child td{border-bottom:none}
+code{font-family:var(--f-mono); font-size:.9em; background:var(--tile); padding:1px 5px; border-radius:4px}
+.codeblock{font-family:var(--f-mono); font-size:13px; background:var(--tile); border-radius:8px; padding:12px 14px; overflow-x:auto; white-space:pre; margin:0}
+
+.keys{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:20px}
+.key{padding:16px 18px}
+.key h3{margin:0 0 4px; font-size:14.5px; font-weight:600}
+.key p{margin:0; color:var(--muted); font-size:14px; max-width:62ch}
+footer{font-size:12.5px; color:var(--muted); max-width:90ch}
+
+@media (max-width: 980px){
+  .controls{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .bench, .workbench{grid-template-columns:1fr}
+  .verdict{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .read:nth-child(2n){border-right:none}
+  .read{border-bottom:1px solid var(--line)}
+  .diag{grid-column:1 / -1}
+}
+@media (max-width: 560px){
+  .controls{grid-template-columns:1fr}
+  .keys{grid-template-columns:1fr}
+  .read .v{font-size:20px}
+  .spacer{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Module 5 · Machine Learning for Time Series Forecasting</div>
+      <h1>Boosting the Airline Passengers</h1>
+      <p class="lede">Start from a dumb forecast: <b>last month plus average growth</b>. Then add small trees one at a time, each one trained on the errors the model still makes. On this data the first job the trees learn is the seasonal shape, summer up and November down. Train on 1950 to 1958, forecast 1959 and 1960 one month ahead.</p>
+    </div>
+    <div class="byline"><strong>Dr. Pedram Jahangiry</strong>
+      <a href="https://pedramjahangiry.com/" target="_blank" rel="noopener">Website</a>
+      <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" rel="noopener">YouTube</a>
+      <a href="https://github.com/pjalgotrader" target="_blank" rel="noopener">GitHub</a>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><svg id="themeIcon" viewBox="0 0 24 24"></svg></button></div>
+  </header>
+
+  <section class="panel controls" aria-label="Boosting settings">
+    <div class="mode">
+      <span class="lbl">Target</span>
+      <div class="seg" role="group" aria-label="What the trees predict">
+        <button id="mDiff" aria-pressed="true">Monthly log change</button>
+        <button id="mRaw" aria-pressed="false">Raw passenger count</button>
+      </div>
+      <span class="hint" id="modeHint"></span>
+    </div>
+    <div class="ctl">
+      <div class="ctl-label"><span>Weak learner · tree depth</span></div>
+      <div class="depths" id="depths"></div>
+      <div class="depname" id="depname"></div>
+    </div>
+    <div class="ctl">
+      <label class="ctl-label" for="lr"><span>Learning rate η</span><output id="lrOut">0.10</output></label>
+      <input type="range" id="lr" min="0.05" max="1" step="0.05" value="0.1">
+      <div class="hint">Each tree's correction is shrunk by η.</div>
+    </div>
+    <div class="ctl">
+      <div class="ctl-label"><span>Split finding</span><output id="binsOut">16 bins</output></div>
+      <div class="seg" role="group" aria-label="Split finding">
+        <button id="sExact" aria-pressed="true">Exact</button>
+        <button id="sHist" aria-pressed="false">Histogram</button>
+      </div>
+      <input type="range" id="bins" min="2" max="32" step="1" value="16" aria-label="Histogram bins">
+    </div>
+    <div class="ctl">
+      <div class="ctl-label"><span>Rows per tree</span></div>
+      <div class="seg" role="group" aria-label="Row sampling">
+        <button id="rAll" aria-pressed="true">All rows</button>
+        <button id="rGoss" aria-pressed="false">GOSS</button>
+      </div>
+      <div class="hint">GOSS uses the top_rate and other_rate set in the GOSS panel below.</div>
+    </div>
+    <div class="row-actions">
+      <span class="lbl">Try</span>
+      <button class="chip" data-preset="classic">Stumps, slow and steady</button>
+      <button class="chip" data-preset="fast">Too fast: η = 1</button>
+      <button class="chip" data-preset="deep">Deep trees memorize</button>
+      <button class="chip" data-preset="lgbm">LightGBM style: histogram + GOSS</button>
+      <button class="chip" data-preset="raw">Raw counts can't extrapolate</button>
+    </div>
+  </section>
+
+  <section class="bench">
+    <div class="panel inst">
+      <h2>Forecast after <span id="mTitle">60</span> rounds <small id="fitSub">one month ahead</small></h2>
+      <div class="legend">
+        <span class="c-ink"><i class="sw dot"></i>Actual passengers</span>
+        <span class="c-muted"><i class="sw dash"></i>Round 0: last month + average growth</span>
+        <span class="c-train"><i class="sw"></i>Boosted forecast</span>
+      </div>
+      <div class="plot"><canvas id="fit" aria-label="Airline passengers with the starting forecast and the boosted forecast"></canvas></div>
+      <div class="inst-bar">
+        <div class="seg" role="group" aria-label="Time window">
+          <button id="vFull" aria-pressed="false">1949 to 1960</button>
+          <button id="vZoom" aria-pressed="true">Zoom on 1958 to 1960</button>
+        </div>
+      </div>
+      <h2 style="font-size:16px">What the next tree sees <small id="resUnit">training residuals</small></h2>
+      <div class="legend">
+        <span class="c-pos"><i class="sw sq"></i>Model too low</span>
+        <span class="c-neg"><i class="sw sq"></i>Model too high</span>
+        <span class="c-val"><i class="sw"></i>Next tree's fit to them</span>
+      </div>
+      <div class="plot short"><canvas id="res" aria-label="Residuals on the training months and the next tree's fit"></canvas></div>
+      <p class="nexttree" id="nextTree">–</p>
+    </div>
+
+    <div class="panel inst">
+      <h2>Error vs boosting rounds <small>RMSE, thousands</small></h2>
+      <div class="legend">
+        <span class="c-train"><i class="sw"></i>Training months</span>
+        <span class="c-val"><i class="sw"></i>Test: 1959 to 1960</span>
+        <span class="c-truth"><i class="sw dot"></i>Best test round</span>
+        <span class="c-muted"><i class="sw dash"></i>Seasonal naive</span>
+      </div>
+      <div class="plot tall"><canvas id="err" aria-label="Training and test RMSE as rounds are added. Drag to change the number of rounds."></canvas></div>
+      <div class="scrub">
+        <button class="play" id="play" aria-label="Play: add rounds one at a time"><svg id="playIcon" viewBox="0 0 14 14"><path d="M3 1.5v11l9-5.5z"/></svg></button>
+        <label for="mRange">M = <output id="mOut">60</output></label>
+        <input type="range" id="mRange" min="0" max="200" step="1" value="60">
+      </div>
+      <p class="caption">Training error keeps falling because every tree is built to shrink it. Test error falls while the trees learn real structure, then flattens or creeps back up once they start fitting noise. In practice you hold out a validation window and stop at its best round. That is early stopping.</p>
+    </div>
+  </section>
+
+  <section class="panel verdict" aria-live="polite">
+    <div class="read"><span class="k">Test RMSE</span><span class="v c-val" id="rTest">–</span><span class="s" id="rTestS">after 60 rounds</span></div>
+    <div class="read"><span class="k">Training RMSE</span><span class="v c-train" id="rTrain">–</span><span class="s">on 1950 to 1958</span></div>
+    <div class="read"><span class="k">Best round</span><span class="v c-truth" id="rBest">–</span><span class="s" id="rBestS">lowest test error</span></div>
+    <div class="read"><span class="k">Seasonal naive</span><span class="v c-muted" id="rNaive">–</span><span class="s">same month last year</span></div>
+    <div class="diag"><span class="pill" id="pill">–</span><p id="diagText"></p></div>
+  </section>
+
+  <div class="split-head">
+    <div class="eyebrow">Inside one split</div>
+    <h2>How LightGBM finds splits faster</h2>
+    <p>Every tree has to search for its best split. Both panels below use the real residuals of the model above at round <b id="roundRef">60</b>, so move the rounds slider and watch them change. For a cleaner toy version, see <a href="https://pedramjahangiry.com/Interactive_tools/m5_ml/histogram-goss-visualization.html" target="_blank" rel="noopener">Histogram vs GOSS Splitting</a>.</p>
+  </div>
+
+  <section class="workbench">
+    <div class="panel work">
+      <h2>Exact vs histogram <small>fewer thresholds to test</small></h2>
+      <div class="seg" role="group" aria-label="Feature to split on" id="featSeg"></div>
+      <div class="work-ctl">
+        <label for="hBins">Bins</label>
+        <input type="range" id="hBins" min="2" max="32" step="1" value="8">
+        <output id="hBinsOut">8</output>
+      </div>
+      <div class="tiles">
+        <div class="tile"><span class="k">Splits to test</span><span class="v" id="hT1">–</span></div>
+        <div class="tile"><span class="k">Best split, exact vs histogram</span><span class="v" id="hT2">–</span></div>
+        <div class="tile"><span class="k">Gain the histogram keeps</span><span class="v" id="hT3">–</span></div>
+      </div>
+      <div class="legend">
+        <span class="c-muted"><i class="sw dash"></i>Best exact split</span>
+        <span class="c-kept"><i class="sw"></i>Best histogram split</span>
+        <span><i class="sw sq c-pos"></i><i class="sw sq c-neg"></i>Residual sum per bin</span>
+      </div>
+      <div class="plot tall"><canvas id="hv" aria-label="Training rows by feature value and residual, candidate split thresholds, and residual sums per histogram bin"></canvas></div>
+      <p class="caption">Exact search sorts the rows and tries every gap between neighbors. The histogram drops each row into a bin once, adds up residuals per bin, and only tries the bin edges. With a decent number of bins it usually keeps nearly all of the gain.</p>
+    </div>
+
+    <div class="panel work">
+      <h2>GOSS <small>fewer rows per tree</small></h2>
+      <div class="work-ctl">
+        <label for="ga">top_rate (a)</label>
+        <input type="range" id="ga" min="0.05" max="0.5" step="0.05" value="0.2">
+        <output id="gaOut">0.20</output>
+        <label for="gb">other_rate (b)</label>
+        <input type="range" id="gb" min="0.05" max="0.5" step="0.05" value="0.1">
+        <output id="gbOut">0.10</output>
+      </div>
+      <div class="tiles">
+        <div class="tile"><span class="k">Rows used</span><span class="v" id="gT1">–</span></div>
+        <div class="tile"><span class="k">Weight on sampled rows</span><span class="v" id="gT2">–</span></div>
+        <div class="tile"><span class="k">Error mass in the sample, GOSS</span><span class="v good" id="gT3">–</span></div>
+        <div class="tile"><span class="k">Error mass in the sample, random</span><span class="v bad" id="gT4">–</span></div>
+      </div>
+      <div class="inst-bar">
+        <div class="legend">
+          <span class="c-kept"><i class="sw sq"></i>Always kept</span>
+          <span class="c-samp"><i class="sw sq"></i>Sampled, upweighted</span>
+          <span class="c-skip"><i class="sw sq"></i>Skipped this round</span>
+        </div>
+        <button class="btn" id="resample"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>Resample</button>
+      </div>
+      <div class="plot tall"><canvas id="gv" aria-label="Training rows sorted by absolute residual, colored by whether GOSS keeps, samples, or skips them"></canvas></div>
+      <p class="caption">Rows with big residuals are where the model is most wrong, so GOSS always keeps them. From the rest it takes a small random sample and scales it up by (1 − a)/b, so totals stay roughly right. The error mass tiles show what share of all the absolute residual the sampled rows carry, GOSS against a plain random sample of the same size. GOSS pays off most when a few rows hold most of the error, which is common in large, messy data. Airline residuals are spread fairly evenly, so here the gain is modest.</p>
+    </div>
+  </section>
+
+  <section class="panel inst">
+    <h2>Histogram vs GOSS <small>two different savings</small></h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th scope="col"></th><th scope="col">Histogram</th><th scope="col">GOSS</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">What it cuts</th><td>Candidate thresholds</td><td>Rows per tree</td></tr>
+          <tr><th scope="row">How</th><td>Bucket feature values, test only the bin edges</td><td>Keep the large residual rows, sample and upweight the rest</td></tr>
+          <tr><th scope="row">In LightGBM</th><td>Always on, <code>max_bin</code> defaults to 255</td><td>Optional, the default strategy is bagging</td></tr>
+          <tr><th scope="row">Risk</th><td>Too few bins blur a fine split. Try 4 bins on calendar month above.</td><td>Upweighted small rows add noise and can overfit on small data</td></tr>
+          <tr><th scope="row">Pays off on</th><td>Any data size</td><td>Large data, where cutting 70% of rows per tree saves real time</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre class="codeblock">import lightgbm as lgb
+model = lgb.LGBMRegressor(max_bin=255, data_sample_strategy="goss", top_rate=0.2, other_rate=0.1)</pre>
+    <p class="caption">Older LightGBM versions turned GOSS on with <code>boosting_type="goss"</code> instead.</p>
+  </section>
+
+  <section class="keys">
+    <div class="panel key"><h3>1 · Start from the average</h3><p>Round 0 predicts the average target for every row. Here that is last month's passengers grown by the average monthly change, which lags the seasonal swings badly.</p></div>
+    <div class="panel key"><h3>2 · Fit what's left</h3><p>Each new tree is trained on the current residuals, the negative gradient of squared error. Its answer is shrunk by η and added on. Small trees and a small η make many careful steps instead of a few big ones.</p></div>
+    <div class="panel key"><h3>3 · Stop early</h3><p>Training error only goes down. Test error does not. Choose the number of rounds on a validation window that comes after the training data, never by looking at training error.</p></div>
+    <div class="panel key"><h3>4 · Boosting vs bagging</h3><p>Boosting adds shallow trees in sequence to cut <b>bias</b>, so stumps work well here. <a href="https://pedramjahangiry.com/Interactive_tools/m5_ml/bagging-visualization.html" target="_blank" rel="noopener">Bagging</a> averages deep trees in parallel to cut <b>variance</b>, where stumps barely help. Neither can extrapolate a trend, so both need a stationary target.</p></div>
+  </section>
+
+  <footer>Data: Box and Jenkins monthly international airline passengers, January 1949 to December 1960, thousands. Rows start in April 1950 so every lag exists. With the monthly log change target, g<sub>t</sub> = log P<sub>t</sub> − log P<sub>t−1</sub>, the features are the calendar month, g<sub>t−1</sub>, g<sub>t−2</sub> and g<sub>t−12</sub>, and the forecast is P̂<sub>t</sub> = P<sub>t−1</sub> · e<sup>ĝ<sub>t</sub></sup>. The raw target uses P<sub>t−1</sub>, P<sub>t−2</sub>, P<sub>t−12</sub> and the month. Model: plain gradient boosting with squared error, level-wise trees, no other regularization. Histogram bins are equal width over each feature's training range. Real LightGBM also grows trees leaf-wise and bundles sparse features, which this page leaves out.</footer>
+</div>
+
+<script>
+(function(){
+const AIR=[112,118,132,129,121,135,148,148,136,119,104,118,115,126,141,135,125,149,170,170,158,133,114,140,145,150,178,163,172,178,199,199,184,162,146,166,171,180,193,181,183,218,230,242,209,191,172,194,196,196,236,235,229,243,264,272,237,211,180,201,204,188,235,227,234,264,302,293,259,229,203,229,242,233,267,269,270,315,364,347,312,274,237,278,284,277,317,313,318,374,413,405,355,306,271,306,315,301,356,348,355,422,465,467,404,347,305,336,340,318,362,348,363,435,491,505,404,359,310,337,360,342,406,396,420,472,548,559,463,407,362,405,417,391,419,461,472,535,622,606,508,461,390,432];
+const N=AIR.length,T0=15,SPLIT=120,MMAX=200,MNAME=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const LG=AIR.map(Math.log),G=AIR.map((v,t)=>t>=1?LG[t]-LG[t-1]:null);
+const FEATS={diff:['calendar month',"last month's change",'change 2 months ago','change a year ago'],raw:['calendar month',"last month's count",'count 2 months ago','count a year ago']};
+const HINTS={diff:'Trees predict g = log P<sub>t</sub> − log P<sub>t−1</sub> from the month and past changes, then the forecast is P<sub>t−1</sub>·e<sup>ĝ</sup>.',raw:'Trees predict P<sub>t</sub> directly from P<sub>t−1</sub>, P<sub>t−2</sub>, P<sub>t−12</sub> and the month. Watch the test years.'};
+const DEPTH_NAMES={1:['Stump','one split, the classic weak learner'],2:['Small','up to 4 leaves'],3:['Medium','up to 8 leaves'],4:['Deeper','up to 16 leaves, each tree learns a lot']};
+const S={mode:'diff',depth:1,lr:0.1,split:'exact',bins:16,samp:'none',a:0.2,b:0.1,M:60,zoom:true,seed:3,feat:0,hBins:8,gSeed:1};
+const $=id=>document.getElementById(id);
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+
+let rows=[],trIdx=[],teIdx=[],F=[],Y=[],n=0,edges=[],trees=[],stTr=[],stAll=[],errTr=[],errTe=[],naive=0,best=0;
+function makeRows(){rows=[];for(let t=T0;t<N;t++){const m=t%12+1;rows.push(S.mode==='diff'?{t,f:[m,G[t-1],G[t-2],G[t-12]],y:G[t]}:{t,f:[m,AIR[t-1],AIR[t-2],AIR[t-12]],y:AIR[t]});}
+  trIdx=[];teIdx=[];rows.forEach((r,i)=>(r.t<SPLIT?trIdx:teIdx).push(i));F=trIdx.map(i=>rows[i].f);Y=trIdx.map(i=>rows[i].y);n=F.length;
+  let e=0;teIdx.forEach(i=>{const t=rows[i].t;e+=(AIR[t-12]-AIR[t])**2;});naive=Math.sqrt(e/teIdx.length);}
+const back=(t,y)=>S.mode==='diff'?AIR[t-1]*Math.exp(y):y;
+function edgesFor(j,B){let lo=Infinity,hi=-Infinity;for(const f of F){lo=Math.min(lo,f[j]);hi=Math.max(hi,f[j]);}const e=[];for(let k=1;k<B;k++)e.push(lo+(hi-lo)*k/B);return{lo,hi,e};}
+
+function bestSplit(idx,R,W,j,mode,E){
+  const s=idx.slice().sort((p,q)=>F[p][j]-F[q][j]);let sw=0,sr=0;for(const i of s){sw+=W[i];sr+=W[i]*R[i];}
+  const base=sr*sr/sw;let bs=-1,bt=null,lw=0,lr=0,k=0;
+  if(mode==='exact'){for(let q=1;q<s.length;q++){lw+=W[s[q-1]];lr+=W[s[q-1]]*R[s[q-1]];const a=F[s[q-1]][j],b=F[s[q]][j];if(a===b||lw<=0||sw-lw<=0)continue;const g=lr*lr/lw+(sr-lr)**2/(sw-lw)-base;if(g>bs){bs=g;bt=(a+b)/2;}}}
+  else{for(const t of E){while(k<s.length&&F[s[k]][j]<t){lw+=W[s[k]];lr+=W[s[k]]*R[s[k]];k++;}if(lw<=0||sw-lw<=0)continue;const g=lr*lr/lw+(sr-lr)**2/(sw-lw)-base;if(g>bs){bs=g;bt=t;}}}
+  return{gain:bs,t:bt};}
+function build(idx,R,W,d){let sw=0,sr=0;for(const i of idx){sw+=W[i];sr+=W[i]*R[i];}const leaf={v:sw>0?sr/sw:0,n:idx.length};if(d===0||idx.length<2)return leaf;
+  let best=null;for(let j=0;j<4;j++){const b=bestSplit(idx,R,W,j,S.split,edges[j]);if(b.t!==null&&b.gain>1e-12&&(!best||b.gain>best.gain))best={...b,j};}
+  if(!best)return leaf;const L=idx.filter(i=>F[i][best.j]<best.t),Rr=idx.filter(i=>F[i][best.j]>=best.t);
+  return{j:best.j,t:best.t,l:build(L,R,W,d-1),r:build(Rr,R,W,d-1)};}
+function pred(nd,f){while(nd.v===undefined)nd=f[nd.j]<nd.t?nd.l:nd.r;return nd.v;}
+
+function train(){edges=[0,1,2,3].map(j=>edgesFor(j,S.bins).e);const rng=mulberry(S.seed*7919+11);
+  const f0=Y.reduce((s,v)=>s+v,0)/n;let cur=new Float64Array(rows.length).fill(f0);trees=[];stAll=[cur.slice()];
+  for(let m=0;m<=MMAX;m++){const R=trIdx.map((ri,i)=>Y[i]-cur[ri]);let idx=[...Array(n).keys()],W=new Array(n).fill(1);
+    if(S.samp==='goss'){const s=idx.slice().sort((p,q)=>Math.abs(R[q])-Math.abs(R[p]));const K=Math.round(S.a*n),Sm=Math.max(1,Math.min(Math.round(S.b*n),n-K));const rest=s.slice(K);
+      for(let i=rest.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]];}const pick=rest.slice(0,Sm);W=new Array(n).fill(0);s.slice(0,K).forEach(i=>W[i]=1);pick.forEach(i=>W[i]=(n-K)/Sm);idx=s.slice(0,K).concat(pick);}
+    const tree=build(idx,R,W,S.depth);trees.push(tree);if(m===MMAX)break;
+    const nx=new Float64Array(rows.length);for(let i=0;i<rows.length;i++)nx[i]=cur[i]+S.lr*pred(tree,rows[i].f);cur=nx;stAll.push(cur);}
+  errTr=[];errTe=[];for(let m=0;m<=MMAX;m++){const c=stAll[m];let a=0,b=0;trIdx.forEach(i=>a+=(back(rows[i].t,c[i])-AIR[rows[i].t])**2);teIdx.forEach(i=>b+=(back(rows[i].t,c[i])-AIR[rows[i].t])**2);errTr.push(Math.sqrt(a/trIdx.length));errTe.push(Math.sqrt(b/teIdx.length));}
+  best=errTe.indexOf(Math.min(...errTe));}
+function residuals(m){const c=stAll[m];return trIdx.map((ri,i)=>Y[i]-c[ri]);}
+
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function setup(cv){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);c.font='11px '+css('--f-mono');return{c,w:r.width,h:r.height};}
+function nice(lo,hi,k){const raw=(hi-lo)/k,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p,step=(m<1.5?1:m<3?2:m<7?5:10)*p;const out=[];for(let v=Math.ceil(lo/step-1e-9)*step;v<=hi+1e-9;v+=step)out.push(+v.toFixed(6));return out;}
+function yAxis(c,w,pad,lo,hi,sy,fmt){c.textBaseline='middle';c.lineWidth=1;for(const v of nice(lo,hi,4)){c.strokeStyle=css('--grid');c.beginPath();c.moveTo(pad.l,sy(v));c.lineTo(w-pad.r,sy(v));c.stroke();c.fillStyle=css('--muted');c.textAlign='right';c.fillText(fmt?fmt(v):v,pad.l-6,sy(v));}}
+const pctFmt=v=>(Math.round(v*1000)/10)+'%';
+
+function drawFit(){const {c,w,h}=setup($('fit'));const pad={l:44,r:12,t:12,b:26};
+  const t0=S.zoom?108:0,lo=S.zoom?280:80,hi=660;const sx=t=>pad.l+(t-t0)/(N-1-t0)*(w-pad.l-pad.r),sy=v=>pad.t+(hi-Math.max(lo,Math.min(hi,v)))/(hi-lo)*(h-pad.t-pad.b);
+  c.fillStyle=css('--band');c.fillRect(sx(SPLIT-0.5),pad.t,w-pad.r-sx(SPLIT-0.5),h-pad.t-pad.b);
+  yAxis(c,w,pad,lo,hi,sy);c.textAlign='center';c.textBaseline='top';c.fillStyle=css('--muted');
+  if(S.zoom){for(let t=108;t<N;t+=6)c.fillText((t%12===0?'Jan ':'Jul ')+"'"+String(49+Math.floor(t/12)),sx(t),h-pad.b+8);}else{for(let t=0;t<N;t+=24)c.fillText(1949+t/12,sx(t),h-pad.b+8);}
+  c.textAlign='left';c.fillText('Train',pad.l+6,pad.t+6);c.fillText('Test',sx(SPLIT-0.5)+6,pad.t+6);
+  const line=(get,col,lw,dash)=>{c.save();c.strokeStyle=col;c.lineWidth=lw;c.setLineDash(dash||[]);c.lineJoin='round';c.beginPath();let on=false;rows.forEach((r,i)=>{if(r.t<t0)return;const X=sx(r.t),Yv=sy(get(i,r));on?c.lineTo(X,Yv):c.moveTo(X,Yv);on=true;});c.stroke();c.restore();};
+  c.save();c.strokeStyle=css('--ink');c.globalAlpha=.5;c.lineWidth=1.3;c.beginPath();for(let t=t0;t<N;t++){t===t0?c.moveTo(sx(t),sy(AIR[t])):c.lineTo(sx(t),sy(AIR[t]));}c.stroke();c.restore();
+  line((i,r)=>back(r.t,stAll[0][i]),css('--muted'),1.4,[5,4]);
+  line((i,r)=>back(r.t,stAll[S.M][i]),css('--train'),2.6);
+  c.fillStyle=css('--ink');for(let t=t0;t<N;t++){c.beginPath();c.arc(sx(t),sy(AIR[t]),S.zoom?3:2,0,7);c.fill();}
+}
+
+function drawRes(){const {c,w,h}=setup($('res'));const pad={l:44,r:12,t:10,b:24};const R=residuals(S.M),tree=trees[S.M];
+  const nxt=trIdx.map((ri,i)=>pred(tree,F[i]));let m=Math.max(...R.map(Math.abs),...nxt.map(Math.abs))*1.1||1;
+  const t0=rows[trIdx[0]].t,t1=rows[trIdx[n-1]].t;const sx=t=>pad.l+(t-t0+0.5)/(t1-t0+1)*(w-pad.l-pad.r),sy=v=>pad.t+(m-v)/(2*m)*(h-pad.t-pad.b);
+  yAxis(c,w,pad,-m,m,sy,S.mode==='diff'?pctFmt:null);const bw=Math.max(1,(w-pad.l-pad.r)/(t1-t0+1)-1.2);
+  R.forEach((v,i)=>{const t=rows[trIdx[i]].t;c.fillStyle=v>=0?css('--pos'):css('--neg');const y0=sy(0),y1=sy(v);c.fillRect(sx(t)-bw/2,Math.min(y0,y1),bw,Math.max(1,Math.abs(y1-y0)));});
+  c.save();c.strokeStyle=css('--val');c.lineWidth=2;c.beginPath();nxt.forEach((v,i)=>{const X=sx(rows[trIdx[i]].t),Yv=sy(v);i?c.lineTo(X,Yv):c.moveTo(X,Yv);});c.stroke();c.restore();
+  c.textAlign='center';c.textBaseline='top';c.fillStyle=css('--muted');for(let y=1951;y<=1958;y+=1){const t=(y-1949)*12;if(t>=t0)c.fillText(y,sx(t),h-pad.b+6);}
+  $('nextTree').innerHTML=describe(tree);}
+function fmtF(j,v){if(j===0)return MNAME[Math.min(11,Math.max(0,Math.ceil(v)-1))];return S.mode==='diff'?pctFmt(v):Math.round(v)+'k';}
+function fmtLeaf(v){return S.mode==='diff'?(v>=0?'+':'−')+Math.abs(Math.round(v*1000)/10)+'%':(v>=0?'+':'−')+Math.abs(Math.round(v))+'k';}
+function describe(tree){if(tree.v!==undefined)return 'Next tree: no useful split left, it predicts one constant.';
+  const nm=FEATS[S.mode][tree.j],side=S.mode==='diff'?'monthly change':'passengers';
+  const cond=tree.j===0?`<b>${nm}</b> is ${fmtF(0,tree.t)} or later`:`<b>${nm}</b> ≥ ${fmtF(tree.j,tree.t)}`;
+  if(tree.l.v!==undefined&&tree.r.v!==undefined)return `Next tree: if ${cond}, push the ${side} by <b>${fmtLeaf(tree.r.v)}</b>, otherwise by <b>${fmtLeaf(tree.l.v)}</b>. The model only moves η = ${S.lr.toFixed(2)} of that.`;
+  return `Next tree's first split: ${cond}. Its leaves then adjust the ${side} by different amounts. The model only moves η = ${S.lr.toFixed(2)} of each.`;}
+
+let errGeom=null;
+function drawErr(){const {c,w,h}=setup($('err'));const pad={l:44,r:14,t:12,b:26};const hi=Math.min(Math.max(...errTe.slice(1),naive,...errTr.slice(1))*1.1,Math.max(errTe[0],naive)*1.15);
+  const sx=m=>pad.l+m/MMAX*(w-pad.l-pad.r),sy=v=>pad.t+(hi-Math.min(v,hi))/hi*(h-pad.t-pad.b);errGeom={pad,w};
+  yAxis(c,w,pad,0,hi,sy);c.textAlign='center';c.textBaseline='top';c.fillStyle=css('--muted');for(const m of [0,50,100,150,200])c.fillText(m,sx(m),h-pad.b+8);
+  c.save();c.strokeStyle=css('--muted');c.lineWidth=1.5;c.setLineDash([4,4]);c.beginPath();c.moveTo(pad.l,sy(naive));c.lineTo(w-pad.r,sy(naive));c.stroke();c.restore();
+  const path=(a,col,lw)=>{c.save();c.strokeStyle=col;c.lineWidth=lw;c.lineJoin='round';c.beginPath();a.forEach((v,m)=>{m?c.lineTo(sx(m),sy(v)):c.moveTo(sx(m),sy(v));});c.stroke();c.restore();};
+  path(errTr,css('--train'),2.4);path(errTe,css('--val'),2.4);
+  c.beginPath();c.arc(sx(best),sy(errTe[best]),5,0,7);c.fillStyle=css('--truth');c.fill();
+  const X=sx(S.M);c.save();c.strokeStyle=css('--ink');c.globalAlpha=.35;c.setLineDash([2,3]);c.beginPath();c.moveTo(X,pad.t);c.lineTo(X,h-pad.b);c.stroke();c.restore();
+  c.strokeStyle=css('--surface');c.lineWidth=2;for(const [a,col] of [[errTr,'--train'],[errTe,'--val']]){c.beginPath();c.arc(X,sy(a[S.M]),5,0,7);c.fillStyle=css(col);c.fill();c.stroke();}
+  c.fillStyle=css('--muted');c.textAlign='right';c.textBaseline='bottom';c.fillText('boosting rounds →',w-pad.r,h-pad.b-4);}
+
+function gainAt(R,W,idx,j,t){let sw=0,sr=0,lw=0,lr=0;for(const i of idx){sw+=W[i];sr+=W[i]*R[i];if(F[i][j]<t){lw+=W[i];lr+=W[i]*R[i];}}if(lw<=0||sw-lw<=0)return 0;return lr*lr/lw+(sr-lr)**2/(sw-lw)-sr*sr/sw;}
+function drawHist(){const {c,w,h}=setup($('hv'));const R=residuals(S.M),j=S.feat,W=new Array(n).fill(1),all=[...Array(n).keys()];
+  const {lo,hi,e}=edgesFor(j,S.hBins);const ex=bestSplit(all,R,W,j,'exact'),hs=bestSplit(all,R,W,j,'hist',e);
+  const uniq=new Set(F.map(f=>f[j])).size;$('hT1').textContent=`${uniq-1} vs ${e.length}`;$('hT2').textContent=ex.t===null?'–':`${fmtF(j,ex.t)} vs ${hs.t===null?'–':fmtF(j,hs.t)}`;
+  $('hT3').textContent=ex.gain>0?Math.round(Math.max(0,hs.gain)/ex.gain*100)+'%':'–';
+  const pad={l:12,r:12,t:16,b:22};const span=hi-lo||1,x0=lo-span*0.03,x1=hi+span*0.03;const sx=v=>pad.l+(v-x0)/(x1-x0)*(w-pad.l-pad.r);
+  const H=h-pad.t-pad.b,topH=H*0.42,tickY=pad.t+topH+14,barMid=pad.t+topH+28+(H-topH-28)/2,barHalf=(H-topH-28)/2-4;
+  let m=Math.max(...R.map(Math.abs))||1;const syT=v=>pad.t+(m-v)/(2*m)*topH;
+  c.strokeStyle=css('--muted');c.globalAlpha=.6;c.setLineDash([3,3]);c.lineWidth=1;const allEdges=[lo,...e,hi];for(const t of allEdges){c.beginPath();c.moveTo(sx(t),pad.t);c.lineTo(sx(t),h-pad.b);c.stroke();}c.setLineDash([]);c.globalAlpha=1;
+  c.fillStyle=css('--muted');c.textAlign='left';c.textBaseline='bottom';c.fillText(`${n} training rows: ${FEATS[S.mode][j]} vs current residual`,pad.l,pad.t-2);
+  c.strokeStyle=css('--grid');c.beginPath();c.moveTo(pad.l,syT(0));c.lineTo(w-pad.r,syT(0));c.stroke();
+  const jit=mulberry(7);c.fillStyle=css('--ink');F.forEach((f,i)=>{const dx=j===0?(jit()-0.5)*0.5:0;c.beginPath();c.arc(sx(f[j]+dx),syT(R[i]),3,0,7);c.fill();});
+  c.strokeStyle=css('--muted');c.lineWidth=1;const vals=[...new Set(F.map(f=>f[j]))].sort((a,b)=>a-b);for(let k=1;k<vals.length;k++){const X=sx((vals[k-1]+vals[k])/2);c.beginPath();c.moveTo(X,tickY-6);c.lineTo(X,tickY+6);c.stroke();}
+  c.textBaseline='top';c.fillText('exact method tests every gap',pad.l,tickY+8);
+  const sums=new Array(e.length+1).fill(0);F.forEach((f,i)=>{let b=0;while(b<e.length&&f[j]>=e[b])b++;sums[b]+=R[i];});const ms=Math.max(...sums.map(Math.abs))||1;
+  c.strokeStyle=css('--line');c.beginPath();c.moveTo(pad.l,barMid);c.lineTo(w-pad.r,barMid);c.stroke();
+  sums.forEach((s,b)=>{const a=sx(allEdges[b])+2,z=sx(allEdges[b+1])-2,hh=s/ms*barHalf;c.fillStyle=s>=0?css('--pos'):css('--neg');c.beginPath();c.roundRect?c.roundRect(a,s>=0?barMid-hh:barMid,Math.max(1,z-a),Math.max(1,Math.abs(hh)),3):c.rect(a,s>=0?barMid-hh:barMid,Math.max(1,z-a),Math.max(1,Math.abs(hh)));c.fill();});
+  if(ex.t!==null){c.save();c.strokeStyle=css('--ink');c.lineWidth=1.6;c.setLineDash([6,4]);c.beginPath();c.moveTo(sx(ex.t),pad.t);c.lineTo(sx(ex.t),h-pad.b);c.stroke();c.restore();}
+  if(hs.t!==null){c.strokeStyle=css('--kept');c.lineWidth=2.6;c.beginPath();c.moveTo(sx(hs.t),pad.t);c.lineTo(sx(hs.t),h-pad.b);c.stroke();}
+  c.fillStyle=css('--muted');c.textAlign='center';c.textBaseline='top';
+  if(j===0){for(let mo=1;mo<=12;mo++)c.fillText(MNAME[mo-1][0],sx(mo),h-pad.b+6);}else{for(const v of nice(lo,hi,4))if(v>=x0&&v<=x1)c.fillText(S.mode==='diff'?pctFmt(v):v,sx(v),h-pad.b+6);}}
+
+function drawGoss(){const {c,w,h}=setup($('gv'));const R=residuals(S.M);const ord=[...Array(n).keys()].sort((p,q)=>Math.abs(R[q])-Math.abs(R[p]));
+  const K=Math.round(S.a*n),Sm=Math.max(1,Math.min(Math.round(S.b*n),n-K)),wt=(n-K)/Sm;const rng=mulberry(S.gSeed*104729);const shuf=a=>{const b=a.slice();for(let i=b.length-1;i>0;i--){const k=Math.floor(rng()*(i+1));[b[i],b[k]]=[b[k],b[i]];}return b;};
+  const pick=new Set(shuf(ord.slice(K)).slice(0,Sm));
+  const pad={l:12,r:12,t:30,b:22},bw=(w-pad.l-pad.r)/n,mx=Math.abs(R[ord[0]])||1,base=h-pad.b;
+  ord.forEach((i,r)=>{const hh=Math.abs(R[i])/mx*(base-pad.t-6);c.fillStyle=r<K?css('--kept'):pick.has(i)?css('--samp'):css('--skip');c.fillRect(pad.l+r*bw+0.5,base-hh,Math.max(1,bw-1),Math.max(1,hh));});
+  c.strokeStyle=css('--muted');c.setLineDash([4,4]);c.lineWidth=1.2;const X=pad.l+K*bw;c.beginPath();c.moveTo(X,pad.t-4);c.lineTo(X,base);c.stroke();c.setLineDash([]);
+  c.fillStyle=css('--muted');c.textAlign='left';c.textBaseline='bottom';c.fillText(`${n} rows sorted by |residual|, biggest errors on the left`,pad.l,pad.t-16);
+  c.fillStyle=css('--ink');c.fillText(`top ${K} kept | ${Sm} of the other ${n-K} sampled`,Math.min(X+6,w-pad.r-230),pad.t+8);
+  c.fillStyle=css('--muted');c.textBaseline='top';c.fillText('large residual',pad.l,base+6);c.textAlign='right';c.fillText('small residual',w-pad.r,base+6);
+  $('gT1').textContent=`${K+Sm} of ${n}`;$('gT2').textContent='×'+wt.toFixed(1);
+  const tot=R.reduce((q,v)=>q+Math.abs(v),0)||1;let gm=0;ord.slice(0,K).forEach(i=>gm+=Math.abs(R[i]));pick.forEach(i=>gm+=Math.abs(R[i]));
+  const r2=mulberry(S.gSeed*31+5);let rm=0;const T=300;for(let q=0;q<T;q++){const b=[...Array(n).keys()];for(let i=b.length-1;i>0;i--){const k=Math.floor(r2()*(i+1));[b[i],b[k]]=[b[k],b[i]];}b.slice(0,K+Sm).forEach(i=>rm+=Math.abs(R[i]));}
+  $('gT3').textContent=Math.round(gm/tot*100)+'%';$('gT4').textContent=Math.round(rm/T/tot*100)+'%';}
+
+function verdict(){const te=errTe[S.M],tr=errTr[S.M];$('rTest').textContent=te.toFixed(1);$('rTestS').textContent=`after ${S.M} round${S.M===1?'':'s'}`;$('rTrain').textContent=tr.toFixed(1);
+  $('rBest').textContent=best;$('rBestS').textContent=`test RMSE ${errTe[best].toFixed(1)}`;$('rNaive').textContent=naive.toFixed(1);
+  const pill=$('pill'),t=$('diagText');
+  if(S.mode==='raw'){pill.className='pill bias';pill.textContent="Can't extrapolate";t.textContent=`Training error drops to ${tr.toFixed(1)}, yet test error stays near ${te.toFixed(1)}. Trees only output passenger counts they saw before 1959, so every forecast for the record summers of 1959 and 1960 falls short. Model the monthly change instead.`;}
+  else if(S.M===0){pill.className='pill bias';pill.textContent='Starting point';t.textContent=`Round 0 is just last month plus average growth. It misses every seasonal turn, test RMSE ${te.toFixed(1)}. Press play and watch the trees learn the seasons.`;}
+  else if(tr<0.5&&S.M>best){pill.className='pill var';pill.textContent='Memorized';t.textContent=`Training RMSE is ${tr.toFixed(1)}: these trees memorized 1950 to 1958 and have nothing left to learn, so test RMSE is stuck at ${te.toFixed(1)}. Its best was ${errTe[best].toFixed(1)} at round ${best}. Shallower trees with a small η usually do better.`;}
+  else if(S.lr>=0.7&&te>errTe[best]*1.15){pill.className='pill var';pill.textContent='Too fast';t.textContent=`With η = ${S.lr.toFixed(2)} each tree takes a full step, so the model fits training noise within a few rounds. Training RMSE ${tr.toFixed(1)}, test ${te.toFixed(1)}. A smaller η needs more rounds but generalizes better.`;}
+  else if(S.M<best&&te>errTe[best]*1.08){pill.className='pill bias';pill.textContent='Still learning';t.textContent=`Test error is still falling. The best this setup reaches is ${errTe[best].toFixed(1)} at round ${best}. Add more rounds.`;}
+  else if(S.M>best&&te>errTe[best]*1.06){pill.className='pill var';pill.textContent='Overfitting';t.textContent=`Training RMSE fell to ${tr.toFixed(1)}, but test RMSE rose from ${errTe[best].toFixed(1)} at round ${best} to ${te.toFixed(1)}. Early stopping would have quit at round ${best}.`;}
+  else{pill.className='pill good';pill.textContent='Sweet spot';t.textContent=`Test RMSE ${te.toFixed(1)}, close to the best of ${errTe[best].toFixed(1)} at round ${best}, and ${Math.round((1-te/naive)*100)}% below the seasonal naive forecast of ${naive.toFixed(1)}.`;}}
+
+function drawModel(){drawFit();drawRes();drawErr();}
+function drawWork(){drawHist();drawGoss();}
+function drawAll(){$('mTitle').textContent=S.M;$('roundRef').textContent=S.M;$('resUnit').textContent=S.mode==='diff'?'training residuals, monthly log change':'training residuals, thousands';drawModel();drawWork();verdict();}
+function refit(){makeRows();train();drawAll();}
+function retrain(){train();drawAll();}
+
+function press(ids,on){ids.forEach(id=>$(id).setAttribute('aria-pressed',id===on));}
+function setMode(m){S.mode=m;press(['mDiff','mRaw'],m==='diff'?'mDiff':'mRaw');$('modeHint').innerHTML=HINTS[m];buildFeatSeg();}
+function setDepth(d){S.depth=d;document.querySelectorAll('#depths button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.d===d));const [a,b]=DEPTH_NAMES[d];$('depname').innerHTML=`<b>${a}</b> · ${b}`;}
+function setSplit(s){S.split=s;press(['sExact','sHist'],s==='exact'?'sExact':'sHist');$('binsOut').textContent=s==='exact'?'all gaps':S.bins+' bins';}
+function setSamp(s){S.samp=s;press(['rAll','rGoss'],s==='none'?'rAll':'rGoss');}
+function setLr(v){S.lr=v;$('lr').value=v;$('lrOut').textContent=v.toFixed(2);}
+function setM(m){S.M=m;$('mRange').value=m;$('mOut').textContent=m;}
+function setZoom(z){S.zoom=z;press(['vFull','vZoom'],z?'vZoom':'vFull');}
+function buildFeatSeg(){const seg=$('featSeg');seg.innerHTML='';[0,1,3].forEach(j=>{const b=document.createElement('button');b.textContent=FEATS[S.mode][j][0].toUpperCase()+FEATS[S.mode][j].slice(1);b.setAttribute('aria-pressed',j===S.feat);b.onclick=()=>{S.feat=j;buildFeatSeg();drawHist();};seg.appendChild(b);});}
+
+const dWrap=$('depths');for(let d=1;d<=4;d++){const b=document.createElement('button');b.textContent=d;b.dataset.d=d;b.setAttribute('aria-label','Depth '+d);b.onclick=()=>{setDepth(d);retrain();};dWrap.appendChild(b);}
+$('mDiff').onclick=()=>{setMode('diff');refit();};$('mRaw').onclick=()=>{setMode('raw');refit();};
+$('lr').oninput=e=>{setLr(+e.target.value);retrain();};
+$('sExact').onclick=()=>{setSplit('exact');retrain();};$('sHist').onclick=()=>{setSplit('hist');retrain();};
+$('bins').oninput=e=>{S.bins=+e.target.value;if(S.split==='exact')setSplit('hist');else $('binsOut').textContent=S.bins+' bins';retrain();};
+$('rAll').onclick=()=>{setSamp('none');retrain();};$('rGoss').onclick=()=>{setSamp('goss');retrain();};
+$('mRange').oninput=e=>{setM(+e.target.value);drawAll();};
+$('vFull').onclick=()=>{setZoom(false);drawFit();};$('vZoom').onclick=()=>{setZoom(true);drawFit();};
+$('hBins').oninput=e=>{S.hBins=+e.target.value;$('hBinsOut').textContent=S.hBins;drawHist();};
+const onRate=()=>{S.a=+$('ga').value;S.b=+$('gb').value;$('gaOut').textContent=S.a.toFixed(2);$('gbOut').textContent=S.b.toFixed(2);if(S.samp==='goss')retrain();else drawGoss();};
+$('ga').oninput=onRate;$('gb').oninput=onRate;
+$('resample').onclick=()=>{S.gSeed++;S.seed++;if(S.samp==='goss')retrain();else drawGoss();};
+const PRESETS={classic:{mode:'diff',depth:1,lr:0.1,split:'exact',samp:'none',M:60},fast:{mode:'diff',depth:2,lr:1,split:'exact',samp:'none',M:40},deep:{mode:'diff',depth:4,lr:0.3,split:'exact',samp:'none',M:150},lgbm:{mode:'diff',depth:1,lr:0.1,split:'hist',samp:'goss',M:60},raw:{mode:'raw',depth:2,lr:0.1,split:'exact',samp:'none',M:150}};
+document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{const p=PRESETS[b.dataset.preset];stop();setMode(p.mode);setDepth(p.depth);setLr(p.lr);setSplit(p.split);setSamp(p.samp);setM(p.M);refit();});
+
+const errCv=$('err');let dragging=false;
+function fromX(e){if(!errGeom)return;const r=errCv.getBoundingClientRect(),x=e.clientX-r.left,{pad,w}=errGeom;setM(Math.max(0,Math.min(MMAX,Math.round((x-pad.l)/(w-pad.l-pad.r)*MMAX))));drawAll();}
+errCv.addEventListener('pointerdown',e=>{dragging=true;stop();errCv.setPointerCapture(e.pointerId);fromX(e);});
+errCv.addEventListener('pointermove',e=>{if(dragging)fromX(e);});
+errCv.addEventListener('pointerup',()=>dragging=false);errCv.addEventListener('pointercancel',()=>dragging=false);
+
+let timer=null;const PLAY='<path d="M3 1.5v11l9-5.5z"/>',PAUSE='<path d="M2.5 1.5h3v11h-3zM8.5 1.5h3v11h-3z"/>';
+function stop(){if(timer){clearInterval(timer);timer=null;}$('playIcon').innerHTML=PLAY;$('play').setAttribute('aria-label','Play: add rounds one at a time');}
+$('play').onclick=()=>{if(timer){stop();return;}if(S.M>=MMAX)setM(0);$('playIcon').innerHTML=PAUSE;$('play').setAttribute('aria-label','Pause');
+  timer=setInterval(()=>{if(S.M>=MMAX){stop();return;}setM(S.M+(S.M<40?1:2));drawAll();},matchMedia('(prefers-reduced-motion: reduce)').matches?250:90);};
+
+const SUN='<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>',MOON='<path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/>';
+const isDark=()=>{const t=document.documentElement.getAttribute('data-theme');return t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;};
+function syncThemeBtn(){const d=isDark(),label=d?'Switch to light theme':'Switch to dark theme';$('themeIcon').innerHTML=d?SUN:MOON;$('themeBtn').setAttribute('aria-label',label);$('themeBtn').title=label;}
+$('themeBtn').onclick=()=>{const next=isDark()?'light':'dark';document.documentElement.setAttribute('data-theme',next);try{localStorage.setItem('boost-theme',next);}catch(e){}syncThemeBtn();};
+
+const redraw=()=>{if(stAll.length){drawModel();drawWork();}};
+let rz;new ResizeObserver(()=>{cancelAnimationFrame(rz);rz=requestAnimationFrame(redraw);}).observe(document.querySelector('.wrap'));
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{syncThemeBtn();redraw();});
+new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(redraw);
+
+syncThemeBtn();setMode('diff');setDepth(S.depth);setLr(S.lr);setSplit('exact');setSamp('none');setM(S.M);setZoom(true);refit();
+})();
+</script>
+
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>
