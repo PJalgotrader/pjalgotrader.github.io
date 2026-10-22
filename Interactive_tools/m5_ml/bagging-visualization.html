@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Bagging on the airline passengers data: train many regression trees on bootstrap resamples, average their one-month-ahead forecasts, and watch test error fall. Bootstrap calendar, OOB error, seasonal naive benchmark, and why trees can't extrapolate. In your browser, no install.">
+<title>Bagging Interactive Tool | Dr. Pedram Jahangiry</title>
+<script>
+// Apply a saved light/dark choice before first paint; otherwise follow the device setting.
+try { const t = localStorage.getItem("bag-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: same lab bench as the Learning Curve Lab. Controls on top, forecast and error instruments side by side, a bootstrap calendar for one tree, the verdict strip, then key ideas. */
+:root{
+  --bg:#EEF1F5; --surface:#FFFFFF; --ink:#141B26; --muted:#5A6577; --line:#D6DCE5; --grid:#E6EAF0; --band:#F4F6F9;
+  --train:#1E5BC6; --val:#D97A0B; --bench:#C8213B; --truth:#1E8C5A;
+  --bag1:#D9E5FA; --bag2:#9DBBF0; --bag3:#4F82DB; --on-bag3:#FFFFFF;
+  --bias-fg:#7A4E00; --bias-bg:#FFF0D2; --var-fg:#A0213B; --var-bg:#FDE3E8; --good-fg:#15623C; --good-bg:#DCF2E5;
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E131B; --surface:#151C27; --ink:#E5EAF1; --muted:#97A3B5; --line:#2A3445; --grid:#1D2532; --band:#19212D;
+  --train:#70A4FF; --val:#FFA53D; --bench:#FF5C74; --truth:#4CC38A;
+  --bag1:#1B2C4A; --bag2:#2B4D86; --bag3:#4F82DB; --on-bag3:#FFFFFF;
+  --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0E131B; --surface:#151C27; --ink:#E5EAF1; --muted:#97A3B5; --line:#2A3445; --grid:#1D2532; --band:#19212D;
+  --train:#70A4FF; --val:#FFA53D; --bench:#FF5C74; --truth:#4CC38A;
+  --bag1:#1B2C4A; --bag2:#2B4D86; --bag3:#4F82DB; --on-bag3:#FFFFFF;
+  --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:28px 48px}
+.wrap{max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:20px}
+a{color:var(--train)}
+:focus-visible{outline:2px solid var(--train); outline-offset:2px}
+
+header{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:12px 24px}
+.eyebrow{font-family:var(--f-mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+h1{font-family:var(--f-display); font-weight:700; font-size:clamp(30px, 5vw, 46px); line-height:1.05; margin:6px 0 8px; letter-spacing:-.01em; text-wrap:balance}
+.lede{margin:0; max-width:66ch; color:var(--muted); font-size:16px}
+.lede b{color:var(--ink); font-weight:600}
+.byline{font-size:13px; color:var(--muted); display:flex; gap:6px 14px; flex-wrap:wrap; align-items:center}
+.byline strong{color:var(--ink); font-weight:600}
+.theme-btn{width:34px; height:34px; display:grid; place-items:center; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); cursor:pointer; padding:0}
+.theme-btn:hover{border-color:var(--muted)}
+.theme-btn svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r)}
+.controls{display:grid; grid-template-columns:minmax(0,1.5fr) repeat(2, minmax(0,1fr)); gap:18px 28px; padding:18px 20px}
+.ctl{display:flex; flex-direction:column; gap:8px; min-width:0}
+.ctl-label{display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.ctl-label output{font-family:var(--f-mono); font-size:13px; text-transform:none; letter-spacing:0; color:var(--ink); font-weight:600}
+.depths{display:grid; grid-template-columns:repeat(8, minmax(0,1fr)); gap:4px}
+.depths button{font-family:var(--f-mono); font-size:14px; padding:8px 0; border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:6px; cursor:pointer}
+.depths button:hover{border-color:var(--muted)}
+.depths button[aria-pressed="true"]{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+.depname{font-size:13px; color:var(--muted)}
+.depname b{color:var(--ink); font-weight:600}
+input[type=range]{width:100%; accent-color:var(--train); margin:4px 0}
+.hint{font-size:12.5px; color:var(--muted)}
+.mode{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; padding-bottom:14px; border-bottom:1px solid var(--line)}
+.mode .lbl{font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.seg{display:inline-flex; gap:2px; padding:3px; border:1px solid var(--line); border-radius:9px; background:var(--bg)}
+.seg button{font:600 13px var(--f-body); border:0; background:transparent; color:var(--muted); padding:6px 14px; border-radius:6px; cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); outline:1px solid var(--line)}
+.mode .hint{flex:1 1 300px; min-width:0}
+.row-actions{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding-top:14px; border-top:1px solid var(--line)}
+.row-actions .lbl{font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin-right:4px}
+.chip{font:500 13px var(--f-body); padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer}
+.chip:hover{border-color:var(--muted)}
+.spacer{flex:1}
+.btn{font:600 13px var(--f-body); padding:7px 14px; border-radius:7px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer}
+.btn:hover{border-color:var(--muted)}
+
+.bench{display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:20px}
+.inst{padding:16px 18px 14px; display:flex; flex-direction:column; gap:10px; min-width:0}
+.inst h2{font-family:var(--f-display); font-weight:500; font-size:19px; margin:0; display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap}
+.inst h2 small{font-family:var(--f-mono); font-size:12px; color:var(--muted); font-weight:400}
+.plot{position:relative; height:clamp(280px, 34vw, 380px)}
+.plot canvas{position:absolute; inset:0; width:100%; height:100%; display:block}
+#err{cursor:ew-resize; touch-action:pan-y}
+.legend{display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12.5px; color:var(--muted)}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.sw{width:18px; height:0; border-top:3px solid currentColor; display:inline-block}
+.sw.dash{border-top-style:dashed; border-top-width:2px}
+.sw.faint{opacity:.35; border-top-width:2px}
+.sw.dot{width:8px; height:8px; border:none; border-radius:50%; background:currentColor}
+.sw.ring{width:8px; height:8px; border:1.5px solid currentColor; border-radius:50%}
+.c-ink{color:var(--ink)} .c-train{color:var(--train)} .c-val{color:var(--val)} .c-bench{color:var(--bench)} .c-truth{color:var(--truth)} .c-muted{color:var(--muted)}
+.scrub{display:flex; align-items:center; gap:12px}
+.scrub label{font-size:13px; color:var(--muted); white-space:nowrap}
+.scrub label output{font-family:var(--f-mono); color:var(--ink); font-weight:600; font-size:14px; display:inline-block; min-width:3ch}
+.play{width:38px; height:34px; flex:none; border-radius:7px; border:1px solid var(--ink); background:var(--ink); color:var(--surface); cursor:pointer; display:grid; place-items:center}
+.play svg{width:14px; height:14px; fill:currentColor}
+.inst-bar{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 16px}
+.toggles{display:flex; flex-wrap:wrap; gap:6px 18px}
+.toggle{display:inline-flex; gap:8px; align-items:center; font-size:13px; color:var(--muted); cursor:pointer}
+.caption{font-size:13px; color:var(--muted); margin:0}
+
+.boot{padding:16px 18px; display:flex; flex-direction:column; gap:12px}
+.boot-head{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px 20px}
+.boot-head h2{font-family:var(--f-display); font-weight:500; font-size:19px; margin:0}
+.boot-head p{margin:2px 0 0; font-size:13px; color:var(--muted)}
+.stepper{display:inline-flex; align-items:center; gap:6px}
+.stepper button{width:32px; height:32px; border-radius:7px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer; font:600 16px var(--f-mono)}
+.stepper button:hover{border-color:var(--muted)}
+.stepper output{font-family:var(--f-mono); font-weight:600; min-width:10ch; text-align:center; font-size:14px}
+.cal-wrap{overflow-x:auto}
+.cal{display:grid; grid-template-columns:40px repeat(12, minmax(22px, 1fr)); gap:3px; min-width:340px}
+.cal .mh{font:600 11px var(--f-mono); color:var(--muted); text-align:center; padding-bottom:2px}
+.cal .yr{font:600 12px var(--f-mono); color:var(--muted); display:flex; align-items:center}
+.cell{height:26px; border-radius:5px; display:grid; place-items:center; font:600 12px var(--f-mono); font-variant-numeric:tabular-nums; border:1px solid transparent}
+.cell.c0{border:1.5px dashed var(--val); color:var(--val)}
+.cell.c1{background:var(--bag1); color:var(--ink)}
+.cell.c2{background:var(--bag2); color:var(--ink)}
+.cell.c3{background:var(--bag3); color:var(--on-bag3)}
+.cell.cw{color:var(--muted); background:var(--band)}
+.cell.ct{color:var(--muted); background:var(--band); border:1px solid var(--line)}
+.cal-key{display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12.5px; color:var(--muted)}
+.cal-key span{display:inline-flex; align-items:center; gap:6px}
+.cal-key .cell{width:22px; height:18px; font-size:10.5px}
+.boot-stats{display:flex; flex-wrap:wrap; gap:6px 24px; font-size:13.5px; color:var(--muted)}
+.boot-stats b{font-family:var(--f-mono); color:var(--ink); font-weight:600}
+
+.verdict{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)) minmax(0,2.3fr); align-items:stretch}
+.read{padding:14px 18px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:2px; min-width:0}
+.read .k{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600}
+.read .v{font-family:var(--f-mono); font-size:24px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1.2}
+.read .s{font-size:12px; color:var(--muted)}
+.diag{padding:14px 20px; display:flex; flex-direction:column; gap:6px; min-width:0}
+.pill{align-self:flex-start; font:600 12.5px var(--f-body); letter-spacing:.03em; padding:4px 11px; border-radius:999px}
+.pill.bias{color:var(--bias-fg); background:var(--bias-bg)}
+.pill.var{color:var(--var-fg); background:var(--var-bg)}
+.pill.good{color:var(--good-fg); background:var(--good-bg)}
+.diag p{margin:0; font-size:14px}
+
+.keys{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:20px}
+.key{padding:16px 18px}
+.key h3{margin:0 0 4px; font-size:14.5px; font-weight:600}
+.key p{margin:0; color:var(--muted); font-size:14px; max-width:62ch}
+.mono{font-family:var(--f-mono); font-size:.92em}
+footer{font-size:12.5px; color:var(--muted); max-width:90ch}
+
+@media (max-width: 900px){
+  .controls{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .controls .ctl:first-of-type{grid-column:1 / -1}
+  .bench{grid-template-columns:1fr}
+  .verdict{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .read:nth-child(2n){border-right:none}
+  .read{border-bottom:1px solid var(--line)}
+  .diag{grid-column:1 / -1}
+}
+@media (max-width: 560px){
+  .controls{grid-template-columns:1fr}
+  .keys{grid-template-columns:1fr}
+  .read .v{font-size:20px}
+  .spacer{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Module 5 · Machine Learning for Time Series Forecasting</div>
+      <h1>Bagging the Airline Passengers</h1>
+      <p class="lede">Monthly international airline passengers, 1949 to 1960, in thousands. Each tree forecasts <b>next month</b> from the last three months and the calendar month. One deep tree overreacts to quirks in the history. Bagging trains <b>many trees on bootstrap resamples</b> of 1950 to 1958 and averages them. Then we score the forecasts on 1959 and 1960, which no tree ever saw.</p>
+    </div>
+    <div class="byline"><strong>Dr. Pedram Jahangiry</strong>
+      <a href="https://pedramjahangiry.com/" target="_blank" rel="noopener">Website</a>
+      <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" rel="noopener">YouTube</a>
+      <a href="https://github.com/pjalgotrader" target="_blank" rel="noopener">GitHub</a>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><svg id="themeIcon" viewBox="0 0 24 24"></svg></button></div>
+  </header>
+
+  <section class="panel controls" aria-label="Ensemble settings">
+    <div class="mode">
+      <span class="lbl">Target</span>
+      <div class="seg" role="group" aria-label="What the trees predict">
+        <button id="mDiff" aria-pressed="true">Seasonal log change</button>
+        <button id="mRaw" aria-pressed="false">Raw passenger count</button>
+      </div>
+      <span class="hint" id="modeHint"></span>
+    </div>
+    <div class="ctl">
+      <div class="ctl-label"><span>Base learner · max tree depth</span></div>
+      <div class="depths" id="depths"></div>
+      <div class="depname" id="depname"></div>
+    </div>
+    <div class="ctl">
+      <label class="ctl-label" for="bRange"><span>Trees in the bag B</span><output id="bOut">20</output></label>
+      <input type="range" id="bRange" min="1" max="50" step="1" value="20">
+      <div class="hint">Each tree gets its own bootstrap sample of training months.</div>
+    </div>
+    <div class="ctl">
+      <label class="ctl-label" for="leaf"><span>Min months per leaf</span><output id="leafOut">1</output></label>
+      <input type="range" id="leaf" min="1" max="10" step="1" value="1">
+      <div class="hint">Bigger leaves make each tree calmer on its own.</div>
+    </div>
+    <div class="row-actions">
+      <span class="lbl">Try</span>
+      <button class="chip" data-preset="one">One deep tree</button>
+      <button class="chip" data-preset="bag">Bag of deep trees</button>
+      <button class="chip" data-preset="stumps">Bag of stumps</button>
+      <button class="chip" data-preset="raw">Raw counts: trees can't extrapolate</button>
+      <span class="spacer"></span>
+      <button class="btn" id="reboot">New bootstrap draws</button>
+    </div>
+  </section>
+
+  <section class="bench">
+    <div class="panel inst">
+      <h2>Forecasts, one month ahead <small id="fitSub">average of 20 trees</small></h2>
+      <div class="legend">
+        <span class="c-ink"><i class="sw dot"></i>Actual passengers</span>
+        <span class="c-ink"><i class="sw faint"></i>Individual trees</span>
+        <span class="c-val"><i class="sw"></i>Highlighted tree</span>
+        <span class="c-train"><i class="sw"></i>Bagged forecast</span>
+        <span class="c-val" id="lgOob"><i class="sw ring"></i>Out of bag for that tree</span>
+      </div>
+      <div class="plot"><canvas id="fit" aria-label="Airline passengers with individual tree forecasts and the bagged forecast"></canvas></div>
+      <div class="inst-bar">
+        <div class="seg" role="group" aria-label="Time window">
+          <button id="vFull" aria-pressed="false">1949 to 1960</button>
+          <button id="vZoom" aria-pressed="true">Zoom on 1958 to 1960</button>
+        </div>
+        <div class="toggles">
+          <label class="toggle"><input type="checkbox" id="showTrees" checked> Individual trees</label>
+          <label class="toggle"><input type="checkbox" id="showBoot" checked> Highlighted tree</label>
+        </div>
+      </div>
+      <p class="caption">In the shaded test years the faint lines fan out: that spread is <b>variance</b>. The blue line is their average. Where every tree misses in the same direction, that is <b>bias</b>, and averaging can't fix it.</p>
+    </div>
+
+    <div class="panel inst">
+      <h2>Test RMSE vs number of trees <small>1959 to 1960, thousands</small></h2>
+      <div class="legend">
+        <span class="c-train"><i class="sw"></i>Bagged forecast</span>
+        <span class="c-val"><i class="sw"></i>OOB estimate</span>
+        <span class="c-bench"><i class="sw dash"></i>Typical single tree</span>
+        <span class="c-muted"><i class="sw dash"></i>Seasonal naive: same month last year</span>
+      </div>
+      <div class="plot"><canvas id="err" aria-label="Test RMSE as trees are added. Drag to change the number of trees."></canvas></div>
+      <div class="scrub">
+        <button class="play" id="play" aria-label="Play: add trees one at a time"><svg id="playIcon" viewBox="0 0 14 14"><path d="M3 1.5v11l9-5.5z"/></svg></button>
+        <label for="bRange2">B = <output id="bOut2">20</output></label>
+        <input type="range" id="bRange2" min="1" max="50" step="1" value="20">
+      </div>
+      <p class="caption">The first ten or so trees do most of the work, then the curve flattens. Notice the orange OOB line sits well below the real test error. Out of bag months fall between training months, so OOB measures filling gaps, not forecasting the future.</p>
+    </div>
+  </section>
+
+  <section class="panel boot" aria-live="polite">
+    <div class="boot-head">
+      <div>
+        <h2>Which months one tree trained on</h2>
+        <p>Each cell is one training month. The number is how many times the bootstrap drew it.</p>
+      </div>
+      <div class="stepper">
+        <button id="kPrev" aria-label="Previous tree">‹</button>
+        <output id="kOut">Tree 1 of 20</output>
+        <button id="kNext" aria-label="Next tree">›</button>
+      </div>
+    </div>
+    <div class="cal-wrap"><div class="cal" id="cal"></div></div>
+    <div class="cal-key">
+      <span><i class="cell c1">1</i>Drawn once</span>
+      <span><i class="cell c2">2</i>Twice</span>
+      <span><i class="cell c3">3</i>Three or more</span>
+      <span><i class="cell c0">0</i>Out of bag</span>
+      <span><i class="cell cw">·</i>Warm-up, needed for lags</span>
+      <span><i class="cell ct">T</i>Test month, never trained on</span>
+    </div>
+    <div class="boot-stats">
+      <span>Training months: <b id="sDraw">–</b></span>
+      <span>Unique months in bag: <b id="sUniq">–</b></span>
+      <span>Out of bag: <b id="sOob">–</b></span>
+      <span>Theory: about <b>36.8%</b> left out, since (1 − 1/n)ⁿ → e⁻¹</span>
+    </div>
+  </section>
+
+  <section class="panel verdict" aria-live="polite">
+    <div class="read"><span class="k">Single tree</span><span class="v c-bench" id="rSingle">–</span><span class="s">avg test RMSE of one tree</span></div>
+    <div class="read"><span class="k">Bagged</span><span class="v c-train" id="rBag">–</span><span class="s" id="rBagS">test RMSE, B = 20</span></div>
+    <div class="read"><span class="k">Seasonal naive</span><span class="v c-muted" id="rNaive">–</span><span class="s">benchmark to beat</span></div>
+    <div class="read"><span class="k">Bagging gain</span><span class="v" id="rCut">–</span><span class="s">RMSE drop vs one tree</span></div>
+    <div class="diag"><span class="pill" id="pill">–</span><p id="diagText"></p></div>
+  </section>
+
+  <section class="keys">
+    <div class="panel key"><h3>1 · Bootstrap the rows</h3><p>After building lag features, every month becomes one row: its last three months and its calendar month in, its value out. Bagging draws those rows with replacement. Some months show up twice, about a third never show up, so every tree learns a slightly different history.</p></div>
+    <div class="panel key"><h3>2 · Average the forecasts</h3><p>If each tree's forecast has variance σ²<sub>T</sub> and trees are correlated by ρ, the average has variance <span class="mono">ρσ²<sub>T</sub> + (1 − ρ)σ²<sub>T</sub>/B</span>. More trees shrink the second term only. That is why the curve flattens instead of reaching zero.</p></div>
+    <div class="panel key"><h3>3 · OOB is optimistic for time series</h3><p>An out of bag month still has training months right before and after it, so OOB error is an interpolation score. For a forecast you want a later holdout, or time series cross validation with an expanding window.</p></div>
+    <div class="panel key"><h3>4 · Trees can't extrapolate</h3><p>A tree predicts averages of values it has seen. Switch the target to raw counts and every 1960 forecast is stuck below the 1958 peak, no matter how many trees you bag. Modeling the seasonal log change removes the trend, so the trees only learn growth rates, and the forecast rebuilds the level.</p></div>
+  </section>
+
+  <footer>Data: Box and Jenkins monthly international airline passengers, January 1949 to December 1960, thousands. Rows start in April 1950 so every lag exists. Training rows run through December 1958; the 24 months of 1959 and 1960 are forecast one step ahead, each using the actual previous months. Seasonal log change is d<sub>t</sub> = log P<sub>t</sub> − log P<sub>t−12</sub>, roughly year over year growth, and the forecast is P̂<sub>t</sub> = P<sub>t−12</sub> · e<sup>d̂<sub>t</sub></sup>. Trees are CART regression trees with no pruning. A plain row bootstrap ignores the order of time; a block bootstrap, which resamples runs of neighboring months, is a common fix. Bagging builds deep trees in parallel to cut variance. Boosting builds shallow trees in sequence to cut bias.</footer>
+</div>
+
+<script>
+(function(){
+const AIR=[112,118,132,129,121,135,148,148,136,119,104,118,115,126,141,135,125,149,170,170,158,133,114,140,145,150,178,163,172,178,199,199,184,162,146,166,171,180,193,181,183,218,230,242,209,191,172,194,196,196,236,235,229,243,264,272,237,211,180,201,204,188,235,227,234,264,302,293,259,229,203,229,242,233,267,269,270,315,364,347,312,274,237,278,284,277,317,313,318,374,413,405,355,306,271,306,315,301,356,348,355,422,465,467,404,347,305,336,340,318,362,348,363,435,491,505,404,359,310,337,360,342,406,396,420,472,548,559,463,407,362,405,417,391,419,461,472,535,622,606,508,461,390,432];
+const N=AIR.length,T0=15,SPLIT=120,BMAX=50,MON=['J','F','M','A','M','J','J','A','S','O','N','D'],MNAME=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const S={mode:'diff',depth:8,B:20,leaf:1,k:0,showTrees:true,showBoot:true,zoom:true,bootSeed:5};
+const DEPTH_NAMES={1:["Stump","one split, two leaves"],2:["Shallow","up to 4 leaves"],3:["Shallow","up to 8 leaves"],4:["Medium","up to 16 leaves"],5:["Medium","up to 32 leaves"],6:["Deep","up to 64 leaves"],7:["Deep","close to one month per leaf"],8:["Deep","close to one month per leaf"]};
+const HINTS={diff:'Trees predict d = log P<sub>t</sub> − log P<sub>t−12</sub> from its last 3 values and the month, then rebuild the forecast as P<sub>t−12</sub>·e<sup>d̂</sup>.',raw:'Trees predict P<sub>t</sub> directly from P<sub>t−1</sub>, P<sub>t−2</sub>, P<sub>t−12</sub> and the month. Watch the test years.'};
+const $=id=>document.getElementById(id);
+const L=AIR.map(Math.log),D=AIR.map((v,t)=>t>=12?L[t]-L[t-12]:null);
+
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+let rows=[],trIdx=[],teIdx=[],counts=[],P=[],curve=[],oob=[],singleErr=0,naive=0;
+function makeRows(){rows=[];for(let t=T0;t<N;t++){const m=t%12+1;rows.push(S.mode==='diff'?{t,f:[D[t-1],D[t-2],D[t-3],m],y:D[t]}:{t,f:[AIR[t-1],AIR[t-2],AIR[t-12],m],y:AIR[t]});}
+  trIdx=[];teIdx=[];rows.forEach((r,i)=>(r.t<SPLIT?trIdx:teIdx).push(i));
+  let e=0;teIdx.forEach(i=>{const t=rows[i].t;e+=(AIR[t-12]-AIR[t])**2;});naive=Math.sqrt(e/teIdx.length);}
+const back=(t,yh)=>S.mode==='diff'?AIR[t-12]*Math.exp(yh):yh;
+function genBoot(){const r=mulberry(S.bootSeed*104729+7),n=trIdx.length;counts=[];for(let b=0;b<BMAX;b++){const c=new Array(n).fill(0);for(let j=0;j<n;j++)c[Math.floor(r()*n)]++;counts.push(c);}}
+
+function build(F,Y,idx,d,ml){const m=idx.length;let tot=0;for(const i of idx)tot+=Y[i];const mean=tot/m;if(d===0||m<2*ml)return{v:mean};
+  let best=null,bs=tot*tot/m+1e-12;const p=F[0].length;
+  for(let j=0;j<p;j++){const s=idx.slice().sort((a,b)=>F[a][j]-F[b][j]);let sl=0;for(let k=1;k<m;k++){sl+=Y[s[k-1]];if(k<ml||m-k<ml)continue;const a=F[s[k-1]][j],b=F[s[k]][j];if(a===b)continue;const sc=sl*sl/k+(tot-sl)*(tot-sl)/(m-k);if(sc>bs){bs=sc;best={j,t:(a+b)/2,k,s};}}}
+  if(!best)return{v:mean};return{j:best.j,t:best.t,l:build(F,Y,best.s.slice(0,best.k),d-1,ml),r:build(F,Y,best.s.slice(best.k),d-1,ml)};}
+function pred(n,f){while(n.v===undefined)n=f[n.j]<n.t?n.l:n.r;return n.v;}
+
+function fitAll(){const F=trIdx.map(i=>rows[i].f),Y=trIdx.map(i=>rows[i].y);P=[];let se=0;
+  for(let b=0;b<BMAX;b++){const idx=[];counts[b].forEach((v,i)=>{for(let k=0;k<v;k++)idx.push(i);});const tree=build(F,Y,idx,S.depth,S.leaf);
+    const p=rows.map(r=>back(r.t,pred(tree,r.f)));P.push(p);let e=0;teIdx.forEach(i=>e+=(p[i]-AIR[rows[i].t])**2);se+=Math.sqrt(e/teIdx.length);}
+  singleErr=se/BMAX;curve=[];oob=[];const acc=new Float64Array(rows.length),os=new Float64Array(trIdx.length),oc=new Int32Array(trIdx.length);
+  for(let b=0;b<BMAX;b++){let e=0;for(let i=0;i<rows.length;i++)acc[i]+=P[b][i];teIdx.forEach(i=>e+=(acc[i]/(b+1)-AIR[rows[i].t])**2);curve.push(Math.sqrt(e/teIdx.length));
+    trIdx.forEach((ri,j)=>{if(counts[b][j]===0){os[j]+=P[b][ri];oc[j]++;}});
+    let oe=0,on=0;trIdx.forEach((ri,j)=>{if(oc[j]){oe+=(os[j]/oc[j]-AIR[rows[ri].t])**2;on++;}});oob.push(on>=trIdx.length*0.3?Math.sqrt(oe/on):null);}
+}
+
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function setup(cv){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);return{c,w:r.width,h:r.height};}
+function nice(lo,hi,n){const raw=(hi-lo)/n,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p,step=(m<1.5?1:m<3?2:m<7?5:10)*p;const out=[];for(let v=Math.ceil(lo/step)*step;v<=hi+1e-9;v+=step)out.push(+v.toFixed(6));return out;}
+
+function drawFit(){const {c,w,h}=setup($('fit'));const pad={l:44,r:12,t:12,b:28};
+  const C={ink:css('--ink'),muted:css('--muted'),grid:css('--grid'),band:css('--band'),train:css('--train'),val:css('--val'),surface:css('--surface')};
+  const t0=S.zoom?108:0,t1=N-1;const lo=S.zoom?280:80,hi=S.zoom?660:660;
+  const sx=t=>pad.l+(t-t0)/(t1-t0)*(w-pad.l-pad.r),sy=v=>pad.t+(hi-v)/(hi-lo)*(h-pad.t-pad.b);
+  c.save();c.fillStyle=C.band;c.fillRect(sx(SPLIT-0.5),pad.t,sx(t1)+4-sx(SPLIT-0.5),h-pad.t-pad.b);c.restore();
+  c.font='11px '+css('--f-mono');c.lineWidth=1;c.textBaseline='middle';
+  for(const v of nice(lo,hi,5)){c.strokeStyle=C.grid;c.beginPath();c.moveTo(pad.l,sy(v));c.lineTo(w-pad.r,sy(v));c.stroke();c.fillStyle=C.muted;c.textAlign='right';c.fillText(v,pad.l-6,sy(v));}
+  c.textAlign='center';c.textBaseline='top';c.fillStyle=C.muted;
+  if(S.zoom){for(let t=108;t<N;t+=6)c.fillText((t%12===0?'Jan ':'Jul ')+"'"+String(49+Math.floor(t/12)).padStart(2,'0'),sx(t),h-pad.b+8);}
+  else{for(let t=0;t<N;t+=24)c.fillText(1949+t/12,sx(t),h-pad.b+8);}
+  c.textAlign='left';c.fillText('Train',pad.l+6,pad.t+6);c.fillText('Test',sx(SPLIT-0.5)+6,pad.t+6);
+  const series=(get,col,lw,alpha)=>{c.save();c.globalAlpha=alpha;c.strokeStyle=col;c.lineWidth=lw;c.lineJoin='round';c.beginPath();let on=false;rows.forEach((r,i)=>{if(r.t<t0)return;const X=sx(r.t),Y=sy(get(i));on?c.lineTo(X,Y):c.moveTo(X,Y);on=true;});c.stroke();c.restore();};
+  c.save();c.strokeStyle=C.ink;c.lineWidth=1.4;c.globalAlpha=.55;c.beginPath();for(let t=t0;t<N;t++){t===t0?c.moveTo(sx(t),sy(AIR[t])):c.lineTo(sx(t),sy(AIR[t]));}c.stroke();c.restore();
+  if(S.showTrees){const m=Math.min(S.B,30);for(let b=0;b<m;b++)if(!(S.showBoot&&b===S.k))series(i=>P[b][i],C.ink,1.1,S.B===1?.5:.17);}
+  if(S.showBoot&&S.B>1)series(i=>P[S.k][i],C.val,1.8,.95);
+  const avg=rows.map((r,i)=>{let s=0;for(let b=0;b<S.B;b++)s+=P[b][i];return s/S.B;});series(i=>avg[i],C.train,2.8,1);
+  const cnt=counts[S.k],pos=new Map(trIdx.map((ri,j)=>[rows[ri].t,j]));
+  for(let t=t0;t<N;t++){const X=sx(t),Y=sy(AIR[t]);c.beginPath();const j=pos.get(t);
+    if(S.showBoot&&j!==undefined&&cnt[j]===0){c.arc(X,Y,3.8,0,7);c.strokeStyle=C.val;c.lineWidth=1.6;c.fillStyle=C.surface;c.fill();c.stroke();}
+    else{const r=S.showBoot&&j!==undefined?2.2+1.3*cnt[j]:(S.zoom?3.2:2.2);c.arc(X,Y,r,0,7);c.fillStyle=C.ink;c.globalAlpha=.85;c.fill();c.globalAlpha=1;}}
+}
+
+let errGeom=null;
+function drawErr(){const {c,w,h}=setup($('err'));const pad={l:44,r:14,t:12,b:28};
+  const C={ink:css('--ink'),muted:css('--muted'),grid:css('--grid'),train:css('--train'),val:css('--val'),bench:css('--bench'),surface:css('--surface')};
+  const hi=Math.max(...curve,...oob.filter(v=>v!==null),singleErr,naive)*1.1,lo=0;
+  const sx=b=>pad.l+(b-1)/(BMAX-1)*(w-pad.l-pad.r),sy=v=>pad.t+(hi-Math.min(v,hi))/(hi-lo)*(h-pad.t-pad.b);errGeom={pad,w};
+  c.font='11px '+css('--f-mono');c.textBaseline='middle';c.lineWidth=1;
+  for(const v of nice(lo,hi,5)){c.strokeStyle=C.grid;c.beginPath();c.moveTo(pad.l,sy(v));c.lineTo(w-pad.r,sy(v));c.stroke();c.fillStyle=C.muted;c.textAlign='right';c.fillText(v,pad.l-6,sy(v));}
+  c.textAlign='center';c.textBaseline='top';for(const b of [1,10,20,30,40,50]){c.fillStyle=C.muted;c.fillText(b,sx(b),h-pad.b+8);}
+  const hline=(v,col,dash)=>{c.save();c.strokeStyle=col;c.lineWidth=1.6;c.setLineDash(dash);c.beginPath();c.moveTo(pad.l,sy(v));c.lineTo(w-pad.r,sy(v));c.stroke();c.restore();};
+  hline(naive,C.muted,[4,4]);hline(singleErr,C.bench,[7,5]);
+  const path=(arr,col,lw)=>{c.save();c.strokeStyle=col;c.lineWidth=lw;c.lineJoin='round';c.beginPath();let on=false;arr.forEach((v,i)=>{if(v===null){on=false;return;}const X=sx(i+1),Y=sy(v);on?c.lineTo(X,Y):c.moveTo(X,Y);on=true;});c.stroke();c.restore();};
+  path(oob,C.val,1.8);path(curve,C.train,2.8);
+  const X=sx(S.B);c.save();c.strokeStyle=C.ink;c.globalAlpha=.35;c.setLineDash([2,3]);c.beginPath();c.moveTo(X,pad.t);c.lineTo(X,h-pad.b);c.stroke();c.restore();
+  c.beginPath();c.arc(X,sy(curve[S.B-1]),5.5,0,7);c.fillStyle=C.train;c.fill();c.strokeStyle=C.surface;c.lineWidth=2;c.stroke();
+  if(oob[S.B-1]!==null){c.beginPath();c.arc(X,sy(oob[S.B-1]),4,0,7);c.fillStyle=C.val;c.fill();c.stroke();}
+  c.fillStyle=C.muted;c.textAlign='right';c.textBaseline='bottom';c.fillText('trees in the bag →',w-pad.r,h-pad.b-4);
+}
+
+function drawCal(){const cnt=counts[S.k],pos=new Map(trIdx.map((ri,j)=>[rows[ri].t,j]));let h='<div></div>'+MON.map(m=>`<div class="mh">${m}</div>`).join('');
+  for(let y=1950;y<=1960;y++){h+=`<div class="yr">${y}</div>`;for(let m=0;m<12;m++){const t=(y-1949)*12+m,lab=MNAME[m]+' '+y;
+    if(t<T0)h+=`<div class="cell cw" title="${lab}: warm-up for lags">·</div>`;
+    else if(t>=SPLIT)h+=`<div class="cell ct" title="${lab}: test month">T</div>`;
+    else{const v=cnt[pos.get(t)];h+=`<div class="cell c${Math.min(v,3)}" title="${lab}: drawn ${v}×">${v}</div>`;}}}
+  $('cal').innerHTML=h;const uniq=cnt.filter(v=>v>0).length,o=cnt.length-uniq;
+  $('sDraw').textContent=cnt.length;$('sUniq').textContent=uniq;$('sOob').textContent=`${o} (${Math.round(o/cnt.length*100)}%)`;$('kOut').textContent=`Tree ${S.k+1} of ${S.B}`;}
+
+function verdict(){const bag=curve[S.B-1],gain=(singleErr-bag)/singleErr;
+  $('rSingle').textContent=singleErr.toFixed(1);$('rBag').textContent=bag.toFixed(1);$('rBagS').textContent=`test RMSE, B = ${S.B}`;$('rNaive').textContent=naive.toFixed(1);$('rCut').textContent=(gain>=0?'−':'+')+Math.abs(Math.round(gain*100))+'%';
+  const pill=$('pill'),t=$('diagText'),beat=bag<naive;
+  if(S.mode==='raw'){pill.className='pill bias';pill.textContent="Can't extrapolate";t.textContent=`Trees can only predict passenger counts they saw in training. The 1960 summer peak of 622 is far above the 1958 high of 505, so every tree undershoots it and the average does too. Bagged RMSE ${bag.toFixed(1)} vs seasonal naive ${naive.toFixed(1)}. Switch the target to seasonal log change.`;}
+  else if(S.B===1){pill.className='pill var';pill.textContent='Just one tree';t.textContent='One tree on one bootstrap sample. Its forecasts jump around with whichever months it happened to draw. Press play and watch the average settle.';}
+  else if(gain>=0.15){pill.className='pill good';pill.textContent='Variance tamed';t.textContent=`Averaging ${S.B} trees cut test RMSE from ${singleErr.toFixed(1)} to ${bag.toFixed(1)} thousand passengers, a ${Math.round(gain*100)}% drop${beat?`, and it beats the seasonal naive benchmark of ${naive.toFixed(1)}`:''}.`;}
+  else{pill.className='pill var';pill.textContent='Small gain';t.textContent=S.depth<=2?`Stumps and shallow trees are already stable, so averaging ${S.B} of them helps only a little. Bagging pays off most with deep, jumpy trees.`:`With ${S.B} trees the averaging has only started. Push B higher and watch the error drop.`;}}
+
+function drawAll(){drawFit();drawErr();drawCal();verdict();$('fitSub').textContent=S.B===1?'a single tree':`average of ${S.B} trees`;$('lgOob').hidden=!S.showBoot;}
+function refit(){makeRows();genBoot();fitAll();drawAll();}
+function syncB(){$('bRange').value=$('bRange2').value=S.B;$('bOut').textContent=$('bOut2').textContent=S.B;if(S.k>=S.B)S.k=S.B-1;}
+function setDepth(d){S.depth=d;document.querySelectorAll('#depths button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.d===d));const [a,b]=DEPTH_NAMES[d];$('depname').innerHTML=`<b>${a}</b> · ${b}`;}
+function setMode(m){S.mode=m;$('mDiff').setAttribute('aria-pressed',m==='diff');$('mRaw').setAttribute('aria-pressed',m==='raw');$('modeHint').innerHTML=HINTS[m];}
+function setZoom(z){S.zoom=z;$('vZoom').setAttribute('aria-pressed',z);$('vFull').setAttribute('aria-pressed',!z);if(P.length)drawFit();}
+
+const dWrap=$('depths');for(let d=1;d<=8;d++){const b=document.createElement('button');b.textContent=d;b.dataset.d=d;b.setAttribute('aria-label','Depth '+d);b.onclick=()=>{setDepth(d);fitAll();drawAll();};dWrap.appendChild(b);}
+$('mDiff').onclick=()=>{setMode('diff');refit();};$('mRaw').onclick=()=>{setMode('raw');refit();};
+$('vFull').onclick=()=>setZoom(false);$('vZoom').onclick=()=>setZoom(true);
+const onB=e=>{S.B=+e.target.value;syncB();drawAll();};$('bRange').oninput=onB;$('bRange2').oninput=onB;
+$('leaf').oninput=e=>{S.leaf=+e.target.value;$('leafOut').textContent=S.leaf;fitAll();drawAll();};
+$('showTrees').onchange=e=>{S.showTrees=e.target.checked;drawFit();};
+$('showBoot').onchange=e=>{S.showBoot=e.target.checked;drawAll();};
+$('kPrev').onclick=()=>{S.k=(S.k-1+S.B)%S.B;drawFit();drawCal();};
+$('kNext').onclick=()=>{S.k=(S.k+1)%S.B;drawFit();drawCal();};
+$('reboot').onclick=()=>{S.bootSeed++;genBoot();fitAll();drawAll();};
+const PRESETS={one:['diff',8,1],bag:['diff',8,50],stumps:['diff',1,50],raw:['raw',8,50]};
+document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{const [m,d,B]=PRESETS[b.dataset.preset];stop();setMode(m);setDepth(d);S.B=B;S.k=0;syncB();if(m==='raw')setZoom(true);refit();});
+
+const errCv=$('err');let dragging=false;
+function fromX(e){if(!errGeom)return;const r=errCv.getBoundingClientRect(),x=e.clientX-r.left,{pad,w}=errGeom;S.B=Math.max(1,Math.min(BMAX,Math.round(1+(x-pad.l)/(w-pad.l-pad.r)*(BMAX-1))));syncB();drawAll();}
+errCv.addEventListener('pointerdown',e=>{dragging=true;stop();errCv.setPointerCapture(e.pointerId);fromX(e);});
+errCv.addEventListener('pointermove',e=>{if(dragging)fromX(e);});
+errCv.addEventListener('pointerup',()=>dragging=false);errCv.addEventListener('pointercancel',()=>dragging=false);
+
+let timer=null;const PLAY='<path d="M3 1.5v11l9-5.5z"/>',PAUSE='<path d="M2.5 1.5h3v11h-3zM8.5 1.5h3v11h-3z"/>';
+function stop(){if(timer){clearInterval(timer);timer=null;}$('playIcon').innerHTML=PLAY;$('play').setAttribute('aria-label','Play: add trees one at a time');}
+$('play').onclick=()=>{if(timer){stop();return;}if(S.B>=BMAX)S.B=1;S.k=0;syncB();drawAll();$('playIcon').innerHTML=PAUSE;$('play').setAttribute('aria-label','Pause');
+  timer=setInterval(()=>{if(S.B>=BMAX){stop();return;}S.B++;S.k=S.B-1;syncB();drawAll();},matchMedia('(prefers-reduced-motion: reduce)').matches?250:120);};
+
+let rz;new ResizeObserver(()=>{cancelAnimationFrame(rz);rz=requestAnimationFrame(()=>{drawFit();drawErr();});}).observe(document.querySelector('.bench'));
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{drawFit();drawErr();});
+new MutationObserver(()=>{drawFit();drawErr();}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{drawFit();drawErr();});
+
+const SUN='<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>',MOON='<path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/>';
+const isDark=()=>{const t=document.documentElement.getAttribute('data-theme');return t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;};
+function syncThemeBtn(){const d=isDark(),label=d?'Switch to light theme':'Switch to dark theme';$('themeIcon').innerHTML=d?SUN:MOON;$('themeBtn').setAttribute('aria-label',label);$('themeBtn').title=label;}
+$('themeBtn').onclick=()=>{const next=isDark()?'light':'dark';document.documentElement.setAttribute('data-theme',next);try{localStorage.setItem('bag-theme',next);}catch(e){}syncThemeBtn();};
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',syncThemeBtn);syncThemeBtn();
+
+setMode('diff');setDepth(S.depth);setZoom(true);refit();
+})();
+</script>
+
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>
