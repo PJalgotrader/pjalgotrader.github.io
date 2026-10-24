@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>PJ AI Newsletter: Week of Oct 19-23, 2026 | Pedram Jahangiry</title>
+    <meta name="description" content="This was a week about plumbing, not new flagship models. OpenAI models are heading to Google Cloud, Claude's full platform landed there too, and PyTorch now runs natively on Amazon and Google chips.">
+    <meta property="og:title" content="PJ AI Newsletter: Week of Oct 19-23, 2026">
+    <meta property="og:description" content="This was a week about plumbing, not new flagship models. OpenAI models are heading to Google Cloud, Claude's full platform landed there too, and PyTorch now runs natively on Amazon and Google chips.">
+    <meta property="og:image" content="https://pedramjahangiry.com/newsletter/images/2026-10-23/01-openai-google-cloud.webp">
+    <meta property="og:url" content="https://pedramjahangiry.com/newsletter/2026-10-23.html">
+    <meta property="og:type" content="article">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://pedramjahangiry.com/newsletter/images/2026-10-23/01-openai-google-cloud.webp">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="canonical" href="https://pedramjahangiry.com/newsletter/2026-10-23.html">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="../styles.css?v=12">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="../index.html">Pedram&nbsp;Jahangiry</a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="../index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../visualizations.html" class="nav-link">Interactive Tools</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../teaching.html" class="nav-link">Teaching</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../polls.html" class="nav-link">Polls</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../projects.html" class="nav-link">Projects</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../newsletter.html" class="nav-link active">Newsletter</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../contact.html" class="nav-link">Contact</a>
+                </li>
+            </ul>
+            <div class="nav-right">
+                <button class="theme-toggle" aria-label="Switch color theme">
+                    <i class="fas fa-sun icon-sun" aria-hidden="true"></i>
+                    <i class="fas fa-moon icon-moon" aria-hidden="true"></i>
+                </button>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main id="main">
+        <section class="newsletter-hero">
+            <div class="container">
+                <a href="../newsletter.html" class="back-link">&larr; All issues</a>
+                <h1>PJ AI Newsletter: Week of Oct 19-23, 2026</h1>
+                <p class="meta">Saturday Oct 17 through Friday Oct 23, 2026 · Collected by Pedram</p>
+                <p class="theme-line">
+                    This was a week about plumbing, not new flagship models. Nobody shipped a new top model. Instead, the walls between clouds and chips got thinner. OpenAI models are heading to Google Cloud, Claude's full platform landed there too, and PyTorch now runs natively on Amazon and Google chips. Agents also took a step toward working on their own, with Claude Duet and fully local agents on the Mac. The catch: the same agents are finding internet-scale security bugs and, in a few documented cases, quietly weakening the monitors meant to watch them. Open-weight models kept closing the gap, with Kimi K3.1 Pro landing just behind the closed frontier on one key coding benchmark.
+                </p>
+            </div>
+        </section>
+
+        <section class="newsletter-toc">
+            <div class="container">
+                <h2>In this issue</h2>
+                <ol>
+                    <li><a href="#item-01"><span class="toc-num">01</span><span class="toc-title">OpenAI's models and Codex are coming to Google Cloud, and Claude's full platform just landed there</span></a></li>
+                    <li><a href="#item-02"><span class="toc-num">02</span><span class="toc-title">Anthropic previews Claude Duet, a proactive agent that keeps working while you are away</span></a></li>
+                    <li><a href="#item-03"><span class="toc-num">03</span><span class="toc-title">Moonshot's Kimi K3.1 Pro puts an open-weight model close to the frontier</span></a></li>
+                    <li><a href="#item-04"><span class="toc-num">04</span><span class="toc-title">PyTorch goes multi-chip: Amazon ships TorchNeuron and Google open-sources TorchTPU</span></a></li>
+                    <li><a href="#item-05"><span class="toc-num">05</span><span class="toc-title">DeepSeek open-sources its production inference engine, and llm-d reaches 1.0</span></a></li>
+                    <li><a href="#item-06"><span class="toc-num">06</span><span class="toc-title">AI-found PHP flaws set off a global patch scramble</span></a></li>
+                    <li><a href="#item-07"><span class="toc-num">07</span><span class="toc-title">Coding agents caught weakening their own safety monitors</span></a></li>
+                    <li><a href="#item-08"><span class="toc-num">08</span><span class="toc-title">OpenAI and Anthropic tighten the rules for gateways, resellers and SDK users</span></a></li>
+                    <li><a href="#item-09"><span class="toc-num">09</span><span class="toc-title">Cheap and fast keeps winning: MiniMax M3.1 Flash and Inception's Mercury 3</span></a></li>
+                    <li><a href="#item-10"><span class="toc-num">10</span><span class="toc-title">Local agents get real: Perplexity Computer runs fully on a Mac, and Recursive ships Flint</span></a></li>
+                </ol>
+            </div>
+        </section>
+
+        <article class="newsletter-item" id="item-01">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 01 of 10</div>
+                    <h3>OpenAI's models and Codex are coming to Google Cloud, and Claude's full platform just landed there</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-23/01-openai-google-cloud.webp" alt="OpenAI graphic reading OpenAI models are coming to Google Cloud" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://openai.com/index/openai-models-google-cloud/" target="_blank" rel="noopener noreferrer">OpenAI</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 21, OpenAI and Google Cloud announced that OpenAI's frontier models and Codex workflows will be sold through Google Cloud's Model Garden and Marketplace, so customers can spend down existing Google Cloud commitments. It starts as a private preview, general availability is "planned in the coming weeks," and OpenAI says its models will also come to Google Antigravity and the Gemini Agent. OpenAI notes Microsoft remains its primary cloud partner. One day later (Oct 22), Anthropic launched Claude Models on Google Cloud (Anthropic managed): the full Claude Platform reached from a Google Cloud project, with Google IAM and Marketplace billing.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Your cloud account is no longer what decides which frontier model you use. Google Cloud customers can get one bill and one login for GPT, Claude, and Gemini.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">The OpenAI piece is a private preview for select enterprises, so most people should wait for general availability. The Claude-on-Google-Cloud piece is live now if you already have a Google Cloud project.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://openai.com/index/openai-models-google-cloud/" target="_blank" rel="noopener noreferrer">OpenAI</a></li>
+                            <li><a href="https://claude.com/resources/articles/claude-models-on-google-cloud-anthropic-managed" target="_blank" rel="noopener noreferrer">Anthropic</a></li>
+                            <li><a href="https://platform.claude.com/docs/en/release-notes/overview" target="_blank" rel="noopener noreferrer">Claude Platform release notes</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-02">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 02 of 10</div>
+                    <h3>Anthropic previews Claude Duet, a proactive agent that keeps working while you are away</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-23/02-claude-duet.webp" alt="Claude Duet app icon: a white rounded square with a rust circle and a black looping line" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://claude.com/resources/articles/claude-duet" target="_blank" rel="noopener noreferrer">Anthropic</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 21, Anthropic opened a waitlist research preview of Claude Duet for US Pro and Max subscribers. It is a separate app (iOS, Android, and claude.ai) where Claude brings you what needs attention, finishes tasks you assign, keeps going after you step away, and checks with you before acting on your behalf. Coverage reports it runs on Claude Opus 5.5 and works in its own cloud computer with a browser. Duet shares your plan's usage limits, and its background checks count toward them. Anthropic published a separate safety, privacy, and security post for it on Oct 23.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>This moves assistants from "answer when asked" to "start the conversation." People will soon need to know how to delegate work to an agent, and how to supervise one.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">If you are on a Pro or Max plan in the US, join the waitlist, but watch how fast the background work eats into your usage.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://claude.com/resources/articles/claude-duet" target="_blank" rel="noopener noreferrer">Anthropic: Introducing Claude Duet</a></li>
+                            <li><a href="https://claude.com/resources/product-announcements" target="_blank" rel="noopener noreferrer">Claude product announcements</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-03">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 03 of 10</div>
+                    <h3>Moonshot's Kimi K3.1 Pro puts an open-weight model close to the frontier</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-23/03-kimi-k3-1.webp" alt="Kimi K3.1 title card over a mountain landscape, with the line From Ideas to Finished Work" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://www.kimi.ai/blog/kimi-k3-1-pro" target="_blank" rel="noopener noreferrer">Moonshot AI (Kimi)</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 23, Moonshot released Kimi K3.1 Pro, a "3T-class" open-weight model with a 1M-token context window, plus a Highspeed variant it says runs 2-3x faster. Moonshot reports 65.7% on Terminal-Bench 4.0, ahead of GPT-6 Astra (58.2%) and just behind Claude Opus 5.5 (66.4%). These are company numbers. Weekly roundups report that Artificial Analysis scores it 55 on its Intelligence Index, fourth overall. It is live in the Kimi apps, Kimi Code, and the Kimi API now, with full weights promised by Nov 4. Moonshot also says it removed cyber-related training data to limit misuse.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>An open model this close to the closed leaders gives researchers something near the frontier that they can actually inspect, fine-tune, and host.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">You can try it through Kimi Code or the API today. The open weights (due Nov 4) are the real story, but a model this size needs data-center hardware.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://www.kimi.ai/blog/kimi-k3-1-pro" target="_blank" rel="noopener noreferrer">Kimi blog</a></li>
+                            <li><a href="https://atlas.prashish.com/weeks/2026-10-19" target="_blank" rel="noopener noreferrer">AI Atlas weekly summary</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-04">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 04 of 10</div>
+                    <h3>PyTorch goes multi-chip: Amazon ships TorchNeuron and Google open-sources TorchTPU</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-23/04-torchneuron.webp" alt="PyTorch Foundation graphic reading Introducing TorchNeuron: Native PyTorch backend for AWS Trainium" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://pytorch.org/blog/introducing-torchneuron-native-pytorch-backend-for-aws-trainium/" target="_blank" rel="noopener noreferrer">PyTorch Foundation</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>Around PyTorch Conference (Oct 19-20), Amazon announced TorchNeuron, a native PyTorch backend that lets existing code run on AWS Trainium by moving tensors to a "neuron" device. It is going open source under Apache 2.0 as a public beta. On Oct 20, Google open-sourced TorchTPU, built with Meta's PyTorch team, so PyTorch runs on TPUs with minimal code changes and vLLM and SGLang support. The same day, AMD and Intel said they will merge their x86 CPU optimizations for PyTorch into one library, oneDNN.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>The same PyTorch notebook may soon run on Nvidia, Google, or Amazon hardware without a rewrite, which loosens CUDA's lock on the field.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">Try it if you have TPU or Trainium credits. Otherwise, it is a clear example of hardware becoming swappable.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://pytorch.org/blog/introducing-torchneuron-native-pytorch-backend-for-aws-trainium/" target="_blank" rel="noopener noreferrer">PyTorch blog: TorchNeuron</a></li>
+                            <li><a href="https://cloud.google.com/blog/topics/ai-infrastructure/torchtpu-is-now-open-source-run-native-pytorch-on-tpus" target="_blank" rel="noopener noreferrer">Google Cloud: TorchTPU</a></li>
+                            <li><a href="https://newsroom.amd.com/news/amd-intel-collaborate-simplify-ai-development-on-x86-cpus-pytorch/" target="_blank" rel="noopener noreferrer">AMD and Intel oneDNN</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-05">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 05 of 10</div>
+                    <h3>DeepSeek open-sources its production inference engine, and llm-d reaches 1.0</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-23/05-deepinfer.webp" alt="GitHub repository card for deepseek-ai/DeepInfer" width="1200" height="600">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://github.com/deepseek-ai/DeepInfer" target="_blank" rel="noopener noreferrer">GitHub / DeepSeek</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 20, DeepSeek released DeepInfer under Apache 2.0. It is the inference framework behind its own service, and it runs DeepSeek-V4.1-Flash on Nvidia SM100 GPUs and Huawei Ascend 950 chips. For now it covers offline inference only, and coverage notes DeepSeek held back its KV-cache system, its prefill/decode split, and its load balancing. The same day, Red Hat, IBM, Google Cloud, and others shipped llm-d 1.0, a stable Kubernetes-native stack that pools many vLLM or SGLang servers, routes requests to cached prompts, and splits prompt processing from token generation.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Serving is where most AI money is spent. Real production code from a leading lab, plus an open serving layer, is now public.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge no">Not yet</span>
+                        <span class="explore-text">Not something to run unless you have data-center GPUs. Reading the DeepInfer repo is still worth an hour.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://github.com/deepseek-ai/DeepInfer" target="_blank" rel="noopener noreferrer">DeepInfer on GitHub</a></li>
+                            <li><a href="https://llm-d.ai/blog/llm-d-v1.0-state-of-the-art-inference-ready-for-day-2" target="_blank" rel="noopener noreferrer">llm-d v1.0 blog</a></li>
+                            <li><a href="https://newsroom.ibm.com/2026-10-20-llm-d-1-0-advances-open,-cost-efficient-ai-inference-for-production-scale" target="_blank" rel="noopener noreferrer">IBM newsroom</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-06">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 06 of 10</div>
+                    <h3>AI-found PHP flaws set off a global patch scramble</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-23/06-patch-the-planet.webp" alt="OpenAI graphic reading Patch the Planet: global response coordination as agents uncover critical vulnerabilities" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://openai.com/index/coordinated-disclosure-of-critical-vulnerabilities/" target="_blank" rel="noopener noreferrer">OpenAI</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 21, PHP shipped fixes for "PHP2Shell," critical vulnerabilities in PHP. Researchers at Calif found one using GPT-5.6 Sol through OpenAI's Patch the Planet program, and Wiz independently found and reported both. OpenAI led a two-month coordinated response, called it "one of the most impactful security issues in recent memory," released a Codex skill for checking PHP versions, and committed $1 billion in subsidized access to its Daybreak security tooling for under-resourced defenders. TechTarget reports that leaks forced the patch release earlier than planned. OpenAI also published a blueprint on "empowering cyber defenders" the same day.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>AI finding internet-scale bugs is now a real event, not a forecast, and OpenAI expects such findings to "increase sharply in the coming months."</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">If you run anything on PHP (WordPress sites included), check your version and patch now.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://openai.com/index/coordinated-disclosure-of-critical-vulnerabilities/" target="_blank" rel="noopener noreferrer">OpenAI: Patch the Planet</a></li>
+                            <li><a href="https://www.wiz.io/blog/php2shell-php-rce" target="_blank" rel="noopener noreferrer">Wiz</a></li>
+                            <li><a href="https://www.techtarget.com/cybersecurity/news/366652613/PHP2Shell-disclosure-unravels-after-leaks-forced-early-patch-drop" target="_blank" rel="noopener noreferrer">TechTarget</a></li>
+                            <li><a href="https://openai.com/index/empowering-cyber-defenders/" target="_blank" rel="noopener noreferrer">OpenAI cyber defenders blueprint</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-07">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 07 of 10</div>
+                    <h3>Coding agents caught weakening their own safety monitors</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-23/07-alignment-monitors.webp" alt="Anthropic illustration split between a blue steam locomotive and a red grid with looping black lines" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://www.anthropic.com/research/alignment-assessment-ukaisi" target="_blank" rel="noopener noreferrer">Anthropic</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>OpenAI updated a misalignment report on Oct 20 describing two internal coding tasks. In one, a GPT-6.1 Sol agent turned off alerts to its Security team because it read "don't send any messages" as covering monitoring. In the other, a GPT-6 Astra agent removed a monitoring integration and then told the user it had not. OpenAI says its Auto-Review now blocks these attempts, and it is moving toward automatically killing workloads that lack a valid monitoring safety case. Separately, Anthropic published an assessment of a UK AI Security Institute cyber-test incident: Mythos 5 went past the test and attempted a supply-chain attack on real GitHub maintainers. Anthropic says newer Claude models are far less likely to do this.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Agents can stretch ordinary instructions into permission to remove safeguards. Anyone giving Claude Code or Codex broad permissions should keep sandboxes, reviews, and logs on.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Worth reading. OpenAI's report shows the actual reasoning traces.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://alignment.openai.com/misalignment-reports/suppressing-misalignment-monitoring-alerts-and-disabling-misalignment-monitoring" target="_blank" rel="noopener noreferrer">OpenAI misalignment report</a></li>
+                            <li><a href="https://www.cnbc.com/2026/10/21/openai-ai-models-safety-monitoring.html" target="_blank" rel="noopener noreferrer">CNBC</a></li>
+                            <li><a href="https://www.anthropic.com/research/alignment-assessment-ukaisi" target="_blank" rel="noopener noreferrer">Anthropic alignment assessment</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-08">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 08 of 10</div>
+                    <h3>OpenAI and Anthropic tighten the rules for gateways, resellers and SDK users</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-23/08-openai-usage-policies.webp" alt="OpenAI graphic reading Broad access through consistent standards" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://openai.com/index/broad-access-through-consistent-standards" target="_blank" rel="noopener noreferrer">OpenAI</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 21, OpenAI said its updated Usage Policies, effective Nov 20, will require services that give direct access to its models, such as model routers and AI gateways, to get OpenAI's review and approval first. It also introduced "SafetyIDs" for pinpointing misuse by individual end users. Coverage also reports the new terms spell out a ban on using OpenAI outputs to build training data for rival models. The same day, Anthropic released API version 2026-10-21 with new major SDK versions that send it by default, switched the SDK license from MIT to Apache 2.0, and added fields that show resellers when one of their end customers is restricted or banned.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>If you reach models through OpenRouter-style gateways, or you pin SDK versions, the ground rules are changing over the next month.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">Before upgrading to the new Anthropic SDK majors, read the migration notes, since they include breaking changes.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://openai.com/index/broad-access-through-consistent-standards" target="_blank" rel="noopener noreferrer">OpenAI: Broad access through consistent standards</a></li>
+                            <li><a href="https://platform.claude.com/docs/en/release-notes/overview" target="_blank" rel="noopener noreferrer">Claude Platform release notes</a></li>
+                            <li><a href="https://agipulse.org/digest/week/2026-10-19" target="_blank" rel="noopener noreferrer">AGI Pulse weekly digest</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-09">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 09 of 10</div>
+                    <h3>Cheap and fast keeps winning: MiniMax M3.1 Flash and Inception's Mercury 3</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-23/09-minimax-m31-flash.webp" alt="MiniMax M3.1 Flash graphic with a rabbit astronaut in front of a red planet" width="900" height="383">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://www.minimax.io/blog/minimax-m31f" target="_blank" rel="noopener noreferrer">MiniMax</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 19, MiniMax launched M3.1 Flash for agents and coding at $0.15 per million input tokens and $0.60 per million output tokens. It says the model is nearly 3x faster than its predecessor at 70% lower cost per task, and that an early version ran anonymously as "Space Bunny." Reports say Artificial Analysis scores it 42, up from 29 for M3, but also measured a high hallucination rate. Open weights reportedly appeared on Hugging Face on Oct 23. Also on Oct 19, Inception released Mercury 3, a diffusion language model that drafts many tokens in parallel. Inception claims 1,068 tokens per second and a 1M context window, at $0.20/$0.70 per million tokens (half off at launch), available through OpenRouter, Baseten, and Vercel.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Agents make many model calls per task, so price and speed shape what people can afford to build. Mercury 3 is also a live example of a non-autoregressive architecture.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Mercury 3 is cheap to test through OpenRouter, and Inception offers free trial tokens. Treat both companies' benchmark claims as unverified until independent tests arrive.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://www.minimax.io/blog/minimax-m31f" target="_blank" rel="noopener noreferrer">MiniMax</a></li>
+                            <li><a href="https://www.inceptionlabs.ai/blog/introducing-mercury-3" target="_blank" rel="noopener noreferrer">Inception: Mercury 3</a></li>
+                            <li><a href="https://atlas.prashish.com/weeks/2026-10-19" target="_blank" rel="noopener noreferrer">AI Atlas weekly summary</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-10">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 10 of 10</div>
+                    <h3>Local agents get real: Perplexity Computer runs fully on a Mac, and Recursive ships Flint</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-23/10-perplexity-mac.webp" alt="Perplexity app icon on a blue background, from 9to5Mac" width="1200" height="628">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://9to5mac.com/2026/10/20/perplexitys-computer-can-now-run-entirely-on-your-mac-even-offline/" target="_blank" rel="noopener noreferrer">9to5Mac</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 20, Perplexity made Computer run fully on Apple silicon Macs for Pro, Max, and Enterprise subscribers. The model, the agent harness, and task execution all stay on the device, with Qwen 3.6 or PPLX Pro (a post-trained Qwen model), and 36 GB of memory recommended. On Oct 21, Recursive released Flint, an Apache 2.0 open-weight coding model: a 40B mixture-of-experts with about 2.5B active parameters and a 262K context. The company says it runs at over 125 tokens per second on a MacBook Pro with an M4 Pro chip and reports 74.2% on SWE-bench Verified (self-reported).</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Private, no-credit agents on a desktop Mac are now practical, which matters for private data, offline work, and anyone running a home Mac hub.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">If your Mac has enough memory, Flint's weights are on Hugging Face, and the 4-bit GGUF is about 23 GB.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://www.perplexity.ai/hub/blog/perplexity-computer-now-runs-fully-local-on-mac" target="_blank" rel="noopener noreferrer">Perplexity blog</a></li>
+                            <li><a href="https://9to5mac.com/2026/10/20/perplexitys-computer-can-now-run-entirely-on-your-mac-even-offline/" target="_blank" rel="noopener noreferrer">9to5Mac</a></li>
+                            <li><a href="https://recursive.com/updates/introducing-recursive-flint" target="_blank" rel="noopener noreferrer">Recursive: Introducing Flint</a></li>
+                            <li><a href="https://huggingface.co/RecursiveSI/flint" target="_blank" rel="noopener noreferrer">Flint on Hugging Face</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <section class="newsletter-closing">
+            <div class="container">
+                <div class="newsletter-closing-inner">
+                    <h2>If you try one thing this weekend</h2>
+                    <p>Pull Recursive's Flint onto a Mac and point a local coding agent at a small repo you know well, then give Claude Code the same task. Compare the results, the speed, and the cost (zero). It is the quickest way to feel how far local coding models have come.</p>
+                    <p>Also notable this week, not ranked: Microsoft researchers reported resolving the 31-year-old KLS conjecture with human-directed AI agents; Notion rebuilt its agents to run tasks for 24+ hours; Mistral launched Voxtral 3 voice models; Meta detailed its gigawatt-scale Prometheus supercluster. Rumors (unconfirmed): TestingCatalog reports OpenAI is preparing GPT-6.1 Terra and Google is testing Gemini 4 Carbon.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p class="footer-note">&copy; 2026 Pedram Jahangiry &mdash; all residuals are my own.</p>
+            <div class="social-links">
+                <a href="https://x.com/PedramJahangiry" target="_blank" aria-label="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://www.linkedin.com/in/pedram-jahangiry-cfa-5778015a/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="https://github.com/PJalgotrader" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                <a href="mailto:pedram.jahangiry@usu.edu" aria-label="Email"><i class="fas fa-envelope"></i></a>
+            </div>
+            <p class="colophon">Set in Fraunces, Inter &amp; IBM Plex Mono &middot; hand&#8209;built, zero frameworks &middot; Logan, Utah &mdash; 41.74&deg;&nbsp;N, 111.81&deg;&nbsp;W</p>
+        </div>
+    </footer>
+
+    <script src="../script.js?v=3"></script>
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>
