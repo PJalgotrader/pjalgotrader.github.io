@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Four time series bootstrap methods, one browser tab: Moving Block, Circular Block, Stationary, and parametric AR(1), with live block-size and sample sliders.">
+    <meta name="description" content="Time series bootstrapping in one browser tab: the i.i.d. foil, Moving Block, Circular Block, Stationary, and a model-based AR(1) bootstrap with semiparametric and fully parametric shocks, plus the bootstrap distribution of autocorrelation for every method.">
     <title>Time Series Bootstrapping | Dr. Pedram Jahangiry</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <style>
@@ -264,6 +264,78 @@
         .comparison-table .check { color: #10b981; font-weight: 700; }
         .comparison-table .cross { color: #ef4444; font-weight: 700; }
         .table-scroll { overflow-x: auto; }
+        .table-note { font-size: 0.82em; color: #64748b; margin-top: 12px; line-height: 1.6; }
+
+        /* Segmented toggle */
+        .seg {
+            display: inline-flex;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+        .seg button {
+            padding: 8px 14px;
+            border: none;
+            background: white;
+            font-family: inherit;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .seg button + button { border-left: 2px solid #cbd5e1; }
+        .seg button.on { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+
+        .hint { flex-basis: 100%; font-size: 0.82em; color: #64748b; line-height: 1.5; }
+
+        /* Bootstrap distribution panel */
+        .section-title { margin-top: 40px; color: #1e293b; }
+        .dist-panel {
+            margin-top: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 24px;
+        }
+
+        /* Pipeline box */
+        .pipeline {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+        }
+        .pipeline h4 { color: #1e293b; margin-bottom: 12px; font-size: 1em; }
+        .pipe-steps { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; }
+        .pipe-step {
+            flex: 1;
+            min-width: 180px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 0.88em;
+            color: #475569;
+            line-height: 1.5;
+        }
+        .pipe-step strong { display: block; color: #4338ca; margin-bottom: 4px; font-size: 1.02em; }
+        .pipe-step.hot { border-color: #667eea; background: #f0f4ff; }
+        .pipe-arrow { align-self: center; color: #94a3b8; font-size: 1.4em; font-weight: 700; }
+        .pipeline .caveat { margin-top: 12px; font-size: 0.84em; color: #64748b; line-height: 1.6; }
+        @media (max-width: 768px) { .pipe-arrow { display: none; } }
+
+        /* Next step callout */
+        .next-box {
+            margin-top: 32px;
+            background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+            border-left: 5px solid #8b5cf6;
+            border-radius: 12px;
+            padding: 18px 24px;
+        }
+        .next-box h4 { color: #5b21b6; margin-bottom: 6px; font-size: 1em; }
+        .next-box p { color: #4c1d95; font-size: 0.9em; line-height: 1.6; }
+        .next-box a { color: #6d28d9; font-weight: 700; }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -283,7 +355,7 @@
 <body>
     <div class="header">
         <h1>Time Series Bootstrapping</h1>
-        <p class="subtitle">MBB, CBB, Stationary Bootstrap & Parametric AR(1) Bootstrap</p>
+        <p class="subtitle">i.i.d. Foil, MBB, CBB, Stationary Bootstrap & Model-Based AR(1) Bootstrap</p>
         <p class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</p>
         <div class="links">
             <a href="https://pedramjahangiry.com/" class="btn-website">
@@ -302,7 +374,7 @@
     </div>
 
     <div class="container">
-        <p style="max-width: 760px; margin: 0 auto 25px auto; text-align: center; color: #555; line-height: 1.6; font-size: 1.05em;">Each tab resamples the same monthly airline passenger series with a different bootstrap method. Drag the block-size (or mean block length) and sample-count sliders to regenerate the paths, see exactly which stretches of history got reused, and compare how block-based resampling differs from fitting an AR(1) model to the residuals instead.</p>
+        <p style="max-width: 760px; margin: 0 auto 25px auto; text-align: center; color: #555; line-height: 1.6; font-size: 1.05em;">Each tab resamples the same monthly airline passenger series with a different bootstrap method. Start with the i.i.d. foil to see what goes wrong, then drag the block-size (or mean block length) and sample-count sliders to regenerate the paths, see exactly which stretches of history got reused, and compare block resampling with fitting an AR(1) model to the residuals. Below the tabs, the payoff: what each method does to the uncertainty of a statistic.</p>
 
         <div class="warning-box">
             <h4>&#9888; Why Not Standard (i.i.d.) Bootstrap?</h4>
@@ -311,18 +383,97 @@
                 temporal dependence structure</strong> that defines time series data. Autocorrelations, trends, and
                 seasonal patterns would be completely lost. Time series bootstrapping must preserve the local
                 dependence by resampling in <strong>blocks</strong> or through <strong>model-based</strong> approaches.
+                The first tab lets you watch it happen.
+            </p>
+        </div>
+
+        <div class="pipeline">
+            <h4>How every tab builds a bootstrap path</h4>
+            <div class="pipe-steps">
+                <div class="pipe-step">
+                    <strong>1. Split</strong>
+                    log(passengers) = trend + seasonal + residual
+                </div>
+                <div class="pipe-arrow">&rarr;</div>
+                <div class="pipe-step hot">
+                    <strong>2. Resample the residuals only</strong>
+                    Blocks (MBB, CBB, SB) or an AR(1) model shuffle the small leftover wiggles
+                </div>
+                <div class="pipe-arrow">&rarr;</div>
+                <div class="pipe-step">
+                    <strong>3. Add the rest back</strong>
+                    Each month keeps its own trend and seasonal value, plus a borrowed wiggle
+                </div>
+            </div>
+            <p class="caveat">
+                Why not cut blocks from the raw counts? A summer 1960 block (about 600 passengers) would land in 1949
+                (about 120). The residuals have no trend, so their blocks can go anywhere. The catch: trend and
+                seasonality are held fixed, so the bootstrap only captures uncertainty in the wiggles, not in how the
+                trend and seasonal pattern were estimated. That is why the paths stay so close to the original.
             </p>
         </div>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('mbb')">Moving Block (MBB)</button>
+            <button class="tab-btn active" onclick="switchTab('iid')">i.i.d. (the foil)</button>
+            <button class="tab-btn" onclick="switchTab('mbb')">Moving Block (MBB)</button>
             <button class="tab-btn" onclick="switchTab('cbb')">Circular Block (CBB)</button>
             <button class="tab-btn" onclick="switchTab('sb')">Stationary (SB)</button>
-            <button class="tab-btn" onclick="switchTab('parametric')">Parametric (AR(1))</button>
+            <button class="tab-btn" onclick="switchTab('parametric')">Model-based (AR(1))</button>
+        </div>
+
+        <datalist id="m-suggest"><option value="24" label="24"></option></datalist>
+
+        <!-- ============ TAB 0: i.i.d. FOIL ============ -->
+        <div id="tab-iid" class="tab-content active">
+            <div class="intro">
+                <h3>i.i.d. Bootstrap (the foil)</h3>
+                <p>
+                    The classic bootstrap (Efron, 1979) draws <span class="formula">T</span> observations one at a
+                    time, independently, with replacement. It works beautifully for independent data. For a time
+                    series it shuffles away the order, so everything that depends on order (trend, seasonality,
+                    autocorrelation) disappears.
+                </p>
+                <ul>
+                    <li><strong>Draw</strong> T indices uniformly from 1, ..., T with replacement</li>
+                    <li><strong>Raw series mode:</strong> resample the passenger counts directly</li>
+                    <li><strong>Residuals mode:</strong> resample the decomposition residuals, then add trend and seasonality back (the same pipeline the block tabs use)</li>
+                </ul>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Resample:</label>
+                    <div class="seg" role="group" aria-label="What the i.i.d. bootstrap resamples">
+                        <button id="iid-raw" class="on" aria-pressed="true" onclick="setIIDMode('raw')">Raw series</button>
+                        <button id="iid-resid" aria-pressed="false" onclick="setIIDMode('resid')">Residuals</button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Bootstrap samples:</label>
+                    <input type="range" id="iid-B" min="3" max="20" value="5" oninput="document.getElementById('iid-B-val').textContent=this.value" onchange="runIID()">
+                    <span class="val" id="iid-B-val">5</span>
+                </div>
+                <button class="btn-run" onclick="runIID()">&#9654; Generate</button>
+            </div>
+
+            <div class="stats-panel" id="iid-stats"></div>
+            <div class="chart-container" id="iid-chart" style="height: 420px;"></div>
+            <div class="chart-container" id="iid-source-chart" style="height: 320px;"></div>
+
+            <div class="key-insight">
+                <h4>Key Insight: Two Ways to Fail</h4>
+                <p>
+                    In <strong>raw mode</strong> the damage is obvious: trend and seasonality vanish and every path is
+                    noise around the average. <strong>Residuals mode</strong> is sneakier. Adding trend and seasonality
+                    back makes the paths look reasonable, but the residuals have lost their memory: their lag 1
+                    autocorrelation falls to about zero. The paths look right and are quietly wrong, which is exactly
+                    what the bootstrap distribution panel below the tabs exposes.
+                </p>
+            </div>
         </div>
 
         <!-- ============ TAB 1: MBB ============ -->
-        <div id="tab-mbb" class="tab-content active">
+        <div id="tab-mbb" class="tab-content">
             <div class="intro">
                 <h3>Moving Block Bootstrap (MBB)</h3>
                 <p>
@@ -335,15 +486,15 @@
                     <li><strong>Block library:</strong> B<sub>i</sub> = [y<sub>i</sub>, y<sub>i+1</sub>, ..., y<sub>i+m&minus;1</sub>] for i = 1, ..., T&minus;m+1</li>
                     <li><strong>Draw</strong> k = &lceil;T/m&rceil; blocks uniformly with replacement</li>
                     <li><strong>Concatenate</strong> and trim to length T</li>
-                    <li><strong>For non-stationary data:</strong> decompose into Trend + Seasonal + Residual, apply MBB to the residuals, then reconstruct</li>
+                    <li><strong>For non-stationary data (like this series):</strong> decompose into Trend + Seasonal + Residual, cut the blocks from the <em>residuals only</em>, then add trend and seasonality back. The first chart below shows the shuffle; the second shows the result.</li>
                 </ul>
             </div>
 
             <div class="controls">
                 <div class="control-group">
                     <label>Block size (m):</label>
-                    <input type="range" id="mbb-block" min="3" max="36" value="12" oninput="document.getElementById('mbb-block-val').textContent=this.value" onchange="runMBB()">
-                    <span class="val" id="mbb-block-val">12</span>
+                    <input type="range" id="mbb-block" min="3" max="48" value="24" list="m-suggest" oninput="document.getElementById('mbb-block-val').textContent=this.value" onchange="runMBB()">
+                    <span class="val" id="mbb-block-val">24</span>
                 </div>
                 <div class="control-group">
                     <label>Bootstrap samples:</label>
@@ -351,9 +502,11 @@
                     <span class="val" id="mbb-B-val">5</span>
                 </div>
                 <button class="btn-run" onclick="runMBB()">&#9654; Generate</button>
+                <span class="hint">Tip: twice the seasonal period (m = 24 for monthly data, marked on the slider) is a common default, used by Bergmeir, Hyndman &amp; Ben&iacute;tez (2016). Shorter blocks break the autocorrelation more often; longer blocks give less variety.</span>
             </div>
 
             <div class="stats-panel" id="mbb-stats"></div>
+            <div class="chart-container" id="mbb-resid-chart" style="height: 360px;"></div>
             <div class="chart-container" id="mbb-chart" style="height: 420px;"></div>
             <div class="block-viz" id="mbb-block-viz"></div>
 
@@ -389,8 +542,8 @@
             <div class="controls">
                 <div class="control-group">
                     <label>Block size (m):</label>
-                    <input type="range" id="cbb-block" min="3" max="36" value="12" oninput="document.getElementById('cbb-block-val').textContent=this.value" onchange="runCBB()">
-                    <span class="val" id="cbb-block-val">12</span>
+                    <input type="range" id="cbb-block" min="3" max="48" value="24" list="m-suggest" oninput="document.getElementById('cbb-block-val').textContent=this.value" onchange="runCBB()">
+                    <span class="val" id="cbb-block-val">24</span>
                 </div>
                 <div class="control-group">
                     <label>Bootstrap samples:</label>
@@ -398,9 +551,11 @@
                     <span class="val" id="cbb-B-val">5</span>
                 </div>
                 <button class="btn-run" onclick="runCBB()">&#9654; Generate</button>
+                <span class="hint">Tip: m = 24 (twice the seasonal period, marked on the slider) is a common default for monthly data.</span>
             </div>
 
             <div class="stats-panel" id="cbb-stats"></div>
+            <div class="chart-container" id="cbb-resid-chart" style="height: 360px;"></div>
             <div class="chart-container" id="cbb-chart" style="height: 420px;"></div>
             <div class="block-viz" id="cbb-block-viz"></div>
 
@@ -427,17 +582,17 @@
                 </p>
                 <ul>
                     <li><strong>Block length:</strong> L ~ Geometric(p), so E[L] = 1/p</li>
-                    <li><strong>The resampled series is itself stationary</strong> (unique property!)</li>
+                    <li><strong>Conditional on the data, the resampled series is stationary</strong>, a property the fixed-block methods lack</li>
                     <li><strong>No edge bias:</strong> all observations equally likely at any position</li>
-                    <li><strong>Less sensitive</strong> to the choice of mean block length than MBB/CBB are to fixed m</li>
+                    <li><strong>The trade-off:</strong> random lengths make it less sensitive to the exact mean block length, but it is usually <em>less efficient</em> (higher MSE) than MBB/CBB at the same average block length (Lahiri, 1999)</li>
                 </ul>
             </div>
 
             <div class="controls">
                 <div class="control-group">
                     <label>Mean block length (1/p):</label>
-                    <input type="range" id="sb-mean" min="3" max="36" value="12" oninput="document.getElementById('sb-mean-val').textContent=this.value" onchange="runSB()">
-                    <span class="val" id="sb-mean-val">12</span>
+                    <input type="range" id="sb-mean" min="3" max="48" value="24" list="m-suggest" oninput="document.getElementById('sb-mean-val').textContent=this.value" onchange="runSB()">
+                    <span class="val" id="sb-mean-val">24</span>
                 </div>
                 <div class="control-group">
                     <label>Bootstrap samples:</label>
@@ -445,19 +600,23 @@
                     <span class="val" id="sb-B-val">5</span>
                 </div>
                 <button class="btn-run" onclick="runSB()">&#9654; Generate</button>
+                <span class="hint">Tip: start the mean block length near 24 (marked on the slider), then see how much the paths change as you move it.</span>
             </div>
 
             <div class="stats-panel" id="sb-stats"></div>
+            <div class="chart-container" id="sb-resid-chart" style="height: 360px;"></div>
             <div class="chart-container" id="sb-chart" style="height: 420px;"></div>
             <div class="block-viz" id="sb-block-viz"></div>
 
             <div class="key-insight">
                 <h4>Key Insight &mdash; Stationarity Preservation</h4>
                 <p>
-                    The SB is the <strong>only non-parametric block bootstrap that produces a stationary resampled series</strong>
-                    when the original is stationary. The random block lengths drawn from a memoryless Geometric distribution
-                    ensure no systematic position-dependent sampling patterns. MBB and CBB bootstrap distributions are
-                    <em>not</em> stationary even when applied to stationary data.
+                    Among the classic block methods, the SB is the one whose <strong>resampled series is stationary</strong>
+                    (conditional on the data) when the original is stationary. The memoryless Geometric block lengths
+                    mean block joins can land anywhere, so no position in the resample is special. MBB and CBB put
+                    their joins at fixed positions (every m steps), so their resamples are <em>not</em> stationary even
+                    when the data are. The price is efficiency: the extra randomness in block lengths adds variance, so
+                    for the same average block length the SB is usually a bit less accurate than MBB or CBB.
                 </p>
             </div>
         </div>
@@ -465,23 +624,35 @@
         <!-- ============ TAB 4: PARAMETRIC AR(1) ============ -->
         <div id="tab-parametric" class="tab-content">
             <div class="intro">
-                <h3>Parametric Bootstrap &mdash; Decomposition + AR(1)</h3>
+                <h3>Model-based Bootstrap &mdash; Decomposition + AR(1)</h3>
                 <p>
-                    The parametric bootstrap uses the <strong>same classical decomposition</strong> as the block methods
+                    This tab uses the <strong>same classical decomposition</strong> as the block methods
                     (Trend + Seasonal + Residual on log data), but instead of resampling residuals in blocks, it
-                    fits an <strong>AR(1) model</strong> to capture the autocorrelation structure, then resamples
-                    the AR(1) <strong>innovations</strong> i.i.d. This is <strong>model-based</strong> rather than block-based.
+                    fits an <strong>AR(1) model</strong> to carry the autocorrelation and then generates brand new
+                    residual paths from that model. The only question is where the new shocks come from, and the
+                    toggle gives you both answers:
                 </p>
+                <ul>
+                    <li><strong>Semiparametric (residual bootstrap):</strong> resample the fitted innovations &epsilon;&#770;<sub>t</sub> with replacement. The AR(1) is assumed, the shock distribution is not.</li>
+                    <li><strong>Fully parametric:</strong> draw shocks from N(0, &sigma;&#770;<sup>2</sup>). Both the AR(1) and the Normal shape are assumed.</li>
+                </ul>
                 <ul>
                     <li><strong>Step 1:</strong> Decompose log(Y) = Trend + Seasonal + Residual (same as block methods)</li>
                     <li><strong>Step 2:</strong> Fit AR(1) to residuals: r<sub>t</sub> = &phi;&middot;r<sub>t&minus;1</sub> + &epsilon;<sub>t</sub></li>
-                    <li><strong>Step 3:</strong> Extract &amp; center innovations &epsilon;&#770;<sub>t</sub></li>
-                    <li><strong>Step 4:</strong> Resample innovations i.i.d. &rarr; &epsilon;*<sub>t</sub>, reconstruct r* via AR(1)</li>
+                    <li><strong>Step 3:</strong> Extract &amp; center innovations &epsilon;&#770;<sub>t</sub>, and estimate &sigma;&#770;</li>
+                    <li><strong>Step 4:</strong> Draw shocks &epsilon;*<sub>t</sub> (resampled &epsilon;&#770;<sub>t</sub> <em>or</em> N(0, &sigma;&#770;<sup>2</sup>)), then build r* with the AR(1) recursion</li>
                     <li><strong>Step 5:</strong> Reconstruct: Y* = exp(Trend + Seasonal + r*)</li>
                 </ul>
             </div>
 
             <div class="controls">
+                <div class="control-group">
+                    <label>Shocks:</label>
+                    <div class="seg" role="group" aria-label="Where the bootstrap shocks come from">
+                        <button id="mode-semi" class="on" aria-pressed="true" onclick="setModelMode('semi')">Semiparametric (resample &epsilon;&#770;)</button>
+                        <button id="mode-param" aria-pressed="false" onclick="setModelMode('param')">Fully parametric (Normal)</button>
+                    </div>
+                </div>
                 <div class="control-group">
                     <label>Bootstrap samples:</label>
                     <input type="range" id="arima-B" min="3" max="20" value="5" oninput="document.getElementById('arima-B-val').textContent=this.value" onchange="runARIMA()">
@@ -492,36 +663,105 @@
 
             <div class="stats-panel" id="arima-stats"></div>
             <div class="chart-container" id="arima-chart" style="height: 420px;"></div>
+            <div class="chart-container" id="arima-shock-chart" style="height: 320px;"></div>
             <div class="chart-container" id="arima-resid-chart" style="height: 300px;"></div>
 
             <div class="key-insight">
-                <h4>Key Insight &mdash; Model Dependence</h4>
+                <h4>Key Insight &mdash; Two Kinds of Shock, One Model</h4>
                 <p>
-                    The parametric bootstrap is the <strong>most efficient when the model is correctly specified</strong>
-                    &mdash; it generates smooth, model-consistent paths without block-boundary discontinuities. However,
-                    if the AR(1) model is misspecified, the bootstrap paths will not faithfully represent the true data
-                    generating process. Block methods (MBB, CBB, SB) are <strong>model-free</strong> and don't suffer
-                    from this risk, making them more robust but less efficient.
+                    Both flavors trust the AR(1) to carry the memory, so neither has block joins, and both can keep
+                    running past the last month. They differ only in the shocks. The <strong>semiparametric</strong>
+                    version reuses the fitted innovations, so their real shape (skew, fat tails, the odd outlier)
+                    carries over. The <strong>fully parametric</strong> version draws clean Normal shocks: exactly
+                    right if the errors really are Normal, blind to anything that shape misses. Compare the histogram
+                    with the Normal curve above to judge how much that matters here. If the AR(1) itself is wrong,
+                    <em>both</em> inherit the mistake; the lag 12 test in the panel below shows a case where it is.
+                    Block methods (MBB, CBB, SB) skip the model, which makes them more robust but less efficient.
+                </p>
+            </div>
+        </div>
+
+        <!-- ============ BOOTSTRAP DISTRIBUTION PANEL ============ -->
+        <h3 class="section-title">What Is It For? The Bootstrap Distribution of a Statistic</h3>
+        <div class="dist-panel">
+            <div class="intro" style="margin-bottom: 20px;">
+                <p>
+                    One resampled path is just a picture. The real job of a bootstrap is to redraw the series
+                    hundreds of times, recompute a statistic on every copy, and read off its spread: a standard error
+                    or a confidence interval. Here the statistic is computed on the <strong>residuals</strong> of every
+                    resample, for every method at once. A good time series bootstrap should give copies whose
+                    autocorrelation sits around the original (the dashed line). The block size below applies to MBB,
+                    CBB and the SB mean block length.
+                </p>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Statistic:</label>
+                    <select id="dist-stat" onchange="runDistribution()">
+                        <option value="acf1" selected>Lag 1 autocorrelation</option>
+                        <option value="acf2">Lag 2 autocorrelation</option>
+                        <option value="acf12">Lag 12 autocorrelation</option>
+                        <option value="sd">Residual std. deviation</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Block size (m):</label>
+                    <input type="range" id="dist-block" min="3" max="48" value="24" list="m-suggest" oninput="document.getElementById('dist-block-val').textContent=this.value" onchange="runDistribution()">
+                    <span class="val" id="dist-block-val">24</span>
+                </div>
+                <div class="control-group">
+                    <label>Replications:</label>
+                    <select id="dist-B" onchange="runDistribution()">
+                        <option value="200">200</option>
+                        <option value="500" selected>500</option>
+                        <option value="1000">1000</option>
+                    </select>
+                </div>
+                <button class="btn-run" onclick="runDistribution()">&#9654; Resample</button>
+            </div>
+
+            <div class="chart-container" id="dist-chart" style="height: 440px;"></div>
+            <div class="table-scroll">
+                <table class="comparison-table" id="dist-table"></table>
+            </div>
+
+            <div class="key-insight">
+                <h4>Key Insight &mdash; What to Look For</h4>
+                <p>
+                    <strong>Lag 1:</strong> the i.i.d. bootstrap collapses to about zero, because it erased the memory.
+                    The block methods sit a little below the original: only pairs that land inside the same block keep
+                    their link, roughly (m &minus; k)/m of the lag k pairs, so every join drags the autocorrelation
+                    down. Slide m from 3 up to 24 and watch them climb. The AR(1) methods land on target, but only
+                    because they were fit to lag 1.
+                    <strong>Lag 12:</strong> the fairer test. The residuals still carry some yearly pattern (about
+                    0.35). Blocks of 24 months keep about half of it, longer blocks keep more, and an AR(1) keeps
+                    essentially none, since it implies &phi;<sup>12</sup> &asymp; 0. That gap is model
+                    misspecification made visible. <strong>Std. deviation:</strong> every method gets the spread of
+                    the residuals roughly right, which is why the i.i.d. bootstrap can look fine on simple statistics
+                    and still fail on anything that depends on time order.
                 </p>
             </div>
         </div>
 
         <!-- ============ COMPARISON TABLE ============ -->
-        <h3 style="margin-top: 36px; color: #1e293b;">Comparison of Methods</h3>
+        <h3 class="section-title">Comparison of Methods</h3>
         <div class="table-scroll">
         <table class="comparison-table">
             <thead>
                 <tr>
                     <th>Property</th>
+                    <th>i.i.d.</th>
                     <th>MBB</th>
                     <th>CBB</th>
                     <th>Stationary Bootstrap</th>
-                    <th>Parametric (AR(1))</th>
+                    <th>Model-based AR(1)</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>Block length</td>
+                    <td>1</td>
                     <td>Fixed m</td>
                     <td>Fixed m</td>
                     <td>Random ~ Geom(p)</td>
@@ -529,55 +769,95 @@
                 </tr>
                 <tr>
                     <td>Possible blocks</td>
+                    <td>T (single points)</td>
                     <td>T &minus; m + 1</td>
                     <td>T</td>
-                    <td>Random</td>
+                    <td>T starts, random lengths</td>
                     <td>N/A</td>
                 </tr>
                 <tr>
+                    <td>Keeps autocorrelation</td>
+                    <td class="cross">No</td>
+                    <td class="check">Within blocks</td>
+                    <td class="check">Within blocks</td>
+                    <td class="check">Within blocks</td>
+                    <td class="check">Through the fitted AR(1)</td>
+                </tr>
+                <tr>
                     <td>Edge bias</td>
+                    <td class="check">No</td>
                     <td class="cross">Yes</td>
                     <td class="check">No</td>
                     <td class="check">No</td>
                     <td class="check">No</td>
                 </tr>
                 <tr>
-                    <td>Resampled series stationary</td>
+                    <td>Resampled residuals stationary*</td>
+                    <td class="check">Yes (but no memory)</td>
                     <td class="cross">No</td>
                     <td class="cross">No</td>
                     <td class="check">Yes</td>
-                    <td class="check">Yes (if model correct)</td>
+                    <td class="check">Approximately, if |&phi;| &lt; 1</td>
                 </tr>
                 <tr>
                     <td>Equal obs. probability</td>
+                    <td class="check">Yes</td>
                     <td class="cross">No</td>
                     <td class="check">Yes</td>
                     <td class="check">Yes</td>
-                    <td class="check">Yes</td>
+                    <td>N/A (draws shocks)</td>
                 </tr>
                 <tr>
                     <td>Model-free</td>
                     <td class="check">Yes</td>
                     <td class="check">Yes</td>
                     <td class="check">Yes</td>
+                    <td class="check">Yes</td>
                     <td class="cross">No</td>
+                </tr>
+                <tr>
+                    <td>Shock distribution</td>
+                    <td>Empirical</td>
+                    <td>Empirical</td>
+                    <td>Empirical</td>
+                    <td>Empirical</td>
+                    <td>Empirical (semiparametric) or Normal (fully parametric)</td>
                 </tr>
                 <tr>
                     <td>Block boundary artifacts</td>
-                    <td class="cross">Yes</td>
-                    <td class="cross">Yes</td>
-                    <td class="cross">Yes (smoothed)</td>
+                    <td class="cross">Every point is a jump</td>
+                    <td class="cross">Yes, every m steps</td>
+                    <td class="cross">Yes, every m steps</td>
+                    <td class="cross">Yes, at random positions</td>
                     <td class="check">No</td>
                 </tr>
                 <tr>
-                    <td>Can generate forecasts</td>
+                    <td>Can extend residuals past T**</td>
                     <td class="cross">No</td>
                     <td class="cross">No</td>
                     <td class="cross">No</td>
-                    <td class="check">Yes</td>
+                    <td class="cross">No</td>
+                    <td class="check">Yes (AR recursion)</td>
                 </tr>
             </tbody>
         </table>
+        </div>
+        <p class="table-note">
+            * This row is about the resampled <em>residuals</em>, conditional on the data. Once trend and seasonality
+            are added back, no Y* path is stationary, for any method.<br>
+            ** A forecast path also needs the trend extended past T, which needs its own model. Block bootstraps reach
+            forecasting a different way, through bagging: resample the series many times, refit a forecaster on each
+            copy, and average the forecasts (Bergmeir, Hyndman &amp; Ben&iacute;tez, 2016).
+        </p>
+
+        <div class="next-box">
+            <h4>Where This Goes Next: Bagging</h4>
+            <p>
+                The <a href="bagging-visualization.html">Bagging the Airline Passengers</a> tool trains many trees on
+                bootstrap resamples and averages their forecasts. It resamples rows of lag features, which works
+                because each row carries its own recent history. When you need whole new <em>series</em> instead, for
+                example to bag exponential smoothing models, you resample with the block methods on this page.
+            </p>
         </div>
     </div>
 
@@ -668,12 +948,115 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById('tab-' + tab).classList.add('active');
-        const tabs = ['mbb', 'cbb', 'sb', 'parametric'];
+        const tabs = ['iid', 'mbb', 'cbb', 'sb', 'parametric'];
         document.querySelectorAll('.tab-btn')[tabs.indexOf(tab)].classList.add('active');
         // Generate a tab's first samples the first time it is opened, so no tab starts empty
-        const firstRun = { mbb: ['mbb-chart', runMBB], cbb: ['cbb-chart', runCBB], sb: ['sb-chart', runSB], parametric: ['arima-chart', runARIMA] };
+        const firstRun = { iid: ['iid-chart', runIID], mbb: ['mbb-chart', runMBB], cbb: ['cbb-chart', runCBB], sb: ['sb-chart', runSB], parametric: ['arima-chart', runARIMA] };
         const [chartId, run] = firstRun[tab];
         if (!document.getElementById(chartId).data) run();
+    }
+
+    // ================== HELPERS ==================
+    // Sample autocorrelation at lag k (standard ACF estimator, full-sample mean and variance)
+    function acf(x, k) {
+        const n = x.length;
+        const m = x.reduce((a, b) => a + b, 0) / n;
+        let num = 0, den = 0;
+        for (let t = 0; t < n; t++) {
+            den += (x[t] - m) * (x[t] - m);
+            if (t + k < n) num += (x[t] - m) * (x[t + k] - m);
+        }
+        return den > 0 ? num / den : 0;
+    }
+
+    function sd(x) {
+        const n = x.length;
+        const m = x.reduce((a, b) => a + b, 0) / n;
+        return Math.sqrt(x.reduce((a, v) => a + (v - m) * (v - m), 0) / (n - 1));
+    }
+
+    function mean(x) { return x.reduce((a, b) => a + b, 0) / x.length; }
+
+    // Standard Normal draw (Box-Muller)
+    function randn() {
+        let u = 0, v = 0;
+        while (u === 0) u = Math.random();
+        while (v === 0) v = Math.random();
+        return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+    }
+
+    function quantile(sorted, q) {
+        const pos = (sorted.length - 1) * q;
+        const lo = Math.floor(pos), hi = Math.ceil(pos);
+        return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
+    }
+
+    // ================== i.i.d. (THE FOIL) ==================
+    let IID_MODE = 'raw';
+
+    function iidBootstrap(series, B) {
+        const n = series.length;
+        const results = [];
+        const indices = [];
+        for (let b = 0; b < B; b++) {
+            const idx = [];
+            for (let t = 0; t < n; t++) idx.push(Math.floor(Math.random() * n));
+            indices.push(idx);
+            results.push(idx.map(i => series[i]));
+        }
+        return { results, indices };
+    }
+
+    function setIIDMode(mode) {
+        IID_MODE = mode;
+        document.getElementById('iid-raw').classList.toggle('on', mode === 'raw');
+        document.getElementById('iid-resid').classList.toggle('on', mode === 'resid');
+        document.getElementById('iid-raw').setAttribute('aria-pressed', mode === 'raw');
+        document.getElementById('iid-resid').setAttribute('aria-pressed', mode === 'resid');
+        runIID();
+    }
+
+    function runIID() {
+        const B = +document.getElementById('iid-B').value;
+        const isRaw = IID_MODE === 'raw';
+        const source = isRaw ? AIRLINE_DATA : DECOMP.residuals;
+        const { results: resampled, indices } = iidBootstrap(source, B);
+        const results = isRaw ? resampled : resampled.map(reconstructFromResiduals);
+
+        const what = isRaw ? 'raw series' : 'residuals';
+        const avg1 = mean(resampled.map(s => acf(s, 1)));
+        const avg12 = mean(resampled.map(s => acf(s, 12)));
+        document.getElementById('iid-stats').innerHTML = `
+            <div class="stat-card"><div class="stat-value">${acf(source, 1).toFixed(2)}</div><div class="stat-label">Lag 1 ACF, original ${what}</div></div>
+            <div class="stat-card"><div class="stat-value">${avg1.toFixed(2)}</div><div class="stat-label">Lag 1 ACF, bootstrap avg</div></div>
+            <div class="stat-card"><div class="stat-value">${acf(source, 12).toFixed(2)}</div><div class="stat-label">Lag 12 ACF, original ${what}</div></div>
+            <div class="stat-card"><div class="stat-value">${avg12.toFixed(2)}</div><div class="stat-label">Lag 12 ACF, bootstrap avg</div></div>
+        `;
+
+        plotBootstrapResults('iid-chart', results,
+            isRaw ? 'i.i.d. Bootstrap of the Raw Series' : 'i.i.d. Bootstrap of the Residuals (trend + seasonality added back)', !isRaw);
+
+        // Where did each point of sample 1 come from?
+        const pos = indices[0].map((_, t) => t + 1);
+        Plotly.newPlot('iid-source-chart', [
+            {
+                x: [1, T], y: [1, T], mode: 'lines', name: 'Original order',
+                line: { color: '#94a3b8', width: 1.5, dash: 'dash' }, hoverinfo: 'skip'
+            },
+            {
+                x: pos, y: indices[0].map(i => i + 1), mode: 'markers', name: 'Bootstrap sample 1',
+                marker: { color: 'rgba(239, 68, 68, 0.75)', size: 6 },
+                hovertemplate: 'Position %{x} took month %{y}<extra></extra>'
+            }
+        ], {
+            title: { text: 'Bootstrap Sample 1: Which Month Did Each Point Come From?', font: { size: 14, family: 'Inter' } },
+            xaxis: { title: 'Position in the bootstrap sample', tickfont: { size: 10 } },
+            yaxis: { title: 'Source month (1 to 144)', tickfont: { size: 10 } },
+            legend: { orientation: 'h', y: -0.3, font: { size: 10 } },
+            margin: { t: 40, r: 20, b: 80, l: 60 },
+            plot_bgcolor: '#fafafa',
+            paper_bgcolor: 'white'
+        }, { responsive: true });
     }
 
     // ================== MBB ==================
@@ -682,21 +1065,25 @@
         const numBlocks = n - blockSize + 1;
         const results = [];
         const blockStarts = []; // Track which blocks were used for each sample
+        const sources = [];     // Per sample: source index of every position
 
         for (let b = 0; b < B; b++) {
             const sample = [];
             const starts = [];
+            const src = [];
             while (sample.length < n) {
                 const startIdx = Math.floor(Math.random() * numBlocks);
                 starts.push(startIdx);
                 for (let j = 0; j < blockSize && sample.length < n; j++) {
                     sample.push(series[startIdx + j]);
+                    src.push(startIdx + j);
                 }
             }
             results.push(sample);
             blockStarts.push(starts);
+            sources.push(src);
         }
-        return { results, blockStarts };
+        return { results, blockStarts, sources };
     }
 
     function runMBB() {
@@ -713,9 +1100,10 @@
             <div class="stat-card"><div class="stat-value">${numBlocksPerSample}</div><div class="stat-label">Blocks drawn (&lceil;T/m&rceil;)</div></div>
         `;
 
-        const { results: residResults, blockStarts } = mbbBootstrap(DECOMP.residuals, blockSize, B);
+        const { results: residResults, blockStarts, sources } = mbbBootstrap(DECOMP.residuals, blockSize, B);
         const results = residResults.map(reconstructFromResiduals);
-        plotBootstrapResults('mbb-chart', results, 'Moving Block Bootstrap (MBB)');
+        plotResidualShuffle('mbb-resid-chart', residResults[0], sources[0], fixedBlockLengths(blockSize), 'MBB');
+        plotBootstrapResults('mbb-chart', results, 'Step 2: Add Trend + Seasonality Back (Moving Block Bootstrap)', true);
         drawBlockDiagram('mbb-block-viz', blockStarts[0], blockSize, T, false);
     }
 
@@ -724,21 +1112,25 @@
         const n = series.length;
         const results = [];
         const blockStarts = [];
+        const sources = [];
 
         for (let b = 0; b < B; b++) {
             const sample = [];
             const starts = [];
+            const src = [];
             while (sample.length < n) {
                 const startIdx = Math.floor(Math.random() * n); // All T positions valid
                 starts.push(startIdx);
                 for (let j = 0; j < blockSize && sample.length < n; j++) {
                     sample.push(series[(startIdx + j) % n]); // Circular wrap
+                    src.push((startIdx + j) % n);
                 }
             }
             results.push(sample);
             blockStarts.push(starts);
+            sources.push(src);
         }
-        return { results, blockStarts };
+        return { results, blockStarts, sources };
     }
 
     function runCBB() {
@@ -753,9 +1145,10 @@
             <div class="stat-card"><div class="stat-value">${numBlocksPerSample}</div><div class="stat-label">Blocks drawn (&lceil;T/m&rceil;)</div></div>
         `;
 
-        const { results: residResults, blockStarts } = cbbBootstrap(DECOMP.residuals, blockSize, B);
+        const { results: residResults, blockStarts, sources } = cbbBootstrap(DECOMP.residuals, blockSize, B);
         const results = residResults.map(reconstructFromResiduals);
-        plotBootstrapResults('cbb-chart', results, 'Circular Block Bootstrap (CBB)');
+        plotResidualShuffle('cbb-resid-chart', residResults[0], sources[0], fixedBlockLengths(blockSize), 'CBB');
+        plotBootstrapResults('cbb-chart', results, 'Step 2: Add Trend + Seasonality Back (Circular Block Bootstrap)', true);
         drawBlockDiagram('cbb-block-viz', blockStarts[0], blockSize, T, true);
     }
 
@@ -765,6 +1158,7 @@
         const p = 1 / meanBlockLength;
         const results = [];
         const blockLengths = [];
+        const sources = [];
 
         for (let b = 0; b < B; b++) {
             const sample = [];
@@ -772,6 +1166,7 @@
             let currentIdx = Math.floor(Math.random() * n);
             let currentLen = 1;
             sample.push(series[currentIdx]);
+            const src = [currentIdx];
 
             for (let t = 1; t < n; t++) {
                 if (Math.random() < p) {
@@ -785,12 +1180,14 @@
                     currentLen++;
                 }
                 sample.push(series[currentIdx]);
+                src.push(currentIdx);
             }
             lengths.push(currentLen);
             results.push(sample);
             blockLengths.push(lengths);
+            sources.push(src);
         }
-        return { results, blockLengths };
+        return { results, blockLengths, sources };
     }
 
     function runSB() {
@@ -798,8 +1195,9 @@
         const B = +document.getElementById('sb-B').value;
         const p = (1 / meanBlock).toFixed(3);
 
-        const { results: residResults, blockLengths } = stationaryBootstrap(DECOMP.residuals, meanBlock, B);
+        const { results: residResults, blockLengths, sources } = stationaryBootstrap(DECOMP.residuals, meanBlock, B);
         const results = residResults.map(reconstructFromResiduals);
+        plotResidualShuffle('sb-resid-chart', residResults[0], sources[0], blockLengths[0], 'SB');
 
         // Compute actual average block length from first sample
         const avgLen = (blockLengths[0].reduce((a,b) => a+b, 0) / blockLengths[0].length).toFixed(1);
@@ -814,15 +1212,19 @@
             <div class="stat-card"><div class="stat-value">${minLen}&ndash;${maxLen}</div><div class="stat-label">Block range (sample 1)</div></div>
         `;
 
-        plotBootstrapResults('sb-chart', results, 'Stationary Bootstrap (SB)');
+        plotBootstrapResults('sb-chart', results, 'Step 2: Add Trend + Seasonality Back (Stationary Bootstrap)', true);
         drawSBBlockDiagram('sb-block-viz', blockLengths[0]);
     }
 
-    // ================== PARAMETRIC BOOTSTRAP ==================
+    // ================== MODEL-BASED (AR(1)) BOOTSTRAP ==================
     // Uses the same Trend+Seasonal decomposition as block methods, but fits
-    // AR(1) to the residuals and bootstraps the AR(1) innovations.
-    // This avoids double-integration drift while preserving autocorrelation structure.
-    function arimaBootstrap(B) {
+    // AR(1) to the residuals and generates new residual paths from it.
+    // Two shock sources:
+    //   'semi'  = semiparametric residual bootstrap: resample fitted innovations
+    //   'param' = fully parametric: draw innovations from N(0, sigma_hat^2)
+    let MODEL_MODE = 'semi';
+
+    function fitAR1() {
         const resid = DECOMP.residuals;
         const n = resid.length;
 
@@ -843,38 +1245,92 @@
         }
         const eMean = innovations.reduce((a, b) => a + b, 0) / innovations.length;
         const centeredInnov = innovations.map(e => e - eMean);
+        // Innovation std. dev. (T - 1 innovations, one degree of freedom used by phi)
+        const sigma = Math.sqrt(centeredInnov.reduce((a, e) => a + e * e, 0) / (centeredInnov.length - 1));
 
-        // Generate bootstrap samples
-        const results = [];
+        return { rMean, centered, phi, innovations: centeredInnov, sigma };
+    }
+
+    const AR1 = fitAR1();
+
+    // Returns B simulated residual paths r* (on the original residual scale)
+    function ar1ResidualPaths(B, mode) {
+        const { rMean, centered, phi, innovations, sigma } = AR1;
+        const n = centered.length;
+        const drawShock = mode === 'param'
+            ? () => sigma * randn()
+            : () => innovations[Math.floor(Math.random() * innovations.length)];
+        // Starting value: semiparametric draws r*_0 from the observed residuals;
+        // fully parametric draws it from the AR(1) stationary law N(0, sigma^2 / (1 - phi^2)).
+        const sdStationary = Math.abs(phi) < 1 ? sigma / Math.sqrt(1 - phi * phi) : sd(centered);
+
+        const paths = [];
         for (let b = 0; b < B; b++) {
-            const drawInnov = () => centeredInnov[Math.floor(Math.random() * centeredInnov.length)];
-            // r*_0 from the residual distribution, then the AR recursion on resampled innovations
-            const rStar = [centered[Math.floor(Math.random() * n)]];
+            const rStar = [mode === 'param' ? sdStationary * randn() : centered[Math.floor(Math.random() * n)]];
             for (let t = 1; t < n; t++) {
-                rStar.push(phi * rStar[t - 1] + drawInnov());
+                rStar.push(phi * rStar[t - 1] + drawShock());
             }
-
-            // Reconstruct full series: exp(Trend + Seasonal + r*)
-            results.push(rStar.map((r, i) =>
-                Math.exp(DECOMP.trend[i] + DECOMP.seasonalFull[i] + r)
-            ));
+            paths.push(rStar.map(r => r + rMean));
         }
+        return paths;
+    }
 
-        return { results, innovations: centeredInnov, phi };
+    function setModelMode(mode) {
+        MODEL_MODE = mode;
+        document.getElementById('mode-semi').classList.toggle('on', mode === 'semi');
+        document.getElementById('mode-param').classList.toggle('on', mode === 'param');
+        document.getElementById('mode-semi').setAttribute('aria-pressed', mode === 'semi');
+        document.getElementById('mode-param').setAttribute('aria-pressed', mode === 'param');
+        runARIMA();
     }
 
     function runARIMA() {
         const B = +document.getElementById('arima-B').value;
-        const { results, innovations, phi } = arimaBootstrap(B);
+        const isParam = MODEL_MODE === 'param';
+        const { phi, innovations, sigma } = AR1;
+        const results = ar1ResidualPaths(B, MODEL_MODE).map(reconstructFromResiduals);
 
         document.getElementById('arima-stats').innerHTML = `
-            <div class="stat-card"><div class="stat-value">AR(1)</div><div class="stat-label">Model on residuals</div></div>
             <div class="stat-card"><div class="stat-value">&phi; = ${phi.toFixed(3)}</div><div class="stat-label">AR(1) coefficient</div></div>
-            <div class="stat-card"><div class="stat-value">${innovations.length}</div><div class="stat-label">Innovations resampled</div></div>
-            <div class="stat-card"><div class="stat-value">Decompose</div><div class="stat-label">Trend + Seasonal + AR(1)</div></div>
+            <div class="stat-card"><div class="stat-value">&sigma;&#770; = ${sigma.toFixed(4)}</div><div class="stat-label">Innovation std. dev.</div></div>
+            <div class="stat-card"><div class="stat-value">${isParam ? 'N(0, &sigma;&#770;&sup2;)' : innovations.length}</div><div class="stat-label">${isParam ? 'Shocks drawn from' : 'Innovations resampled'}</div></div>
+            <div class="stat-card"><div class="stat-value">${isParam ? 'Fully' : 'Semi'}</div><div class="stat-label">${isParam ? 'parametric: model + Normal shocks' : 'parametric: model + empirical shocks'}</div></div>
         `;
 
-        plotBootstrapResults('arima-chart', results, 'Parametric Bootstrap — AR(1) on Decomposition Residuals');
+        plotBootstrapResults('arima-chart', results, isParam
+            ? 'Fully Parametric Bootstrap: AR(1) with Normal Shocks'
+            : 'Semiparametric Bootstrap: AR(1) with Resampled Innovations', true);
+
+        // Where the shocks come from: empirical histogram vs fitted Normal
+        const lo = Math.min(...innovations, -4 * sigma), hi = Math.max(...innovations, 4 * sigma);
+        const binSize = (hi - lo) / 24;
+        const xs = [], ys = [];
+        for (let i = 0; i <= 200; i++) {
+            const x = lo + (hi - lo) * i / 200;
+            xs.push(x);
+            // Scale the density to histogram counts: n * binSize * pdf
+            ys.push(innovations.length * binSize * Math.exp(-0.5 * (x / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI)));
+        }
+        Plotly.newPlot('arima-shock-chart', [
+            {
+                x: innovations, type: 'histogram', name: 'Fitted innovations (resampled in semiparametric mode)',
+                xbins: { start: lo, end: hi, size: binSize },
+                marker: { color: isParam ? 'rgba(102, 126, 234, 0.25)' : 'rgba(102, 126, 234, 0.75)', line: { color: 'white', width: 1 } }
+            },
+            {
+                x: xs, y: ys, mode: 'lines', name: 'N(0, σ̂²) (drawn in fully parametric mode)',
+                line: { color: isParam ? '#ef4444' : 'rgba(239, 68, 68, 0.35)', width: isParam ? 3 : 2 }
+            }
+        ], {
+            title: { text: 'Where the Shocks Come From: Empirical vs Normal (active source is highlighted)', font: { size: 14, family: 'Inter' } },
+            xaxis: { title: 'Innovation', tickfont: { size: 10 } },
+            yaxis: { title: 'Count', tickfont: { size: 10 } },
+            legend: { orientation: 'h', y: -0.3, font: { size: 10 } },
+            bargap: 0.02,
+            margin: { t: 40, r: 20, b: 80, l: 60 },
+            plot_bgcolor: '#fafafa',
+            paper_bgcolor: 'white'
+        }, { responsive: true });
 
         // Plot innovations
         Plotly.newPlot('arima-resid-chart', [
@@ -896,7 +1352,73 @@
     }
 
     // ================== PLOTTING ==================
-    function plotBootstrapResults(containerId, bootstrapSamples, title) {
+    const SHUFFLE_COLORS = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899',
+                            '#06b6d4', '#f97316', '#6366f1', '#14b8a6', '#84cc16', '#d946ef'];
+
+    function fixedBlockLengths(m) {
+        const lengths = [];
+        let left = T;
+        while (left > 0) { lengths.push(Math.min(m, left)); left -= m; }
+        return lengths;
+    }
+
+    // Step 1 chart: the residual series being shuffled, with each pasted block shaded
+    function plotResidualShuffle(containerId, bootResid, src, blockLengths, label) {
+        const shapes = [];
+        const annotations = [];
+        let pos = 0;
+        blockLengths.forEach((len, b) => {
+            const color = SHUFFLE_COLORS[b % SHUFFLE_COLORS.length];
+            const start = pos, end = Math.min(pos + len, T);
+            shapes.push({
+                type: 'rect', xref: 'x', yref: 'paper',
+                x0: start + 0.5, x1: end + 0.5, y0: 0, y1: 1,
+                fillcolor: color, opacity: 0.12, line: { width: 0 }, layer: 'below'
+            });
+            if (len >= 10) {
+                annotations.push({
+                    x: (start + end) / 2 + 0.5, y: 1, yref: 'paper', yanchor: 'bottom',
+                    text: `from ${MONTHS[src[start]]}`, showarrow: false,
+                    font: { size: 10, color: color }
+                });
+            }
+            pos = end;
+        });
+
+        const posAxis = MONTHS.map((_, i) => i + 1);
+        Plotly.newPlot(containerId, [
+            {
+                x: posAxis, y: DECOMP.residuals, mode: 'lines', name: 'Original residuals',
+                line: { color: '#94a3b8', width: 1.5 },
+                customdata: MONTHS,
+                hovertemplate: '%{customdata}: %{y:.3f}<extra>Original</extra>'
+            },
+            {
+                x: posAxis, y: bootResid, mode: 'lines+markers', name: 'Bootstrap sample 1 residuals',
+                line: { color: '#1e293b', width: 2 }, marker: { size: 3 },
+                customdata: src.map((s, i) => [MONTHS[i], MONTHS[s]]),
+                hovertemplate: '%{customdata[0]} borrowed the residual of %{customdata[1]}: %{y:.3f}<extra></extra>'
+            }
+        ], {
+            title: { text: `Step 1: Shuffle the Residuals Only (${label}, sample 1, each shaded band is one pasted block)`, font: { size: 14, family: 'Inter' }, y: 0.97 },
+            xaxis: {
+                title: 'Month on the time axis',
+                tickvals: posAxis.filter(i => (i - 1) % 24 === 0),
+                ticktext: MONTHS.filter((_, i) => i % 24 === 0),
+                range: [0.5, T + 0.5],
+                tickfont: { size: 10 }
+            },
+            yaxis: { title: 'Residual (log scale)', tickfont: { size: 10 }, zeroline: true, zerolinecolor: '#cbd5e1' },
+            shapes, annotations,
+            legend: { orientation: 'h', y: -0.25, font: { size: 10 } },
+            margin: { t: 70, r: 20, b: 80, l: 60 },
+            plot_bgcolor: '#fafafa',
+            paper_bgcolor: 'white',
+            hovermode: 'closest'
+        }, { responsive: true });
+    }
+
+    function plotBootstrapResults(containerId, bootstrapSamples, title, showSkeleton = false) {
         const traces = [
             {
                 x: MONTHS,
@@ -907,6 +1429,16 @@
                 line: { color: '#1e293b', width: 3 }
             }
         ];
+        if (showSkeleton) {
+            traces.push({
+                x: MONTHS,
+                y: DECOMP.trend.map((tr, i) => Math.exp(tr + DECOMP.seasonalFull[i])),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Trend + seasonal (fixed, never resampled)',
+                line: { color: '#64748b', width: 2, dash: 'dot' }
+            });
+        }
 
         bootstrapSamples.forEach((sample, i) => {
             traces.push({
@@ -955,7 +1487,7 @@
         let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">`;
 
         // Title
-        svg += `<text x="${svgW/2}" y="16" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">Block Sampling Diagram (Bootstrap Sample 1) &mdash; ${isCircular ? 'Circular' : 'Linear'}</text>`;
+        svg += `<text x="${svgW/2}" y="16" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">Where Each Residual Block Was Copied From (Bootstrap Sample 1) &mdash; ${isCircular ? 'Circular' : 'Linear'}</text>`;
 
         // Original series bar
         const origY = 28;
@@ -1036,8 +1568,95 @@
         container.innerHTML = svg;
     }
 
+    // ================== BOOTSTRAP DISTRIBUTION PANEL ==================
+    const DIST_METHODS = [
+        { key: 'iid',   name: 'i.i.d.',                     color: '#94a3b8' },
+        { key: 'mbb',   name: 'MBB',                        color: '#ef4444' },
+        { key: 'cbb',   name: 'CBB',                        color: '#3b82f6' },
+        { key: 'sb',    name: 'Stationary (SB)',            color: '#10b981' },
+        { key: 'semi',  name: 'AR(1) semiparametric',       color: '#f59e0b' },
+        { key: 'param', name: 'AR(1) fully parametric',     color: '#8b5cf6' }
+    ];
+
+    const DIST_STATS = {
+        acf1:  { label: 'Lag 1 autocorrelation of residuals',  fn: x => acf(x, 1),  digits: 3 },
+        acf2:  { label: 'Lag 2 autocorrelation of residuals',  fn: x => acf(x, 2),  digits: 3 },
+        acf12: { label: 'Lag 12 autocorrelation of residuals', fn: x => acf(x, 12), digits: 3 },
+        sd:    { label: 'Std. deviation of residuals',         fn: sd,              digits: 4 }
+    };
+
+    function residualReplicates(key, m, B) {
+        const r = DECOMP.residuals;
+        switch (key) {
+            case 'iid':   return iidBootstrap(r, B).results;
+            case 'mbb':   return mbbBootstrap(r, m, B).results;
+            case 'cbb':   return cbbBootstrap(r, m, B).results;
+            case 'sb':    return stationaryBootstrap(r, m, B).results;
+            case 'semi':  return ar1ResidualPaths(B, 'semi');
+            case 'param': return ar1ResidualPaths(B, 'param');
+        }
+    }
+
+    function runDistribution() {
+        const statKey = document.getElementById('dist-stat').value;
+        const m = +document.getElementById('dist-block').value;
+        const B = +document.getElementById('dist-B').value;
+        const stat = DIST_STATS[statKey];
+        const original = stat.fn(DECOMP.residuals);
+
+        const traces = [];
+        const rows = [];
+        DIST_METHODS.forEach(meth => {
+            const vals = residualReplicates(meth.key, m, B).map(stat.fn);
+            const sorted = [...vals].sort((a, b) => a - b);
+            const avg = mean(vals);
+            const q05 = quantile(sorted, 0.05), q95 = quantile(sorted, 0.95);
+            rows.push({ name: meth.name, color: meth.color, avg, q05, q95, covers: q05 <= original && original <= q95 });
+            traces.push({
+                x: vals, type: 'box', orientation: 'h', name: meth.name,
+                boxmean: true, boxpoints: false,
+                marker: { color: meth.color }, line: { color: meth.color },
+                fillcolor: meth.color + '33',
+                hoverinfo: 'x'
+            });
+        });
+
+        Plotly.newPlot('dist-chart', traces, {
+            title: { text: `${stat.label}: ${B} resamples per method (m = ${m})`, font: { size: 15, family: 'Inter' } },
+            xaxis: { title: stat.label, tickfont: { size: 10 }, zeroline: true, zerolinecolor: '#cbd5e1' },
+            yaxis: { autorange: 'reversed', tickfont: { size: 11 } },
+            showlegend: false,
+            shapes: [{
+                type: 'line', x0: original, x1: original, yref: 'paper', y0: 0, y1: 1,
+                line: { color: '#1e293b', width: 2, dash: 'dash' }
+            }],
+            annotations: [{
+                x: original, y: 1.02, yref: 'paper', text: `Original: ${original.toFixed(stat.digits)}`,
+                showarrow: false, font: { size: 11, color: '#1e293b' }, xanchor: 'left'
+            }],
+            margin: { t: 60, r: 30, b: 60, l: 160 },
+            plot_bgcolor: '#fafafa',
+            paper_bgcolor: 'white'
+        }, { responsive: true });
+
+        const d = stat.digits;
+        document.getElementById('dist-table').innerHTML = `
+            <thead><tr>
+                <th>Method</th><th>Bootstrap mean</th><th>Middle 90% of resamples</th><th>Original inside that range?</th>
+            </tr></thead>
+            <tbody>${rows.map(r => `
+                <tr>
+                    <td><strong style="color:${r.color}">&#9632;</strong> ${r.name}</td>
+                    <td>${r.avg.toFixed(d)}</td>
+                    <td>${r.q05.toFixed(d)} to ${r.q95.toFixed(d)}</td>
+                    <td class="${r.covers ? 'check' : 'cross'}">${r.covers ? 'Yes' : 'No'}</td>
+                </tr>`).join('')}
+            </tbody>`;
+    }
+
     // ================== INITIALIZE ==================
-    runMBB();
+    runIID();
+    runDistribution();
     </script>
 <!-- Cloudflare Web Analytics -->
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
