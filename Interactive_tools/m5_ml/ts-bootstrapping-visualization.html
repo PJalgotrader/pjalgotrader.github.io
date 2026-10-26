@@ -298,6 +298,33 @@
             padding: 24px;
         }
 
+        /* Pipeline box */
+        .pipeline {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+        }
+        .pipeline h4 { color: #1e293b; margin-bottom: 12px; font-size: 1em; }
+        .pipe-steps { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; }
+        .pipe-step {
+            flex: 1;
+            min-width: 180px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 0.88em;
+            color: #475569;
+            line-height: 1.5;
+        }
+        .pipe-step strong { display: block; color: #4338ca; margin-bottom: 4px; font-size: 1.02em; }
+        .pipe-step.hot { border-color: #667eea; background: #f0f4ff; }
+        .pipe-arrow { align-self: center; color: #94a3b8; font-size: 1.4em; font-weight: 700; }
+        .pipeline .caveat { margin-top: 12px; font-size: 0.84em; color: #64748b; line-height: 1.6; }
+        @media (max-width: 768px) { .pipe-arrow { display: none; } }
+
         /* Next step callout */
         .next-box {
             margin-top: 32px;
@@ -357,6 +384,32 @@
                 seasonal patterns would be completely lost. Time series bootstrapping must preserve the local
                 dependence by resampling in <strong>blocks</strong> or through <strong>model-based</strong> approaches.
                 The first tab lets you watch it happen.
+            </p>
+        </div>
+
+        <div class="pipeline">
+            <h4>How every tab builds a bootstrap path</h4>
+            <div class="pipe-steps">
+                <div class="pipe-step">
+                    <strong>1. Split</strong>
+                    log(passengers) = trend + seasonal + residual
+                </div>
+                <div class="pipe-arrow">&rarr;</div>
+                <div class="pipe-step hot">
+                    <strong>2. Resample the residuals only</strong>
+                    Blocks (MBB, CBB, SB) or an AR(1) model shuffle the small leftover wiggles
+                </div>
+                <div class="pipe-arrow">&rarr;</div>
+                <div class="pipe-step">
+                    <strong>3. Add the rest back</strong>
+                    Each month keeps its own trend and seasonal value, plus a borrowed wiggle
+                </div>
+            </div>
+            <p class="caveat">
+                Why not cut blocks from the raw counts? A summer 1960 block (about 600 passengers) would land in 1949
+                (about 120). The residuals have no trend, so their blocks can go anywhere. The catch: trend and
+                seasonality are held fixed, so the bootstrap only captures uncertainty in the wiggles, not in how the
+                trend and seasonal pattern were estimated. That is why the paths stay so close to the original.
             </p>
         </div>
 
@@ -433,7 +486,7 @@
                     <li><strong>Block library:</strong> B<sub>i</sub> = [y<sub>i</sub>, y<sub>i+1</sub>, ..., y<sub>i+m&minus;1</sub>] for i = 1, ..., T&minus;m+1</li>
                     <li><strong>Draw</strong> k = &lceil;T/m&rceil; blocks uniformly with replacement</li>
                     <li><strong>Concatenate</strong> and trim to length T</li>
-                    <li><strong>For non-stationary data:</strong> decompose into Trend + Seasonal + Residual, apply MBB to the residuals, then reconstruct</li>
+                    <li><strong>For non-stationary data (like this series):</strong> decompose into Trend + Seasonal + Residual, cut the blocks from the <em>residuals only</em>, then add trend and seasonality back. The first chart below shows the shuffle; the second shows the result.</li>
                 </ul>
             </div>
 
@@ -453,6 +506,7 @@
             </div>
 
             <div class="stats-panel" id="mbb-stats"></div>
+            <div class="chart-container" id="mbb-resid-chart" style="height: 360px;"></div>
             <div class="chart-container" id="mbb-chart" style="height: 420px;"></div>
             <div class="block-viz" id="mbb-block-viz"></div>
 
@@ -501,6 +555,7 @@
             </div>
 
             <div class="stats-panel" id="cbb-stats"></div>
+            <div class="chart-container" id="cbb-resid-chart" style="height: 360px;"></div>
             <div class="chart-container" id="cbb-chart" style="height: 420px;"></div>
             <div class="block-viz" id="cbb-block-viz"></div>
 
@@ -549,6 +604,7 @@
             </div>
 
             <div class="stats-panel" id="sb-stats"></div>
+            <div class="chart-container" id="sb-resid-chart" style="height: 360px;"></div>
             <div class="chart-container" id="sb-chart" style="height: 420px;"></div>
             <div class="block-viz" id="sb-block-viz"></div>
 
@@ -978,7 +1034,7 @@
         `;
 
         plotBootstrapResults('iid-chart', results,
-            isRaw ? 'i.i.d. Bootstrap of the Raw Series' : 'i.i.d. Bootstrap of the Residuals (trend + seasonality added back)');
+            isRaw ? 'i.i.d. Bootstrap of the Raw Series' : 'i.i.d. Bootstrap of the Residuals (trend + seasonality added back)', !isRaw);
 
         // Where did each point of sample 1 come from?
         const pos = indices[0].map((_, t) => t + 1);
@@ -1009,21 +1065,25 @@
         const numBlocks = n - blockSize + 1;
         const results = [];
         const blockStarts = []; // Track which blocks were used for each sample
+        const sources = [];     // Per sample: source index of every position
 
         for (let b = 0; b < B; b++) {
             const sample = [];
             const starts = [];
+            const src = [];
             while (sample.length < n) {
                 const startIdx = Math.floor(Math.random() * numBlocks);
                 starts.push(startIdx);
                 for (let j = 0; j < blockSize && sample.length < n; j++) {
                     sample.push(series[startIdx + j]);
+                    src.push(startIdx + j);
                 }
             }
             results.push(sample);
             blockStarts.push(starts);
+            sources.push(src);
         }
-        return { results, blockStarts };
+        return { results, blockStarts, sources };
     }
 
     function runMBB() {
@@ -1040,9 +1100,10 @@
             <div class="stat-card"><div class="stat-value">${numBlocksPerSample}</div><div class="stat-label">Blocks drawn (&lceil;T/m&rceil;)</div></div>
         `;
 
-        const { results: residResults, blockStarts } = mbbBootstrap(DECOMP.residuals, blockSize, B);
+        const { results: residResults, blockStarts, sources } = mbbBootstrap(DECOMP.residuals, blockSize, B);
         const results = residResults.map(reconstructFromResiduals);
-        plotBootstrapResults('mbb-chart', results, 'Moving Block Bootstrap (MBB)');
+        plotResidualShuffle('mbb-resid-chart', residResults[0], sources[0], fixedBlockLengths(blockSize), 'MBB');
+        plotBootstrapResults('mbb-chart', results, 'Step 2: Add Trend + Seasonality Back (Moving Block Bootstrap)', true);
         drawBlockDiagram('mbb-block-viz', blockStarts[0], blockSize, T, false);
     }
 
@@ -1051,21 +1112,25 @@
         const n = series.length;
         const results = [];
         const blockStarts = [];
+        const sources = [];
 
         for (let b = 0; b < B; b++) {
             const sample = [];
             const starts = [];
+            const src = [];
             while (sample.length < n) {
                 const startIdx = Math.floor(Math.random() * n); // All T positions valid
                 starts.push(startIdx);
                 for (let j = 0; j < blockSize && sample.length < n; j++) {
                     sample.push(series[(startIdx + j) % n]); // Circular wrap
+                    src.push((startIdx + j) % n);
                 }
             }
             results.push(sample);
             blockStarts.push(starts);
+            sources.push(src);
         }
-        return { results, blockStarts };
+        return { results, blockStarts, sources };
     }
 
     function runCBB() {
@@ -1080,9 +1145,10 @@
             <div class="stat-card"><div class="stat-value">${numBlocksPerSample}</div><div class="stat-label">Blocks drawn (&lceil;T/m&rceil;)</div></div>
         `;
 
-        const { results: residResults, blockStarts } = cbbBootstrap(DECOMP.residuals, blockSize, B);
+        const { results: residResults, blockStarts, sources } = cbbBootstrap(DECOMP.residuals, blockSize, B);
         const results = residResults.map(reconstructFromResiduals);
-        plotBootstrapResults('cbb-chart', results, 'Circular Block Bootstrap (CBB)');
+        plotResidualShuffle('cbb-resid-chart', residResults[0], sources[0], fixedBlockLengths(blockSize), 'CBB');
+        plotBootstrapResults('cbb-chart', results, 'Step 2: Add Trend + Seasonality Back (Circular Block Bootstrap)', true);
         drawBlockDiagram('cbb-block-viz', blockStarts[0], blockSize, T, true);
     }
 
@@ -1092,6 +1158,7 @@
         const p = 1 / meanBlockLength;
         const results = [];
         const blockLengths = [];
+        const sources = [];
 
         for (let b = 0; b < B; b++) {
             const sample = [];
@@ -1099,6 +1166,7 @@
             let currentIdx = Math.floor(Math.random() * n);
             let currentLen = 1;
             sample.push(series[currentIdx]);
+            const src = [currentIdx];
 
             for (let t = 1; t < n; t++) {
                 if (Math.random() < p) {
@@ -1112,12 +1180,14 @@
                     currentLen++;
                 }
                 sample.push(series[currentIdx]);
+                src.push(currentIdx);
             }
             lengths.push(currentLen);
             results.push(sample);
             blockLengths.push(lengths);
+            sources.push(src);
         }
-        return { results, blockLengths };
+        return { results, blockLengths, sources };
     }
 
     function runSB() {
@@ -1125,8 +1195,9 @@
         const B = +document.getElementById('sb-B').value;
         const p = (1 / meanBlock).toFixed(3);
 
-        const { results: residResults, blockLengths } = stationaryBootstrap(DECOMP.residuals, meanBlock, B);
+        const { results: residResults, blockLengths, sources } = stationaryBootstrap(DECOMP.residuals, meanBlock, B);
         const results = residResults.map(reconstructFromResiduals);
+        plotResidualShuffle('sb-resid-chart', residResults[0], sources[0], blockLengths[0], 'SB');
 
         // Compute actual average block length from first sample
         const avgLen = (blockLengths[0].reduce((a,b) => a+b, 0) / blockLengths[0].length).toFixed(1);
@@ -1141,7 +1212,7 @@
             <div class="stat-card"><div class="stat-value">${minLen}&ndash;${maxLen}</div><div class="stat-label">Block range (sample 1)</div></div>
         `;
 
-        plotBootstrapResults('sb-chart', results, 'Stationary Bootstrap (SB)');
+        plotBootstrapResults('sb-chart', results, 'Step 2: Add Trend + Seasonality Back (Stationary Bootstrap)', true);
         drawSBBlockDiagram('sb-block-viz', blockLengths[0]);
     }
 
@@ -1228,7 +1299,7 @@
 
         plotBootstrapResults('arima-chart', results, isParam
             ? 'Fully Parametric Bootstrap: AR(1) with Normal Shocks'
-            : 'Semiparametric Bootstrap: AR(1) with Resampled Innovations');
+            : 'Semiparametric Bootstrap: AR(1) with Resampled Innovations', true);
 
         // Where the shocks come from: empirical histogram vs fitted Normal
         const lo = Math.min(...innovations, -4 * sigma), hi = Math.max(...innovations, 4 * sigma);
@@ -1281,7 +1352,73 @@
     }
 
     // ================== PLOTTING ==================
-    function plotBootstrapResults(containerId, bootstrapSamples, title) {
+    const SHUFFLE_COLORS = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899',
+                            '#06b6d4', '#f97316', '#6366f1', '#14b8a6', '#84cc16', '#d946ef'];
+
+    function fixedBlockLengths(m) {
+        const lengths = [];
+        let left = T;
+        while (left > 0) { lengths.push(Math.min(m, left)); left -= m; }
+        return lengths;
+    }
+
+    // Step 1 chart: the residual series being shuffled, with each pasted block shaded
+    function plotResidualShuffle(containerId, bootResid, src, blockLengths, label) {
+        const shapes = [];
+        const annotations = [];
+        let pos = 0;
+        blockLengths.forEach((len, b) => {
+            const color = SHUFFLE_COLORS[b % SHUFFLE_COLORS.length];
+            const start = pos, end = Math.min(pos + len, T);
+            shapes.push({
+                type: 'rect', xref: 'x', yref: 'paper',
+                x0: start + 0.5, x1: end + 0.5, y0: 0, y1: 1,
+                fillcolor: color, opacity: 0.12, line: { width: 0 }, layer: 'below'
+            });
+            if (len >= 10) {
+                annotations.push({
+                    x: (start + end) / 2 + 0.5, y: 1, yref: 'paper', yanchor: 'bottom',
+                    text: `from ${MONTHS[src[start]]}`, showarrow: false,
+                    font: { size: 10, color: color }
+                });
+            }
+            pos = end;
+        });
+
+        const posAxis = MONTHS.map((_, i) => i + 1);
+        Plotly.newPlot(containerId, [
+            {
+                x: posAxis, y: DECOMP.residuals, mode: 'lines', name: 'Original residuals',
+                line: { color: '#94a3b8', width: 1.5 },
+                customdata: MONTHS,
+                hovertemplate: '%{customdata}: %{y:.3f}<extra>Original</extra>'
+            },
+            {
+                x: posAxis, y: bootResid, mode: 'lines+markers', name: 'Bootstrap sample 1 residuals',
+                line: { color: '#1e293b', width: 2 }, marker: { size: 3 },
+                customdata: src.map((s, i) => [MONTHS[i], MONTHS[s]]),
+                hovertemplate: '%{customdata[0]} borrowed the residual of %{customdata[1]}: %{y:.3f}<extra></extra>'
+            }
+        ], {
+            title: { text: `Step 1: Shuffle the Residuals Only (${label}, sample 1, each shaded band is one pasted block)`, font: { size: 14, family: 'Inter' }, y: 0.97 },
+            xaxis: {
+                title: 'Month on the time axis',
+                tickvals: posAxis.filter(i => (i - 1) % 24 === 0),
+                ticktext: MONTHS.filter((_, i) => i % 24 === 0),
+                range: [0.5, T + 0.5],
+                tickfont: { size: 10 }
+            },
+            yaxis: { title: 'Residual (log scale)', tickfont: { size: 10 }, zeroline: true, zerolinecolor: '#cbd5e1' },
+            shapes, annotations,
+            legend: { orientation: 'h', y: -0.25, font: { size: 10 } },
+            margin: { t: 70, r: 20, b: 80, l: 60 },
+            plot_bgcolor: '#fafafa',
+            paper_bgcolor: 'white',
+            hovermode: 'closest'
+        }, { responsive: true });
+    }
+
+    function plotBootstrapResults(containerId, bootstrapSamples, title, showSkeleton = false) {
         const traces = [
             {
                 x: MONTHS,
@@ -1292,6 +1429,16 @@
                 line: { color: '#1e293b', width: 3 }
             }
         ];
+        if (showSkeleton) {
+            traces.push({
+                x: MONTHS,
+                y: DECOMP.trend.map((tr, i) => Math.exp(tr + DECOMP.seasonalFull[i])),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Trend + seasonal (fixed, never resampled)',
+                line: { color: '#64748b', width: 2, dash: 'dot' }
+            });
+        }
 
         bootstrapSamples.forEach((sample, i) => {
             traces.push({
@@ -1340,7 +1487,7 @@
         let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">`;
 
         // Title
-        svg += `<text x="${svgW/2}" y="16" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">Block Sampling Diagram (Bootstrap Sample 1) &mdash; ${isCircular ? 'Circular' : 'Linear'}</text>`;
+        svg += `<text x="${svgW/2}" y="16" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">Where Each Residual Block Was Copied From (Bootstrap Sample 1) &mdash; ${isCircular ? 'Circular' : 'Linear'}</text>`;
 
         // Original series bar
         const origY = 28;
