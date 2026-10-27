@@ -568,6 +568,13 @@
         .fp-row.sel .fp-hit, .ov-row.sel .ov-hit { fill: rgba(102, 126, 234, 0.15); }
         .fp-row:focus-visible, .ov-row:focus-visible { outline: 2px solid #667eea; }
 
+        .wf-hint { font-size: 0.82em; font-weight: 600; color: #64748b; }
+        .wf-hint.bad { color: #dc2626; }
+        .wf-hint.good { color: #059669; }
+        .wf-row { cursor: pointer; }
+        .wf-row:hover .wf-hit { fill: rgba(102, 126, 234, 0.08); }
+        .wf-row:focus-visible { outline: 2px solid #667eea; }
+
         .stat-card.is-purge .stat-value { color: #dc2626; }
         .stat-card.is-embargo .stat-value { color: #ea580c; }
 
@@ -727,6 +734,7 @@
                 <p style="margin-top: 10px;">
                     Walk-forward still needs one buffer. When the target is h steps ahead, the last training labels reach into the test period,
                     so leave a <strong>gap of <span class="formula">h &minus; 1</span></strong> rows between train and test.
+                    Click any split below to see where each training row's label lands.
                 </p>
             </div>
 
@@ -752,21 +760,38 @@
                     <span class="val" id="wf-test-val">2</span>
                 </div>
                 <div class="control-group">
-                    <label>Gap (h &minus; 1):</label>
-                    <input type="range" id="wf-gap" min="0" max="4" value="2" oninput="updateWalkForward()">
-                    <span class="val" id="wf-gap-val">2</span>
+                    <label>Horizon h:</label>
+                    <input type="range" id="wf-h" min="1" max="6" value="3" oninput="updateWalkForward()">
+                    <span class="val" id="wf-h-val">3</span>
+                </div>
+                <div class="control-group">
+                    <label>Gap:</label>
+                    <input type="range" id="wf-gap" min="0" max="5" value="0" oninput="updateWalkForward()">
+                    <span class="val" id="wf-gap-val">0</span>
+                    <span class="wf-hint" id="wf-gap-hint"></span>
                 </div>
                 <button class="btn-animate" onclick="animateWalkForward()">&#9654; Animate</button>
             </div>
 
             <div class="legend">
                 <div class="legend-item"><div class="legend-swatch" style="background: #3b82f6;"></div> Train</div>
+                <div class="legend-item"><div class="legend-swatch" style="background: #3b82f6; box-shadow: inset 0 0 0 2px #b91c1c;"></div> Train whose label reaches the test period</div>
                 <div class="legend-item"><div class="legend-swatch" style="background: #ef4444;"></div> Gap (purged)</div>
                 <div class="legend-item"><div class="legend-swatch" style="background: #f59e0b;"></div> Test</div>
                 <div class="legend-item"><div class="legend-swatch" style="background: #e2e8f0;"></div> Unused</div>
             </div>
 
             <div class="viz-area" id="walkforward-viz"></div>
+
+            <div class="timeline-label" style="margin-top: 26px;" id="wf-detail-title">Split 1: where each row's label lands</div>
+            <div class="pk-glyphs" aria-hidden="true">
+                <span><svg width="30" height="14"><rect x="1" y="3" width="10" height="8" rx="2" fill="#3b82f6" opacity=".55"/><line x1="12" y1="7" x2="24" y2="7" stroke="#3b82f6" stroke-width="2"/><circle cx="24" cy="7" r="4.5" fill="#3b82f6"/></svg>row at time t and its label y<sub>t+h</sub></span>
+                <span><svg width="26" height="14"><line x1="13" y1="0" x2="13" y2="14" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3 2"/></svg>first test forecast</span>
+                <span><svg width="26" height="14"><rect x="1" y="1" width="24" height="12" rx="2" fill="rgba(239,68,68,0.10)"/></svg>not observed yet at that moment</span>
+            </div>
+            <p class="pk-sub">Each square in the chart above is one row: its features sit at that square, and its label sits h squares to the right. The splits chart only shows where a row starts. This view shows where its label ends.</p>
+            <div class="viz-area pk-viz" id="wf-detail"></div>
+            <div class="pk-info" id="wf-detail-cap" aria-live="polite"></div>
 
             <div class="key-insight">
                 <h4>Key Insight</h4>
@@ -1285,7 +1310,7 @@
         expanding: 'Expanding window uses all available history for training, making it data-efficient. However, it produces only a <strong>single backtest path</strong>, making it hard to assess overfitting. Old patterns may dominate if the data is non-stationary.',
         rolling: 'Rolling window keeps a fixed training size, dropping the oldest data as it slides forward. This is better for <strong>non-stationary data</strong> where old patterns may be irrelevant, but it uses less data overall. Like expanding window, it produces only a <strong>single backtest path</strong>.'
     };
-    const WF_GAP_NOTE = ' The red gap keeps the last training labels from reaching into the test period. Set it to <span class="formula">h &minus; 1</span> for an h-step-ahead target.';
+    const WF_GAP_NOTE = ' Train squares marked <strong>!</strong> have labels that land after the first test forecast is made. A gap of <span class="formula">h &minus; 1</span> removes exactly those rows, and with h = 1 no gap is needed.';
 
     function switchWalkForward(mode) {
         wfMode = mode;
@@ -1298,21 +1323,53 @@
         updateWalkForward();
     }
 
+    let wfSel = 0;
+
+    function wfParams() {
+        return {
+            splits: +document.getElementById('wf-splits').value,
+            trainSize: +document.getElementById('wf-train').value,
+            testSize: +document.getElementById('wf-test').value,
+            gapSize: +document.getElementById('wf-gap').value,
+            h: +document.getElementById('wf-h').value
+        };
+    }
+
+    // Row positions for split s, 0-indexed (time t = index + 1)
+    function wfBounds(s, P, mode) {
+        const tStart = mode === 'expanding' ? 0 : s * P.testSize;
+        const tEnd = mode === 'expanding' ? P.trainSize + s * P.testSize : tStart + P.trainSize;
+        const testStart = tEnd + P.gapSize;
+        return { tStart, tEnd, testStart, testEnd: testStart + P.testSize };
+    }
+
     function updateWalkForward() {
         animRun.walkforward++;
-        const splits = +document.getElementById('wf-splits').value;
-        const trainSize = +document.getElementById('wf-train').value;
-        const testSize = +document.getElementById('wf-test').value;
-        const gapSize = +document.getElementById('wf-gap').value;
-        document.getElementById('wf-splits-val').textContent = splits;
-        document.getElementById('wf-train-val').textContent = trainSize;
-        document.getElementById('wf-test-val').textContent = testSize;
-        document.getElementById('wf-gap-val').textContent = gapSize;
-        drawWalkForward(splits, trainSize, testSize, gapSize, wfMode);
+        const P = wfParams();
+        ['splits', 'train', 'test', 'gap', 'h'].forEach(id => {
+            document.getElementById('wf-' + id + '-val').textContent = document.getElementById('wf-' + id).value;
+        });
+        const need = P.h - 1, hint = document.getElementById('wf-gap-hint');
+        hint.className = 'wf-hint ' + (P.gapSize < need ? 'bad' : P.gapSize === need ? 'good' : '');
+        hint.innerHTML = P.gapSize < need ? `needs h &minus; 1 = ${need}` : P.gapSize === need ? '&#10003; equals h &minus; 1' : `more than h &minus; 1 = ${need}`;
+        if (wfSel > P.splits - 1) wfSel = P.splits - 1;
+        drawWalkForward(P.splits, P.trainSize, P.testSize, P.gapSize, wfMode);
+        drawWFDetail(wfSel);
+    }
+
+    function wfSelect(s) {
+        animRun.walkforward++;
+        wfSel = s;
+        const P = wfParams();
+        drawWalkForward(P.splits, P.trainSize, P.testSize, P.gapSize, wfMode);
+        drawWFDetail(s);
+        const again = document.querySelector(`#walkforward-viz [data-split="${s}"]`);
+        if (again && document.activeElement && document.activeElement.closest && document.activeElement.closest('#walkforward-viz')) again.focus();
     }
 
     function drawWalkForward(splits, trainSize, testSize, gapSize, mode, highlightSplit = -1) {
         const container = document.getElementById('walkforward-viz');
+        const h = +document.getElementById('wf-h').value;
         const totalSamples = trainSize + gapSize + testSize * splits;
 
         const cellW = Math.max(18, Math.min(30, 900 / totalSamples));
@@ -1345,19 +1402,25 @@
             const testStart = tEnd + gapSize;
             const testEnd = testStart + testSize;
 
-            svg += `<g class="iteration-row" opacity="${opacity}">`;
-            svg += `<text x="0" y="${y + cellH/2 + 4}" font-size="12" font-weight="600" fill="#475569">Split ${s + 1}</text>`;
+            const isSel = s === wfSel;
+            svg += `<g class="wf-row" data-split="${s}" tabindex="0" role="button" aria-label="Show labels for split ${s + 1}" opacity="${opacity}">`;
+            svg += `<rect class="wf-hit" x="0" y="${y - 1}" width="${svgW}" height="${cellH + 2}" rx="6" fill="${isSel ? 'rgba(102,126,234,0.12)' : 'transparent'}"/>`;
+            svg += `<text x="6" y="${y + cellH/2 + 4}" font-size="12" font-weight="${isSel ? 700 : 600}" fill="${isSel ? '#4338ca' : '#475569'}">Split ${s + 1}${isSel ? ' &#9656;' : ''}</text>`;
 
             for (let i = 0; i < totalSamples; i++) {
                 const x = labelW + i * (cellW + gap);
-                let color, label = '';
-                if (i >= tStart && i < tEnd) color = COLORS.train;
+                let color, label = '', stroke = '';
+                if (i >= tStart && i < tEnd) {
+                    color = COLORS.train;
+                    // Row at time i+1 has its label at i+1+h; the first test forecast is made at testStart+1
+                    if (i + h > testStart) { stroke = ` stroke="${COLORS.leak}" stroke-width="2.5"`; label = '!'; }
+                }
                 else if (i >= tEnd && i < testStart) { color = COLORS.purge; label = 'P'; }
                 else if (i >= testStart && i < testEnd) color = COLORS.test;
                 else color = COLORS.unused;
 
-                svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="4" fill="${color}"/>`;
-                if (label) svg += `<text x="${x + cellW/2}" y="${y + cellH/2 + 4}" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">${label}</text>`;
+                svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="4" fill="${color}"${stroke}/>`;
+                if (label) svg += `<text x="${x + cellW/2}" y="${y + cellH/2 + 4}" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">${label}</text>`;
             }
             svg += '</g>';
         }
@@ -1366,20 +1429,112 @@
         container.innerHTML = svg;
     }
 
+    // Where each row's label lands for one split, against what is known at the first test forecast
+    function drawWFDetail(s) {
+        const P = wfParams(), { h, gapSize } = P;
+        const { tStart, tEnd, testStart } = wfBounds(s, P, wfMode);
+        const total = P.trainSize + gapSize + P.testSize * P.splits;
+        const cols = total + h;
+        const cellW = Math.max(18, Math.min(30, 900 / total)), step = cellW + 2, labelW = 100;
+        const xl = c => labelW + (c - 1) * step, cx = c => xl(c) + cellW / 2;
+        const T = testStart + 1;
+        const nTrain = tEnd - tStart, k = Math.min(nTrain, h + 1);
+        const trainRows = [], gapRows = [];
+        for (let t = tEnd - k + 1; t <= tEnd; t++) trainRows.push(t);
+        for (let t = tEnd + 1; t <= testStart; t++) gapRows.push(t);
+        const nLanes = trainRows.length + gapRows.length + 1;
+
+        const rowTop = 24, rowH = 30, laneTop = rowTop + rowH + 34, laneH = 26;
+        const laneBot = laneTop + nLanes * laneH + 6;
+        const svgW = labelW + cols * step + 110, svgH = laneBot + 8;
+        const roleAt = t => {
+            const i = t - 1;
+            if (i >= tStart && i < tEnd) return 'train';
+            if (i >= tEnd && i < testStart) return 'purge';
+            if (i >= testStart && i < testStart + P.testSize) return 'test';
+            return 'unused';
+        };
+
+        let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" role="img" aria-label="Label reach for split ${s + 1}">`;
+        for (let c = 1; c <= cols; c++) {
+            if ((c - 1) % Math.max(1, Math.floor(total / 20)) === 0) svg += `<text x="${cx(c)}" y="14" text-anchor="middle" font-size="9" fill="#94a3b8">${c}</text>`;
+        }
+        svg += `<text x="6" y="${rowTop + rowH / 2 + 4}" font-size="12" font-weight="700" fill="#4338ca">Split ${s + 1}</text>`;
+        for (let c = 1; c <= cols; c++) {
+            const r = roleAt(c);
+            svg += `<rect x="${xl(c)}" y="${rowTop}" width="${cellW}" height="${rowH}" rx="4" fill="${COLORS[r]}"${c > total ? ' opacity="0.45"' : ''}/>`;
+            if (r === 'purge') svg += `<text x="${cx(c)}" y="${rowTop + rowH / 2 + 4}" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">P</text>`;
+        }
+
+        const bx = xl(T) + cellW + 1, endX = xl(cols) + cellW;
+        svg += `<rect x="${bx}" y="${laneTop}" width="${endX - bx}" height="${laneBot - laneTop}" rx="5" fill="rgba(239,68,68,0.10)"/>`;
+        svg += `<line x1="${bx}" y1="${rowTop - 4}" x2="${bx}" y2="${rowTop + rowH + 4}" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+        svg += `<line x1="${bx}" y1="${laneTop}" x2="${bx}" y2="${laneBot}" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+        svg += `<text x="6" y="${rowTop + rowH + 22}" font-size="12" font-weight="600" fill="#475569">First test forecast at t = ${T}: only y<tspan baseline-shift="sub" font-size="9">1</tspan> to y<tspan baseline-shift="sub" font-size="9">${T}</tspan> exist. Shaded area is not observed yet.</text>`;
+
+        let lane = 0;
+        const laneY = () => laneTop + 14 + (lane++) * laneH;
+        const drawLane = (t, fill, lineColor, dash, leftText, leftColor, rightText, rightColor) => {
+            const y = laneY();
+            svg += `<text x="6" y="${y + 4}" font-size="12" font-weight="600" fill="${leftColor}">${leftText}</text>`;
+            svg += `<rect x="${xl(t) + 3}" y="${y - 6}" width="${cellW - 6}" height="12" rx="2" fill="${fill}" opacity="0.6"/>`;
+            svg += `<line x1="${xl(t) + cellW - 3}" y1="${y}" x2="${cx(t + h)}" y2="${y}" stroke="${lineColor}" stroke-width="2" stroke-linecap="round"${dash ? ' stroke-dasharray="4 3" opacity="0.7"' : ''}/>`;
+            svg += `<circle cx="${cx(t + h)}" cy="${y}" r="5" fill="${dash ? '#fff' : lineColor}" stroke="${lineColor}" stroke-width="${dash ? 2 : 0}"/>`;
+            svg += `<text x="${cx(t + h) + 10}" y="${y + 4}" font-size="12" font-weight="600" fill="${rightColor}" stroke="#fff" stroke-width="4" stroke-linejoin="round" paint-order="stroke">${rightText}</text>`;
+        };
+        trainRows.forEach(t => {
+            const leak = t + h > T, col = leak ? '#dc2626' : COLORS.train;
+            drawLane(t, COLORS.train, col, false, `row ${t}`, '#475569', `y${t + h} ${leak ? 'future' : 'known'}`, col);
+        });
+        gapRows.forEach(t => {
+            drawLane(t, COLORS.purge, COLORS.purge, true, `row ${t} (gap)`, '#b91c1c', `y${t + h} skipped`, '#b91c1c');
+        });
+        drawLane(T, COLORS.test, COLORS.test, false, `test row ${T}`, '#b45309', `y${T + h} target`, '#b45309');
+        svg += '</svg>';
+        document.getElementById('wf-detail').innerHTML = svg;
+        document.getElementById('wf-detail-title').textContent = `Split ${s + 1}: where each row's label lands`;
+
+        // Caption
+        const leaky = trainRows.filter(t => t + h > T);
+        const earlier = trainRows[0] > tStart + 1 ? ` Rows ${tStart + 1} to ${trainRows[0] - 1} end even earlier and are always safe.` : '';
+        let cap;
+        if (leaky.length) {
+            const a = leaky[0], b = leaky[leaky.length - 1], n = leaky.length;
+            cap = `<span class="pk-chip" style="background:${COLORS.leak}">Leak</span><p>The first test forecast is made at t = ${T}, when only y<sub>1</sub> to y<sub>${T}</sub> exist. ` +
+                (n === 1 ? `But train row ${a} was fit on label y<sub>${a + h}</sub>, so the model has already seen one value from the future.`
+                         : `But train rows ${a} to ${b} were fit on labels y<sub>${a + h}</sub> to y<sub>${b + h}</sub>, so the model has already seen ${n} values from the future.`) +
+                ` Set the gap to h &minus; 1 = ${h - 1} to fix it.${earlier}</p>`;
+        } else {
+            const last = tEnd + h;
+            cap = `<span class="pk-chip" style="background:#059669">No leak</span><p>The first test forecast is made at t = ${T}, and the last training label, y<sub>${last}</sub>, is ${last === T ? 'observed right at that moment' : 'already known by then'}.` +
+                (h === 1 ? ' With h = 1 every label lands on a square that is already known, so no gap is needed.' : '') +
+                (gapSize > h - 1 ? ` The gap is ${gapSize - (h - 1)} wider than h &minus; 1, which only costs training rows.` : '') + `${earlier}</p>`;
+        }
+        document.getElementById('wf-detail-cap').innerHTML = cap;
+    }
+
     async function animateWalkForward() {
         const run = ++animRun.walkforward;
-        const splits = +document.getElementById('wf-splits').value;
-        const trainSize = +document.getElementById('wf-train').value;
-        const testSize = +document.getElementById('wf-test').value;
-        const gapSize = +document.getElementById('wf-gap').value;
+        const { splits, trainSize, testSize, gapSize } = wfParams();
         const btn = document.querySelector('#tab-walkforward .btn-animate');
         btn.disabled = true;
         for (let s = 0; s < splits && run === animRun.walkforward; s++) {
+            wfSel = s;
             drawWalkForward(splits, trainSize, testSize, gapSize, wfMode, s);
-            await new Promise(r => setTimeout(r, 700));
+            drawWFDetail(s);
+            await new Promise(r => setTimeout(r, 1100));
         }
         if (run === animRun.walkforward) drawWalkForward(splits, trainSize, testSize, gapSize, wfMode);
         btn.disabled = false;
+    }
+
+    function wfInit() {
+        const viz = document.getElementById('walkforward-viz');
+        viz.addEventListener('click', ev => { const g = ev.target.closest('[data-split]'); if (g) wfSelect(+g.dataset.split); });
+        viz.addEventListener('keydown', ev => {
+            const g = ev.target.closest('[data-split]');
+            if (g && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); wfSelect(+g.dataset.split); }
+        });
     }
 
     // ================== TAB 3: CPCV ==================
@@ -1695,6 +1850,7 @@
 
     // ================== INITIALIZATION ==================
     pkInit();
+    wfInit();
     switchWalkForward('expanding');
     updateCPCV();
     </script>
