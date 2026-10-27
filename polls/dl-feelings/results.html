@@ -388,13 +388,15 @@ function renderChart(cfg, rows, totalVoters, suppressed) {
 // skipped — an average of two people is still those two people.
 function sessionScores(cfg) {
     const out = [];
-    for (const s of realSessions()) {
+    // num = class number: the k-th real session (Setup excluded) is class k. A class
+    // under the privacy floor keeps its number, so the axis shows a gap, not a renumbering.
+    realSessions().forEach((s, i) => {
         const rows = votes.filter(v => v.session === s.session && v.question === cfg.id);
         const scored = rows.filter(r => r.choice in cfg.scores);
-        if (scored.length < (POLL.minN || 1)) continue;
+        if (scored.length < (POLL.minN || 1)) return;
         const mean = scored.reduce((a, r) => a + cfg.scores[r.choice], 0) / scored.length;
-        out.push({ label: s.label, score: mean, n: scored.length });
-    }
+        out.push({ num: i + 1, label: s.label, score: mean, n: scored.length });
+    });
     return out;
 }
 
@@ -431,21 +433,16 @@ function renderTrend(cfg) {
     }
     pts.forEach((p, i) => {
         svg += '<circle cx="' + x(i) + '" cy="' + y(p.score) + '" r="5" fill="var(--green)">' +
-               '<title>' + esc(p.label) + ' — ' + fmt(p.score) + ' (n=' + p.n + ')</title></circle>';
+               '<title>Class ' + p.num + ' · ' + esc(p.label) + ' — ' + fmt(p.score) + ' (n=' + p.n + ')</title></circle>';
         svg += '<text x="' + x(i) + '" y="' + (y(p.score) - 11) + '" text-anchor="middle" font-size="13"' +
                ' fill="var(--green)" font-family="var(--mono)">' + fmt(p.score) + '</text>';
         svg += '<text x="' + x(i) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="12"' +
-               ' fill="var(--ink-mute)" font-family="var(--mono)">' + esc(shortLabel(p.label)) + '</text>';
+               ' fill="var(--ink-mute)" font-family="var(--mono)">' + p.num + '</text>';
     });
     svg += '</svg>';
     el.innerHTML = svg;
 }
 
-// "Module 3 · ETS" → "M3", "Class 1- intro" → "C1"; anything else → first 6 chars
-function shortLabel(l) {
-    const m = /(module|class|week|session)\s*(\d+)/i.exec(l);
-    return m ? m[1][0].toUpperCase() + m[2] : String(l).slice(0, 6);
-}
 
 // The poll can only receive votes while its newest session is open.
 function pollIsOpen() {
