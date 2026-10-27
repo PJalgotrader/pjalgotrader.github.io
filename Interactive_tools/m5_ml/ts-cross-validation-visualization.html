@@ -493,20 +493,20 @@
         }
 
         .pk-rule {
-            background: linear-gradient(135deg, #fef2f2, #fee2e2);
-            border-left: 5px solid #ef4444;
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border-left: 5px solid #16a34a;
             border-radius: 12px;
             padding: 14px 20px;
         }
 
-        .pk-rule.emb { background: linear-gradient(135deg, #fff7ed, #ffedd5); border-left-color: #f97316; }
-        .pk-rule .f { font-family: 'Courier New', monospace; font-weight: 700; font-size: 1.1em; color: #991b1b; }
-        .pk-rule.emb .f { color: #9a3412; }
+        .pk-rule.emb { background: linear-gradient(135deg, #f5f3ff, #ede9fe); border-left-color: #7c3aed; }
+        .pk-rule .f { font-family: 'Courier New', monospace; font-weight: 700; font-size: 1.1em; color: #166534; }
+        .pk-rule.emb .f { color: #5b21b6; }
         .pk-rule p { color: #475569; font-size: 0.88em; line-height: 1.5; margin-top: 4px; }
 
         .pk-naive {
             grid-column: 1 / -1;
-            border: 2px dashed #ef4444;
+            border: 2px dashed #b91c1c;
             background: #fff1f2;
             border-radius: 12px;
             padding: 12px 18px;
@@ -569,14 +569,15 @@
         .fp-row:focus-visible, .ov-row:focus-visible { outline: 2px solid #667eea; }
 
         .wf-hint { font-size: 0.82em; font-weight: 600; color: #64748b; }
-        .wf-hint.bad { color: #dc2626; }
-        .wf-hint.good { color: #059669; }
+        .wf-hint.bad { color: #b91c1c; }
+        .wf-hint.good { color: #4338ca; }
         .wf-row { cursor: pointer; }
         .wf-row:hover .wf-hit { fill: rgba(102, 126, 234, 0.08); }
         .wf-row:focus-visible { outline: 2px solid #667eea; }
 
-        .stat-card.is-purge .stat-value { color: #dc2626; }
-        .stat-card.is-embargo .stat-value { color: #ea580c; }
+        .stat-card.is-purge .stat-value { color: #166534; }
+        .stat-card.is-leak .stat-value { color: #b91c1c; }
+        .stat-card.is-embargo .stat-value { color: #5b21b6; }
 
         button:focus-visible, input:focus-visible { outline: 2px solid #667eea; outline-offset: 2px; }
 
@@ -679,8 +680,8 @@
             <div class="legend">
                 <div class="legend-item"><div class="legend-swatch" style="background: #3b82f6;"></div> Train</div>
                 <div class="legend-item"><div class="legend-swatch" style="background: #f59e0b;"></div> Test</div>
-                <div class="legend-item"><div class="legend-swatch" style="background: #ef4444;"></div> Purged</div>
-                <div class="legend-item"><div class="legend-swatch" style="background: #f97316;"></div> Embargo</div>
+                <div class="legend-item"><div class="legend-swatch" style="background: #16a34a;"></div> Purged</div>
+                <div class="legend-item"><div class="legend-swatch" style="background: #7c3aed;"></div> Embargo</div>
                 <div class="legend-item"><div class="legend-swatch" style="background: #3b82f6; box-shadow: inset 0 0 0 2px #b91c1c;"></div> Train that leaks (naive)</div>
                 <div class="legend-item"><div class="legend-swatch" style="background: #e2e8f0;"></div> No usable row</div>
             </div>
@@ -776,7 +777,7 @@
             <div class="legend">
                 <div class="legend-item"><div class="legend-swatch" style="background: #3b82f6;"></div> Train</div>
                 <div class="legend-item"><div class="legend-swatch" style="background: #3b82f6; box-shadow: inset 0 0 0 2px #b91c1c;"></div> Train whose label reaches the test period</div>
-                <div class="legend-item"><div class="legend-swatch" style="background: #ef4444;"></div> Gap (purged)</div>
+                <div class="legend-item"><div class="legend-swatch" style="background: #16a34a;"></div> Gap (purged)</div>
                 <div class="legend-item"><div class="legend-swatch" style="background: #f59e0b;"></div> Test</div>
                 <div class="legend-item"><div class="legend-swatch" style="background: #e2e8f0;"></div> Unused</div>
             </div>
@@ -786,8 +787,8 @@
             <div class="timeline-label" style="margin-top: 26px;" id="wf-detail-title">Split 1: where each row's label lands</div>
             <div class="pk-glyphs" aria-hidden="true">
                 <span><svg width="30" height="14"><rect x="1" y="3" width="10" height="8" rx="2" fill="#3b82f6" opacity=".55"/><line x1="12" y1="7" x2="24" y2="7" stroke="#3b82f6" stroke-width="2"/><circle cx="24" cy="7" r="4.5" fill="#3b82f6"/></svg>row at time t and its label y<sub>t+h</sub></span>
-                <span><svg width="26" height="14"><line x1="13" y1="0" x2="13" y2="14" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3 2"/></svg>first test forecast</span>
-                <span><svg width="26" height="14"><rect x="1" y="1" width="24" height="12" rx="2" fill="rgba(239,68,68,0.10)"/></svg>not observed yet at that moment</span>
+                <span><svg width="26" height="14"><line x1="13" y1="0" x2="13" y2="14" stroke="#b45309" stroke-width="1.5" stroke-dasharray="3 2"/></svg>first test forecast</span>
+                <span><svg width="26" height="14"><rect x="1" y="1" width="24" height="12" rx="2" fill="rgba(100,116,139,0.12)"/></svg>not observed yet at that moment</span>
             </div>
             <p class="pk-sub">Each square in the chart above is one row: its features sit at that square, and its label sits h squares to the right. The splits chart only shows where a row starts. This view shows where its label ends.</p>
             <div class="viz-area pk-viz" id="wf-detail"></div>
@@ -867,8 +868,8 @@
             <div class="legend">
                 <div class="legend-item"><div class="legend-swatch" style="background: #3b82f6;"></div> Train</div>
                 <div class="legend-item"><div class="legend-swatch" style="background: #f59e0b;"></div> Test</div>
-                <div class="legend-item cpcv-buf" hidden><div class="legend-swatch" style="background: #ef4444;"></div> Purged</div>
-                <div class="legend-item cpcv-buf" hidden><div class="legend-swatch" style="background: #f97316;"></div> Embargo</div>
+                <div class="legend-item cpcv-buf" hidden><div class="legend-swatch" style="background: #16a34a;"></div> Purged</div>
+                <div class="legend-item cpcv-buf" hidden><div class="legend-swatch" style="background: #7c3aed;"></div> Embargo</div>
             </div>
             <p id="cpcv-note" style="margin: 8px 0 0 0; color: #64748b; font-size: 0.9em; line-height: 1.6;"></p>
 
@@ -996,20 +997,17 @@
     const COLORS = {
         train: '#3b82f6',
         test: '#f59e0b',
-        purge: '#ef4444',
-        embargo: '#f97316',
+        purge: '#16a34a',
+        embargo: '#7c3aed',
         unused: '#e2e8f0',
         leak: '#b91c1c',
         trainText: '#1e40af',
         testText: '#92400e',
-        purgeText: '#991b1b',
-        embargoText: '#9a3412'
+        purgeText: '#166534',
+        embargoText: '#5b21b6'
     };
 
-    const PATH_COLORS = [
-        '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444',
-        '#ec4899', '#6366f1', '#14b8a6', '#f97316', '#84cc16'
-    ];
+    // Every backtest path is assembled only from out-of-sample forecasts, so paths use the test color
 
     // Bumped whenever a tab's controls redraw it; a running animation on that tab then stops
     const animRun = { purged: 0, walkforward: 0, cpcv: 0 };
@@ -1237,7 +1235,7 @@
         for (let t = lo; t <= hi; t++) c[pkShown(pkRole(t, F))]++;
         const card = (v, l, cls = '') => `<div class="stat-card ${cls}"><div class="stat-value">${v}</div><div class="stat-label">${l}</div></div>`;
         document.getElementById('pk-counts').innerHTML = PK.mode === 'naive'
-            ? card(c.train + c.leak, 'Training rows') + card(c.leak, 'Of which leak', 'is-purge') + card(c.test, 'Test rows') + card(M, `Usable rows of ${PK.N}`)
+            ? card(c.train + c.leak, 'Training rows') + card(c.leak, 'Of which leak', 'is-leak') + card(c.test, 'Test rows') + card(M, `Usable rows of ${PK.N}`)
             : card(c.train, 'Train rows kept') + card(c.test, 'Test rows') + card(c.purge, 'Purged', 'is-purge') + card(c.embargo, 'Embargoed', 'is-embargo') + card(M, `Usable rows of ${PK.N}`);
     }
 
@@ -1467,9 +1465,9 @@
         }
 
         const bx = xl(T) + cellW + 1, endX = xl(cols) + cellW;
-        svg += `<rect x="${bx}" y="${laneTop}" width="${endX - bx}" height="${laneBot - laneTop}" rx="5" fill="rgba(239,68,68,0.10)"/>`;
-        svg += `<line x1="${bx}" y1="${rowTop - 4}" x2="${bx}" y2="${rowTop + rowH + 4}" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-        svg += `<line x1="${bx}" y1="${laneTop}" x2="${bx}" y2="${laneBot}" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+        svg += `<rect x="${bx}" y="${laneTop}" width="${endX - bx}" height="${laneBot - laneTop}" rx="5" fill="rgba(100,116,139,0.10)"/>`;
+        svg += `<line x1="${bx}" y1="${rowTop - 4}" x2="${bx}" y2="${rowTop + rowH + 4}" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+        svg += `<line x1="${bx}" y1="${laneTop}" x2="${bx}" y2="${laneBot}" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4 3"/>`;
         svg += `<text x="6" y="${rowTop + rowH + 22}" font-size="12" font-weight="600" fill="#475569">First test forecast at t = ${T}: only y<tspan baseline-shift="sub" font-size="9">1</tspan> to y<tspan baseline-shift="sub" font-size="9">${T}</tspan> exist. Shaded area is not observed yet.</text>`;
 
         let lane = 0;
@@ -1483,11 +1481,11 @@
             svg += `<text x="${cx(t + h) + 10}" y="${y + 4}" font-size="12" font-weight="600" fill="${rightColor}" stroke="#fff" stroke-width="4" stroke-linejoin="round" paint-order="stroke">${rightText}</text>`;
         };
         trainRows.forEach(t => {
-            const leak = t + h > T, col = leak ? '#dc2626' : COLORS.train;
+            const leak = t + h > T, col = leak ? COLORS.leak : COLORS.train;
             drawLane(t, COLORS.train, col, false, `row ${t}`, '#475569', `y${t + h} ${leak ? 'future' : 'known'}`, col);
         });
         gapRows.forEach(t => {
-            drawLane(t, COLORS.purge, COLORS.purge, true, `row ${t} (gap)`, '#b91c1c', `y${t + h} skipped`, '#b91c1c');
+            drawLane(t, COLORS.purge, COLORS.purge, true, `row ${t} (gap)`, COLORS.purgeText, `y${t + h} skipped`, COLORS.purgeText);
         });
         drawLane(T, COLORS.test, COLORS.test, false, `test row ${T}`, '#b45309', `y${T + h} target`, '#b45309');
         svg += '</svg>';
@@ -1506,7 +1504,7 @@
                 ` Set the gap to h &minus; 1 = ${h - 1} to fix it.${earlier}</p>`;
         } else {
             const last = tEnd + h;
-            cap = `<span class="pk-chip" style="background:#059669">No leak</span><p>The first test forecast is made at t = ${T}, and the last training label, y<sub>${last}</sub>, is ${last === T ? 'observed right at that moment' : 'already known by then'}.` +
+            cap = `<span class="pk-chip" style="background:#4338ca">No leak</span><p>The first test forecast is made at t = ${T}, and the last training label, y<sub>${last}</sub>, is ${last === T ? 'observed right at that moment' : 'already known by then'}.` +
                 (h === 1 ? ' With h = 1 every label lands on a square that is already known, so no gap is needed.' : '') +
                 (gapSize > h - 1 ? ` The gap is ${gapSize - (h - 1)} wider than h &minus; 1, which only costs training rows.` : '') + `${earlier}</p>`;
         }
@@ -1753,7 +1751,7 @@
                 const label = r[i] === 'purge' ? 'P' : r[i] === 'embargo' ? 'E' : '';
                 if (label && cellW >= 14) svg += `<text x="${x + cellW/2}" y="${y + cellH/2 + 4}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">${label}</text>`;
             }
-            svg += `<text x="${svgW - rightW + 10}" y="${y + cellH/2 + 4}" font-size="11" font-weight="700" fill="${wiped ? '#dc2626' : '#475569'}">${kept} / ${trainMax}${wiped ? ' &#9888;' : ''}</text>`;
+            svg += `<text x="${svgW - rightW + 10}" y="${y + cellH/2 + 4}" font-size="11" font-weight="700" fill="${wiped ? COLORS.purgeText : '#475569'}">${kept} / ${trainMax}${wiped ? ' &#9888;' : ''}</text>`;
             svg += '</g>';
         }
         svg += '</svg>';
@@ -1768,7 +1766,7 @@
         // Path selector buttons
         let btns = '<button class="path-btn' + (selectedPath === -1 ? ' active' : '') + '" onclick="selectPath(-1)">All Splits</button>';
         for (let p = 0; p < nPaths; p++) {
-            btns += `<button class="path-btn${selectedPath === p ? ' active' : ''}" onclick="selectPath(${p})" style="border-color: ${PATH_COLORS[p % PATH_COLORS.length]}; ${selectedPath === p ? 'background:' + PATH_COLORS[p % PATH_COLORS.length] + '; color: white;' : ''}">Path ${p + 1}</button>`;
+            btns += `<button class="path-btn${selectedPath === p ? ' active' : ''}" onclick="selectPath(${p})" style="${selectedPath === p ? 'border-color:' + COLORS.test + '; background:#fffbeb; color:#92400e;' : ''}">Path ${p + 1}</button>`;
         }
         pathContainer.innerHTML = btns;
 
@@ -1788,11 +1786,11 @@
 
         for (let p = 0; p < nPaths; p++) {
             const y = 28 + p * (cellH + gap);
-            const pathColor = PATH_COLORS[p % PATH_COLORS.length];
+            const pathColor = COLORS.test;
             const opacity = selectedPath >= 0 && selectedPath !== p ? 0.2 : 1;
 
             svg += `<g opacity="${opacity}">`;
-            svg += `<text x="0" y="${y + cellH/2 + 4}" font-size="11" font-weight="600" fill="${pathColor}">Path ${p+1}</text>`;
+            svg += `<text x="0" y="${y + cellH/2 + 4}" font-size="11" font-weight="600" fill="#475569">Path ${p+1}</text>`;
 
             for (let g = 0; g < n; g++) {
                 const x = labelW + g * (cellW + gap);
