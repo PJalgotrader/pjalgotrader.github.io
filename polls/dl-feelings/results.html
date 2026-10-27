@@ -92,6 +92,13 @@
         .trend .tlabel { font-family: var(--mono); font-size: clamp(9px, 0.85vw, 12px); letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); margin-bottom: 4px; }
         .trend .tscale { font-family: var(--mono); font-size: clamp(9px, 0.8vw, 11px); color: var(--ink-mute); margin-bottom: 8px; }
         .trend svg { width: 100%; height: auto; display: block; }
+        .trend .tpt { cursor: pointer; outline: none; }
+        .trend .tpt:hover .dot, .trend .tpt:focus-visible .dot { r: 7; }
+        .trend .tpt:focus-visible .hit { stroke: var(--ink); stroke-width: 1.5; }
+        .ttip { position: fixed; z-index: 50; pointer-events: none; background: var(--ink); color: var(--paper);
+                font-family: var(--mono); font-size: 12px; line-height: 1.3; padding: 6px 10px; border-radius: 6px;
+                white-space: nowrap; max-width: calc(100vw - 16px); overflow: hidden; text-overflow: ellipsis;
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28); }
         .trend .tnote { color: var(--ink-mute); font-size: clamp(11px, 1vw, 14px); }
         footer {
             display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap;
@@ -395,7 +402,7 @@ function sessionScores(cfg) {
         const scored = rows.filter(r => r.choice in cfg.scores);
         if (scored.length < (POLL.minN || 1)) return;
         const mean = scored.reduce((a, r) => a + cfg.scores[r.choice], 0) / scored.length;
-        out.push({ num: i + 1, label: s.label, score: mean, n: scored.length });
+        out.push({ num: i + 1, session: s.session, label: s.label, score: mean, n: scored.length });
     });
     return out;
 }
@@ -432,16 +439,80 @@ function renderTrend(cfg) {
                pts.map((p, i) => x(i) + ',' + y(p.score)).join(' ') + '"/>';
     }
     pts.forEach((p, i) => {
-        svg += '<circle cx="' + x(i) + '" cy="' + y(p.score) + '" r="5" fill="var(--green)">' +
-               '<title>Class ' + p.num + ' · ' + esc(p.label) + ' — ' + fmt(p.score) + ' (n=' + p.n + ')</title></circle>';
+        // One focusable group per point: a wide transparent hit area, a ring when this
+        // class is the one being viewed, and the visible dot. Hover/focus shows the class,
+        // click or Enter opens it (see wireTrend).
+        const cur = p.session === view;
+        const tip = 'Class ' + p.num + ' · ' + p.label + ' — ' + fmt(p.score) + ' (n=' + p.n + ')';
+        svg += '<g class="tpt' + (cur ? ' cur' : '') + '" data-session="' + p.session + '" data-tip="' + esc(tip) +
+               '" tabindex="0" role="button" aria-label="' + esc(tip + '. Open this class.') + '">' +
+               '<circle class="hit" cx="' + x(i) + '" cy="' + y(p.score) + '" r="16" fill="transparent"/>' +
+               (cur ? '<circle cx="' + x(i) + '" cy="' + y(p.score) + '" r="9.5" fill="none" stroke="var(--ink)" stroke-width="2"/>' : '') +
+               '<circle class="dot" cx="' + x(i) + '" cy="' + y(p.score) + '" r="5" fill="var(--green)"/></g>';
         svg += '<text x="' + x(i) + '" y="' + (y(p.score) - 11) + '" text-anchor="middle" font-size="13"' +
                ' fill="var(--green)" font-family="var(--mono)">' + fmt(p.score) + '</text>';
         svg += '<text x="' + x(i) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="12"' +
-               ' fill="var(--ink-mute)" font-family="var(--mono)">' + p.num + '</text>';
+               ' fill="' + (cur ? 'var(--ink)' : 'var(--ink-mute)') + '"' + (cur ? ' font-weight="700"' : '') +
+               ' font-family="var(--mono)">' + p.num + '</text>';
     });
     svg += '</svg>';
     el.innerHTML = svg;
+    wireTrend(el);
+    if (trendHover && trendHover.el === el.id) {
+        const g = el.querySelector('.tpt[data-session="' + trendHover.session + '"]');
+        if (g) showTrendTip(g); else hideTrendTip();
+    }
 }
+
+// ---- Trend point tooltip + click-to-open ----
+const trendTip = document.createElement('div');
+trendTip.className = 'ttip';
+trendTip.hidden = true;
+document.body.appendChild(trendTip);
+let trendHover = null;   // { el, session } of the point under the pointer or keyboard focus
+
+function showTrendTip(g) {
+    trendTip.textContent = g.dataset.tip;
+    trendTip.hidden = false;
+    const r = g.querySelector('.dot').getBoundingClientRect();
+    const w = trendTip.offsetWidth, h = trendTip.offsetHeight;
+    const left = Math.max(8, Math.min(r.left + r.width / 2 - w / 2, innerWidth - w - 8));
+    const top = r.top - h - 10 < 8 ? r.bottom + 10 : r.top - h - 10;
+    trendTip.style.left = left + 'px';
+    trendTip.style.top = top + 'px';
+}
+function hideTrendTip() { trendTip.hidden = true; trendHover = null; }
+
+function wireTrend(el) {
+    if (el.dataset.wired) return;
+    el.dataset.wired = '1';
+    const enter = e => {
+        const g = e.target.closest('.tpt');
+        if (!g) return;
+        trendHover = { el: el.id, session: g.dataset.session };
+        showTrendTip(g);
+    };
+    const open = g => {
+        hideTrendTip();
+        view = Number(g.dataset.session);
+        render();
+        if (viewIsLive()) refresh();
+    };
+    el.addEventListener('mouseover', enter);
+    el.addEventListener('focusin', enter);
+    el.addEventListener('mouseout', e => {
+        const g = e.target.closest('.tpt');
+        if (g && !g.contains(e.relatedTarget)) hideTrendTip();
+    });
+    el.addEventListener('focusout', hideTrendTip);
+    el.addEventListener('click', e => { const g = e.target.closest('.tpt'); if (g) open(g); });
+    el.addEventListener('keydown', e => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        const g = e.target.closest('.tpt');
+        if (g) { e.preventDefault(); open(g); }
+    });
+}
+window.addEventListener('scroll', hideTrendTip, { passive: true });
 
 
 // The poll can only receive votes while its newest session is open.
