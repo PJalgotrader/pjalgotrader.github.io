@@ -1352,8 +1352,17 @@
     }
 
     // ================== PLOTTING ==================
+    // One palette and one tint for blocks everywhere: the Step 1 bands and the block diagrams
     const SHUFFLE_COLORS = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899',
                             '#06b6d4', '#f97316', '#6366f1', '#14b8a6', '#84cc16', '#d946ef'];
+    const BLOCK_TINT = 0.2;
+
+    function blockColor(b) { return SHUFFLE_COLORS[b % SHUFFLE_COLORS.length]; }
+
+    function blockFill(color) {
+        const n = parseInt(color.slice(1), 16);
+        return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${BLOCK_TINT})`;
+    }
 
     function fixedBlockLengths(m) {
         const lengths = [];
@@ -1368,12 +1377,12 @@
         const annotations = [];
         let pos = 0;
         blockLengths.forEach((len, b) => {
-            const color = SHUFFLE_COLORS[b % SHUFFLE_COLORS.length];
+            const color = blockColor(b);
             const start = pos, end = Math.min(pos + len, T);
             shapes.push({
                 type: 'rect', xref: 'x', yref: 'paper',
                 x0: start + 0.5, x1: end + 0.5, y0: 0, y1: 1,
-                fillcolor: color, opacity: 0.12, line: { width: 0 }, layer: 'below'
+                fillcolor: blockFill(color), line: { width: 0 }, layer: 'below'
             });
             if (len >= 10) {
                 annotations.push({
@@ -1476,13 +1485,12 @@
         const cellW = Math.max(5, Math.min(8, 900 / seriesLen));
         const cellH = 28;
         const gap = 1;
-        const labelW = 120;
+        const labelW = 150;
         const rowH = cellH + 8;
         const numRows = Math.min(blockStarts.length, 6); // Show up to 6 blocks
         const svgW = labelW + seriesLen * (cellW + gap) + 20;
         const svgH = (numRows + 2) * rowH + 20;
-
-        const blockColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+        const step = cellW + gap;
 
         let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">`;
 
@@ -1494,33 +1502,35 @@
         svg += `<text x="0" y="${origY + cellH/2 + 4}" font-size="10" font-weight="600" fill="#475569">Original:</text>`;
         for (let i = 0; i < seriesLen; i++) {
             const x = labelW + i * (cellW + gap);
-            svg += `<rect x="${x}" y="${origY}" width="${cellW}" height="${cellH}" rx="1" fill="#cbd5e1"/>`;
+            svg += `<rect x="${x}" y="${origY}" width="${cellW}" height="${cellH}" rx="1" fill="#e2e8f0"/>`;
         }
 
-        // Each sampled block
+        // Each sampled block, in the same color and tint as its band in the Step 1 chart
         for (let b = 0; b < numRows; b++) {
             const y = origY + (b + 1) * rowH;
             const start = blockStarts[b];
-            const color = blockColors[b % blockColors.length];
+            const color = blockColor(b);
+            const fill = blockFill(color);
 
-            svg += `<text x="0" y="${y + cellH/2 + 4}" font-size="10" font-weight="600" fill="${color}">Block ${b + 1} (i=${start + 1}):</text>`;
+            svg += `<text x="0" y="${y + cellH/2 + 4}" font-size="10" font-weight="600" fill="${color}">Block ${b + 1} (from ${MONTHS[start]}):</text>`;
 
             const remainder = seriesLen % blockSize;
             const drawLen = (b === blockStarts.length - 1 && remainder !== 0) ? remainder : blockSize;
-            for (let j = 0; j < drawLen; j++) {
-                const idx = isCircular ? (start + j) % seriesLen : start + j;
-                if (idx >= seriesLen) break;
-                const x = labelW + idx * (cellW + gap);
-                svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="1" fill="${color}" opacity="0.7"/>`;
+            const mainLen = Math.min(drawLen, seriesLen - start);
+            for (let j = 0; j < mainLen; j++) {
+                const x = labelW + (start + j) * step;
+                svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="1" fill="${fill}"/>`;
             }
+            svg += `<rect x="${labelW + start * step - 0.5}" y="${y - 0.5}" width="${mainLen * step}" height="${cellH + 1}" rx="2" fill="none" stroke="${color}" stroke-width="1.5"/>`;
 
             // Show wrap-around for circular
             if (isCircular && start + drawLen > seriesLen) {
                 const wrapCount = (start + drawLen) - seriesLen;
                 for (let j = 0; j < wrapCount; j++) {
-                    const x = labelW + j * (cellW + gap);
-                    svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="1" fill="${color}" opacity="0.4" stroke="${color}" stroke-width="1" stroke-dasharray="2"/>`;
+                    const x = labelW + j * step;
+                    svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="1" fill="${fill}"/>`;
                 }
+                svg += `<rect x="${labelW - 0.5}" y="${y - 0.5}" width="${wrapCount * step}" height="${cellH + 1}" rx="2" fill="none" stroke="${color}" stroke-width="1.5" stroke-dasharray="4 3"/>`;
             }
         }
 
@@ -1537,20 +1547,21 @@
         const svgW = labelW + T * (cellW + gap) + 20;
         const svgH = cellH + 50;
 
-        const blockColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899',
-                             '#06b6d4', '#f97316', '#6366f1', '#14b8a6', '#84cc16', '#d946ef'];
+        const step = cellW + gap;
 
         let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">`;
         svg += `<text x="${svgW/2}" y="14" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">Bootstrap Sample 1 &mdash; Random block lengths (${blockLengths.length} blocks)</text>`;
 
+        // Same color and tint as each block's band in the Step 1 chart
         let pos = 0;
         for (let b = 0; b < blockLengths.length; b++) {
-            const len = blockLengths[b];
-            const color = blockColors[b % blockColors.length];
-            for (let j = 0; j < len && pos < T; j++, pos++) {
-                const x = labelW + pos * (cellW + gap);
-                svg += `<rect x="${x}" y="24" width="${cellW}" height="${cellH}" rx="1" fill="${color}" opacity="0.7"/>`;
+            const color = blockColor(b);
+            const fill = blockFill(color);
+            const blockStart = pos;
+            for (let j = 0; j < blockLengths[b] && pos < T; j++, pos++) {
+                svg += `<rect x="${labelW + pos * step}" y="24" width="${cellW}" height="${cellH}" rx="1" fill="${fill}"/>`;
             }
+            svg += `<rect x="${labelW + blockStart * step - 0.5}" y="23.5" width="${(pos - blockStart) * step}" height="${cellH + 1}" rx="2" fill="none" stroke="${color}" stroke-width="1.5"/>`;
         }
 
         // Block length annotations
