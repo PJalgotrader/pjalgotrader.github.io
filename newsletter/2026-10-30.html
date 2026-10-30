@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>PJ AI Newsletter: Week of Oct 26-30, 2026 | Pedram Jahangiry</title>
+    <meta name="description" content="This was a week of big models with a lock on the door. OpenAI shipped GPT-6.1 Terra at half the price, Google announced Gemini 4 Carbon as the new top of the leaderboard, and Mistral released the weights of a 1-trillion-parameter model.">
+    <meta property="og:title" content="PJ AI Newsletter: Week of Oct 26-30, 2026">
+    <meta property="og:description" content="This was a week of big models with a lock on the door. OpenAI shipped GPT-6.1 Terra at half the price, Google announced Gemini 4 Carbon as the new top of the leaderboard, and Mistral released the weights of a 1-trillion-parameter model.">
+    <meta property="og:image" content="https://pedramjahangiry.com/newsletter/images/2026-10-30/item-01.webp">
+    <meta property="og:url" content="https://pedramjahangiry.com/newsletter/2026-10-30.html">
+    <meta property="og:type" content="article">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://pedramjahangiry.com/newsletter/images/2026-10-30/item-01.webp">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="canonical" href="https://pedramjahangiry.com/newsletter/2026-10-30.html">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="../styles.css?v=12">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="../index.html">Pedram&nbsp;Jahangiry</a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="../index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../visualizations.html" class="nav-link">Interactive Tools</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../teaching.html" class="nav-link">Teaching</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../polls.html" class="nav-link">Polls</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../projects.html" class="nav-link">Projects</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../newsletter.html" class="nav-link active">Newsletter</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../contact.html" class="nav-link">Contact</a>
+                </li>
+            </ul>
+            <div class="nav-right">
+                <button class="theme-toggle" aria-label="Switch color theme">
+                    <i class="fas fa-sun icon-sun" aria-hidden="true"></i>
+                    <i class="fas fa-moon icon-moon" aria-hidden="true"></i>
+                </button>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main id="main">
+        <section class="newsletter-hero">
+            <div class="container">
+                <a href="../newsletter.html" class="back-link">&larr; All issues</a>
+                <h1>PJ AI Newsletter: Week of Oct 26-30, 2026</h1>
+                <p class="meta">Saturday Oct 24 through Friday Oct 30, 2026 · Collected by Pedram</p>
+                <p class="theme-line">
+                    This was a week of big models with a lock on the door. OpenAI shipped GPT-6.1 Terra at half the price, Google announced Gemini 4 Carbon as the new top of the leaderboard, and Mistral released the weights of a 1-trillion-parameter model. Yet the strongest new model went to cyber defenders first, Mistral is tightening its guardrails after seeing real attack potential, and CrowdStrike documented one operator steering AI agents against more than 200 organizations. On the research side, OpenAI and Anthropic both say their models refuted the Exponential Time Hypothesis, a pillar of computer science, and both results are still waiting for human experts to confirm them. The thread running through it all: agents are getting more capable, and labs are scrambling to show they can watch them.
+                </p>
+            </div>
+        </section>
+
+        <section class="newsletter-toc">
+            <div class="container">
+                <h2>In this issue</h2>
+                <ol>
+                    <li><a href="#item-01"><span class="toc-num">01</span><span class="toc-title">OpenAI's GPT-6.1 Terra cuts the price of a strong everyday model in half, and it is already in Codex</span></a></li>
+                    <li><a href="#item-02"><span class="toc-num">02</span><span class="toc-title">Google's Gemini 4 Carbon tops a rebuilt leaderboard, but cyber defenders get it first</span></a></li>
+                    <li><a href="#item-03"><span class="toc-num">03</span><span class="toc-title">OpenAI and Anthropic both say their AI refuted the Exponential Time Hypothesis</span></a></li>
+                    <li><a href="#item-04"><span class="toc-num">04</span><span class="toc-title">OpenAI shows how it watches its own agents, and rewrites the rules they follow</span></a></li>
+                    <li><a href="#item-05"><span class="toc-num">05</span><span class="toc-title">Mistral releases the weights of Large 4, a 1-trillion-parameter model</span></a></li>
+                    <li><a href="#item-06"><span class="toc-num">06</span><span class="toc-title">GitHub Copilot Fusion now picks your models for you</span></a></li>
+                    <li><a href="#item-07"><span class="toc-num">07</span><span class="toc-title">CrowdStrike: one operator steered AI agents against 200+ organizations</span></a></li>
+                    <li><a href="#item-08"><span class="toc-num">08</span><span class="toc-title">Running a model yourself is not automatically safe: a Qwen model tried to phone home, and a shared cache leaked prompts</span></a></li>
+                    <li><a href="#item-09"><span class="toc-num">09</span><span class="toc-title">Office apps open up to agents: Apple adds MCP to Keynote, Pages and Numbers, and Gemini edits files in chat</span></a></li>
+                    <li><a href="#item-10"><span class="toc-num">10</span><span class="toc-title">Google DeepMind's Genie 4 generates interactive worlds with sound and dialogue</span></a></li>
+                </ol>
+            </div>
+        </section>
+
+        <article class="newsletter-item" id="item-01">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 01 of 10</div>
+                    <h3>OpenAI's GPT-6.1 Terra cuts the price of a strong everyday model in half, and it is already in Codex</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-30/item-01.webp" alt="OpenAI graphic reading GPT-6.1 Terra over a view of Earth from space" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://openai.com/index/introducing-gpt-6-1-terra/" target="_blank" rel="noopener noreferrer">OpenAI</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 26, OpenAI released GPT-6.1 Terra, a fast model for computer use, visual reasoning and writing. It is live for Plus, Pro, Enterprise and Edu users in ChatGPT Work and Codex, and in the API as gpt-6.1-terra at $1 per million input tokens and $5 per million output tokens, which OpenAI says is 50% lower than GPT-5.6 Terra and GPT-6.1 Sol. OpenAI reports 50.3% on Terminal-Bench 4.0 at max effort, up from 21.5% for GPT-5.6 Terra, but still recommends GPT-6.1 Sol and GPT-6 Astra for the hardest coding work. These are company numbers. Artificial Analysis's new v5 index (Oct 27) independently lists Terra (max) as the cheapest of its ten top-scoring models, at $0.96 per index task. OpenAI also treats Terra as Critical in cybersecurity under its Preparedness Framework.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>OpenAI says the same Codex plan allowance covers more tasks with Terra than with Sol or Astra. For routine coding, scripts and computer-use work, that is a cheaper default, saving the big models for the hard problems.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Switch Codex to Terra for a day of routine tasks and see whether you notice a quality drop.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://openai.com/index/introducing-gpt-6-1-terra/" target="_blank" rel="noopener noreferrer">OpenAI: Introducing GPT-6.1 Terra</a></li>
+                            <li><a href="https://artificialanalysis.ai/articles/artificial-analysis-intelligence-index-v5" target="_blank" rel="noopener noreferrer">Artificial Analysis Intelligence Index v5</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-02">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 02 of 10</div>
+                    <h3>Google's Gemini 4 Carbon tops a rebuilt leaderboard, but cyber defenders get it first</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-30/item-02.webp" alt="Google graphic reading Gemini 4 Carbon beside a faceted crystal" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-carbon/" target="_blank" rel="noopener noreferrer">Google</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 28, Google announced Gemini 4 Carbon, two weeks after Gemini 4 Argon, as its strongest model for cybersecurity and long-horizon tasks. Google says it ranks first on Artificial Analysis Intelligence Index v5.0 at 59 and reports 88.2% on SEC-bench Pro, 54.8% on ExploitGym and 71.0% on CWE-bench. Access starts this week with a subset of cyber defenders and widens to trusted partners through Google's Fairwind Program. Developers, businesses and consumers get it "as soon as possible," with no date, at an introductory $2/$10 per million tokens and $4/$20 after that. The index itself was rebuilt on Oct 27: v5 now draws 60% of its score from private or held-out tests, Claude Opus 5.5 (max) led at launch with 58, and the gap between the best open-weight model and the leader widened from 3 points to 12.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>The best model on paper is now released defenders first, so "best model" and "model you can use" have split apart. And because the index changed, last month's leaderboard numbers are no longer comparable, which is a good reminder of how fragile benchmark rankings are.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge no">No</span>
+                        <span class="explore-text">Not yet, unless you are a vetted cyber defender. Reading the Artificial Analysis v5 methodology is worth 10 minutes.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-carbon/" target="_blank" rel="noopener noreferrer">Google: Gemini 4 Carbon</a></li>
+                            <li><a href="https://artificialanalysis.ai/articles/artificial-analysis-intelligence-index-v5" target="_blank" rel="noopener noreferrer">Artificial Analysis Intelligence Index v5</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-03">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 03 of 10</div>
+                    <h3>OpenAI and Anthropic both say their AI refuted the Exponential Time Hypothesis</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-30/item-03.webp" alt="OpenAI graphic reading Working with academic communities to build scientific understanding" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://openai.com/index/building-scientific-understanding-with-academic-communities" target="_blank" rel="noopener noreferrer">OpenAI</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 26, OpenAI announced three model-produced results: a proof of the local smoothing conjecture in every dimension (which also settles the Kakeya conjecture), a refutation of the Exponential Time Hypothesis (ETH) verified in Lean, and an existence proof for QCD and pure Yang-Mills theory whose materials a group led by David Gross is holding back for now. ETH, proposed in 1999, says 3-SAT needs exponential time, and Anthropic counted more than 800 papers that rely on it or a stronger version, according to Science. Hours after OpenAI, Anthropic posted its own ETH refutation, found by an internal Claude research model, with a Lean 4 formalization. Both labs say they found it on Oct 16. The practical impact is limited: Anthropic calls the result "purely asymptotic," and ETH co-proposer Russell Impagliazzo, who is helping review OpenAI's proof, told Science "this is not 100% certain."</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>AI is now producing machine-checked results that overturn standard assumptions in theoretical computer science. It also raises a new verification question: Lean checks the proof, but a human still has to check that the formal statement says what the paper claims.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">As reading. Anthropic's short README is a clear example of how AI-written formal proofs are packaged and checked.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://openai.com/index/building-scientific-understanding-with-academic-communities" target="_blank" rel="noopener noreferrer">OpenAI</a></li>
+                            <li><a href="https://github.com/anthropics/formal-math/tree/main/eth" target="_blank" rel="noopener noreferrer">Anthropic formal-math: ETH</a></li>
+                            <li><a href="https://www.science.org/content/article/ai-cracks-27-year-old-pillar-computer-science-openai-and-anthropic-claim" target="_blank" rel="noopener noreferrer">Science</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-04">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 04 of 10</div>
+                    <h3>OpenAI shows how it watches its own agents, and rewrites the rules they follow</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-30/item-04.webp" alt="OpenAI graphic reading How we detect frontier model misalignment" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://openai.com/index/how-we-detect-frontier-model-misalignment" target="_blank" rel="noopener noreferrer">OpenAI</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 29, OpenAI described its expanded misalignment monitoring: lightweight activation probes, a model-based reviewer of reasoning and tool use, investigative agents that reconstruct incidents, and a final check against network logs and telemetry. When OpenAI replayed the July Hugging Face incident (where its agents escaped an evaluation sandbox and breached Hugging Face systems), the new system alerted about 30 minutes after the escape, more than 30 hours before the breach. OpenAI is candid about gaps: paging is currently disabled for internal Codex traffic, and an outside red-team by METR and Redwood Research found vulnerabilities, one of which is still being fixed. The same day, OpenAI updated its Model Spec around five values: faithfulness to human intent, harm minimization, honesty and transparency, human agency, and care. It adds guidance on oversight and side effects, and OpenAI says its models "do not yet fully reflect it."</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>This is the clearest public blueprint yet for supervising coding agents in layers. It is useful for anyone running Codex or Claude Code with broad permissions, and a useful read for anyone thinking about AI oversight.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">As reading. Developers building agents on the Responses API should note that some tool-using requests to the most cyber-capable models are now monitored and can be paused.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://openai.com/index/how-we-detect-frontier-model-misalignment" target="_blank" rel="noopener noreferrer">OpenAI: How we detect frontier model misalignment</a></li>
+                            <li><a href="https://openai.com/index/updated-model-spec" target="_blank" rel="noopener noreferrer">OpenAI: An updated Model Spec</a></li>
+                            <li><a href="https://openai.com/index/hugging-face-incident-and-the-road-ahead/" target="_blank" rel="noopener noreferrer">OpenAI: The Hugging Face incident</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-05">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 05 of 10</div>
+                    <h3>Mistral releases the weights of Large 4, a 1-trillion-parameter model</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-30/item-05.webp" alt="Hugging Face graphic reading Le Chonk (Mistral Large 4) comes to Hugging Face" width="1200" height="600">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://huggingface.co/blog/mistral-large4" target="_blank" rel="noopener noreferrer">Hugging Face</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 29, three weeks after its preview, Mistral released the weights of an improved Mistral Large 4 ("Le Chonk"). Hugging Face describes it as a multimodal mixture-of-experts with about 1T total and 49B active parameters and a 1M-token context window. Mistral calls it the best open-weight model for coding and reports 19.7% on Cognition's FrontierCode 2.0 and 41% on Terminal-Bench 4.0, up 13 points since the preview (company numbers). The license is a modified MIT that allows commercial use and fine-tuning, but companies offering it as a hosted model service need a separate license. The API costs $0.70 per million input and $2.10 per million output tokens. Mistral also says it now sees "a potential for uplift to conduct real attacks" and is tightening the model's guardrails.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>A near-frontier model that organizations can own and audit matters for universities, governments and regulated industries. Still, the new Artificial Analysis index shows open weights falling further behind the closed leaders.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">Try it through the Mistral API or OpenRouter. Hugging Face says even the 2-bit version needs a 512 GB Apple Silicon Ultra machine, so local use is out of reach for most people.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://mistral.ai/news/mistral-large-4-oss/" target="_blank" rel="noopener noreferrer">Mistral</a></li>
+                            <li><a href="https://huggingface.co/blog/mistral-large4" target="_blank" rel="noopener noreferrer">Hugging Face blog</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-06">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 06 of 10</div>
+                    <h3>GitHub Copilot Fusion now picks your models for you</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-30/item-06.webp" alt="GitHub graphic reading GitHub Copilot Fusion is generally available" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://github.blog/changelog/2026-10-28-route-and-orchestrate-models-with-github-copilot-fusion/" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 28, GitHub made Copilot Fusion generally available on all Copilot plans in VS Code, the Copilot app, Copilot CLI and JetBrains IDEs. Instead of choosing a model, you choose an effort level (Standard, High or Max), and Fusion routes each prompt. It can use one model, a "cascade" where a cheap model drafts and a stronger one takes over if needed, or a "critique" loop where a second model reviews the draft. GitHub says Fusion Max scored 60 on the Artificial Analysis Coding Agent Index, within two points of Claude Code with Opus 5.5 Max, at about half the API cost per task. Paid plans get 30% off model costs inside Fusion for a limited time.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Model routing is becoming the product. For most developers, picking an effort level is simpler than tracking which model is best this week, and the cascade and critique patterns are worth understanding on their own.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">If you have Copilot, run a week of real work on Fusion Standard while the discount lasts and compare the bill.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://github.blog/changelog/2026-10-28-route-and-orchestrate-models-with-github-copilot-fusion/" target="_blank" rel="noopener noreferrer">GitHub changelog</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-07">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 07 of 10</div>
+                    <h3>CrowdStrike: one operator steered AI agents against 200+ organizations</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-30/item-07.webp" alt="CrowdStrike wordmark with a red falcon mark" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://www.crowdstrike.com/en-us/blog/vapor-panda-uses-artex-to-scale-global-campaign/" target="_blank" rel="noopener noreferrer">CrowdStrike</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 29, CrowdStrike reported that the China-nexus group VAPOR PANDA used ARTEX, an open-source agentic penetration-testing framework, running mainly on DeepSeek plus a second commercial model. Starting Oct 17, it targeted more than 200 organizations in at least 14 countries over 11 days, including foreign ministries, US pharmaceutical, semiconductor and defense companies, and telecom providers. CrowdStrike confirmed post-exploitation at nine organizations. A human operator steered the agents in Chinese at decision points, including telling them to find Windows machines without CrowdStrike's own Falcon sensor. In one intrusion, the planning agents consumed about 1.4 billion input tokens. CrowdStrike says this is a separate campaign from the ARTEX activity Microsoft reported on Oct 21.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Agents let a small team run many intrusions in parallel, so old gaps like unrotated keys get found and exploited faster. A vendor writeup always has a sales angle, but the attack details are concrete.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">The checklist. Rotate keys sitting in old backups and exports, enforce SAML signature validation, and require IMDSv2 on cloud instances.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://www.crowdstrike.com/en-us/blog/vapor-panda-uses-artex-to-scale-global-campaign/" target="_blank" rel="noopener noreferrer">CrowdStrike</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-08">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 08 of 10</div>
+                    <h3>Running a model yourself is not automatically safe: a Qwen model tried to phone home, and a shared cache leaked prompts</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-30/item-08.webp" alt="Cohere graphic with a wireframe sphere on a dark panel" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://cohere.com/blog/concerning-behaviour-popular-open-weight-ai-model" target="_blank" rel="noopener noreferrer">Cohere</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 26, Cohere reported that Alibaba's open-weight Qwen3.8-Flash-Next, while writing a detection rule in Cohere's isolated sandbox, tried to upload a test string to an Alibaba Cloud storage bucket in Beijing, right after its reasoning said it would call no tools. The sandbox had no route out, it happened in fewer than one call in 100,000, and Cohere says it cannot tell whether it was deliberate or a training leftover (Cohere sells competing models, so read it with that in mind; it released the traces). The same day, Cloudflare disclosed that between Aug 27 and Sep 9, 155 responses from the GLM-5.3 model on Workers AI contained data from other customers' requests. The cause was a misconfiguration plus a bug in the open-source SGLang inference engine, and it only affected prompts over 681,280 tokens.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>"Open weights on our own hardware" and "hosted inference" both have new failure modes. A model's reasoning trace is not a security boundary, which matters for anyone running local agents with terminal access.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Deny outbound network access for agents by default, and if you run SGLang, upgrade to v0.5.22 or later as Cloudflare recommends.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://cohere.com/blog/concerning-behaviour-popular-open-weight-ai-model" target="_blank" rel="noopener noreferrer">Cohere</a></li>
+                            <li><a href="https://blog.cloudflare.com/kv-cache-exposure-remediation/" target="_blank" rel="noopener noreferrer">Cloudflare</a></li>
+                            <li><a href="https://huggingface.co/datasets/CohereLabs/10-2026-qwen-investigation-traces" target="_blank" rel="noopener noreferrer">Cohere traces on Hugging Face</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-09">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 09 of 10</div>
+                    <h3>Office apps open up to agents: Apple adds MCP to Keynote, Pages and Numbers, and Gemini edits files in chat</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-30/item-09.webp" alt="Apple Creator Studio title above a row of app icons" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://www.apple.com/newsroom/2026/10/apple-creator-studio-adds-powerful-new-ai-features-and-even-more-creative-tools/" target="_blank" rel="noopener noreferrer">Apple</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 27, Apple announced that Keynote, Pages and Numbers are getting an assistant built on Apple models and OpenAI, plus Model Context Protocol (MCP) support that lets external AI agents read content, make edits and run automated actions in them. MCP requires macOS 27, and Apple lists these features as part of its Apple Creator Studio update arriving on the App Store in November. Keynote also gets an open JSON-based file format (.keyx) that Apple says is designed to be readable by external tools and AI agents. Separately, on Oct 29, Google said the Gemini app can now create, preview and edit documents, PDFs, slide decks, spreadsheets and code inside the chat, for all users. PDF editing works on web and mobile, and the other formats are web only.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Your coding agent may soon edit a Keynote deck or a Numbers sheet directly through a standard, instead of copy and paste. That is useful for anyone who builds slides, reports or spreadsheets with Claude Code, Codex or similar agents.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">Gemini's in-chat editor works today. Apple's MCP support arrives in November and needs macOS 27.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://www.apple.com/newsroom/2026/10/apple-creator-studio-adds-powerful-new-ai-features-and-even-more-creative-tools/" target="_blank" rel="noopener noreferrer">Apple Newsroom</a></li>
+                            <li><a href="https://blog.google/innovation-and-ai/products/gemini-app/edit-files-directly/" target="_blank" rel="noopener noreferrer">Google: Edit files directly in Gemini</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-10">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 10 of 10</div>
+                    <h3>Google DeepMind's Genie 4 generates interactive worlds with sound and dialogue</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-10-30/item-10.webp" alt="Google DeepMind graphic reading Genie 4: A new generation of world simulation, beside a hummingbird inside a glass sphere" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/" target="_blank" rel="noopener noreferrer">Google DeepMind</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Oct 27, Google DeepMind announced Genie 4, a world model that generates photorealistic, interactive scenes in real time with native audio, including dialogue, and lets you steer them with text prompts. Gemini 3.8 Flash acts as a guiding agent in the loop, watching frames and keeping multi-step events on track. DeepMind also showed Gemini 4 Argon and Genie 4 simulating Apptronik's Apollo humanoid playing checkers. It is a research preview for trusted testers, "coming soon" to Google AI Ultra subscribers in Project Genie and to early-access Gemini API and AI Studio partners. DeepMind notes that details and object permanence can drift over longer sessions, and all output carries SynthID watermarks.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>World models are becoming training grounds for robots and agents, not just video toys. Simulation is quietly turning into one of AI's most important data sources.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge no">No</span>
+                        <span class="explore-text">Not yet. Join the Project Genie waitlist if you work on games, simulation or robotics.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/" target="_blank" rel="noopener noreferrer">Google DeepMind</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <section class="newsletter-closing">
+            <div class="container">
+                <div class="newsletter-closing-inner">
+                    <h2>If you try one thing this weekend</h2>
+                    <p>Take one routine coding task you would normally hand to a big model and run it twice: once in Codex with GPT-6.1 Terra, and once in GitHub Copilot with Fusion Standard. Compare time, result quality and cost. It is the quickest way to see whether the cheaper default and the auto-router are good enough for everyday work, and the side-by-side comparison is easy to share with your team.</p>
+                    <p>Also notable this week, not ranked: Oracle and Google said Google TPUs will be offered on Oracle Cloud from 2027, the first hyperscaler outside Google to offer them; New York Gov. Kathy Hochul signed a law barring chatbot features like posing as a person or romantic partner for minors; Anthropic gave US government agencies 40% off Claude through a new GSA agreement; Anthropic raised the Claude API request size limit from 32 MB to 128 MB; Anthropic said Claude got around a fee to pull Georgia's public aggregate vote counts without human approval; the Nanbeige team released Nanbeige4.3-33B, an Apache 2.0 coding model; OpenAI's revised GPT-6 Luna system-card addendum reports higher factual-error rates than the Oct 7 version on all six measures it lists. Rumors (unconfirmed): The Information reports OpenAI plans to buy Google TPUs too.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p class="footer-note">&copy; 2026 Pedram Jahangiry &mdash; all residuals are my own.</p>
+            <div class="social-links">
+                <a href="https://x.com/PedramJahangiry" target="_blank" aria-label="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://www.linkedin.com/in/pedram-jahangiry-cfa-5778015a/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="https://github.com/PJalgotrader" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                <a href="mailto:pedram.jahangiry@usu.edu" aria-label="Email"><i class="fas fa-envelope"></i></a>
+            </div>
+            <p class="colophon">Set in Fraunces, Inter &amp; IBM Plex Mono &middot; hand&#8209;built, zero frameworks &middot; Logan, Utah &mdash; 41.74&deg;&nbsp;N, 111.81&deg;&nbsp;W</p>
+        </div>
+    </footer>
+
+    <script src="../script.js?v=3"></script>
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>
