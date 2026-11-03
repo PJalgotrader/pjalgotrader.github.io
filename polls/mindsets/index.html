@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>Majors &amp; Mindsets — Pedram Jahangiry</title>
+    <meta name="description" content="Five quick questions: which Huntsman business major do you think like?">
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper: #0A1020;
+            --card: #0F1A31;
+            --card-2: #17223E;
+            --ink: #E9E4D4;
+            --ink-mute: #8B8FA0;
+            --line: #263250;
+            --green: #D0A63C;
+            --green-ink: #0A1020;
+            --red: #D0603F;
+            --track: rgba(233, 228, 212, 0.10);
+            --bar: #8B7A45;
+            --serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+            --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --mono: 'IBM Plex Mono', 'SF Mono', Menlo, monospace;
+        }
+        [data-theme="light"] {
+            --paper: #F7F4EC;
+            --card: #FDFCF8;
+            --card-2: #EFEBDF;
+            --ink: #1C1B18;
+            --ink-mute: #807D72;
+            --line: #DCD7C8;
+            --green: #0E7A4E;
+            --green-ink: #F7F4EC;
+            --red: #C2452D;
+            --track: rgba(28, 27, 24, 0.09);
+            --bar: #9BB3A3;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--paper); color: var(--ink); font-family: var(--sans); min-height: 100vh; }
+        .wrap { max-width: 560px; margin: 0 auto; padding: 34px 18px 56px; }
+        .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--green); }
+        h1 { font-family: var(--serif); font-size: 38px; font-weight: 600; line-height: 1.12; margin: 8px 0 10px; }
+        .dek { color: var(--ink-mute); font-size: 15.5px; line-height: 1.5; margin-bottom: 22px; }
+        .screen { display: none; }
+        .screen.on { display: block; }
+        button.submit {
+            width: 100%; margin-top: 8px; cursor: pointer;
+            font-family: var(--mono); font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500;
+            background: var(--green); color: var(--green-ink); border: none; border-radius: 10px; padding: 15px;
+        }
+        button.submit:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+        .qhead { display: flex; justify-content: space-between; align-items: center; min-height: 26px; }
+        #back { background: none; border: none; color: var(--ink-mute); font-family: var(--mono); font-size: 12px; cursor: pointer; padding: 4px 0; visibility: hidden; }
+        #back:hover { color: var(--green); }
+        .progress { height: 5px; border-radius: 5px; background: var(--track); overflow: hidden; margin: 10px 0 20px; }
+        .progress div { height: 100%; width: 0; background: var(--green); transition: width 0.25s ease; }
+        #qtext { font-family: var(--serif); font-size: 26px; font-weight: 600; line-height: 1.2; margin-bottom: 18px; }
+        button.opt {
+            display: block; width: 100%; text-align: left; cursor: pointer;
+            background: var(--card); color: var(--ink); border: 1.5px solid var(--line); border-radius: 10px;
+            padding: 14px 14px; margin-bottom: 8px;
+            font-family: var(--sans); font-size: 15.5px; line-height: 1.35;
+            transition: border-color 0.15s, background 0.15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        button.opt.picked { border-color: var(--green); background: var(--card-2); }
+        button.opt:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+        .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px 18px; }
+        #mindset { font-family: var(--serif); font-size: 34px; font-weight: 600; line-height: 1.12; margin: 8px 0 8px; }
+        #mindset .x { display: block; font-size: 24px; color: var(--green); margin-top: 4px; }
+        #mindsetLine { color: var(--ink-mute); font-size: 15.5px; line-height: 1.45; }
+        .bars-title { font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--green); margin: 20px 0 12px; }
+        .bar-row { margin-bottom: 10px; }
+        .bar-row .top { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; margin-bottom: 4px; color: var(--ink-mute); }
+        .bar-row .val { font-family: var(--mono); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+        .bar-row .track { background: var(--track); border-radius: 5px; height: 9px; overflow: hidden; }
+        .bar-row .fill { height: 100%; background: var(--bar); border-radius: 6px; width: 0%; transition: width 0.55s ease; }
+        .bar-row.hot .top { color: var(--green); font-weight: 500; }
+        .bar-row.hot .fill { background: var(--green); }
+        .note { color: var(--ink-mute); font-size: 14px; line-height: 1.5; margin-top: 16px; }
+        #saveNote { display: none; color: var(--green); font-family: var(--mono); font-size: 12px; line-height: 1.5; margin-top: 12px; }
+        #saveError { display: none; color: var(--red); font-size: 13.5px; line-height: 1.45; margin-top: 12px; }
+        .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 18px; }
+        #retake {
+            cursor: pointer; background: none; color: var(--ink); border: 1.5px solid var(--line); border-radius: 10px; padding: 11px 18px;
+            font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+        }
+        .actions a { color: var(--green); font-size: 14.5px; text-underline-offset: 3px; }
+        .home { display: block; text-align: center; margin-top: 40px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; color: var(--ink-mute); text-decoration: none; }
+        .home:hover { color: var(--green); }
+        @media (prefers-reduced-motion: reduce) { .bar-row .fill, .progress div { transition: none; } }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <p class="kicker">Huntsman Freshman Academy &middot; Live Poll</p>
+
+        <section id="intro" class="screen on">
+            <h1>Majors &amp; Mindsets</h1>
+            <p class="dek">Five taps, sixty seconds. Get your mindset and see how all eight Huntsman majors line up for you. Anonymous, no names, ever.</p>
+            <button id="start" class="submit" type="button">Let&rsquo;s go</button>
+        </section>
+
+        <section id="question" class="screen">
+            <div class="qhead" style="margin-top: 14px;">
+                <button id="back" type="button">&larr; Back</button>
+                <span id="qcount" class="kicker"></span>
+            </div>
+            <div class="progress"><div id="progress"></div></div>
+            <h2 id="qtext"></h2>
+            <div id="options"></div>
+        </section>
+
+        <section id="result" class="screen">
+            <div class="card" style="margin-top: 14px;">
+                <p class="kicker">Your mindset</p>
+                <h2 id="mindset"></h2>
+                <p id="mindsetLine"></p>
+                <p class="bars-title">All eight majors</p>
+                <div id="bars"></div>
+            </div>
+            <p id="saveNote"></p>
+            <p id="saveError">Couldn&rsquo;t save your answer. The Wi-Fi might be busy. Your result is still right here.</p>
+            <p class="note">A 60-second quiz, not destiny. If it got you wrong, that&rsquo;s useful data too: what did we measure badly?</p>
+            <div class="actions">
+                <button id="retake" type="button">Retake</button>
+                <a href="https://huntsman.usu.edu/advising/majors_minors" target="_blank" rel="noopener">Explore Huntsman majors &rarr;</a>
+            </div>
+        </section>
+
+        <a class="home" href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com &middot; all polls</a>
+    </div>
+
+<script>
+// ─── poll config: option VALUES are stored in the database, so they stay stable forever ───
+const POLL = {
+    slug: 'mindsets-2026',
+    table: 'poll_mindsets_2026',
+    supabaseUrl: 'https://daimsfgtfrjbkegxmwag.supabase.co',
+    supabaseKey: 'sb_publishable_O_xS8NobEAWlHn_cR0SwOw_LYnB9o2d',
+    majors: {
+        da:    { major: 'Data Analytics',      name: 'The Pattern Hunter', line: 'You see the pattern before anyone else.' },
+        is:    { major: 'Information Systems', name: 'The Builder',        line: 'You’d rather build the tool than wait for one.' },
+        acct:  { major: 'Accounting',          name: 'The Translator',     line: 'Accounting is a language, and you already hear it.' },
+        fin:   { major: 'Finance',             name: 'The Valuer',         line: 'You want to know what something is really worth.' },
+        econ:  { major: 'Economics',           name: 'The Modeler',        line: 'You ask “why do people do that?” and build a theory.' },
+        mkt:   { major: 'Marketing',           name: 'The Storyteller',    line: 'You know what makes people care.' },
+        sales: { major: 'Sales',               name: 'The Connector',      line: 'You’d rather talk to the customer than read about them.' },
+        mgmt:  { major: 'Management',          name: 'The Captain',        line: 'You make the team work.' }
+    },
+    questions: [
+        { id: 'q1', title: 'Words or numbers?', options: [
+            { value: 'words',   label: 'Words',          pts: { mkt: 2, sales: 1, mgmt: 1 } },
+            { value: 'numbers', label: 'Numbers',        pts: { acct: 2, fin: 2, da: 2, econ: 1 } },
+            { value: 'both',    label: 'Honestly, both', pts: { econ: 1, is: 1, da: 1, mgmt: 1 } }
+        ] },
+        { id: 'q2', title: 'A campus coffee shop’s sales dropped 20% last month. Your first move?', options: [
+            { value: 'customers', label: 'Ask customers why they stopped coming',       pts: { mkt: 3 } },
+            { value: 'books',     label: 'Open the books and see where the money went', pts: { acct: 3, fin: 1 } },
+            { value: 'data',      label: 'Pull the sales data and look for a pattern',  pts: { da: 3 } },
+            { value: 'prices',    label: 'Check what prices and competitors did',       pts: { econ: 3, fin: 1 } },
+            { value: 'regulars',  label: 'Call the regulars and win them back',         pts: { sales: 3 } },
+            { value: 'app',       label: 'Check whether the ordering app broke',        pts: { is: 3 } }
+        ] },
+        { id: 'q3', title: 'Group project. You’re the one who…', options: [
+            { value: 'plan',    label: 'Runs the plan and keeps everyone on track',  pts: { mgmt: 3 } },
+            { value: 'slides',  label: 'Makes the slides and the story',             pts: { mkt: 2, sales: 1 } },
+            { value: 'present', label: 'Presents and convinces the room',            pts: { sales: 3 } },
+            { value: 'check',   label: 'Checks every number twice',                  pts: { acct: 3 } },
+            { value: 'budget',  label: 'Keeps an eye on the budget',                 pts: { fin: 3 } },
+            { value: 'build',   label: 'Builds the thing everyone else talks about', pts: { is: 2, da: 1 } }
+        ] },
+        { id: 'q4', title: 'Pick a superpower.', options: [
+            { value: 'predict',  label: 'Predict tomorrow',                   pts: { da: 3 } },
+            { value: 'worth',    label: 'Know what anything is really worth', pts: { fin: 3 } },
+            { value: 'mistake',  label: 'Spot the mistake nobody else sees',  pts: { acct: 3 } },
+            { value: 'convince', label: 'Convince anyone of anything',        pts: { sales: 2, mkt: 1 } },
+            { value: 'why',      label: 'Know why people do what they do',    pts: { econ: 2, mkt: 1 } },
+            { value: 'build',    label: 'Build an app overnight',             pts: { is: 3 } },
+            { value: 'team',     label: 'Get any team to work together',      pts: { mgmt: 3 } }
+        ] },
+        { id: 'q5', title: 'How do you feel about rules?', options: [
+            { value: 'clear',       label: 'I like clear rules and getting it exactly right', pts: { acct: 2, fin: 1 } },
+            { value: 'suggestions', label: 'Rules are suggestions',                           pts: { mkt: 2, sales: 1 } },
+            { value: 'why',         label: 'I want to know why the rule exists',              pts: { econ: 2 } },
+            { value: 'set',         label: 'I’d rather be the one who sets the rules',        pts: { mgmt: 2, fin: 1 } },
+            { value: 'automate',    label: 'I’d rather automate the rule',                    pts: { is: 2, da: 1 } }
+        ] }
+    ],
+    // Softmax temperature for the displayed percentages: higher = flatter.
+    temperature: 3.5
+};
+// ───────────────────────────────────────────────────────────────────────
+
+const HEADERS = {
+    'Content-Type': 'application/json',
+    'apikey': POLL.supabaseKey,
+    'Authorization': 'Bearer ' + POLL.supabaseKey
+};
+const MAJOR_KEYS = Object.keys(POLL.majors);
+const $ = id => document.getElementById(id);
+const answers = [];
+let current = 0;
+let advancing = false;   // a double tap must not skip the next question
+let saving = false;
+
+function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+    window.scrollTo(0, 0);
+}
+
+function renderQuestion() {
+    const q = POLL.questions[current];
+    $('qcount').textContent = 'Question ' + (current + 1) + ' of ' + POLL.questions.length;
+    $('progress').style.width = (100 * current / POLL.questions.length) + '%';
+    $('back').style.visibility = current > 0 ? 'visible' : 'hidden';
+    $('qtext').textContent = q.title;
+    $('options').replaceChildren(...q.options.map((o, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'opt' + (answers[current] === i ? ' picked' : '');
+        b.textContent = o.label;
+        b.addEventListener('click', () => pick(i, b));
+        return b;
+    }));
+}
+
+function pick(i, btn) {
+    if (advancing) return;
+    advancing = true;
+    btn.classList.add('picked');
+    answers[current] = i;
+    setTimeout(() => {
+        advancing = false;
+        if (current < POLL.questions.length - 1) { current++; renderQuestion(); }
+        else finish();
+    }, 180);
+}
+
+// Equal top scores are ordered at random, so a tie never favors whichever major
+// happens to be listed first, on the student's card or on the room chart.
+function score() {
+    const scores = Object.fromEntries(MAJOR_KEYS.map(k => [k, 0]));
+    answers.forEach((a, i) => {
+        const pts = POLL.questions[i].options[a].pts;
+        for (const k in pts) scores[k] += pts[k];
+    });
+    const exps = MAJOR_KEYS.map(k => Math.exp(scores[k] / POLL.temperature));
+    const total = exps.reduce((s, x) => s + x, 0);
+    const ranked = MAJOR_KEYS
+        .map((k, i) => ({ key: k, score: scores[k], pct: Math.round(100 * exps[i] / total), tie: Math.random() }))
+        .sort((a, b) => b.score - a.score || a.tie - b.tie);
+    return { ranked, top: ranked[0].key, mix: ranked[0].score === ranked[1].score };
+}
+
+function renderResult(result) {
+    const top = POLL.majors[result.top];
+    const second = POLL.majors[result.ranked[1].key];
+    $('mindset').textContent = top.name;
+    if (result.mix) {
+        const x = document.createElement('span');
+        x.className = 'x';
+        x.textContent = '× ' + second.name;
+        $('mindset').append(x);
+        $('mindsetLine').textContent = 'You’re a mix of ' + top.major + ' and ' + second.major + '. That’s more common than you think.';
+    } else {
+        $('mindsetLine').textContent = top.line;
+    }
+    // Bars scale to the leader, so a top score like 24% reads as first place, not low.
+    const leads = result.mix ? 2 : 1;
+    const max = result.ranked[0].pct;
+    $('bars').replaceChildren(...result.ranked.map((r, i) => {
+        const row = document.createElement('div');
+        row.className = 'bar-row' + (i < leads ? ' hot' : '');
+        row.innerHTML = '<div class="top"><span></span><span class="val">' + r.pct + '%</span></div>' +
+            '<div class="track"><div class="fill"></div></div>';
+        row.querySelector('span').textContent = POLL.majors[r.key].major;
+        setTimeout(() => { row.querySelector('.fill').style.width = (100 * r.pct / max) + '%'; }, 60);
+        return row;
+    }));
+}
+
+// ---- Saving: the quiz always works, but answers count only during an open session ----
+async function currentSession() {
+    const res = await fetch(POLL.supabaseUrl + '/rest/v1/poll_sessions?poll_slug=eq.' + POLL.slug +
+        '&select=session,closed_at,started_at&order=session.desc&limit=1', { headers: HEADERS });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return (await res.json())[0];
+}
+function storageGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function storageSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private window */ } }
+function votedKey(s) { return 'pj-voted-' + POLL.slug + '-s' + s.session + '-t' + encodeURIComponent(s.started_at || ''); }
+function voterId() {
+    let id = storageGet('pj-voter');
+    if (!id) {
+        id = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+        storageSet('pj-voter', id);
+    }
+    return id;
+}
+
+// Returns 'saved', 'already' or 'closed'; throws on a network or server failure.
+async function saveOnce(values, top) {
+    const s = await currentSession();
+    if (!s || s.closed_at) return 'closed';
+    if (storageGet(votedKey(s))) return 'already';
+    const vid = voterId();
+    const payload = POLL.questions.map((q, i) => ({ session: s.session, question: q.id, choice: values[i], voter_id: vid }));
+    payload.push({ session: s.session, question: 'top', choice: top, voter_id: vid });
+    const res = await fetch(POLL.supabaseUrl + '/rest/v1/' + POLL.table, {
+        method: 'POST',
+        headers: { ...HEADERS, 'Prefer': 'return=minimal' },
+        body: JSON.stringify(payload)
+    });
+    // RLS rejected the insert: the session closed while the quiz was on screen.
+    if (res.status === 401 || res.status === 403) return 'closed';
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    storageSet(votedKey(s), '1');
+    return 'saved';
+}
+
+async function save(values, top) {
+    if (saving) return;
+    saving = true;
+    try {
+        let outcome;
+        try { outcome = await saveOnce(values, top); }
+        catch (e) {
+            await new Promise(r => setTimeout(r, 1200));   // a full room on one Wi-Fi: try once more
+            outcome = await saveOnce(values, top);
+        }
+        if (outcome === 'saved') $('saveNote').textContent = 'You’re on the chart. Watch the screen up front.';
+        if (outcome === 'already') $('saveNote').textContent = 'New result for you. The room chart keeps your first answer.';
+        $('saveNote').style.display = outcome === 'closed' ? 'none' : 'block';
+    } catch (e) {
+        $('saveError').style.display = 'block';
+    } finally {
+        saving = false;
+    }
+}
+
+function finish() {
+    const result = score();
+    renderResult(result);
+    $('saveNote').style.display = 'none';
+    $('saveError').style.display = 'none';
+    show('result');
+    save(answers.map((a, i) => POLL.questions[i].options[a].value), result.top);
+}
+
+function restart() {
+    current = 0;
+    answers.length = 0;
+    renderQuestion();
+    show('question');
+}
+$('start').addEventListener('click', restart);
+$('retake').addEventListener('click', restart);
+$('back').addEventListener('click', () => { if (current > 0 && !advancing) { current--; renderQuestion(); } });
+</script>
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>
