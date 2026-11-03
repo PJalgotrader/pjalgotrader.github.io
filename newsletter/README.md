@@ -48,8 +48,8 @@ For each of the 10 items:
 ### 3. Add entry to newsletter.html
 
 1. Open `../newsletter.html`
-2. Add a new row in the `.newsletter-list` div, **below** the latest issue (after the first item)
-3. Remove the `latest` class from the previous first item and add it to your new one
+2. Add the new row at the **top** of the `.newsletter-list` div, above the current latest issue
+3. Remove the `latest` class and the `Latest` badge from the previous first item; the new row carries both
 4. Structure for each row:
 
 ```html
