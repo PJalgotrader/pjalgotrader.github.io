@@ -204,7 +204,8 @@ let view = new URLSearchParams(location.search).has('live') ? 'live' : 'lobby';
 let segSig = null;   // signature of the rendered session buttons, to avoid rebuilding mid-click
 let sessions = [];   // [{session, label, closed_at}] — includes the hidden anchor
 let votes = [];      // [{session, question, choice, voter_id}] — only the two questions this page charts
-let refreshing = false;
+let refreshCount = 0;     // numbers each refresh in the order it started
+let oldestUsable = 0;     // responses from refreshes older than this are stale and get dropped
 
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
 function realSessions() { return sessions.filter(s => s.label !== POLL.anchorLabel); }
@@ -225,8 +226,7 @@ async function fetchVotes() {
 }
 
 async function refresh() {
-    if (refreshing) return;
-    refreshing = true;
+    const id = ++refreshCount;
     try {
         const [sRes, vRows] = await Promise.all([
             fetch(POLL.supabaseUrl + '/rest/v1/poll_sessions?poll_slug=eq.' + POLL.slug +
@@ -234,11 +234,20 @@ async function refresh() {
             fetchVotes()
         ]);
         if (!sRes.ok) return;
-        sessions = await sRes.json();
+        const freshSessions = await sRes.json();
+        if (id < oldestUsable) return;
+        oldestUsable = id;
+        sessions = freshSessions;
         votes = vRows;
         render();
     } catch (e) { /* transient network error — next tick retries */ }
-    finally { refreshing = false; }
+}
+
+// After opening, closing or deleting a session, a refresh already in flight holds
+// the old session list. Rendering it would pin the projector to the wrong session.
+function refreshAfterChange() {
+    oldestUsable = refreshCount + 1;
+    return refresh();
 }
 
 function tally(rows) {
@@ -441,7 +450,7 @@ document.getElementById('closeBtn').addEventListener('click', async (e) => {
         });
         if (res.ok) {
             view = 'lobby';
-            await refresh();
+            await refreshAfterChange();
         } else {
             alert(res.status === 401 ? 'Wrong PIN.' : 'Could not close the session — try again.');
         }
@@ -463,7 +472,7 @@ document.getElementById('deleteBtn').addEventListener('click', async (e) => {
         const out = await res.json().catch(() => ({}));
         if (res.ok) {
             view = 'lobby';
-            await refresh();
+            await refreshAfterChange();
         } else if (res.status === 401) {
             alert('Wrong PIN.');
         } else if (out.error === 'cannot delete the only session') {
@@ -487,7 +496,7 @@ document.getElementById('resetBtn').addEventListener('click', async (e) => {
         const out = await res.json();
         if (res.ok) {
             view = 'live';
-            await refresh();
+            await refreshAfterChange();
         } else {
             alert(res.status === 401 ? 'Wrong PIN.' : 'Could not start a session — try again.');
         }
