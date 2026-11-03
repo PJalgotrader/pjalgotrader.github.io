@@ -163,21 +163,34 @@
             { slug: 'df-feelings-2026', table: 'poll_df_feelings_2026' },
             { slug: 'dqt-feelings-2026', table: 'poll_dqt_feelings_2026' },
             { slug: 'notebooklm-2026', table: 'poll_notebooklm_2026' },
-            // One 'top' row per student: six rows each would pass Supabase's per-request cap.
+            // One 'top' row per student is all the count needs.
             { slug: 'mindsets-2026', table: 'poll_mindsets_2026', filter: '&question=eq.top' }
         ];
+
+        // Supabase caps each request (1000 rows by default), so page through until
+        // an empty page comes back.
+        async function fetchVotes(p) {
+            const out = [];
+            for (;;) {
+                const res = await fetch(SUPABASE_URL + '/rest/v1/' + p.table +
+                    '?select=session,voter_id&order=id.asc&limit=1000&offset=' + out.length + (p.filter || ''), { headers: HEADERS });
+                if (!res.ok) throw new Error();
+                const page = await res.json();
+                if (page.length === 0) return out;
+                out.push(...page);
+            }
+        }
 
         POLLS.forEach(async (p) => {
             const el = document.getElementById('poll-stats-' + p.slug);
             if (!el) return;
             try {
-                const [sRes, vRes] = await Promise.all([
+                const [sRes, votes] = await Promise.all([
                     fetch(SUPABASE_URL + '/rest/v1/poll_sessions?poll_slug=eq.' + p.slug + '&select=session', { headers: HEADERS }),
-                    fetch(SUPABASE_URL + '/rest/v1/' + p.table + '?select=session,voter_id&limit=50000' + (p.filter || ''), { headers: HEADERS })
+                    fetchVotes(p)
                 ]);
-                if (!sRes.ok || !vRes.ok) throw new Error();
+                if (!sRes.ok) throw new Error();
                 const sessions = await sRes.json();
-                const votes = await vRes.json();
                 const voters = new Set(votes.map(v => v.voter_id + '|' + v.session)).size;
                 el.innerHTML = sessions.length + ' session' + (sessions.length > 1 ? 's' : '') +
                     ' &middot; ' + voters + ' response' + (voters !== 1 ? 's' : '') + ' &middot; live';

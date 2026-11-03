@@ -238,23 +238,50 @@ let view = new URLSearchParams(location.search).has('live') ? 'live' : 'lobby';
 let segSig = null;   // signature of the rendered session buttons, to avoid rebuilding mid-click
 let sessions = [];   // [{session, label, closed_at}] — includes the hidden anchor
 let votes = [];      // [{session, question, choice, voter_id}]
+let refreshCount = 0;     // numbers each refresh in the order it started
+let oldestUsable = 0;     // responses from refreshes older than this are stale and get dropped
 
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
 function realSessions() { return sessions.filter(s => s.label !== POLL.anchorLabel); }
 
+// Supabase caps each request (1000 rows by default), so page through until an
+// empty page comes back.
+async function fetchVotes() {
+    const out = [];
+    for (;;) {
+        const res = await fetch(POLL.supabaseUrl + '/rest/v1/' + POLL.table +
+            '?select=session,question,choice,voter_id&order=id.asc&limit=1000&offset=' + out.length,
+            { headers: HEADERS });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const page = await res.json();
+        if (page.length === 0) return out;
+        out.push(...page);
+    }
+}
+
 async function refresh() {
+    const id = ++refreshCount;
     try {
-        const [sRes, vRes] = await Promise.all([
+        const [sRes, vRows] = await Promise.all([
             fetch(POLL.supabaseUrl + '/rest/v1/poll_sessions?poll_slug=eq.' + POLL.slug +
                   '&select=session,label,closed_at&order=session.asc', { headers: HEADERS }),
-            fetch(POLL.supabaseUrl + '/rest/v1/' + POLL.table +
-                  '?select=session,question,choice,voter_id&limit=50000', { headers: HEADERS })
+            fetchVotes()
         ]);
-        if (!sRes.ok || !vRes.ok) return;
-        sessions = await sRes.json();
-        votes = await vRes.json();
+        if (!sRes.ok) return;
+        const freshSessions = await sRes.json();
+        if (id < oldestUsable) return;
+        oldestUsable = id;
+        sessions = freshSessions;
+        votes = vRows;
         render();
     } catch (e) { /* transient network error — next tick retries */ }
+}
+
+// After opening, closing or deleting a session, a refresh already in flight holds
+// the old session list. Rendering it would pin the projector to the wrong session.
+function refreshAfterChange() {
+    oldestUsable = refreshCount + 1;
+    return refresh();
 }
 
 function render() {
@@ -580,7 +607,7 @@ document.getElementById('closeBtn').addEventListener('click', async (e) => {
         });
         if (res.ok) {
             view = 'lobby';
-            await refresh();
+            await refreshAfterChange();
         } else {
             alert(res.status === 401 ? 'Wrong PIN.' : 'Could not close the session — try again.');
         }
@@ -602,7 +629,7 @@ document.getElementById('deleteBtn').addEventListener('click', async (e) => {
         const out = await res.json().catch(() => ({}));
         if (res.ok) {
             view = 'lobby';
-            await refresh();
+            await refreshAfterChange();
         } else if (res.status === 401) {
             alert('Wrong PIN.');
         } else if (out.error === 'cannot delete the only session') {
@@ -626,7 +653,7 @@ document.getElementById('resetBtn').addEventListener('click', async (e) => {
         const out = await res.json();
         if (res.ok) {
             view = 'live';
-            await refresh();
+            await refreshAfterChange();
         } else {
             alert(res.status === 401 ? 'Wrong PIN.' : 'Could not start a session — try again.');
         }
