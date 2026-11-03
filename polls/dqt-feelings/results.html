@@ -242,17 +242,31 @@ let votes = [];      // [{session, question, choice, voter_id}]
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
 function realSessions() { return sessions.filter(s => s.label !== POLL.anchorLabel); }
 
+// Supabase caps each request (1000 rows by default), so page through until an
+// empty page comes back.
+async function fetchVotes() {
+    const out = [];
+    for (;;) {
+        const res = await fetch(POLL.supabaseUrl + '/rest/v1/' + POLL.table +
+            '?select=session,question,choice,voter_id&order=id.asc&limit=1000&offset=' + out.length,
+            { headers: HEADERS });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const page = await res.json();
+        if (page.length === 0) return out;
+        out.push(...page);
+    }
+}
+
 async function refresh() {
     try {
-        const [sRes, vRes] = await Promise.all([
+        const [sRes, vRows] = await Promise.all([
             fetch(POLL.supabaseUrl + '/rest/v1/poll_sessions?poll_slug=eq.' + POLL.slug +
                   '&select=session,label,closed_at&order=session.asc', { headers: HEADERS }),
-            fetch(POLL.supabaseUrl + '/rest/v1/' + POLL.table +
-                  '?select=session,question,choice,voter_id&limit=50000', { headers: HEADERS })
+            fetchVotes()
         ]);
-        if (!sRes.ok || !vRes.ok) return;
+        if (!sRes.ok) return;
         sessions = await sRes.json();
-        votes = await vRes.json();
+        votes = vRows;
         render();
     } catch (e) { /* transient network error — next tick retries */ }
 }
