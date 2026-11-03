@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>Majors &amp; Mindsets — Results</title>
+    <meta name="description" content="Live results of the Majors and Mindsets poll.">
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper: #0A1020;
+            --card: #0F1A31;
+            --ink: #E9E4D4;
+            --ink-mute: #8B8FA0;
+            --line: #263250;
+            --green: #D0A63C;
+            --green-ink: #0A1020;
+            --track: rgba(233, 228, 212, 0.10);
+            --bar: #8B7A45;
+            --live-dot: #4CAF7D;
+            --serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+            --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --mono: 'IBM Plex Mono', 'SF Mono', Menlo, monospace;
+        }
+        [data-theme="light"] {
+            --paper: #F7F4EC;
+            --card: #FDFCF8;
+            --ink: #1C1B18;
+            --ink-mute: #807D72;
+            --line: #DCD7C8;
+            --green: #0E7A4E;
+            --green-ink: #F7F4EC;
+            --track: rgba(28, 27, 24, 0.09);
+            --bar: #9BB3A3;
+            --live-dot: #0E7A4E;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--paper); color: var(--ink); font-family: var(--sans); min-height: 100vh; padding: 3vh 4vw; }
+        header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+        .kicker { font-family: var(--mono); font-size: clamp(10px, 1vw, 13px); letter-spacing: 0.18em; text-transform: uppercase; color: var(--green); }
+        h1 { font-family: var(--serif); font-size: clamp(24px, 3vw, 42px); font-weight: 600; line-height: 1.1; margin-top: 6px; }
+        .count { text-align: right; }
+        .count .n { font-family: var(--serif); font-size: clamp(34px, 4vw, 60px); font-weight: 700; color: var(--green); line-height: 1; font-variant-numeric: tabular-nums; }
+        .count .l { font-family: var(--mono); font-size: clamp(10px, 0.9vw, 13px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-mute); margin-top: 4px; }
+        .seg {
+            display: flex; flex-wrap: wrap; gap: 8px;
+            margin: 2.6vh 0 3.2vh; font-family: var(--mono);
+        }
+        .seg button {
+            font: inherit; font-size: clamp(11px, 1vw, 13px); letter-spacing: 0.08em; text-transform: uppercase;
+            background: none; border: 1px solid var(--line); border-radius: 999px;
+            color: var(--ink-mute); padding: 9px 18px; cursor: pointer;
+        }
+        .seg button.on { background: var(--green); border-color: var(--green); color: var(--green-ink); font-weight: 500; }
+        .seg button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+        .grid { display: grid; grid-template-columns: auto 1fr 1fr; gap: 4.5vh 5.5vw; align-items: start; }
+        @media (max-width: 940px) { .grid { grid-template-columns: 1fr; } .qr-card { margin: 0 auto; } }
+        #chart1, #chart2 { max-width: 460px; }
+        .qr-card {
+            background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+            padding: clamp(12px, 1.8vh, 20px); width: clamp(180px, 18vw, 260px); text-align: center;
+        }
+        .qr-card .t { font-family: var(--serif); font-weight: 600; font-size: clamp(14px, 1.3vw, 18px); margin-bottom: 10px; }
+        .qr-card img { width: 100%; height: auto; display: block; background: #fff; border-radius: 6px; padding: 7px; }
+        .qr-card .u { font-family: var(--mono); font-size: clamp(9px, 0.85vw, 12px); color: var(--ink-mute); margin-top: 10px; word-break: break-all; line-height: 1.5; }
+        .qr-card .u a { color: var(--ink-mute); text-decoration: underline; text-underline-offset: 3px; }
+        .qr-card .u a:hover { color: var(--green); }
+        .panel h2 { font-size: clamp(16px, 1.6vw, 22px); font-weight: 600; margin-bottom: 18px; }
+        .bar-row { margin-bottom: clamp(10px, 1.7vh, 18px); }
+        .bar-row .top { display: flex; justify-content: space-between; gap: 12px; font-size: clamp(14px, 1.4vw, 19px); margin-bottom: 5px; }
+        .bar-row .name { font-weight: 500; }
+        .bar-row .name small { font-weight: 400; font-size: 0.78em; color: var(--ink-mute); margin-left: 6px; }
+        .bar-row .val { font-family: var(--mono); font-size: clamp(12px, 1.1vw, 15px); color: var(--ink-mute); font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .bar-row .track { background: var(--track); border-radius: 5px; height: clamp(9px, 1.3vh, 12px); overflow: hidden; }
+        .bar-row .fill { height: 100%; background: var(--bar); border-radius: 6px; width: 0%; transition: width 0.55s ease; }
+        .bar-row.hot .fill { background: var(--green); }
+        .bar-row.hot .name, .bar-row.hot .val { color: var(--green); }
+        .waiting { color: var(--ink-mute); font-size: clamp(13px, 1.2vw, 17px); padding: 1vh 0; }
+        .stat { margin-bottom: clamp(16px, 2.6vh, 28px); }
+        .stat .big { font-family: var(--serif); font-size: clamp(56px, 7vw, 112px); font-weight: 700; color: var(--green); line-height: 1; font-variant-numeric: tabular-nums; }
+        .stat .lab { font-family: var(--mono); font-size: clamp(11px, 1vw, 14px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-mute); margin-top: 6px; }
+        .compare { margin-top: clamp(18px, 3vh, 30px); border-top: 1px dashed var(--line); padding-top: clamp(12px, 2vh, 20px); color: var(--ink-mute); font-size: clamp(13px, 1.2vw, 17px); line-height: 1.4; max-width: 460px; }
+        footer {
+            display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+            margin-top: 3.5vh; padding-top: 1.6vh; border-top: 1px solid var(--line);
+            font-family: var(--mono); font-size: clamp(10px, 0.9vw, 13px); color: var(--ink-mute);
+        }
+        .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--live-dot); margin-right: 7px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+        footer a { color: var(--ink-mute); text-decoration: none; }
+        footer a:hover { color: var(--green); }
+        #resetBtn, #closeBtn, #deleteBtn { text-decoration: underline; text-underline-offset: 3px; }
+        dialog#pinDlg {
+            background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 12px;
+            padding: 22px; width: min(92vw, 380px); font-family: var(--sans);
+        }
+        dialog#pinDlg::backdrop { background: rgba(4, 8, 18, 0.72); }
+        #pinDlg p { font-size: 14.5px; line-height: 1.45; margin-bottom: 14px; white-space: pre-line; }
+        #pinDlg input {
+            width: 100%; margin-bottom: 10px; padding: 11px 12px;
+            background: var(--paper); color: var(--ink); border: 1.5px solid var(--line); border-radius: 8px;
+            font-family: var(--mono); font-size: 14px;
+        }
+        #pinDlg input:focus-visible { outline: none; border-color: var(--green); }
+        #pinDlg .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+        #pinDlg .row button {
+            font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+            padding: 10px 16px; border-radius: 8px; cursor: pointer; border: 1px solid var(--line);
+            background: none; color: var(--ink-mute);
+        }
+        #pinDlg .row button.primary { background: var(--green); border-color: var(--green); color: var(--green-ink); font-weight: 500; }
+        @media (prefers-reduced-motion: reduce) { .bar-row .fill { transition: none; } .dot { animation: none; } }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <p class="kicker">Huntsman Freshman Academy &middot; Majors &amp; Mindsets &middot; Live Poll</p>
+            <h1>This room, right now</h1>
+        </div>
+        <div class="count"><div class="n" id="total">&ndash;</div><div class="l" id="totalLabel">responses</div></div>
+    </header>
+
+    <div class="seg" role="group" aria-label="Results view" id="seg"></div>
+
+    <div class="grid">
+        <aside class="qr-card">
+            <div class="t">Scan to take the quiz</div>
+            <img src="qr.png" alt="QR code linking to the quiz" width="396" height="396">
+            <div class="u"><a href="index.html" target="_blank" rel="noopener">pedramjahangiry.com/<br>polls/mindsets</a></div>
+        </aside>
+        <section class="panel">
+            <h2>Mindsets in the room</h2>
+            <div id="chart1"><div class="waiting">Loading&hellip;</div></div>
+        </section>
+        <section class="panel">
+            <h2>Words or numbers?</h2>
+            <div class="stat" id="stat" hidden><div class="big" id="statBig"></div><div class="lab">numbers people</div></div>
+            <div id="chart2"><div class="waiting">Loading&hellip;</div></div>
+            <div class="compare" id="compare" hidden></div>
+        </section>
+    </div>
+
+    <footer>
+        <div id="liveState"><span class="dot"></span>Updates automatically</div>
+        <div><a href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com</a> &middot; <a href="#" id="resetBtn">new session</a> &middot; <a href="#" id="closeBtn" hidden>close session</a> &middot; <a href="#" id="deleteBtn" hidden>delete session</a></div>
+    </footer>
+
+    <dialog id="pinDlg">
+        <form id="pinForm">
+            <p id="pinMsg"></p>
+            <input type="password" id="pinInput" placeholder="PIN" autocomplete="off" autocapitalize="off">
+            <input type="text" id="labelInput" placeholder='Session label, e.g. "8:30 section"' autocomplete="off" style="display:none">
+            <div class="row">
+                <button type="button" id="pinCancel">Cancel</button>
+                <button type="submit" class="primary" id="pinOk">Confirm</button>
+            </div>
+        </form>
+    </dialog>
+
+<script>
+// ─── poll config: keys match the values stored by the vote page ───
+const POLL = {
+    slug: 'mindsets-2026',
+    table: 'poll_mindsets_2026',
+    supabaseUrl: 'https://daimsfgtfrjbkegxmwag.supabase.co',
+    supabaseKey: 'sb_publishable_O_xS8NobEAWlHn_cR0SwOw_LYnB9o2d',
+    resetUrl: 'https://daimsfgtfrjbkegxmwag.supabase.co/functions/v1/reset-poll',
+    // Charts render only once a view has minN responses — with one or two
+    // responses on the projector, a bar chart is a person, not a distribution.
+    minN: 3,
+    // Sessions with this label are structural anchors (a poll must always keep
+    // at least one session row) — hidden from the picker.
+    anchorLabel: 'Setup',
+    majors: {
+        da:    { major: 'Data Analytics',      name: 'The Pattern Hunter' },
+        is:    { major: 'Information Systems', name: 'The Builder' },
+        acct:  { major: 'Accounting',          name: 'The Translator' },
+        fin:   { major: 'Finance',             name: 'The Valuer' },
+        econ:  { major: 'Economics',           name: 'The Modeler' },
+        mkt:   { major: 'Marketing',           name: 'The Storyteller' },
+        sales: { major: 'Sales',               name: 'The Connector' },
+        mgmt:  { major: 'Management',          name: 'The Captain' }
+    },
+    q1: { order: ['numbers', 'both', 'words'], labels: { numbers: 'Numbers', both: 'Honestly, both', words: 'Words' } },
+    // The later section's view adds a one-line comparison with the earlier one
+    // (matched on the session labels Pedram types).
+    compare: { viewing: '9:30', earlier: '8:30' }
+};
+// ───────────────────────────────────────────────────────────────────────
+
+const HEADERS = { 'apikey': POLL.supabaseKey, 'Authorization': 'Bearer ' + POLL.supabaseKey };
+const MAJOR_KEYS = Object.keys(POLL.majors);
+// view: 'lobby' (default — nothing shown until a session opens or a chip is
+// clicked, so the room never sees earlier results before class), 'all', a
+// session number, or 'live' (sentinel → resolves to the current session).
+let view = new URLSearchParams(location.search).has('live') ? 'live' : 'lobby';
+let segSig = null;   // signature of the rendered session buttons, to avoid rebuilding mid-click
+let sessions = [];   // [{session, label, closed_at}] — includes the hidden anchor
+let votes = [];      // [{session, question, choice, voter_id}] — only the two questions this page charts
+let refreshCount = 0;     // numbers each refresh in the order it started
+let oldestUsable = 0;     // responses from refreshes older than this are stale and get dropped
+
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+function realSessions() { return sessions.filter(s => s.label !== POLL.anchorLabel); }
+
+// Supabase caps each request (1000 rows by default), and a full room passes that,
+// so page through until an empty page comes back.
+async function fetchVotes() {
+    const out = [];
+    for (;;) {
+        const res = await fetch(POLL.supabaseUrl + '/rest/v1/' + POLL.table +
+            '?select=session,question,choice,voter_id&question=in.(top,q1)&order=id.asc&limit=1000&offset=' + out.length,
+            { headers: HEADERS });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const page = await res.json();
+        if (page.length === 0) return out;
+        out.push(...page);
+    }
+}
+
+async function refresh() {
+    const id = ++refreshCount;
+    try {
+        const [sRes, vRows] = await Promise.all([
+            fetch(POLL.supabaseUrl + '/rest/v1/poll_sessions?poll_slug=eq.' + POLL.slug +
+                  '&select=session,label,closed_at&order=session.asc', { headers: HEADERS }),
+            fetchVotes()
+        ]);
+        if (!sRes.ok) return;
+        const freshSessions = await sRes.json();
+        if (id < oldestUsable) return;
+        oldestUsable = id;
+        sessions = freshSessions;
+        votes = vRows;
+        render();
+    } catch (e) { /* transient network error — next tick retries */ }
+}
+
+// After opening, closing or deleting a session, a refresh already in flight holds
+// the old session list. Rendering it would pin the projector to the wrong session.
+function refreshAfterChange() {
+    oldestUsable = refreshCount + 1;
+    return refresh();
+}
+
+function tally(rows) {
+    const tops = rows.filter(r => r.question === 'top');
+    const q1s = rows.filter(r => r.question === 'q1');
+    const majors = Object.fromEntries(MAJOR_KEYS.map(k => [k, 0]));
+    tops.forEach(r => { if (r.choice in majors) majors[r.choice]++; });
+    const q1 = Object.fromEntries(POLL.q1.order.map(k => [k, 0]));
+    q1s.forEach(r => { if (r.choice in q1) q1[r.choice]++; });
+    return { n: tops.length, majors, q1 };
+}
+
+function render() {
+    if (!sessions.length) return;
+    const current = sessions[sessions.length - 1];
+    const picker = realSessions();
+
+    // Lobby resolves: to the live session the moment one is open, otherwise it
+    // stays a blank pre-class state (no earlier results on the projector).
+    if (view === 'lobby' && pollIsOpen()) view = current.session;
+    if (view === 'live') view = current.session;
+    if (view !== 'all' && view !== 'lobby' && !sessions.some(s => s.session === view)) view = 'lobby';
+
+    const lobby = view === 'lobby';
+    const rows = lobby ? [] : (view === 'all' ? votes : votes.filter(v => v.session === view));
+    const t = tally(rows);
+    const viewing = (lobby || view === 'all') ? null : sessions.find(s => s.session === view);
+
+    document.getElementById('total').textContent = lobby ? '–' : t.n;
+    document.getElementById('totalLabel').textContent = lobby
+        ? 'poll closed'
+        : viewing
+            ? 'responses · ' + viewing.label
+            : 'responses · ' + picker.length + ' session' + (picker.length !== 1 ? 's' : '');
+
+    // Session picker: one button per real session + All sessions (the Setup
+    // anchor is structural and never shown). Rebuild only when the list changes.
+    const seg = document.getElementById('seg');
+    const sig = picker.map(s => s.session + ':' + s.label + ':' + (s.closed_at ? 'c' : 'o')).join('|');
+    if (sig !== segSig) {
+        segSig = sig;
+        seg.innerHTML = picker.map(s =>
+            '<button data-view="' + s.session + '">' + esc(s.label) +
+            (s.session === current.session && !s.closed_at ? ' · live' : '') + '</button>').join('') +
+            '<button data-view="all"></button>';
+    }
+    seg.querySelector('[data-view="all"]').textContent =
+        'All sessions · ' + picker.length;
+    seg.querySelectorAll('button').forEach(b => {
+        const v = b.dataset.view === 'all' ? 'all' : Number(b.dataset.view);
+        b.classList.toggle('on', v === view);
+    });
+
+    // "Close session" appears only while viewing the live session. "Delete
+    // session" works on any specific session view, but never on the poll's only
+    // session, and never on the hidden anchor.
+    const viewingLive = pollIsOpen() && view === current.session;
+    const viewingReal = viewing && viewing.label !== POLL.anchorLabel;
+    document.getElementById('closeBtn').hidden = !viewingLive;
+    document.getElementById('deleteBtn').hidden = !viewingReal || sessions.length <= 1;
+
+    document.getElementById('liveState').innerHTML = lobby
+        ? 'Poll closed &mdash; dormant until a new session opens'
+        : viewIsLive()
+            ? '<span class="dot"></span>Updates automatically'
+            : (view !== 'all' && view !== current.session)
+                ? 'Past session &mdash; results are frozen'
+                : 'Poll closed &mdash; dormant until a new session opens';
+
+    renderMajors(t, lobby);
+    renderWords(t, lobby);
+    renderCompare(viewing);
+}
+
+// Returns the message to show instead of a chart, or null when the chart can render.
+function chartMessage(n, lobby) {
+    if (lobby) return 'Results are hidden while the poll is closed &mdash; start a session to begin.';
+    if (n === 0) return 'Waiting for votes&hellip;';
+    // Privacy floor: below minN responses a bar chart is close to a roster.
+    if (n < POLL.minN) return n + ' in &mdash; the chart appears at ' + POLL.minN + ' responses (keeps individual answers private).';
+    return null;
+}
+
+// Rows are kept and re-appended in score order, so the bars animate as they re-rank.
+function renderBars(el, entries, n, hotValue) {
+    if (el.querySelectorAll('.bar-row').length !== entries.length) {
+        el.innerHTML = entries.map(e =>
+            '<div class="bar-row" data-key="' + esc(e.key) + '">' +
+            '<div class="top"><span class="name">' + e.html + '</span><span class="val"></span></div>' +
+            '<div class="track"><div class="fill"></div></div></div>').join('');
+    }
+    const max = Math.max(1, ...entries.map(e => e.count));
+    entries.forEach(e => {
+        const rowEl = el.querySelector('.bar-row[data-key="' + e.key + '"]');
+        rowEl.classList.toggle('hot', e.count > 0 && e.count === hotValue);
+        rowEl.querySelector('.val').textContent = e.count + ' · ' + Math.round(100 * e.count / n) + '%';
+        rowEl.querySelector('.fill').style.width = (100 * e.count / max) + '%';
+        el.appendChild(rowEl);
+    });
+}
+
+function renderMajors(t, lobby) {
+    const el = document.getElementById('chart1');
+    const msg = chartMessage(t.n, lobby);
+    if (msg) { el.innerHTML = '<div class="waiting">' + msg + '</div>'; return; }
+    const entries = MAJOR_KEYS
+        .map(k => ({ key: k, count: t.majors[k], html: esc(POLL.majors[k].name) + '<small>' + esc(POLL.majors[k].major) + '</small>' }))
+        .sort((a, b) => b.count - a.count || MAJOR_KEYS.indexOf(a.key) - MAJOR_KEYS.indexOf(b.key));
+    renderBars(el, entries, t.n, entries[0].count);
+}
+
+function renderWords(t, lobby) {
+    const el = document.getElementById('chart2');
+    const stat = document.getElementById('stat');
+    const msg = chartMessage(t.n, lobby);
+    stat.hidden = Boolean(msg);
+    if (msg) { el.innerHTML = '<div class="waiting">' + msg + '</div>'; return; }
+    document.getElementById('statBig').textContent = Math.round(100 * t.q1.numbers / t.n) + '%';
+    renderBars(el, POLL.q1.order.map(k => ({ key: k, count: t.q1[k], html: esc(POLL.q1.labels[k]) })), t.n, t.q1.numbers);
+}
+
+function topMajor(t) {
+    return MAJOR_KEYS.slice().sort((a, b) => t.majors[b] - t.majors[a] || MAJOR_KEYS.indexOf(a) - MAJOR_KEYS.indexOf(b))[0];
+}
+
+function renderCompare(viewing) {
+    const el = document.getElementById('compare');
+    el.hidden = true;
+    if (!viewing || !viewing.label.includes(POLL.compare.viewing)) return;
+    const earlier = realSessions().find(s => s.label.includes(POLL.compare.earlier));
+    if (!earlier) return;
+    const t = tally(votes.filter(v => v.session === earlier.session));
+    if (t.n < POLL.minN) return;
+    el.textContent = earlier.label + ': ' + Math.round(100 * t.q1.numbers / t.n) +
+        '% numbers people, top mindset ' + POLL.majors[topMajor(t)].name + '.';
+    el.hidden = false;
+}
+
+// The poll can only receive votes while its newest session is open.
+function pollIsOpen() {
+    return sessions.length > 0 && !sessions[sessions.length - 1].closed_at;
+}
+
+// Polling is worth it for data that can still change — an OPEN current session
+// or the all-time view — and for the lobby, which must notice a session
+// opening (possibly from another device) and wake the projector.
+function viewIsLive() {
+    if (!sessions.length) return true;
+    if (view === 'lobby') return true;
+    if (!pollIsOpen()) return false;
+    if (view === 'all' || view === 'live') return true;
+    return view === sessions[sessions.length - 1].session;
+}
+
+// ── masked PIN dialog (replaces prompt(), which showed the PIN in clear text) ──
+function askPin(message, withLabel) {
+    return new Promise(resolve => {
+        const dlg = document.getElementById('pinDlg');
+        const pin = document.getElementById('pinInput');
+        const lab = document.getElementById('labelInput');
+        document.getElementById('pinMsg').textContent = message;
+        pin.value = ''; lab.value = '';
+        lab.style.display = withLabel ? '' : 'none';
+        const done = val => { cleanup(); dlg.close(); resolve(val); };
+        const onSubmit = e => { e.preventDefault(); if (!pin.value.trim()) { pin.focus(); return; } done({ pin: pin.value.trim(), label: lab.value.trim() }); };
+        const onCancelBtn = () => done(null);
+        const onCancelEvt = e => { e.preventDefault(); done(null); };
+        function cleanup() {
+            document.getElementById('pinForm').removeEventListener('submit', onSubmit);
+            document.getElementById('pinCancel').removeEventListener('click', onCancelBtn);
+            dlg.removeEventListener('cancel', onCancelEvt);
+        }
+        document.getElementById('pinForm').addEventListener('submit', onSubmit);
+        document.getElementById('pinCancel').addEventListener('click', onCancelBtn);
+        dlg.addEventListener('cancel', onCancelEvt);
+        dlg.showModal();
+        pin.focus();
+    });
+}
+
+document.getElementById('seg').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    view = b.dataset.view === 'all' ? 'all' : Number(b.dataset.view);
+    render();
+    if (viewIsLive()) refresh(); // catch up immediately after a dormant stretch
+});
+
+document.getElementById('closeBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const current = sessions[sessions.length - 1];
+    if (!current || current.closed_at) return;
+    const r = await askPin('Close session "' + current.label + '"?\nAnswers stop counting until a new session opens. Students can still take the quiz. Results are kept.', false);
+    if (!r) return;
+    try {
+        const res = await fetch(POLL.resetUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: r.pin, slug: POLL.slug, action: 'close' })
+        });
+        if (res.ok) {
+            view = 'lobby';
+            await refreshAfterChange();
+        } else {
+            alert(res.status === 401 ? 'Wrong PIN.' : 'Could not close the session — try again.');
+        }
+    } catch (err) { alert('Could not close the session — check your connection.'); }
+});
+
+document.getElementById('deleteBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const s = (view === 'all' || view === 'lobby') ? null : sessions.find(x => x.session === view);
+    if (!s) return;
+    const r = await askPin('DELETE session "' + s.label + '"?\nThis permanently deletes its votes and removes it from the list. There is no undo.', false);
+    if (!r) return;
+    try {
+        const res = await fetch(POLL.resetUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: r.pin, slug: POLL.slug, action: 'delete', session: s.session })
+        });
+        const out = await res.json().catch(() => ({}));
+        if (res.ok) {
+            view = 'lobby';
+            await refreshAfterChange();
+        } else if (res.status === 401) {
+            alert('Wrong PIN.');
+        } else if (out.error === 'cannot delete the only session') {
+            alert('This is the only session — start a new one first, then delete this one.');
+        } else {
+            alert('Could not delete the session — try again.');
+        }
+    } catch (err) { alert('Could not delete the session — check your connection.'); }
+});
+
+document.getElementById('resetBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const r = await askPin('Start a NEW session? Previous data is kept.', true);
+    if (!r) return;
+    try {
+        const res = await fetch(POLL.resetUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: r.pin, slug: POLL.slug, label: r.label })
+        });
+        const out = await res.json();
+        if (res.ok) {
+            view = 'live';
+            await refreshAfterChange();
+        } else {
+            alert(res.status === 401 ? 'Wrong PIN.' : 'Could not start a session — try again.');
+        }
+    } catch (err) { alert('Could not start a session — check your connection.'); }
+});
+
+refresh();
+// Poll only while the tab is visible AND the view can still change;
+// past-session views and background tabs are dormant.
+setInterval(() => { if (!document.hidden && viewIsLive()) refresh(); }, 3000);
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && viewIsLive()) refresh();
+});
+</script>
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>
