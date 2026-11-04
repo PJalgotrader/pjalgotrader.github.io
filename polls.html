@@ -219,7 +219,7 @@
                                         <rect class="solid" x="18" y="54" width="16" height="24"></rect><rect class="solid" x="48" y="44" width="16" height="24"></rect><rect class="solid" x="78" y="58" width="16" height="26"></rect><rect class="solid" x="108" y="36" width="16" height="28"></rect><rect class="solid" x="138" y="26" width="16" height="24"></rect><rect class="solid" x="168" y="36" width="16" height="22"></rect><rect class="solid" x="192" y="20" width="16" height="22"></rect>
                                     </svg></span>
                                     <span class="desc">The honest read, plus a one-word cloud.</span>
-                                    <span class="stats"><span class="sr hidem"><span data-stat="dqt-nowlabel">Now</span><b data-stat="dqt-now">&ndash;</b></span><span class="sr hidem"><span>Sessions</span><b data-stat="dqt-sessions">&ndash;</b></span><span class="sr"><span>Responses</span><b data-stat="dqt-responses">&ndash;</b></span></span>
+                                    <span class="stats"><span class="sr hidem"><span data-stat="dqt-nowlabel">First run</span><b data-stat="dqt-now">Fall 2027</b></span><span class="sr hidem"><span>Sessions</span><b data-stat="dqt-sessions">&ndash;</b></span><span class="sr"><span>Responses</span><b data-stat="dqt-responses">&ndash;</b></span></span>
                                     <span class="go"><span class="lg">Pick a semester &rarr;</span><span class="sm">Semesters &rarr;</span></span>
                                     <span class="spacer"></span>
                                 </div>
@@ -315,7 +315,9 @@
         const COURSES = {
             dl: { name: 'Deep Learning', code: 'DATA 5610', cls: 'c1', folder: 'dl-feelings', slug: 'dl-feelings-2026', table: 'poll_dl_feelings_2026' },
             df: { name: 'Deep Forecasting', code: 'DATA 5630', cls: 'c2', folder: 'df-feelings', slug: 'df-feelings-2026', table: 'poll_df_feelings_2026' },
-            dqt: { name: 'Deep Quant Trading', code: 'DATA 5650', cls: 'c3', folder: 'dqt-feelings', slug: 'dqt-feelings-2026', table: 'poll_dqt_feelings_2026' }
+            dqt: { name: 'Deep Quant Trading', code: 'DATA 5650', cls: 'c3', folder: 'dqt-feelings', slug: 'dqt-feelings-2026', table: 'poll_dqt_feelings_2026',
+                  // Shown until the course's first real session exists; sessions then take over.
+                  firstRun: { slug: 'fall-2027', label: 'Fall 2027', rank: 20273 } }
         };
         const AI_TOOLS = { slug: 'notebooklm-2026', table: 'poll_notebooklm_2026' };
         const shelves = {};   // course key -> [{ slug, label, rank, sessions: [{ label, n }], responses }], newest term first
@@ -367,7 +369,7 @@
         function termCard(course, term, index) {
             const base = 'polls/' + course.folder + '/';
             const isNow = term.slug === termOf(new Date()).slug;
-            const tag = isNow ? 'Current' : index === 0 ? 'Last taught' : 'Past';
+            const tag = term.upcoming ? 'Upcoming' : isNow ? 'Current' : index === 0 ? 'Last taught' : 'Past';
             const newest = index === 0;
             const max = Math.max(1, ...term.sessions.map(s => s.n));
             const body = term.sessions.length
@@ -389,10 +391,19 @@
                 '<div class="sr"><span>Responses</span><b>' + (known ? term.responses : '&ndash;') + '</b></div>' +
                 '<div class="sr"><span>Status</span><b>' + status + '</b></div>' +
                 '</div>' +
-                (newest
+                (term.upcoming
+                    ? '<span class="go">Opens ' + esc(term.label) + '</span>'
+                    : newest
                     ? '<a class="go" href="' + base + '">Vote &rarr;</a><a class="res" href="' + resultsUrl + '">' + esc(term.label) + ' results</a>'
                     : '<a class="go" href="' + resultsUrl + '">' + esc(term.label) + ' results &rarr;</a>') +
                 '</div></article>';
+        }
+
+        // The semester shown for a course with no real sessions yet.
+        function startingTerm(course) {
+            return course.firstRun
+                ? { ...course.firstRun, upcoming: true, sessions: [], responses: 0 }
+                : { ...termOf(new Date()), sessions: [], responses: 0 };
         }
 
         function ghost(eyebrow, name, text) {
@@ -408,7 +419,7 @@
             const course = COURSES[key];
             const stored = shelves[key] || [];
             const today = termOf(new Date());
-            const terms = stored.length ? stored : [{ ...today, sessions: [], responses: 0 }];
+            const terms = stored.length ? stored : [startingTerm(course)];
             const up = { label: nextTerm(terms[0]) };
             let html = terms.map((t, i) => termCard(course, t, i)).join('');
             html += ghost('Up next', up.label, 'Its card lands here when its first session opens, if the course runs that term.');
@@ -449,8 +460,8 @@
                     const shelf = buildShelf(mine, countBySession(await fetchVotes(course.table)));
                     shelves[key] = shelf;
                     openNow[key] = mine.length > 0 && !mine[mine.length - 1].closed_at;
-                    const latest = shelf[0] || { ...today, sessions: [], responses: 0 };
-                    setStat(key + '-nowlabel', latest.slug === today.slug ? 'Now' : 'Last');
+                    const latest = shelf[0] || startingTerm(course);
+                    setStat(key + '-nowlabel', latest.upcoming ? 'First run' : latest.slug === today.slug ? 'Now' : 'Last');
                     setStat(key + '-now', latest.label);
                     setStat(key + '-sessions', latest.sessions.length);
                     setStat(key + '-responses', latest.responses);

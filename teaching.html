@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
     <title>Teaching &amp; Courses — Pedram Jahangiry</title>
-    <meta name="description" content="Courses in machine learning, deep learning, and time series forecasting at the Huntsman School of Business, Utah State University. 2024 USU Teacher of the Year.">
+    <meta name="description" content="Courses in machine learning, deep learning, forecasting, and quantitative trading at the Huntsman School of Business, Utah State University. 2024 USU Teacher of the Year.">
     <meta name="theme-color" content="#0A1020">
     <link rel="canonical" href="https://pedramjahangiry.com/teaching.html">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -14,6 +14,108 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        .teach-wrap { max-width: 1160px; margin: 0 auto; padding: 80px 2rem 0; }
+        .intro { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 44px; align-items: start; margin-bottom: 14px; }
+        .intro .eyebrow { display: block; margin-bottom: 8px; }
+        .intro h1 { font-family: var(--serif); font-weight: 900; font-size: 36px; line-height: 1.06; letter-spacing: -0.025em; margin: 0 0 12px; color: var(--ink); }
+        .lede { margin: 0; color: var(--ink-soft); font-size: 15.5px; line-height: 1.45; }
+        .teach-wrap .section-label { font-size: 12.5px; letter-spacing: 0.06em; margin: 0 0 12px; padding-bottom: 7px; border-bottom: 1px solid var(--line); }
+        .phil p:not(.section-label) { margin: 0 0 10px; font-size: 16px; line-height: 1.55; color: var(--ink); }
+        .phil p:last-child { margin-bottom: 0; }
+
+        .hand { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 34px; }
+        /* Card faces keep their own colors in both themes, so their ink stays navy. */
+        .pc { --dark: #0A1020; --c: #D0A63C; --tilt: 0deg; position: relative; display: flex; min-width: 0; transform: rotate(var(--tilt)); perspective: 1400px; transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1.2); }
+        .c1 { --c: #D0A63C; --tilt: -0.8deg; }
+        .c2 { --c: #D0603F; --tilt: 0.7deg; }
+        .c3 { --c: #4FB3A5; --tilt: -0.7deg; }
+        .c4 { --c: #E9E4D4; --tilt: -0.8deg; }
+        .c5 { --c: #7DA2E8; --tilt: 0.7deg; }
+        .pc:hover { transform: rotate(0deg) translateY(-8px) scale(1.02); z-index: 2; }
+        .flipper { display: grid; flex: 1; min-width: 0; transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(0.3, 0.9, 0.3, 1); }
+        .flipped .flipper { transform: rotateY(180deg); }
+        .face { grid-area: 1 / 1; display: flex; flex-direction: column; min-width: 0; padding: 9px; border-radius: 14px; background: var(--c); color: var(--dark); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .back { transform: rotateY(180deg); }
+        .inner { display: flex; flex-direction: column; flex: 1; gap: 7px; min-width: 0; padding: 11px 12px; border: 1.5px solid var(--dark); border-radius: 8px; }
+        .top { display: flex; justify-content: space-between; gap: 8px; font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; }
+        .back .top { white-space: normal; }
+        .back .top span:last-child { display: none; }
+        .pc .name { font-family: var(--serif); font-weight: 800; font-size: 21px; line-height: 1.06; letter-spacing: -0.01em; min-height: 67px; margin: 0; color: var(--dark); }
+        .window { display: flex; align-items: center; justify-content: center; height: 60px; padding: 7px; border-radius: 5px; background: var(--dark); color: var(--c); }
+        .window svg { display: block; width: 100%; height: auto; max-height: 46px; }
+        .ln { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+        .thin { fill: none; stroke: currentColor; stroke-width: 1; stroke-linecap: round; opacity: 0.55; }
+        .dash { stroke-dasharray: 3 3; }
+        .solid { fill: currentColor; }
+        .pc .desc { margin: 0; font-size: 13px; line-height: 1.35; font-weight: 500; color: var(--dark); }
+        .pc .backdesc { display: none; }
+        .stats { display: flex; flex-direction: column; margin-top: auto; font-family: var(--mono); font-size: 12px; font-weight: 500; }
+        .sr { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-top: 1px solid rgba(10, 16, 32, 0.45); }
+        .sr b { font-weight: 600; }
+        .go { appearance: none; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; border-radius: 4px; background: var(--dark); color: var(--c); font-family: var(--mono); font-weight: 600; font-size: 13px; text-align: center; }
+        .go:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+        .keyt { margin: 0; font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dark); }
+        .keys { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; flex: 1; }
+        .keys li { font-size: 13px; line-height: 1.3; font-weight: 500; padding: 4px 0; border-top: 1px solid rgba(10, 16, 32, 0.35); color: var(--dark); }
+        .phoneonly { display: none; }
+        .spacer { min-height: 44px; }
+
+        .row4, .row3 { display: grid; gap: 14px; }
+        .row4 { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 34px; }
+        .row3 { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 44px; }
+        .tile { display: flex; flex-direction: column; gap: 7px; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+        .tile .tl { margin: 0; font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: 0.04em; color: var(--green); }
+        .tile .tt { margin: 0; font-family: var(--serif); font-weight: 800; font-size: 20px; line-height: 1.12; color: var(--ink); }
+        .tile .tb { margin: 0; font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
+        .tile ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.35; color: var(--ink-soft); }
+        .tile li strong { color: var(--ink); font-weight: 600; }
+        .tile a.txt { color: var(--green); text-decoration: underline; text-underline-offset: 3px; }
+        .tile.honor { --dark: #0A1020; background: #D0A63C; border-color: #D0A63C; }
+        .tile.honor .tl, .tile.honor .tt, .tile.honor .tb { color: var(--dark); }
+        .tile.honor .tl { font-weight: 600; }
+        .tile.honor .tb { font-weight: 500; }
+        .watch { display: flex; align-items: center; justify-content: center; min-height: 44px; margin-top: auto; border-radius: 4px; background: var(--dark); color: #D0A63C; font-family: var(--mono); font-weight: 600; font-size: 13px; text-decoration: none; }
+        .watch:focus-visible { outline: 3px solid var(--dark); outline-offset: 3px; }
+
+        @keyframes turn { from { transform: rotateY(90deg); } to { transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .pc, .flipper { transition: none; } .pc.flipped .back { animation: none; } }
+        @media (max-width: 1180px) { .hand { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media (max-width: 1000px) {
+            .intro { grid-template-columns: 1fr; gap: 18px; }
+            .hand, .row4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .hand .pc:last-child { grid-column: 1 / -1; }
+        }
+        @media (max-width: 640px) {
+            .teach-wrap { padding: 78px 16px 0; }
+            .intro h1 { font-size: 32px; }
+            .lede { font-size: 15px; }
+            .phil p:not(.section-label) { font-size: 15px; line-height: 1.5; }
+            .teach-wrap .section-label { font-size: 11.5px; margin-bottom: 9px; padding-bottom: 5px; }
+            .hand { gap: 8px; margin-bottom: 24px; align-items: start; }
+            /* One side at a time, so the longest key-area list can't stretch every card; a turn stands in for the 3D flip. */
+            .flipper, .flipped .flipper, .back { transform: none; transition: none; transform-style: flat; }
+            .pc:not(.flipped) .back, .pc.flipped .front { display: none; }
+            .pc.flipped .back { animation: turn 0.3s ease-out; }
+            .pc { transform: none; }
+            .face { padding: 5px; border-radius: 10px; }
+            .inner { padding: 7px; gap: 6px; border-radius: 6px; }
+            .top { font-size: 11px; }
+            .tno { display: none; }
+            .pc .name { font-size: 17px; min-height: 54px; }
+            .window { height: 66px; padding: 6px; }
+            .window svg { max-height: 52px; }
+            .front .desc { display: none; }
+            .pc .backdesc { display: block; font-size: 12.5px; }
+            .stats { display: none; }
+            .keys li { font-size: 12.5px; padding: 4px 0; }
+            .go { font-size: 12px; }
+            .phoneonly { display: flex; }
+            .spacer { display: none; }
+            .row4, .row3 { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 10px; margin: 0 -16px 24px; padding: 0 16px 6px; }
+            .tile { flex: 0 0 82%; scroll-snap-align: center; padding: 14px; }
+        }
+    </style>
 </head>
 <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -60,18 +162,15 @@
     </nav>
 
     <main id="main">
-        <section class="page-header">
-            <div class="container">
-                <p class="eyebrow">Teaching &middot; USU Teacher of the Year &#9650; 2024</p>
-                <h1>Courses that bridge theory and production.</h1>
-                <p>Machine learning, deep learning, and forecasting at the Jon&nbsp;M. Huntsman School of Business &mdash; taught the way the industry actually uses them.</p>
-            </div>
-        </section>
-
-        <section class="content-section">
-            <div class="container about-grid">
-                <p class="section-label">&sect; 01 &mdash; Philosophy</p>
-                <div class="about-text">
+        <div class="teach-wrap">
+            <div class="intro">
+                <header>
+                    <p class="eyebrow">Teaching &middot; USU Teacher of the Year &#9650; 2024</p>
+                    <h1>Courses that bridge theory and production.</h1>
+                    <p class="lede">Machine learning, deep learning, and forecasting at the Jon&nbsp;M. Huntsman School of Business &mdash; taught the way the industry actually uses them.</p>
+                </header>
+                <section class="phil" aria-label="Philosophy">
+                    <p class="section-label">&sect; 01 &mdash; Philosophy</p>
                     <p>
                         My mission is to create equitable educational opportunities and nurture potential.
                         Central to my approach is shifting focus from the perceived quality of students to
@@ -83,94 +182,121 @@
                         makes each one unique. The job isn't just to impart knowledge; it's to discover,
                         nurture, and help each student shine in their own way.
                     </p>
-                </div>
+                </section>
             </div>
-        </section>
 
-        <section class="content-section alt">
-            <div class="container">
+            <section aria-label="Courses taught">
                 <p class="section-label">&sect; 02 &mdash; Courses taught</p>
-                <div class="content-grid">
-                    <div class="content-card">
-                        <p class="card-label">DATA 5630 &middot; developed from scratch &middot; Spring 2023</p>
-                        <h3>Deep Forecasting &mdash; Advanced Time Series</h3>
-                        <p>
-                            Classical time series models meet modern machine learning and deep learning.
-                            Launched as a special topic; its success made it a permanent part of the curriculum.
-                        </p>
-                        <p class="card-list-title">Key areas</p>
-                        <ul>
-                            <li>Time series fundamentals and stationarity</li>
-                            <li>Exponential smoothing and ARIMA/SARIMA</li>
-                            <li>Machine learning for time series</li>
-                            <li>Deep sequence models (RNN/LSTM)</li>
-                            <li>Prophet, NeuralProphet, and AutoML tools</li>
-                            <li>Production-ready deployment</li>
-                        </ul>
-                    </div>
-
-                    <div class="content-card">
-                        <p class="card-label">DATA 5600 &middot; DAIS department &middot; ongoing</p>
-                        <h3>Machine Learning</h3>
-                        <p>
-                            The foundational course of the Data Analytics track. Real-time coding sessions
-                            on Google Colab so concepts get applied &mdash; and tested &mdash; immediately.
-                        </p>
-                        <p class="card-list-title">Key areas</p>
-                        <ul>
-                            <li>Supervised and unsupervised learning</li>
-                            <li>Model evaluation and validation</li>
-                            <li>Feature engineering and selection</li>
-                            <li>Practical implementation, end to end</li>
-                        </ul>
-                    </div>
-
-                    <div class="content-card">
-                        <p class="card-label">DATA 5610 &middot; DAIS department &middot; ongoing</p>
-                        <h3>Deep Learning</h3>
-                        <p>
-                            From fundamentals to the frontier: modern architectures for vision and
-                            sequence modeling, taught with working code.
-                        </p>
-                        <p class="card-list-title">Key areas</p>
-                        <ul>
-                            <li>Deep neural networks (NN, DNN)</li>
-                            <li>Convolutional networks (CNN, R-CNN, YOLO, FCN)</li>
-                            <li>Recurrent networks (RNN, LSTM)</li>
-                            <li>Transformers and attention</li>
-                        </ul>
-                    </div>
-
-                    <div class="content-card">
-                        <p class="card-label">USU 1010 &middot; first-year experience &middot; Fall 2023</p>
-                        <h3>University Connections</h3>
-                        <p>
-                            Helping freshmen find their footing in college. Teaching this course keeps me
-                            close to the challenges new students actually face &mdash; and it shapes how I
-                            teach everything else.
-                        </p>
-                    </div>
+                <div class="hand">
+                    <article class="pc c1">
+                        <div class="flipper">
+                            <div class="face front"><div class="inner">
+                                <div class="top"><span class="tno">No. 01</span><span>DATA 5600</span></div>
+                                <h2 class="name">Machine Learning</h2>
+                                <div class="window"><svg viewBox="0 0 220 110" aria-hidden="true"><path class="ln" d="M10 96C60 92 92 74 118 52S176 16 212 12"></path><circle class="solid" cx="28" cy="82" r="4.5"></circle><circle class="solid" cx="52" cy="96" r="4.5"></circle><circle class="solid" cx="74" cy="70" r="4.5"></circle><circle class="solid" cx="98" cy="78" r="4.5"></circle><circle class="solid" cx="116" cy="42" r="4.5"></circle><circle class="solid" cx="138" cy="56" r="4.5"></circle><circle class="solid" cx="160" cy="22" r="4.5"></circle><circle class="solid" cx="186" cy="32" r="4.5"></circle><circle class="solid" cx="204" cy="8" r="4.5"></circle></svg></div>
+                                <p class="desc">The foundational course of the Data Analytics track. Real-time coding sessions on Google Colab so concepts get applied &mdash; and tested &mdash; immediately.</p>
+                                <div class="stats"><div class="sr"><span>Home</span><b>DAIS department</b></div><div class="sr"><span>Status</span><b>Ongoing</b></div></div>
+                                <button class="go" type="button" data-flip aria-expanded="false">Key areas &rarr;</button>
+                            </div></div>
+                            <div class="face back" inert><div class="inner">
+                                <div class="top"><span>Machine Learning</span><span>DATA 5600</span></div>
+                                <p class="desc backdesc">The foundational course of the Data Analytics track. Real-time coding sessions on Google Colab so concepts get applied &mdash; and tested &mdash; immediately.</p>
+                                <p class="keyt">Key areas</p>
+                                <ul class="keys"><li>Supervised and unsupervised learning</li><li>Model evaluation and validation</li><li>Feature engineering and selection</li><li>Practical implementation, end to end</li></ul>
+                                <button class="go" type="button" data-flip>&larr; Back</button>
+                            </div></div>
+                        </div>
+                    </article>
+                    <article class="pc c2">
+                        <div class="flipper">
+                            <div class="face front"><div class="inner">
+                                <div class="top"><span class="tno">No. 02</span><span>DATA 5610</span></div>
+                                <h2 class="name">Deep Learning</h2>
+                                <div class="window"><svg viewBox="0 0 220 110" aria-hidden="true"><path class="thin" d="M30 25L110 15M30 25L110 55M30 25L110 95M30 55L110 15M30 55L110 55M30 55L110 95M30 85L110 15M30 85L110 55M30 85L110 95M110 15L190 40M110 55L190 40M110 95L190 40M110 15L190 70M110 55L190 70M110 95L190 70"></path><circle class="solid" cx="30" cy="25" r="7"></circle><circle class="solid" cx="30" cy="55" r="7"></circle><circle class="solid" cx="30" cy="85" r="7"></circle><circle class="solid" cx="110" cy="15" r="7"></circle><circle class="solid" cx="110" cy="55" r="7"></circle><circle class="solid" cx="110" cy="95" r="7"></circle><circle class="solid" cx="190" cy="40" r="7"></circle><circle class="solid" cx="190" cy="70" r="7"></circle></svg></div>
+                                <p class="desc">From fundamentals to the frontier: modern architectures for vision and sequence modeling, taught with working code.</p>
+                                <div class="stats"><div class="sr"><span>Home</span><b>DAIS department</b></div><div class="sr"><span>Status</span><b>Ongoing</b></div></div>
+                                <button class="go" type="button" data-flip aria-expanded="false">Key areas &rarr;</button>
+                            </div></div>
+                            <div class="face back" inert><div class="inner">
+                                <div class="top"><span>Deep Learning</span><span>DATA 5610</span></div>
+                                <p class="desc backdesc">From fundamentals to the frontier: modern architectures for vision and sequence modeling, taught with working code.</p>
+                                <p class="keyt">Key areas</p>
+                                <ul class="keys"><li>Deep neural networks (NN, DNN)</li><li>Convolutional networks (CNN, R-CNN, YOLO, FCN)</li><li>Recurrent networks (RNN, LSTM)</li><li>Transformers and attention</li></ul>
+                                <button class="go" type="button" data-flip>&larr; Back</button>
+                            </div></div>
+                        </div>
+                    </article>
+                    <article class="pc c3">
+                        <div class="flipper">
+                            <div class="face front"><div class="inner">
+                                <div class="top"><span class="tno">No. 03</span><span>DATA 5630</span></div>
+                                <h2 class="name">Deep Forecasting</h2>
+                                <div class="window"><svg viewBox="0 0 220 110" aria-hidden="true"><path class="thin dash" d="M128 52L214 12M128 52L214 88"></path><path class="ln" d="M6 82l14-10 12 8 14-16 12 7 14-15 12 6 14-18 12 7 18-9"></path><path class="ln dash" d="M128 52l14-7 12 6 14-11 12 5 14-9 20-4"></path><circle class="solid" cx="128" cy="52" r="4.5"></circle></svg></div>
+                                <p class="desc">Classical time series models meet modern machine learning and deep learning. Launched as a special topic; its success made it a permanent part of the curriculum.</p>
+                                <div class="stats"><div class="sr"><span>Origin</span><b>From scratch</b></div><div class="sr"><span>First run</span><b>Spring 2023</b></div></div>
+                                <button class="go" type="button" data-flip aria-expanded="false">Key areas &rarr;</button>
+                            </div></div>
+                            <div class="face back" inert><div class="inner">
+                                <div class="top"><span>Deep Forecasting &mdash; Advanced Time Series</span><span>DATA 5630</span></div>
+                                <p class="desc backdesc">Classical time series models meet modern machine learning and deep learning. Launched as a special topic; its success made it a permanent part of the curriculum.</p>
+                                <p class="keyt">Key areas</p>
+                                <ul class="keys"><li>Time series fundamentals and stationarity</li><li>Exponential smoothing and ARIMA/SARIMA</li><li>Machine learning for time series</li><li>Deep sequence models (RNN/LSTM)</li><li>Prophet, NeuralProphet, and AutoML tools</li><li>Production-ready deployment</li></ul>
+                                <button class="go" type="button" data-flip>&larr; Back</button>
+                            </div></div>
+                        </div>
+                    </article>
+                    <article class="pc c5">
+                        <div class="flipper">
+                            <div class="face front"><div class="inner">
+                                <div class="top"><span class="tno">No. 04</span><span>DATA 5650</span></div>
+                                <h2 class="name">Deep Quantitative Trading</h2>
+                                <div class="window"><svg viewBox="0 0 220 110" aria-hidden="true"><path class="ln" d="M26 44V88M56 36V78M86 50V94M116 28V72M146 18V60M176 30V66M200 14V50"></path><rect class="solid" x="18" y="54" width="16" height="24"></rect><rect class="solid" x="48" y="44" width="16" height="24"></rect><rect class="solid" x="78" y="58" width="16" height="26"></rect><rect class="solid" x="108" y="36" width="16" height="28"></rect><rect class="solid" x="138" y="26" width="16" height="24"></rect><rect class="solid" x="168" y="36" width="16" height="22"></rect><rect class="solid" x="192" y="20" width="16" height="22"></rect></svg></div>
+                                <p class="desc">Building trading strategies with machine learning and AI, without fooling yourself. One 100-ETF momentum case study runs from first signal to a paper-trading bot at Interactive Brokers.</p>
+                                <div class="stats"><div class="sr"><span>First run</span><b>Fall 2027</b></div><div class="sr"><span>Format</span><b>Project-based</b></div></div>
+                                <button class="go" type="button" data-flip aria-expanded="false">Key areas &rarr;</button>
+                            </div></div>
+                            <div class="face back" inert><div class="inner">
+                                <div class="top"><span>Deep Quantitative Trading</span><span>DATA 5650</span></div>
+                                <p class="desc backdesc">Building trading strategies with machine learning and AI, without fooling yourself. One 100-ETF momentum case study runs from first signal to a paper-trading bot at Interactive Brokers.</p>
+                                <p class="keyt">Key areas</p>
+                                <ul class="keys"><li>Data discipline, costs, and the feasibility gate</li><li>Momentum features, labels, and the IC</li><li>Leak-proof pipelines and boosting</li><li>Deep models vs. gradient boosting</li><li>Backtesting as falsification, sizing, and risk</li><li>Live on an Interactive Brokers paper account</li></ul>
+                                <button class="go" type="button" data-flip>&larr; Back</button>
+                            </div></div>
+                        </div>
+                    </article>
+                    <article class="pc c4">
+                        <div class="flipper">
+                            <div class="face front"><div class="inner">
+                                <div class="top"><span class="tno">No. 05</span><span>USU 1010</span></div>
+                                <h2 class="name">University Connections</h2>
+                                <div class="window"><svg viewBox="0 0 220 110" aria-hidden="true"><circle class="ln" cx="110" cy="55" r="44"></circle><circle class="thin" cx="110" cy="55" r="34"></circle><path class="thin" d="M110 11v9M110 90v9M66 55h9M145 55h9"></path><path class="solid" d="M132 31l-14 31-16-16z"></path><path class="ln" d="M88 79l14-33 16 16z"></path></svg></div>
+                                <p class="desc">Helping freshmen find their footing in college. Teaching this course keeps me close to the challenges new students actually face &mdash; and it shapes how I teach everything else.</p>
+                                <div class="stats"><div class="sr"><span>Type</span><b>First-year course</b></div><div class="sr"><span>Taught</span><b>Fall 2023</b></div></div>
+                                <span class="spacer"></span>
+                                <button class="go phoneonly" type="button" data-flip aria-expanded="false">About &rarr;</button>
+                            </div></div>
+                            <div class="face back" inert><div class="inner">
+                                <div class="top"><span>University Connections</span><span>USU 1010</span></div>
+                                <p class="desc backdesc">Helping freshmen find their footing in college. Teaching this course keeps me close to the challenges new students actually face &mdash; and it shapes how I teach everything else.</p>
+                                <button class="go phoneonly" type="button" data-flip style="margin-top: auto">&larr; Back</button>
+                            </div></div>
+                        </div>
+                    </article>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section class="content-section">
-            <div class="container">
+            <section aria-label="Teaching record">
                 <p class="section-label">&sect; 03 &mdash; Teaching record</p>
-                <div class="content-grid cols-2">
-                    <div class="content-card">
-                        <p class="card-label">Highest honor &#9650; 2024</p>
-                        <h3>Teacher of the Year, twice over</h3>
-                        <p>
-                            The USU Eldon&nbsp;J. Gardner Teacher of the Year &mdash; the university's top
-                            teaching award &mdash; and the Huntsman School Teacher of the Year, both in 2024.
-                        </p>
-                        <p><a href="https://www.youtube.com/watch?v=uapgcFHpl8Q" target="_blank" rel="noopener noreferrer">Watch the award ceremony &#8599;</a></p>
+                <div class="row4">
+                    <div class="tile honor">
+                        <p class="tl">Highest honor &#9650; 2024</p>
+                        <h3 class="tt">Teacher of the Year, twice over</h3>
+                        <p class="tb">The USU Eldon&nbsp;J. Gardner Teacher of the Year &mdash; the university's top teaching award &mdash; and the Huntsman School Teacher of the Year, both in 2024.</p>
+                        <a class="watch" href="https://www.youtube.com/watch?v=uapgcFHpl8Q" target="_blank" rel="noopener noreferrer">Watch the award ceremony &#8599;</a>
                     </div>
-
-                    <div class="content-card">
-                        <p class="card-label">Awards &amp; recognition</p>
-                        <h3>The running tally</h3>
+                    <div class="tile">
+                        <p class="tl">Awards &amp; recognition</p>
+                        <h3 class="tt">The running tally</h3>
                         <ul>
                             <li><strong>2024</strong> &mdash; Eldon J. Gardner Teacher of the Year (USU)</li>
                             <li><strong>2023</strong> &mdash; Teaching Excellence Scholar</li>
@@ -179,22 +305,15 @@
                             <li><strong>Ongoing</strong> &mdash; 4.8/5.0 average "Excellent Teacher" rating</li>
                         </ul>
                     </div>
-
-                    <div class="content-card">
-                        <p class="card-label">Mentorship</p>
-                        <h3>Beyond the classroom</h3>
-                        <p>
-                            Through the <a href="https://huntsman.usu.edu/asc/" target="_blank" rel="noopener noreferrer">Analytics Solutions Center</a> and
-                            course projects, I mentor students on real problems &mdash; industry project
-                            guidance, research methodology, career development in data science, and
-                            professional networking.
-                        </p>
+                    <div class="tile">
+                        <p class="tl">Mentorship</p>
+                        <h3 class="tt">Beyond the classroom</h3>
+                        <p class="tb">Through the <a class="txt" href="https://huntsman.usu.edu/asc/" target="_blank" rel="noopener noreferrer">Analytics Solutions Center</a> and course projects, I mentor students on real problems &mdash; industry project guidance, research methodology, career development in data science, and professional networking.</p>
                     </div>
-
-                    <div class="content-card">
-                        <p class="card-label">Student outcomes</p>
-                        <h3>Where they land</h3>
-                        <p>Recent students have gone on to:</p>
+                    <div class="tile">
+                        <p class="tl">Student outcomes</p>
+                        <h3 class="tt">Where they land</h3>
+                        <p class="tb">Recent students have gone on to:</p>
                         <ul>
                             <li>BlackRock NYC &mdash; the first USU placement</li>
                             <li>Capital One, American Express, Wells Fargo</li>
@@ -203,16 +322,14 @@
                         </ul>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section class="content-section alt">
-            <div class="container">
+            <section aria-label="Innovations and reach">
                 <p class="section-label">&sect; 04 &mdash; Innovations &amp; reach</p>
-                <div class="content-grid cols-3">
-                    <div class="content-card">
-                        <p class="card-label">AI-enhanced learning</p>
-                        <h3>Teaching with the tools I teach</h3>
+                <div class="row3">
+                    <div class="tile">
+                        <p class="tl">AI-enhanced learning</p>
+                        <h3 class="tt">Teaching with the tools I teach</h3>
                         <ul>
                             <li>Virtual teaching assistant built on RAG</li>
                             <li>NLP analysis of student feedback</li>
@@ -220,28 +337,28 @@
                             <li>Sentiment analysis for student support</li>
                         </ul>
                     </div>
-                    <div class="content-card">
-                        <p class="card-label">Global reach</p>
-                        <h3>Open education at scale</h3>
+                    <div class="tile">
+                        <p class="tl">Global reach</p>
+                        <h3 class="tt">Open education at scale</h3>
                         <ul>
-                            <li>YouTube channel with 15,000+ subscribers</li>
+                            <li><a class="txt" href="https://www.youtube.com/@pedramjahangiry" target="_blank" rel="noopener noreferrer">YouTube channel</a> with 20,000+ subscribers</li>
                             <li>Open-access course materials on GitHub</li>
                             <li>Interactive tutorials and demonstrations</li>
                         </ul>
                     </div>
-                    <div class="content-card">
-                        <p class="card-label">Industry partnerships</p>
-                        <h3>Real stakes, real partners</h3>
+                    <div class="tile">
+                        <p class="tl">Industry partnerships</p>
+                        <h3 class="tt">Real stakes, real partners</h3>
                         <ul>
-                            <li><a href="https://huntsman.usu.edu/asc/" target="_blank" rel="noopener noreferrer">Analytics Solutions Center</a> mentorship</li>
+                            <li><a class="txt" href="https://huntsman.usu.edu/asc/" target="_blank" rel="noopener noreferrer">Analytics Solutions Center</a> mentorship</li>
                             <li>Real-world projects (Meta and others)</li>
                             <li>CFA Research Challenge &mdash; 3 straight state wins</li>
                             <li>Alumni Slack network, 200+ members</li>
                         </ul>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
     </main>
 
     <footer>
@@ -259,6 +376,21 @@
     </footer>
 
     <script src="script.js?v=3"></script>
+    <script>
+    // Course cards flip to show their key areas; the hidden face stays out of the tab order.
+    document.querySelectorAll('[data-flip]').forEach(button => {
+        button.addEventListener('click', () => {
+            const card = button.closest('.pc');
+            const flipped = card.classList.toggle('flipped');
+            const front = card.querySelector('.front');
+            const back = card.querySelector('.back');
+            front.inert = flipped;
+            back.inert = !flipped;
+            front.querySelector('[data-flip]').setAttribute('aria-expanded', String(flipped));
+            (flipped ? back : front).querySelector('[data-flip]').focus({ preventScroll: true });
+        });
+    });
+    </script>
 <!-- Cloudflare Web Analytics -->
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
 <!-- End Cloudflare Web Analytics -->
