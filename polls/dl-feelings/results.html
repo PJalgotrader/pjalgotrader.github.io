@@ -135,7 +135,7 @@
 <body>
     <header>
         <div>
-            <p class="kicker">DATA 5610 &middot; Deep Learning &middot; Live Poll</p>
+            <p class="kicker">DATA 5610 &middot; Deep Learning &middot; <span id="termTag">Live Poll</span></p>
             <h1>Module pulse</h1>
         </div>
         <div class="count"><div class="n" id="total">&ndash;</div><div class="l" id="totalLabel">responses</div></div>
@@ -175,7 +175,7 @@
 
     <footer>
         <div id="liveState"><span class="dot"></span>Updates automatically</div>
-        <div><a href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com</a> &middot; <a href="#" id="resetBtn">new session</a> &middot; <a href="#" id="closeBtn" hidden>close session</a> &middot; <a href="#" id="deleteBtn" hidden>delete session</a></div>
+        <div><a href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com</a> &middot; <a href="../../polls.html#dl">semesters</a> &middot; <a href="#" id="resetBtn">new session</a> &middot; <a href="#" id="closeBtn" hidden>close session</a> &middot; <a href="#" id="deleteBtn" hidden>delete session</a></div>
     </footer>
 
     <dialog id="pinDlg">
@@ -190,6 +190,7 @@
         </form>
     </dialog>
 
+<script src="../terms.js"></script>
 <script>
 // ─── poll config: copy this folder + edit this block for a new poll ───
 const POLL = {
@@ -233,7 +234,11 @@ const HOT = new Set(POLL.hot);
 // view: 'lobby' (default — nothing shown until a session opens or a chip is
 // clicked, so the room never sees earlier results before class), 'all', a
 // session number, or 'live' (sentinel → resolves to the current session).
-let view = new URLSearchParams(location.search).has('live') ? 'live' : 'lobby';
+const urlParams = new URLSearchParams(location.search);
+// ?term=fall-2026 shows one semester and ?term=all shows every semester. With no
+// parameter the page follows the newest session's semester, so it rolls over by itself.
+const urlTerm = urlParams.get('term');
+let view = urlParams.has('live') ? 'live' : urlTerm === 'all' ? 'all' : 'lobby';
 let segSig = null;   // signature of the rendered session buttons, to avoid rebuilding mid-click
 let sessions = [];   // [{session, label, closed_at}] — includes the hidden anchor
 let votes = [];      // [{session, question, choice, voter_id}]
@@ -241,7 +246,14 @@ let refreshCount = 0;     // numbers each refresh in the order it started
 let oldestUsable = 0;     // responses from refreshes older than this are stale and get dropped
 
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
-function realSessions() { return sessions.filter(s => s.label !== POLL.anchorLabel); }
+function newestTerm() { return termOf(sessions[sessions.length - 1].started_at).slug; }
+function activeTerm() { return urlTerm || newestTerm(); }
+// Only the newest session can take votes, so an older semester can never change.
+function termIsPast() { return !!urlTerm && urlTerm !== 'all' && urlTerm !== newestTerm(); }
+function realSessions() {
+    const term = activeTerm();
+    return sessions.filter(s => s.label !== POLL.anchorLabel && (term === 'all' || termOf(s.started_at).slug === term));
+}
 
 // Supabase caps each request (1000 rows by default), so page through until an
 // empty page comes back.
@@ -263,7 +275,7 @@ async function refresh() {
     try {
         const [sRes, vRows] = await Promise.all([
             fetch(POLL.supabaseUrl + '/rest/v1/poll_sessions?poll_slug=eq.' + POLL.slug +
-                  '&select=session,label,closed_at&order=session.asc', { headers: HEADERS }),
+                  '&select=session,label,started_at,closed_at&order=session.asc', { headers: HEADERS }),
             fetchVotes()
         ]);
         if (!sRes.ok) return;
@@ -287,15 +299,26 @@ function render() {
     if (!sessions.length) return;
     const current = sessions[sessions.length - 1];
     const picker = realSessions();
+    const pastTerm = termIsPast();
+    const term = activeTerm();
+    const termName = term === 'all' ? 'All semesters' : termLabel(term);
+    document.getElementById('termTag').textContent = termName;
+    document.getElementById('resetBtn').hidden = pastTerm;
+
+    // A session just opened in a newer semester than this page is filtered to.
+    if (view === 'live' && pastTerm) { location.replace(location.pathname + '?live'); return; }
 
     // Lobby resolves: to the live session the moment one is open, otherwise it
     // stays a blank pre-class state (no earlier results on the projector).
-    if (view === 'lobby' && pollIsOpen()) view = current.session;
+    if (view === 'lobby' && pollIsOpen() && !pastTerm) view = current.session;
     if (view === 'live') view = current.session;
     if (view !== 'all' && view !== 'lobby' && !sessions.some(s => s.session === view)) view = 'lobby';
+    // A finished semester is a record, not a pre-class projector, so it opens on its overview.
+    if (view === 'lobby' && pastTerm) view = 'all';
 
     const lobby = view === 'lobby';
-    const rows = lobby ? [] : (view === 'all' ? votes : votes.filter(v => v.session === view));
+    const inTerm = new Set(picker.map(s => s.session));
+    const rows = lobby ? [] : (view === 'all' ? votes.filter(v => inTerm.has(v.session)) : votes.filter(v => v.session === view));
     const voters = new Set(rows.map(r => r.voter_id + '|' + r.session));
     const n = voters.size;
     const viewing = (lobby || view === 'all') ? null : sessions.find(s => s.session === view);
@@ -319,7 +342,7 @@ function render() {
             '<button data-view="all"></button>';
     }
     seg.querySelector('[data-view="all"]').textContent =
-        'All modules · ' + picker.length + ' session' + (picker.length !== 1 ? 's' : '');
+        (term === 'all' ? 'All semesters · ' : 'All modules · ') + picker.length + ' session' + (picker.length !== 1 ? 's' : '');
     seg.querySelectorAll('button').forEach(b => {
         const v = b.dataset.view === 'all' ? 'all' : Number(b.dataset.view);
         b.classList.toggle('on', v === view);
@@ -336,6 +359,8 @@ function render() {
 
     document.getElementById('liveState').innerHTML = lobby
         ? 'Poll closed &mdash; dormant until a new module opens'
+        : pastTerm
+            ? esc(termName) + ' is finished &mdash; results are frozen'
         : viewIsLive()
             ? '<span class="dot"></span>Updates automatically'
             : (view !== 'all' && view !== current.session)
@@ -552,6 +577,7 @@ function pollIsOpen() {
 // opening (possibly from another device) and wake the projector.
 function viewIsLive() {
     if (!sessions.length) return true;
+    if (termIsPast()) return false;
     if (view === 'lobby') return true;
     if (!pollIsOpen()) return false;
     if (view === 'all' || view === 'live') return true;
