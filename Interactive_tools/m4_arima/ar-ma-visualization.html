@@ -32,7 +32,7 @@
 
         h1 {
             text-align: center;
-            color: #667eea;
+            color: #2C5AA0;
             margin-bottom: 10px;
             font-size: 2.5em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
@@ -78,11 +78,11 @@
 
         .btn-website {
             background: linear-gradient(135deg, #0A1020 0%, #1B2A4A 100%);
-            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 2px 10px rgba(44, 90, 160, 0.3);
         }
 
         .btn-website:hover {
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 4px 15px rgba(44, 90, 160, 0.5);
         }
 
         .btn-youtube {
@@ -125,7 +125,7 @@
         .tab-button.active {
             background: linear-gradient(135deg, #0A1020 0%, #1B2A4A 100%);
             color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 15px rgba(44, 90, 160, 0.4);
         }
 
         .controls {
@@ -156,7 +156,7 @@
             width: 100%;
             height: 6px;
             border-radius: 3px;
-            background: linear-gradient(to right, #667eea, #764ba2);
+            background: linear-gradient(to right, #0A1020, #1B2A4A);
             outline: none;
             cursor: pointer;
         }
@@ -179,7 +179,7 @@
         .value-display {
             text-align: center;
             font-weight: bold;
-            color: #667eea;
+            color: #2C5AA0;
             margin-top: 5px;
         }
 
@@ -211,17 +211,17 @@
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(44, 90, 160, 0.4);
         }
 
         .btn-danger {
-            background: linear-gradient(135deg, #FC466B 0%, #3F5EFB 100%);
+            background: linear-gradient(135deg, #B0492C 0%, #D0603F 100%);
             color: white;
         }
 
         .btn-danger:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(252, 70, 107, 0.4);
+            box-shadow: 0 6px 20px rgba(208, 96, 63, 0.4);
         }
 
         .chart-container {
@@ -240,7 +240,7 @@
 
         .chart-title {
             font-weight: bold;
-            color: #667eea;
+            color: #2C5AA0;
             margin-bottom: 10px;
             text-align: center;
             font-size: 1.2em;
@@ -278,7 +278,7 @@
             font-family: 'Courier New', monospace;
             font-size: 1.1em;
             margin: 10px 0;
-            color: #667eea;
+            color: #2C5AA0;
             font-weight: bold;
         }
 
@@ -660,7 +660,7 @@
             }
 
             // Draw actual series
-            ctx.strokeStyle = '#667eea';
+            ctx.strokeStyle = '#2C5AA0';
             ctx.lineWidth = 3;
             ctx.beginPath();
             seriesData.forEach((value, i) => {
@@ -677,7 +677,7 @@
             // Draw last point
             const lastX = scaleX(seriesData.length - 1);
             const lastY = scaleY(seriesData[seriesData.length - 1]);
-            ctx.fillStyle = '#667eea';
+            ctx.fillStyle = '#2C5AA0';
             ctx.beginPath();
             ctx.arc(lastX, lastY, 6, 0, Math.PI * 2);
             ctx.fill();
@@ -719,7 +719,7 @@
 
             // Legend
             ctx.textAlign = 'left';
-            ctx.fillStyle = '#667eea';
+            ctx.fillStyle = '#2C5AA0';
             ctx.fillText('● Actual Series', padding + 20, padding - 20);
             ctx.fillStyle = '#f5576c';
             ctx.fillText('● Forecasts', padding + 150, padding - 20);

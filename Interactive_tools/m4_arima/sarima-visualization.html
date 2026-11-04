@@ -33,7 +33,7 @@
 
         h1 {
             text-align: center;
-            color: #667eea;
+            color: #2C5AA0;
             margin-bottom: 10px;
             font-size: 2.5em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
@@ -79,11 +79,11 @@
 
         .btn-website {
             background: linear-gradient(135deg, #0A1020 0%, #1B2A4A 100%);
-            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 2px 10px rgba(44, 90, 160, 0.3);
         }
 
         .btn-website:hover {
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 4px 15px rgba(44, 90, 160, 0.5);
         }
 
         .btn-youtube {
@@ -131,7 +131,7 @@
             width: 100%;
             height: 6px;
             border-radius: 3px;
-            background: linear-gradient(to right, #667eea, #764ba2);
+            background: linear-gradient(to right, #0A1020, #1B2A4A);
             outline: none;
             cursor: pointer;
         }
@@ -154,7 +154,7 @@
         .value-display {
             text-align: center;
             font-weight: bold;
-            color: #667eea;
+            color: #2C5AA0;
             margin-top: 5px;
             font-size: 1.1em;
         }
@@ -187,11 +187,11 @@
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(44, 90, 160, 0.4);
         }
 
         .btn-secondary {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #475569 0%, #64748B 100%);
             color: white;
         }
 
@@ -235,7 +235,7 @@
             font-family: 'Courier New', monospace;
             font-size: 1.1em;
             margin: 15px 0;
-            color: #667eea;
+            color: #2C5AA0;
             font-weight: bold;
         }
 
@@ -257,11 +257,11 @@
             background: white;
             padding: 15px;
             border-radius: 10px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #2C5AA0;
         }
 
         .param-box h4 {
-            color: #667eea;
+            color: #2C5AA0;
             margin-bottom: 10px;
         }
 
@@ -422,7 +422,7 @@
         </div>
         <div class="bf-panel" id="bestFitPanel" style="display: none;"></div>
 
-        <div id="model-info" style="text-align: center; margin-bottom: 8px; font-size: 1.2em; font-weight: bold; color: #667eea;">
+        <div id="model-info" style="text-align: center; margin-bottom: 8px; font-size: 1.2em; font-weight: bold; color: #2C5AA0;">
             Current Model: SARIMA(1,1,0)(0,1,0)₁₂
         </div>
         <p id="fit-info" style="text-align: center; margin: 0 auto 20px auto; max-width: 760px; color: #555; line-height: 1.5;"></p>
@@ -920,7 +920,7 @@
                 y: airlineData,
                 mode: 'lines+markers',
                 name: 'Actual Passengers',
-                line: {color: '#667eea', width: 3},
+                line: {color: '#2C5AA0', width: 3},
                 marker: {size: 4}
             };
             // Plotly never wraps titles: on narrow screens break after the colon (and on the smallest, before "Forecast") and use a smaller font
@@ -929,7 +929,7 @@
             const layout = {
                 title: {
                     text: `Airline Passengers:${narrow ? '<br>' : ' '}SARIMA(${p},${d},${q})(${showP},${showD},${showQ})${mLabel}${tiny ? '<br>' : ' '}Forecast`,
-                    font: {size: narrow ? 15 : 20, color: '#667eea'}
+                    font: {size: narrow ? 15 : 20, color: '#2C5AA0'}
                 },
                 xaxis: { title: 'Date', gridcolor: '#e0e0e0' },
                 yaxis: { title: 'Number of Passengers (thousands)', gridcolor: '#e0e0e0' },

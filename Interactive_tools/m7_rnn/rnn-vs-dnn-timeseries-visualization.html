@@ -67,7 +67,7 @@
         }
 
         .btn-website {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #D0A63C, #E8C468); color: #0A1020 !important;
         }
 
         .btn-youtube {
@@ -92,11 +92,11 @@
             padding: 20px;
             background: #f8f9fa;
             border-radius: 10px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #2C5AA0;
         }
 
         .intro h2 {
-            color: #667eea;
+            color: #2C5AA0;
             margin-bottom: 10px;
         }
 
@@ -152,13 +152,13 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #667eea;
+            background: #2C5AA0;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         input[type="range"]::-webkit-slider-thumb:hover {
-            background: #764ba2;
+            background: #1B2A4A;
             transform: scale(1.2);
         }
 
@@ -166,7 +166,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #667eea;
+            background: #2C5AA0;
             cursor: pointer;
             border: none;
         }
@@ -175,7 +175,7 @@
             min-width: 50px;
             text-align: center;
             font-weight: 600;
-            color: #667eea;
+            color: #2C5AA0;
             font-size: 1.1em;
         }
 
@@ -191,7 +191,7 @@
         }
 
         select:hover, select:focus {
-            border-color: #667eea;
+            border-color: #2C5AA0;
             outline: none;
         }
 
@@ -216,7 +216,7 @@
         }
 
         .toggle-switch.active {
-            background: #667eea;
+            background: #2C5AA0;
         }
 
         .toggle-slider {
@@ -242,7 +242,7 @@
         .train-button {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #0A1020, #1B2A4A);
             color: white;
             border: none;
             border-radius: 10px;
@@ -255,7 +255,7 @@
 
         .train-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(44, 90, 160, 0.4);
         }
 
         .train-button:disabled {
@@ -274,7 +274,7 @@
             color: #333;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 2px solid #2C5AA0;
         }
 
         .metrics-grid {
@@ -288,11 +288,11 @@
             background: #f8f9fa;
             padding: 20px;
             border-radius: 10px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #2C5AA0;
         }
 
         .metric-card h3 {
-            color: #667eea;
+            color: #2C5AA0;
             margin-bottom: 15px;
             font-size: 1.1em;
         }
@@ -461,7 +461,7 @@
         </div>
 
         <div class="controls">
-            <h2 style="margin-bottom: 20px; color: #667eea;">Configuration</h2>
+            <h2 style="margin-bottom: 20px; color: #2C5AA0;">Configuration</h2>
 
             <!-- Shared Configuration -->
             <div style="margin-bottom: 25px;">
@@ -476,7 +476,7 @@
                             <div class="toggle-switch" id="preprocessToggle" onclick="togglePreprocessing()">
                                 <div class="toggle-slider"></div>
                             </div>
-                            <span style="font-weight: 600; color: #667eea;">Log + Differencing</span>
+                            <span style="font-weight: 600; color: #2C5AA0;">Log + Differencing</span>
                         </div>
                     </div>
 
@@ -560,7 +560,7 @@
         </div>
 
         <div id="results" style="display: none;">
-            <h2 style="margin-bottom: 20px; color: #667eea;">Results</h2>
+            <h2 style="margin-bottom: 20px; color: #2C5AA0;">Results</h2>
 
             <div class="metrics-grid">
                 <div class="metric-card">
@@ -597,7 +597,7 @@
 
                 <div class="metric-card">
                     <h3>🏆 Winner</h3>
-                    <div id="winnerText" style="font-size: 1.2em; text-align: center; padding: 20px 0; color: #667eea; font-weight: 600;">
+                    <div id="winnerText" style="font-size: 1.2em; text-align: center; padding: 20px 0; color: #2C5AA0; font-weight: 600;">
                         -
                     </div>
                 </div>
@@ -732,7 +732,7 @@
             let summary = '';
             let totalParams = 0;
 
-            summary += '<div style="border-bottom: 2px solid #667eea; padding-bottom: 8px; margin-bottom: 10px; font-weight: 600;">Layer (type) → Output Shape → Params</div>';
+            summary += '<div style="border-bottom: 2px solid #2C5AA0; padding-bottom: 8px; margin-bottom: 10px; font-weight: 600;">Layer (type) → Output Shape → Params</div>';
 
             model.layers.forEach((layer, idx) => {
                 const layerName = layer.name;
@@ -752,7 +752,7 @@
                 summary += `</div>`;
             });
 
-            summary += `<div style="margin-top: 10px; padding-top: 10px; border-top: 2px solid #667eea; font-weight: 600; color: #667eea;">`;
+            summary += `<div style="margin-top: 10px; padding-top: 10px; border-top: 2px solid #2C5AA0; font-weight: 600; color: #2C5AA0;">`;
             summary += `Total Parameters: ${totalParams.toLocaleString()}`;
             summary += `</div>`;
 

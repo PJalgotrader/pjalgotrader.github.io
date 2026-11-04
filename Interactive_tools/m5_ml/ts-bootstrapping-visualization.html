@@ -58,7 +58,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
-        .btn-website { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .btn-website { background: linear-gradient(135deg, #D0A63C, #E8C468); color: #0A1020 !important; }
         .btn-youtube { background: linear-gradient(135deg, #ff0000, #cc0000); }
         .btn-github { background: linear-gradient(135deg, #333, #000); }
 
@@ -96,7 +96,7 @@
         }
 
         .tab-btn:hover { color: #64748b; }
-        .tab-btn.active { color: #667eea; border-bottom-color: #667eea; }
+        .tab-btn.active { color: #2C5AA0; border-bottom-color: #2C5AA0; }
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -107,7 +107,7 @@
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 28px;
-            border-left: 5px solid #667eea;
+            border-left: 5px solid #2C5AA0;
         }
 
         .intro h3 { color: #4338ca; margin-bottom: 10px; font-size: 1.15em; }
@@ -117,7 +117,7 @@
 
         .intro .formula {
             font-family: 'Courier New', monospace;
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(44, 90, 160, 0.1);
             padding: 2px 8px;
             border-radius: 4px;
             font-weight: 600;
@@ -182,19 +182,19 @@
 
         .control-group select:focus, .control-group input[type="range"]:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #2C5AA0;
         }
 
         .control-group .val {
             font-weight: 700;
-            color: #667eea;
+            color: #2C5AA0;
             min-width: 28px;
             text-align: center;
         }
 
         .btn-run {
             padding: 10px 24px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #0A1020, #1B2A4A);
             color: white;
             border: none;
             border-radius: 8px;
@@ -207,7 +207,7 @@
 
         .btn-run:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+            box-shadow: 0 4px 12px rgba(44,90,160,0.4);
         }
 
         .btn-run:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
@@ -247,7 +247,7 @@
         }
 
         .comparison-table th {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #0A1020, #1B2A4A);
             color: white;
             padding: 12px 16px;
             text-align: left;
@@ -285,7 +285,7 @@
             cursor: pointer;
         }
         .seg button + button { border-left: 2px solid #cbd5e1; }
-        .seg button.on { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .seg button.on { background: linear-gradient(135deg, #0A1020, #1B2A4A); color: white; }
 
         .hint { flex-basis: 100%; font-size: 0.82em; color: #64748b; line-height: 1.5; }
 
@@ -320,7 +320,7 @@
             line-height: 1.5;
         }
         .pipe-step strong { display: block; color: #4338ca; margin-bottom: 4px; font-size: 1.02em; }
-        .pipe-step.hot { border-color: #667eea; background: #f0f4ff; }
+        .pipe-step.hot { border-color: #2C5AA0; background: #f0f4ff; }
         .pipe-arrow { align-self: center; color: #94a3b8; font-size: 1.4em; font-weight: 700; }
         .pipeline .caveat { margin-top: 12px; font-size: 0.84em; color: #64748b; line-height: 1.6; }
         @media (max-width: 768px) { .pipe-arrow { display: none; } }
@@ -328,14 +328,14 @@
         /* Next step callout */
         .next-box {
             margin-top: 32px;
-            background: linear-gradient(135deg, #f5f3ff, #ede9fe);
-            border-left: 5px solid #8b5cf6;
+            background: linear-gradient(135deg, #EEF3FB, #E3EBF7);
+            border-left: 5px solid #2C5AA0;
             border-radius: 12px;
             padding: 18px 24px;
         }
-        .next-box h4 { color: #5b21b6; margin-bottom: 6px; font-size: 1em; }
-        .next-box p { color: #4c1d95; font-size: 0.9em; line-height: 1.6; }
-        .next-box a { color: #6d28d9; font-weight: 700; }
+        .next-box h4 { color: #1B2A4A; margin-bottom: 6px; font-size: 1em; }
+        .next-box p { color: #1B2A4A; font-size: 0.9em; line-height: 1.6; }
+        .next-box a { color: #2C5AA0; font-weight: 700; }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -1315,7 +1315,7 @@
             {
                 x: innovations, type: 'histogram', name: 'Fitted innovations (resampled in semiparametric mode)',
                 xbins: { start: lo, end: hi, size: binSize },
-                marker: { color: isParam ? 'rgba(102, 126, 234, 0.25)' : 'rgba(102, 126, 234, 0.75)', line: { color: 'white', width: 1 } }
+                marker: { color: isParam ? 'rgba(44, 90, 160, 0.25)' : 'rgba(44, 90, 160, 0.75)', line: { color: 'white', width: 1 } }
             },
             {
                 x: xs, y: ys, mode: 'lines', name: 'N(0, σ̂²) (drawn in fully parametric mode)',
