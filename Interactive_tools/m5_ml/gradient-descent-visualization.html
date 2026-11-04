@@ -32,7 +32,7 @@
             transition: all 0.3s ease; font-size: 0.88em; font-weight: 600;
         }
         .header .links a:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .btn-website { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .btn-website { background: linear-gradient(135deg, #D0A63C, #E8C468); color: #0A1020 !important; }
         .btn-youtube { background: linear-gradient(135deg, #ff0000, #cc0000); }
         .btn-github { background: linear-gradient(135deg, #333, #000); }
 
@@ -50,13 +50,13 @@
             transition: all 0.3s ease; font-family: inherit;
         }
         .tab-btn:hover { color: #64748b; }
-        .tab-btn.active { color: #667eea; border-bottom-color: #667eea; }
+        .tab-btn.active { color: #2C5AA0; border-bottom-color: #2C5AA0; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
         /* Intro */
         .intro {
-            border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; border-left: 5px solid #667eea;
+            border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; border-left: 5px solid #2C5AA0;
             background: linear-gradient(135deg, #f0f4ff, #e8ecff);
         }
         .intro h3 { color: #4338ca; margin-bottom: 8px; font-size: 1.1em; }
@@ -84,7 +84,7 @@
             padding: 7px 10px; border: 2px solid #cbd5e1; border-radius: 8px;
             font-size: 0.9em; font-family: inherit; background: white; cursor: pointer;
         }
-        .val { font-weight: 700; color: #667eea; min-width: 40px; text-align: center; font-size: 0.95em; }
+        .val { font-weight: 700; color: #2C5AA0; min-width: 40px; text-align: center; font-size: 0.95em; }
 
         .btn {
             padding: 9px 20px; border: none; border-radius: 8px; font-size: 0.88em;
@@ -92,7 +92,7 @@
         }
         .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-        .btn-run { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .btn-run { background: linear-gradient(135deg, #0A1020, #1B2A4A); color: white; }
         .btn-step { background: linear-gradient(135deg, #059669, #047857); color: white; }
         .btn-reset { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
 
@@ -114,7 +114,7 @@
             text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
         }
         .status-card .s-value { font-size: 1.3em; font-weight: 800; }
-        .sc-iter { border-color: #667eea; } .sc-iter .s-value { color: #667eea; }
+        .sc-iter { border-color: #2C5AA0; } .sc-iter .s-value { color: #2C5AA0; }
         .sc-w { border-color: #059669; } .sc-w .s-value { color: #059669; }
         .sc-b { border-color: #d97706; } .sc-b .s-value { color: #d97706; }
         .sc-loss { border-color: #dc2626; } .sc-loss .s-value { color: #dc2626; }
@@ -316,7 +316,7 @@
                     <option value="random">Random</option>
                 </select>
             </div>
-            <button class="btn btn-run" id="sgd-btn-run" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);">Run (100 steps)</button>
+            <button class="btn btn-run" id="sgd-btn-run">Run (100 steps)</button>
             <button class="btn btn-step" id="sgd-btn-step">Single Step</button>
             <button class="btn btn-reset" id="sgd-btn-reset">Reset</button>
         </div>

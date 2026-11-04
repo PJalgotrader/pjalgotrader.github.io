@@ -67,7 +67,7 @@
         }
 
         .btn-website {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #D0A63C, #E8C468); color: #0A1020 !important;
         }
 
         .btn-youtube {
@@ -92,11 +92,11 @@
             padding: 20px;
             background: #f8f9fa;
             border-radius: 10px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #2C5AA0;
         }
 
         .intro h2 {
-            color: #667eea;
+            color: #2C5AA0;
             margin-bottom: 10px;
         }
 
@@ -152,13 +152,13 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #667eea;
+            background: #2C5AA0;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         input[type="range"]::-webkit-slider-thumb:hover {
-            background: #764ba2;
+            background: #1B2A4A;
             transform: scale(1.2);
         }
 
@@ -166,7 +166,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #667eea;
+            background: #2C5AA0;
             cursor: pointer;
             border: none;
         }
@@ -175,7 +175,7 @@
             min-width: 50px;
             text-align: center;
             font-weight: 600;
-            color: #667eea;
+            color: #2C5AA0;
             font-size: 1.1em;
         }
 
@@ -191,14 +191,14 @@
         }
 
         select:hover, select:focus {
-            border-color: #667eea;
+            border-color: #2C5AA0;
             outline: none;
         }
 
         .train-button {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #0A1020, #1B2A4A);
             color: white;
             border: none;
             border-radius: 10px;
@@ -211,7 +211,7 @@
 
         .train-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(44, 90, 160, 0.4);
         }
 
         .train-button:disabled {
@@ -230,7 +230,7 @@
             color: #333;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 2px solid #2C5AA0;
         }
 
         .metrics-grid {
@@ -244,11 +244,11 @@
             background: #f8f9fa;
             padding: 20px;
             border-radius: 10px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #2C5AA0;
         }
 
         .metric-card h3 {
-            color: #667eea;
+            color: #2C5AA0;
             margin-bottom: 15px;
             font-size: 1.1em;
         }
@@ -394,7 +394,7 @@
         </div>
 
         <div class="controls">
-            <h3 style="margin-bottom: 20px; color: #667eea;">Model Configuration</h3>
+            <h3 style="margin-bottom: 20px; color: #2C5AA0;">Model Configuration</h3>
             <div class="controls-grid">
                 <div class="control-group">
                     <label>Number of Lags (Input Features)</label>
@@ -966,7 +966,7 @@
                     y: trainLoss,
                     mode: 'lines',
                     name: 'Training Loss',
-                    line: { color: '#667eea', width: 2 }
+                    line: { color: '#2C5AA0', width: 2 }
                 }
             ];
 
@@ -1055,7 +1055,7 @@
                                     line.setAttribute('y1', fromNode.y);
                                     line.setAttribute('x2', toNode.x);
                                     line.setAttribute('y2', toNode.y);
-                                    line.setAttribute('stroke', '#667eea');
+                                    line.setAttribute('stroke', '#2C5AA0');
                                     line.setAttribute('stroke-width', '1');
                                     connectionGroup.appendChild(line);
                                 }
@@ -1076,7 +1076,7 @@
                 let nodeColor;
                 if (layerIdx === 0) nodeColor = '#10b981'; // Input - green
                 else if (layerIdx === layers.length - 1) nodeColor = '#ef4444'; // Output - red
-                else nodeColor = '#667eea'; // Hidden - purple
+                else nodeColor = '#2C5AA0'; // Hidden - blue
 
                 layerNodes.forEach((node, nodeIdx) => {
                     if (node.isEllipsis) {
@@ -1169,7 +1169,7 @@
                 x: lagLabels,
                 y: importanceByLag,
                 type: 'bar',
-                marker: { color: '#764ba2' },
+                marker: { color: '#D0A63C' },
                 text: importanceByLag.map(v => v.toFixed(3)),
                 textposition: 'outside'
             };
@@ -1222,7 +1222,7 @@
                         y: trainY,
                         mode: 'lines',
                         name: 'Train Actual',
-                        line: { color: '#667eea', width: 3 }
+                        line: { color: '#2C5AA0', width: 3 }
                     },
                     {
                         x: testMonths,
@@ -1236,7 +1236,7 @@
                         y: dnnTrainPred,
                         mode: 'lines',
                         name: 'DNN Train Pred',
-                        line: { color: '#764ba2', width: 2, dash: 'dash' }
+                        line: { color: '#D0A63C', width: 2, dash: 'dash' }
                     },
                     {
                         x: testMonths,

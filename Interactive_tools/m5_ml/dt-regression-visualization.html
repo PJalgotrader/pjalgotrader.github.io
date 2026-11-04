@@ -66,7 +66,7 @@
         }
 
         .btn-website {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #D0A63C, #E8C468); color: #0A1020 !important;
         }
 
         .btn-youtube {
@@ -91,11 +91,11 @@
             padding: 20px;
             background: #f8f9fa;
             border-radius: 10px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #2C5AA0;
         }
 
         .intro h2 {
-            color: #667eea;
+            color: #2C5AA0;
             margin-bottom: 10px;
         }
 
@@ -145,13 +145,13 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #667eea;
+            background: #2C5AA0;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         input[type="range"]::-webkit-slider-thumb:hover {
-            background: #764ba2;
+            background: #1B2A4A;
             transform: scale(1.2);
         }
 
@@ -159,7 +159,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #667eea;
+            background: #2C5AA0;
             cursor: pointer;
             border: none;
         }
@@ -168,7 +168,7 @@
             min-width: 50px;
             text-align: center;
             font-weight: 600;
-            color: #667eea;
+            color: #2C5AA0;
             font-size: 1.1em;
         }
 
@@ -182,7 +182,7 @@
             color: #333;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 2px solid #2C5AA0;
         }
 
         .explanation {
@@ -546,7 +546,7 @@
                 line.setAttribute('y1', edge.y1);
                 line.setAttribute('x2', edge.x2);
                 line.setAttribute('y2', edge.y2);
-                line.setAttribute('stroke', '#667eea');
+                line.setAttribute('stroke', '#2C5AA0');
                 line.setAttribute('stroke-width', '2');
                 svg.appendChild(line);
             });
@@ -562,7 +562,7 @@
                 rect.setAttribute('width', nodeWidth);
                 rect.setAttribute('height', nodeHeight);
                 rect.setAttribute('fill', node.isLeaf ? '#d1fae5' : '#dbeafe');
-                rect.setAttribute('stroke', node.isLeaf ? '#10b981' : '#667eea');
+                rect.setAttribute('stroke', node.isLeaf ? '#10b981' : '#2C5AA0');
                 rect.setAttribute('stroke-width', '2');
                 rect.setAttribute('rx', '5');
                 g.appendChild(rect);
@@ -597,7 +597,7 @@
                     const featureName = node.feature === 'lag1' ? 'Lag_1' : 'Lag_2';
                     const featureDesc = node.feature === 'lag1' ? 'Previous Month' : 'Two Months Ago';
                     tooltipHtml = `
-                        <div style="font-weight: 600; margin-bottom: 6px; color: #667eea;">Decision Node</div>
+                        <div style="font-weight: 600; margin-bottom: 6px; color: #2C5AA0;">Decision Node</div>
                         <div><strong>Split Condition:</strong> ${featureName} ≤ ${node.threshold.toFixed(2)}</div>
                         <div style="margin-top: 4px;"><strong>Feature:</strong> ${featureDesc} Passengers</div>
                         <div style="margin-top: 6px; font-size: 11px; color: #ccc;">
@@ -742,7 +742,7 @@
                 y: laggedData.map(d => d.target),
                 mode: 'lines',
                 name: 'Actual',
-                line: { color: '#667eea', width: 2 }
+                line: { color: '#2C5AA0', width: 2 }
             };
 
             const predictedTrace = {
@@ -750,7 +750,7 @@
                 y: predictions,
                 mode: 'lines',
                 name: 'In-Sample Predicted',
-                line: { color: '#f093fb', width: 2, dash: 'dash' }
+                line: { color: '#D0A63C', width: 2, dash: 'dash' }
             };
 
             const forecastTrace = {
