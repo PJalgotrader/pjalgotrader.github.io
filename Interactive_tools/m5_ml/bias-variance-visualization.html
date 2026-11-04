@@ -81,14 +81,14 @@
         }
 
         .intro {
-            background: linear-gradient(135deg, #f0f4ff, #e8ecff);
+            background: linear-gradient(135deg, #EEF3FB, #E3EBF7);
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 24px;
             border-left: 5px solid #2C5AA0;
         }
 
-        .intro h3 { color: #4338ca; margin-bottom: 10px; font-size: 1.15em; }
+        .intro h3 { color: #2C5AA0; margin-bottom: 10px; font-size: 1.15em; }
         .intro p { color: #475569; line-height: 1.7; font-size: 0.95em; }
 
         /* Controls */
@@ -824,7 +824,7 @@ function renderFitsChart() {
             mode: 'lines',
             name: isLatest ? `Draw ${i+1} (latest)` : `Draw ${i+1}`,
             line: {
-                color: isLatest ? 'rgba(99,102,241,0.9)' : DRAW_COLORS[i % DRAW_COLORS.length],
+                color: isLatest ? 'rgba(44,90,160,0.9)' : DRAW_COLORS[i % DRAW_COLORS.length],
                 width: isLatest ? 2.5 : 1.2
             },
             showlegend: isLatest || allDraws.length <= 5,
@@ -855,7 +855,7 @@ function renderFitsChart() {
             x: latest.xs, y: latest.ys,
             mode: 'markers',
             name: 'Latest Sample (n=20)',
-            marker: {color: '#6366f1', size: 7, opacity: 0.7,
+            marker: {color: '#2C5AA0', size: 7, opacity: 0.7,
                      line: {color: 'white', width: 1}},
             hoverinfo: 'x+y'
         });
