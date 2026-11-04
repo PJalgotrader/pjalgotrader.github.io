@@ -302,7 +302,7 @@ function render() {
     const pastTerm = termIsPast();
     const term = activeTerm();
     const termName = term === 'all' ? 'All semesters' : termLabel(term);
-    document.getElementById('termTag').textContent = termName;
+    document.getElementById('termTag').textContent = (picker.length || urlTerm) ? termName : 'Live Poll';
     document.getElementById('resetBtn').hidden = pastTerm;
 
     // A session just opened in a newer semester than this page is filtered to.
