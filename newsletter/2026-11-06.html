@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>PJ AI Newsletter: Week of Nov 2-6, 2026 | Pedram Jahangiry</title>
+    <meta name="description" content="This was the week AI security stopped being a slide and became a production line, while coding agents got faster and more shippable. OpenAI shipped GPT-6 Cyber, Anthropic turned on message threads, and Google donated Agent Substrate to the CNCF.">
+    <meta property="og:title" content="PJ AI Newsletter: Week of Nov 2-6, 2026">
+    <meta property="og:description" content="This was the week AI security stopped being a slide and became a production line, while coding agents got faster and more shippable. OpenAI shipped GPT-6 Cyber, Anthropic turned on message threads, and Google donated Agent Substrate to the CNCF.">
+    <meta property="og:image" content="https://pedramjahangiry.com/newsletter/images/2026-11-06/01-gpt6-cyber.webp">
+    <meta property="og:url" content="https://pedramjahangiry.com/newsletter/2026-11-06.html">
+    <meta property="og:type" content="article">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://pedramjahangiry.com/newsletter/images/2026-11-06/01-gpt6-cyber.webp">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="canonical" href="https://pedramjahangiry.com/newsletter/2026-11-06.html">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="../styles.css?v=12">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="../index.html">Pedram&nbsp;Jahangiry</a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="../index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../visualizations.html" class="nav-link">Interactive Tools</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../teaching.html" class="nav-link">Teaching</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../polls.html" class="nav-link">Polls</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../projects.html" class="nav-link">Projects</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../newsletter.html" class="nav-link active">Newsletter</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../contact.html" class="nav-link">Contact</a>
+                </li>
+            </ul>
+            <div class="nav-right">
+                <button class="theme-toggle" aria-label="Switch color theme">
+                    <i class="fas fa-sun icon-sun" aria-hidden="true"></i>
+                    <i class="fas fa-moon icon-moon" aria-hidden="true"></i>
+                </button>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main id="main">
+        <section class="newsletter-hero">
+            <div class="container">
+                <a href="../newsletter.html" class="back-link">&larr; All issues</a>
+                <h1>PJ AI Newsletter: Week of Nov 2-6, 2026</h1>
+                <p class="meta">Saturday Oct 31 through Friday Nov 6, 2026 · Collected by Pedram</p>
+                <p class="theme-line">
+                    This was the week AI security stopped being a slide and became a production line, while coding agents got faster and more shippable. OpenAI shipped GPT-6 Cyber, rated Critical under its Preparedness Framework, and showed a pipeline that found nearly a thousand Linux privilege-escalation paths. Anthropic open-sourced FlashProve for proving which model weights answered, and turned on message threads that cut time-to-first-token on huge Claude Code sessions. Cursor can build and deploy live apps and talk to agents by voice, Google donated Agent Substrate and gVisor to the CNCF for sandboxed agent runtimes, and ChatGPT dots reached Edu workspaces. The theme: capability, latency, and control are racing each other, and builders need all three.
+                </p>
+            </div>
+        </section>
+
+        <section class="newsletter-toc">
+            <div class="container">
+                <h2>In this issue</h2>
+                <ol>
+                    <li><a href="#item-01"><span class="toc-num">01</span><span class="toc-title">OpenAI's GPT-6 Cyber is Critical, and a pipeline found 948 Linux paths to root</span></a></li>
+                    <li><a href="#item-02"><span class="toc-num">02</span><span class="toc-title">Anthropic open-sources FlashProve for provable inference</span></a></li>
+                    <li><a href="#item-03"><span class="toc-num">03</span><span class="toc-title">Cursor ships live apps from the IDE, then voice chat with agents</span></a></li>
+                    <li><a href="#item-04"><span class="toc-num">04</span><span class="toc-title">OpenAI will acquire Pierre to deepen Codex's Git and review stack</span></a></li>
+                    <li><a href="#item-05"><span class="toc-num">05</span><span class="toc-title">Claude Enterprise gets a security center and GA inference hooks</span></a></li>
+                    <li><a href="#item-06"><span class="toc-num">06</span><span class="toc-title">OpenAI Images 2.6 brings faster images and one-step GIFs</span></a></li>
+                    <li><a href="#item-07"><span class="toc-num">07</span><span class="toc-title">Google's Gemini Omni 1.2 Flash: 15-second video, multi-turn edits, 30% cheaper</span></a></li>
+                    <li><a href="#item-08"><span class="toc-num">08</span><span class="toc-title">Claude message threads cut latency for long agent sessions</span></a></li>
+                    <li><a href="#item-09"><span class="toc-num">09</span><span class="toc-title">Google donates Agent Substrate and gVisor to the CNCF for agent sandboxes</span></a></li>
+                    <li><a href="#item-10"><span class="toc-num">10</span><span class="toc-title">ChatGPT dots go GA for Enterprise, Edu, and Healthcare</span></a></li>
+                </ol>
+            </div>
+        </section>
+
+        <article class="newsletter-item" id="item-01">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 01 of 10</div>
+                    <h3>OpenAI's GPT-6 Cyber is Critical, and a pipeline found 948 Linux paths to root</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-06/01-gpt6-cyber.webp" alt="OpenAI graphic reading GPT-6 Cyber over a glowing horizon of code" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://openai.com/index/introducing-gpt-6-cyber/" target="_blank" rel="noopener noreferrer">OpenAI</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 5, OpenAI introduced GPT-6 Cyber, a cybersecurity model for authorized vulnerability research, available first to approved Daybreak Red customers in the API and Codex. OpenAI rates it Critical in cybersecurity under its Preparedness Framework (up from High for GPT-5.6 Cyber) and reports 48.5% on ExploitGym versus 32.1% for GPT-5.6 Cyber. The day before, in "A thousand fewer paths to root," OpenAI described a mid-October pipeline run that dynamically reproduced 1,724 Linux kernel vulnerabilities and produced 948 working local privilege-escalation exploits at an API cost of $1,213,430 (about $1,279 per LPE). The same campaign produced evidence for 81 previously unknown high-severity Firefox bugs, and Mozilla has been landing fixes. Access is gated; mainline models still cover everyday code review and triage.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>For anyone building coding agents with broad permissions, this is the clearest proof yet that frontier models can industrially find and exploit bugs in foundational software. Sandboxes, patch cadence, and "stay in scope" training are no longer optional talking points.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">Apply for Daybreak only if you do authorized security research. Everyone else: read the two OpenAI posts and update browsers and kernels.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://openai.com/index/introducing-gpt-6-cyber/" target="_blank" rel="noopener noreferrer">OpenAI: Introducing GPT-6 Cyber</a></li>
+                            <li><a href="https://openai.com/index/a-thousand-fewer-paths-to-root/" target="_blank" rel="noopener noreferrer">OpenAI: A thousand fewer paths to root</a></li>
+                            <li><a href="https://deploymentsafety.openai.com/gpt-6-cyber" target="_blank" rel="noopener noreferrer">GPT-6 Cyber System Card</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-02">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 02 of 10</div>
+                    <h3>Anthropic open-sources FlashProve for provable inference</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-06/02-flashprove.webp" alt="Anthropic graphic of a chrome chain crossing four paper backgrounds" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://www.anthropic.com/research/provable-inference" target="_blank" rel="noopener noreferrer">Anthropic</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 2, Anthropic released FlashProve, an open-source zkSNARK research prototype that lets a provider prove a response came from a specific committed set of model weights without revealing those weights. On Llama 4 Maverick (400B MoE, 4-bit), Anthropic reports about 110 tokens/second proving on one H100, roughly 19 MB proofs per 1,024-token request, and verification in about 17 seconds on a 24-core CPU. Overhead versus ordinary inference is roughly 70 to 95 times GPU time. The release includes code, a technical report, Lean proofs, and Apache 2.0 licensing. Anthropic is clear this is intermediate research: 1,024-token windows, integer/greedy decoding, architecture not hidden, and no formal guarantee that the fast C++ verifier matches the Lean proofs.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>"Which model actually answered?" is becoming a trust and regulation problem. FlashProve moves cryptographic attestation of LLM inference from "impossibly slow" to "expensive but measurable," which is useful for explaining provenance, for auditors, and for anyone routing through third-party gateways.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">As reading and skimming the repo if you care about attestation. Do not budget it into a production Claude bill yet.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://www.anthropic.com/research/provable-inference" target="_blank" rel="noopener noreferrer">Anthropic: Progress on provable inference</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-03">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 03 of 10</div>
+                    <h3>Cursor ships live apps from the IDE, then voice chat with agents</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-06/03-cursor-live-apps.webp" alt="Illustration of a coding robot beside a microphone and app windows" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Illustration: generated for this issue</p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 5, Cursor launched Build Live Apps: describe an internal tool, and a cloud agent can scaffold the app, stand up Postgres and auth behind Cursor SSO, run security checks, and publish a shareable link. Team admins can see apps and secrets, add review rules, and unpublish. It is available on paid plans with cloud agents enabled. On Nov 6, Cursor followed with realtime Voice Chat with Agents across the Agents Window, IDE, web, and Cursor for iOS, powered by Grok Voice (including with Privacy Mode / zero data retention). You can talk while a coding agent works and hear short progress notes instead of reading every reply.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>The loop from "idea" to "shared URL" just got shorter, and voice turns the agent from a chat box into a coworker you can interrupt mid-run. Both matter for live demos and for teams that want internal tools without a full product engineering sprint.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Update Cursor and try either a tiny internal app or a short voice session on a real coding task.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://cursor.com/changelog" target="_blank" rel="noopener noreferrer">Cursor changelog: Build Live Apps</a></li>
+                            <li><a href="https://cursor.com/changelog" target="_blank" rel="noopener noreferrer">Cursor changelog: Voice Chat with Agents</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-04">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 04 of 10</div>
+                    <h3>OpenAI will acquire Pierre to deepen Codex's Git and review stack</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-06/04-openai-pierre.webp" alt="OpenAI graphic reading OpenAI to acquire Pierre Computer Company, Inc." width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://openai.com/index/openai-to-acquire-pierre/" target="_blank" rel="noopener noreferrer">OpenAI</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 4, OpenAI announced it will acquire Pierre Computer Company, the team behind Code Storage and open-source Trees and Diffs libraries already used in the Codex app for browsing files and reviewing changes. OpenAI says Pierre's tools will help adapt Git workflows to how teams work with coding agents, and that Pierre's open-source projects will stay open source. Closing is subject to customary conditions; until then the companies remain separate.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Coding agents create branches and diffs at a volume humans never did. Whoever owns the review and storage layer next to the agent owns a big part of the developer experience. This is a signal that Codex wants to be more than a chat that writes patches.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge no">No</span>
+                        <span class="explore-text">No product change yet for most users. Watch how Trees, Diffs, and Code Storage land inside Codex after close.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://openai.com/index/openai-to-acquire-pierre/" target="_blank" rel="noopener noreferrer">OpenAI: OpenAI to acquire Pierre</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-05">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 05 of 10</div>
+                    <h3>Claude Enterprise gets a security center and GA inference hooks</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-06/05-claude-enterprise-security.webp" alt="Anthropic illustration of a hand holding a white key on a peach background" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://claude.com/resources/articles/claude-enterprise-security-updates" target="_blank" rel="noopener noreferrer">Anthropic / Claude</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 5, Anthropic announced new Claude Enterprise security and admin features: a security center (beta) that compares chat, Cowork, and Claude Code settings with Anthropic's recommended configuration; inference hooks now generally available that send prompts and tool calls to your own data-security tools for allow/deny; centralized management at admin.claude.com; Admin API sign-out of a member; self-serve IP allowlists; and controls to block personal Claude accounts in Claude Desktop on managed computers. An EDR sensor can also run inside the local Cowork/Claude VM (beta).</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Organizations that already use Claude Code finally get DLP-style checks on prompts and tool calls, plus a single place to see whether settings match the vendor's advice. That is the missing middle between letting people use agents and hoping nothing leaves the organization.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Yes if you administer Claude Enterprise. Turn on the security center page and review which hooks your DLP vendor supports.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://claude.com/resources/articles/claude-enterprise-security-updates" target="_blank" rel="noopener noreferrer">Claude: Enterprise security updates</a></li>
+                            <li><a href="https://support.claude.com/en/articles/16059458-inference-hooks-overview" target="_blank" rel="noopener noreferrer">Inference hooks overview</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-06">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 06 of 10</div>
+                    <h3>OpenAI Images 2.6 brings faster images and one-step GIFs</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-06/06-images-2-6.webp" alt="OpenAI graphic reading Images 2.6 in front of a fan of sample pictures" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://openai.com/index/introducing-images-2-6/" target="_blank" rel="noopener noreferrer">OpenAI</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 4, OpenAI released Images 2.6 in ChatGPT, Codex, and the API. OpenAI says generation is about 50% faster, and GIFs can be created from a text prompt or a photo in one step. The API adds GPT-Image-2.6 Flare and Sunburst, plus image markup, SVG export, and a complexity parameter. Images 2.6 is available on all ChatGPT and Codex subscription tiers; Flare can generate in as little as six seconds at low quality, per OpenAI.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Explainers, demos, and docs often need motion, not just stills. One-step GIFs inside the same tools you already use for coding agents cut a whole round-trip to a separate animation tool.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Make one GIF for a concept you explain or a feature you shipped this week.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://openai.com/index/introducing-images-2-6/" target="_blank" rel="noopener noreferrer">OpenAI: Introducing Images 2.6</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-07">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 07 of 10</div>
+                    <h3>Google's Gemini Omni 1.2 Flash: 15-second video, multi-turn edits, 30% cheaper</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-06/07-gemini-omni.webp" alt="Google graphic reading Introducing Gemini Omni 1.2 Flash among four video stills" width="1200" height="674">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/" target="_blank" rel="noopener noreferrer">Google</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 5, Google launched Gemini Omni 1.2 Flash as generally available on the Gemini API and Google Cloud. Clips go up to 15 seconds (from 10), with multi-turn conversational editing, stronger reference adherence, and a 30% price cut to $0.07 per second for 720p. You can draft at lower resolution, edit in conversation, then upscale. Outputs carry SynthID watermarks. Google Vids can generate 15-second clips at no additional cost with a Google account or Workspace subscription.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Short explainer videos are becoming a normal part of product demos and documentation. Cheaper, editable 15-second clips make it practical to iterate in a writeup or a pull request without a full video pipeline.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Yes if you already use Gemini or Google Vids. Generate one 15-second explainer and refine it with a follow-up edit.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/" target="_blank" rel="noopener noreferrer">Google: Gemini Omni 1.2 Flash</a></li>
+                            <li><a href="https://cloud.google.com/blog/products/ai-machine-learning/gemini-omni-1-2-flash-generally-available" target="_blank" rel="noopener noreferrer">Google Cloud blog</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-08">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 08 of 10</div>
+                    <h3>Claude message threads cut latency for long agent sessions</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-06/08-message-threads.webp" alt="Anthropic illustration of a speedometer needle on a peach background" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://claude.com/resources/articles/message-threads" target="_blank" rel="noopener noreferrer">Anthropic / Claude</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 2, Anthropic put message threads into public beta on the Messages API (and on Claude Platform on AWS, Microsoft Foundry, and Anthropic-managed Claude on Google Cloud). Agents send the full conversation once, then only what is new on later turns, while Claude still reads the full history. For most Claude Code users it is on by default: Anthropic reports about 35% lower median time-to-first-token on requests with 500k to 1M tokens. Threads sit encrypted in memory, expire after 5 minutes idle, and token usage is unchanged. Best for long coding agents, computer-use loops, and image-heavy sessions.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>This is a daily-driver win for anyone whose Claude Code sessions get huge. Less waiting between tool rounds without changing how you prompt.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Update Claude Code, confirm threads are on, and run a long multi-file refactor while watching time-to-first-token.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://claude.com/resources/articles/message-threads" target="_blank" rel="noopener noreferrer">Claude: Message threads</a></li>
+                            <li><a href="https://platform.claude.com/docs/en/build-with-claude/message-threads" target="_blank" rel="noopener noreferrer">Docs: Message threads</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-09">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 09 of 10</div>
+                    <h3>Google donates Agent Substrate and gVisor to the CNCF for agent sandboxes</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-06/09-agent-substrate.webp" alt="Google diagram comparing standard Kubernetes pods with the Agent Substrate runtime" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://opensource.googleblog.com/2026/11/sandboxing-untrusted-ai-agents-at-scale.html" target="_blank" rel="noopener noreferrer">Google</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 5 at KubeCon week, Google Cloud said it is donating Agent Substrate 1.0 and gVisor to the CNCF (Sandbox), alongside OpenRL. Agent Substrate treats agent sessions as Actors that hold memory and disk state, multiplexed onto warm Worker pools, with claimed sub-500ms restore. That targets the idle problem: agents wait most of the time on model calls or humans, but you cannot kill the Pod without losing Git state and tool sessions. gVisor isolates untrusted model-generated code from the host kernel. Docs and code are at ate.dev and github.com/agent-substrate/substrate.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>This is the emerging "Kubernetes for agents" stack: dense, stateful, sandboxed sessions. It is how organizations will eventually host many coding agents without burning a Pod per idle chat.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">Read the open-source blog if you run systems or host agent sandboxes. Production adoption will take time.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://opensource.googleblog.com/2026/11/sandboxing-untrusted-ai-agents-at-scale.html" target="_blank" rel="noopener noreferrer">Google Open Source Blog</a></li>
+                            <li><a href="https://cloud.google.com/blog/products/containers-kubernetes/open-infrastructure-for-autonomous-agents-comes-to-cncf" target="_blank" rel="noopener noreferrer">Google Cloud blog</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-10">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 10 of 10</div>
+                    <h3>ChatGPT dots go GA for Enterprise, Edu, and Healthcare</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-06/10-chatgpt-dots.webp" alt="ChatGPT graphic reading November 2-6, 2026 on a blue gradient" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://learn.chatgpt.com/docs/whats-new/november-2-6-2026" target="_blank" rel="noopener noreferrer">OpenAI / ChatGPT</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 4, OpenAI made personal "dots" (persistent agents that keep working between conversations) generally available to eligible Enterprise, Edu, and Healthcare workspaces. Admins get a preview window through Nov 18, 2026, then dots can turn on by default unless they opt out. GPT-6.1 Terra can power dots. The same week brought iOS notification replies, desktop browser/file annotations, and stronger Windows local-thread behavior. Residency and HIPAA eligibility apply where the workspace already supports them.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Eligible workspaces finally get always-on helpers under admin control, instead of one-shot chats that forget the task overnight.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Yes if your workspace is eligible. Have an admin enable a preview dot for one recurring workflow before the Nov 18 default flip.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://learn.chatgpt.com/docs/whats-new/november-2-6-2026" target="_blank" rel="noopener noreferrer">ChatGPT Learn: Nov 2-6</a></li>
+                            <li><a href="https://openai.com/products/release-notes/" target="_blank" rel="noopener noreferrer">OpenAI product release notes</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <section class="newsletter-closing">
+            <div class="container">
+                <div class="newsletter-closing-inner">
+                    <h2>If you try one thing this weekend</h2>
+                    <p>Update Cursor, then ask a cloud agent to build and publish the smallest useful live app you can describe in one sentence (a signup sheet, a short FAQ, a project checklist). Publish behind Cursor SSO if you can. In the same sitting, open a long Claude Code session and notice whether message threads make big contexts feel snappier. That pair shows both ends of this week: ship something, and make the long agent loop less laggy.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p class="footer-note">&copy; 2026 Pedram Jahangiry &mdash; all residuals are my own.</p>
+            <div class="social-links">
+                <a href="https://x.com/PedramJahangiry" target="_blank" aria-label="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://www.linkedin.com/in/pedram-jahangiry-cfa-5778015a/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="https://github.com/PJalgotrader" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                <a href="mailto:pedram.jahangiry@usu.edu" aria-label="Email"><i class="fas fa-envelope"></i></a>
+            </div>
+            <p class="colophon">Set in Fraunces, Inter &amp; IBM Plex Mono &middot; hand&#8209;built, zero frameworks &middot; Logan, Utah &mdash; 41.74&deg;&nbsp;N, 111.81&deg;&nbsp;W</p>
+        </div>
+    </footer>
+
+    <script src="../script.js?v=3"></script>
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>
