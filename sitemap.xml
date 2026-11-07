@@ -152,8 +152,13 @@
   </url>
   <url>
     <loc>https://pedramjahangiry.com/newsletter.html</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-06</lastmod>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://pedramjahangiry.com/newsletter/2026-11-06.html</loc>
+    <lastmod>2026-11-06</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/newsletter/2026-10-30.html</loc>
