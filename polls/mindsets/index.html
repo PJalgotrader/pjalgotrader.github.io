@@ -86,6 +86,9 @@
         .bar-row .fill { height: 100%; background: var(--bar); border-radius: 6px; width: 0%; transition: width 0.55s ease; }
         .bar-row.hot .top { color: var(--green); font-weight: 500; }
         .bar-row.hot .fill { background: var(--green); }
+        .power { margin-top: 12px; background: var(--card-2); border: 1.5px solid var(--green); border-radius: 12px; padding: 16px 18px; }
+        #powerLine { font-size: 15.5px; line-height: 1.45; margin: 8px 0 10px; }
+        #powerLink { color: var(--green); font-size: 14.5px; text-underline-offset: 3px; }
         .note { color: var(--ink-mute); font-size: 14px; line-height: 1.5; margin-top: 16px; }
         #saveNote { display: none; color: var(--green); font-family: var(--mono); font-size: 12px; line-height: 1.5; margin-top: 12px; }
         #saveError { display: none; color: var(--red); font-size: 13.5px; line-height: 1.45; margin-top: 12px; }
@@ -128,6 +131,11 @@
                 <p class="bars-title">All eight majors</p>
                 <div id="bars"></div>
             </div>
+            <div class="power">
+                <p class="kicker">Your data superpower</p>
+                <p id="powerLine"></p>
+                <a id="powerLink" target="_blank" rel="noopener"></a>
+            </div>
             <p id="saveNote"></p>
             <p id="saveError">Couldn&rsquo;t save your answer. The Wi-Fi might be busy. Your result is still right here.</p>
             <p class="note">A 60-second quiz, not destiny. If it got you wrong, that&rsquo;s useful data too: what did we measure badly?</p>
@@ -156,6 +164,22 @@ const POLL = {
         mkt:   { major: 'Marketing',           name: 'The Storyteller',    line: 'You know what makes people care.' },
         sales: { major: 'Pro Sales',           name: 'The Connector',      line: 'You’d rather talk to the customer than read about them.' },
         mgmt:  { major: 'Management',          name: 'The Captain',        line: 'You make the team work.' }
+    },
+    // "Your data superpower": one line per mindset, shown under the result card.
+    power: {
+        da:    'You already think like a data analyst. Give that instinct real tools and it becomes a career.',
+        is:    'Data plus code means you build the tools everyone else depends on.',
+        acct:  'Data lets you catch the odd transaction before the auditor does.',
+        fin:   'Data lets you test a strategy before you bet real money on it.',
+        econ:  'Data turns your theories into predictions you can actually check.',
+        mkt:   'Data tells you which story actually worked, and why.',
+        sales: 'Data tells you which customer to call first.',
+        mgmt:  'Data shows you what’s really working on your team, not just what feels like it.'
+    },
+    // Data-minded results go to the department's programs; everyone else to the minor.
+    powerLinks: {
+        own:   { href: 'https://huntsman.usu.edu/dais/degree.php', text: 'See the Data Analytics & Information Systems programs →' },
+        minor: { href: 'https://huntsman.usu.edu/advising/minors/minor_data_analytics.php', text: 'Add the Data Analytics minor to any major →' }
     },
     questions: [
         { id: 'q1', title: 'Words or numbers?', options: [
@@ -275,6 +299,10 @@ function renderResult(result) {
     } else {
         $('mindsetLine').textContent = top.line;
     }
+    $('powerLine').textContent = POLL.power[result.top];
+    const link = POLL.powerLinks[result.top === 'da' || result.top === 'is' ? 'own' : 'minor'];
+    $('powerLink').href = link.href;
+    $('powerLink').textContent = link.text;
     // Bars scale to the leader, so a top score like 24% reads as first place, not low.
     const leads = result.mix ? 2 : 1;
     const max = result.ranked[0].pct;
