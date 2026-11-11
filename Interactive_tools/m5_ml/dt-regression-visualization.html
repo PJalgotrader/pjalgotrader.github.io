@@ -6,6 +6,9 @@
     <meta name="description" content="A decision tree regressor forecasts airline passengers from lagged values, no trend or seasonality allowed. Drag max depth or horizon and watch the tree redraw.">
     <title>Decision Tree Regression for Time Series | Dr. Pedram Jahangiry</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -14,83 +17,26 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0A1020 0%, #1B2A4A 100%);
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #1C1B18;
+            border-top: 3px solid #E9E4D4;
             min-height: 100vh;
             padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            padding: 30px 20px;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header .attribution {
-            font-size: 1.1em;
-            margin: 15px 0;
-            opacity: 0.95;
-        }
-
-        .header .links {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
-
-        .header .links a {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-size: 0.9em;
-            font-weight: 600;
-        }
-
-        .header .links a:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .btn-website {
-            background: linear-gradient(135deg, #D0A63C, #E8C468); color: #0A1020 !important;
-        }
-
-        .btn-youtube {
-            background: linear-gradient(135deg, #ff0000, #cc0000);
-        }
-
-        .btn-github {
-            background: linear-gradient(135deg, #333, #000);
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
+            background: #FDFCF8;
+            border-radius: 6px;
             padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
         .intro {
             margin-bottom: 30px;
             padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
+            background: #F1EDE2;
+            border-radius: 6px;
             border-left: 4px solid #2C5AA0;
         }
 
@@ -101,14 +47,14 @@
 
         .intro p {
             line-height: 1.6;
-            color: #555;
+            color: #6A675D;
             margin-bottom: 10px;
         }
 
         .controls {
-            background: #f8f9fa;
+            background: #F1EDE2;
             padding: 25px;
-            border-radius: 10px;
+            border-radius: 6px;
             margin-bottom: 30px;
         }
 
@@ -120,7 +66,7 @@
             display: block;
             font-weight: 600;
             margin-bottom: 8px;
-            color: #333;
+            color: #1C1B18;
             font-size: 1.05em;
         }
 
@@ -134,7 +80,7 @@
             flex: 1;
             height: 8px;
             border-radius: 5px;
-            background: #ddd;
+            background: #DCD7C8;
             outline: none;
             -webkit-appearance: none;
         }
@@ -151,7 +97,7 @@
         }
 
         input[type="range"]::-webkit-slider-thumb:hover {
-            background: #1B2A4A;
+            background: #1C1B18;
             transform: scale(1.2);
         }
 
@@ -179,7 +125,7 @@
         .chart-title {
             font-size: 1.3em;
             font-weight: 600;
-            color: #333;
+            color: #1C1B18;
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 2px solid #2C5AA0;
@@ -188,7 +134,7 @@
         .explanation {
             background: #fff3cd;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 6px;
             margin-top: 30px;
             border-left: 4px solid #ffc107;
         }
@@ -226,36 +172,37 @@
                 text-align: left;
             }
         }
+
+        /* Lab chrome, the same page as the Boosting, Bagging, Learning Curve and Histogram labs:
+           paper page with an ink top rule, header on the paper (mono top line, serif title, lede,
+           byline with text links), then the tool in a flat surface panel. */
+        body { background: #F7F4EC; border-top: 3px solid #1C1B18; color: #1C1B18; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 0; min-height: 0;
+               padding: 28px max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)); }
+        .lab-head { max-width: 1180px; margin: 0 auto 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px 24px; text-align: left; }
+        .lab-head .eyebrow { margin: 0; font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 11.5px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: #6A675D; }
+        .lab-head h1 { margin: 6px 0 8px; font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.05; letter-spacing: -.01em; text-align: left; text-wrap: balance; color: #1C1B18; }
+        .lab-head .lede { margin: 0; max-width: 66ch; font-size: 16px; line-height: 1.55; text-align: left; color: #6A675D; }
+        .lab-head .byline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: #6A675D; }
+        .lab-head .byline strong { color: #1C1B18; font-weight: 600; }
+        .lab-head .byline a { color: #1E5BC6; }
+        .container { max-width: 1180px; margin: 0 auto; background: #FDFCF8; border: 1px solid #DCD7C8; border-radius: 6px; box-shadow: none; }
+        .container :is(h2, h3, h4) { font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; }
+        .container :is(.value-display, .val) { background: transparent; color: #1C1B18; font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-weight: 600; }
     </style>
 </head>
 <body>
-    <div class="header">
+<header class="lab-head">
+    <div>
+        <p class="eyebrow">Interactive tool &middot; Machine learning</p>
         <h1>Decision Tree Regression for Time Series</h1>
-        <div class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</div>
-        <div class="links">
-            <a href="https://pedramjahangiry.com/" target="_blank" class="btn-website">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5H8.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5h2.49zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4h2.355z"/>
-                </svg>
-                Website
-            </a>
-            <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" class="btn-youtube">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z"/>
-                </svg>
-                YouTube Channel
-            </a>
-            <a href="https://github.com/PJalgotrader/" target="_blank" class="btn-github">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-                </svg>
-                GitHub Profile
-            </a>
-        </div>
+        <p class="lede">This tool fits a decision tree to two lagged values of the classic airline passenger series and redraws the tree diagram, the Lag_1/Lag_2 decision boundaries, and the resulting forecast every time you drag the depth or horizon slider. Because each leaf can only output the average of the training points that land in it, watch the forecast flatten into a staircase and drift away from the trend the further out you push the horizon.</p>
     </div>
-
+    <div class="byline"><strong>Dr. Pedram Jahangiry</strong>
+        <a href="https://pedramjahangiry.com/" target="_blank" rel="noopener">Website</a>
+        <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" rel="noopener">YouTube</a>
+        <a href="https://github.com/pjalgotrader" target="_blank" rel="noopener">GitHub</a></div>
+</header>
     <div class="container">
-        <p style="max-width: 760px; margin: 0 auto 25px auto; text-align: center; color: #555; line-height: 1.6; font-size: 1.05em;">This tool fits a decision tree to two lagged values of the classic airline passenger series and redraws the tree diagram, the Lag_1/Lag_2 decision boundaries, and the resulting forecast every time you drag the depth or horizon slider. Because each leaf can only output the average of the training points that land in it, watch the forecast flatten into a staircase and drift away from the trend the further out you push the horizon.</p>
 
         <div class="intro">
             <h2>Understanding Decision Tree Regression for Forecasting</h2>

@@ -11,34 +11,34 @@ try { const t = localStorage.getItem("boost-theme"); if (t === "light" || t === 
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 /* Layout: the same lab bench as the Learning Curve and Bagging labs. Controls, forecast and error instruments, the verdict strip, then a split-finding workbench (histogram and GOSS), a comparison table, and key ideas. */
 :root{
-  --bg:#EEF1F5; --surface:#FFFFFF; --ink:#141B26; --muted:#5A6577; --line:#D6DCE5; --grid:#E6EAF0; --band:#F4F6F9; --tile:#F4F6F9;
+  --bg:#F7F4EC; --surface:#FDFCF8; --ink:#1C1B18; --muted:#6A675D; --line:#DCD7C8; --grid:#E7E3D6; --band:#F1EDE2; --tile:#F4F6F9;
   --train:#1E5BC6; --val:#D97A0B; --bench:#C8213B; --truth:#1E8C5A;
   --kept:#D2541F; --samp:#6A5FD1; --skip:#CDD3DC; --pos:#1E8C5A; --neg:#6A5FD1;
   --bias-fg:#7A4E00; --bias-bg:#FFF0D2; --var-fg:#A0213B; --var-bg:#FDE3E8; --good-fg:#15623C; --good-bg:#DCF2E5;
-  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  --f-body:"Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  --r:10px;
+  --f-display:"Fraunces", "Iowan Old Style", Georgia, serif;
+  --f-body:"Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:6px;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#0E131B; --surface:#151C27; --ink:#E5EAF1; --muted:#97A3B5; --line:#2A3445; --grid:#1D2532; --band:#19212D; --tile:#1B2330;
+  --bg:#0A1020; --surface:#0F1A31; --ink:#E9E4D4; --muted:#9A9DAB; --line:#263250; --grid:#16203A; --band:#141F3A; --tile:#1B2330;
   --train:#70A4FF; --val:#FFA53D; --bench:#FF5C74; --truth:#4CC38A;
   --kept:#FF7A45; --samp:#9D94FF; --skip:#344055; --pos:#4CC38A; --neg:#9D94FF;
   --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
   color-scheme:dark } }
 :root[data-theme="dark"]{
-  --bg:#0E131B; --surface:#151C27; --ink:#E5EAF1; --muted:#97A3B5; --line:#2A3445; --grid:#1D2532; --band:#19212D; --tile:#1B2330;
+  --bg:#0A1020; --surface:#0F1A31; --ink:#E9E4D4; --muted:#9A9DAB; --line:#263250; --grid:#16203A; --band:#141F3A; --tile:#1B2330;
   --train:#70A4FF; --val:#FFA53D; --bench:#FF5C74; --truth:#4CC38A;
   --kept:#FF7A45; --samp:#9D94FF; --skip:#344055; --pos:#4CC38A; --neg:#9D94FF;
   --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
   color-scheme:dark }
 
 *{box-sizing:border-box}
-body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.55;
+body{background:var(--bg); border-top:3px solid var(--ink); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.55;
   padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:28px 48px}
 .wrap{max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:20px}
 a{color:var(--train)}

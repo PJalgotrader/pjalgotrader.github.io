@@ -6,90 +6,38 @@
     <meta name="description" content="Draw repeated 20-point samples from a noisy quadratic, fit polynomials of degree 0-4 live, and watch the bias-variance tradeoff decompose in your browser.">
     <title>Bias-Variance Tradeoff | Dr. Pedram Jahangiry</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0A1020 0%, #1B2A4A 100%);
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #1C1B18;
+            border-top: 3px solid #E9E4D4;
             min-height: 100vh;
             padding: 20px;
         }
 
-        .header {
-            text-align: center;
-            color: white;
-            padding: 30px 20px;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header .subtitle {
-            font-size: 1.2em;
-            opacity: 0.9;
-            margin-bottom: 5px;
-        }
-
-        .header .attribution {
-            font-size: 1.1em;
-            margin: 15px 0;
-            opacity: 0.95;
-        }
-
-        .header .links {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
-
-        .header .links a {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-size: 0.9em;
-            font-weight: 600;
-        }
-
-        .header .links a:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .btn-website { background: linear-gradient(135deg, #D0A63C, #E8C468); color: #0A1020 !important; }
-        .btn-youtube { background: linear-gradient(135deg, #ff0000, #cc0000); }
-        .btn-github { background: linear-gradient(135deg, #333, #000); }
-
         .container {
             max-width: 1300px;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
+            background: #FDFCF8;
+            border-radius: 6px;
             padding: 35px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
         }
 
         .intro {
-            background: linear-gradient(135deg, #EEF3FB, #E3EBF7);
-            border-radius: 12px;
+            background: #F1EDE2;
+            border-radius: 6px;
             padding: 24px;
             margin-bottom: 24px;
             border-left: 5px solid #2C5AA0;
         }
 
         .intro h3 { color: #2C5AA0; margin-bottom: 10px; font-size: 1.15em; }
-        .intro p { color: #475569; line-height: 1.7; font-size: 0.95em; }
+        .intro p { color: #6A675D; line-height: 1.7; font-size: 0.95em; }
 
         /* Controls */
         .controls {
@@ -99,8 +47,8 @@
             flex-wrap: wrap;
             margin-bottom: 20px;
             padding: 20px;
-            background: #f8fafc;
-            border-radius: 12px;
+            background: #F1EDE2;
+            border-radius: 6px;
         }
 
         .control-group {
@@ -111,7 +59,7 @@
 
         .control-group label {
             font-weight: 600;
-            color: #334155;
+            color: #1C1B18;
             font-size: 0.92em;
             white-space: nowrap;
         }
@@ -132,7 +80,7 @@
         .btn {
             padding: 10px 20px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 0.9em;
             font-weight: 600;
             cursor: pointer;
@@ -142,11 +90,11 @@
 
         .btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: none;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #0A1020, #1B2A4A);
+            background: #1C1B18;
             color: white;
         }
 
@@ -162,7 +110,7 @@
 
         .draw-count {
             font-size: 0.88em;
-            color: #64748b;
+            color: #6A675D;
             font-weight: 500;
             margin-left: auto;
         }
@@ -179,7 +127,7 @@
             gap: 12px;
             margin-bottom: 20px;
             padding: 14px 20px;
-            border-radius: 10px;
+            border-radius: 6px;
             transition: all 0.4s ease;
         }
 
@@ -193,11 +141,11 @@
 
         .complexity-bar .desc {
             font-size: 0.9em;
-            color: #475569;
+            color: #6A675D;
             line-height: 1.5;
         }
 
-        .complexity-bar .desc strong { color: #1e293b; }
+        .complexity-bar .desc strong { color: #1C1B18; }
 
         /* Charts grid */
         .charts-grid {
@@ -208,8 +156,8 @@
         }
 
         .chart-box {
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            border: 2px solid #DCD7C8;
+            border-radius: 6px;
             overflow: hidden;
         }
 
@@ -217,9 +165,9 @@
             padding: 10px 16px;
             font-weight: 700;
             font-size: 0.92em;
-            color: #334155;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
+            color: #1C1B18;
+            background: #F1EDE2;
+            border-bottom: 1px solid #DCD7C8;
         }
 
         /* Metrics cards */
@@ -232,16 +180,16 @@
 
         .metric-card {
             padding: 16px;
-            border-radius: 12px;
+            border-radius: 6px;
             text-align: center;
-            border: 2px solid #e2e8f0;
+            border: 2px solid #DCD7C8;
             transition: all 0.3s ease;
         }
 
         .metric-card .metric-label {
             font-size: 0.78em;
             font-weight: 600;
-            color: #64748b;
+            color: #6A675D;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 6px;
@@ -265,7 +213,7 @@
         .mc-var .metric-value { color: #d97706; }
 
         .mc-irr { border-color: #94a3b8; }
-        .mc-irr .metric-value { color: #64748b; }
+        .mc-irr .metric-value { color: #6A675D; }
 
         .mc-total { border-color: #ef4444; }
         .mc-total .metric-value { color: #dc2626; }
@@ -274,17 +222,17 @@
         .equation-bar {
             text-align: center;
             padding: 14px;
-            background: #f8fafc;
-            border-radius: 10px;
+            background: #F1EDE2;
+            border-radius: 6px;
             margin-bottom: 20px;
             font-size: 1.05em;
-            color: #334155;
+            color: #1C1B18;
         }
 
         .equation-bar .eq-part { font-weight: 700; }
         .eq-bias { color: #2563eb; }
         .eq-var { color: #d97706; }
-        .eq-irr { color: #64748b; }
+        .eq-irr { color: #6A675D; }
         .eq-total { color: #dc2626; }
 
         @media (max-width: 900px) {
@@ -299,33 +247,38 @@
             .control-group { flex-wrap: wrap; }
             .control-group label { white-space: normal; }
         }
+
+        /* Lab chrome, the same page as the Boosting, Bagging, Learning Curve and Histogram labs:
+           paper page with an ink top rule, header on the paper (mono top line, serif title, lede,
+           byline with text links), then the tool in a flat surface panel. */
+        body { background: #F7F4EC; border-top: 3px solid #1C1B18; color: #1C1B18; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 0; min-height: 0;
+               padding: 28px max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)); }
+        .lab-head { max-width: 1180px; margin: 0 auto 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px 24px; text-align: left; }
+        .lab-head .eyebrow { margin: 0; font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 11.5px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: #6A675D; }
+        .lab-head h1 { margin: 6px 0 8px; font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.05; letter-spacing: -.01em; text-align: left; text-wrap: balance; color: #1C1B18; }
+        .lab-head .lede { margin: 0; max-width: 66ch; font-size: 16px; line-height: 1.55; text-align: left; color: #6A675D; }
+        .lab-head .byline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: #6A675D; }
+        .lab-head .byline strong { color: #1C1B18; font-weight: 600; }
+        .lab-head .byline a { color: #1E5BC6; }
+        .container { max-width: 1180px; margin: 0 auto; background: #FDFCF8; border: 1px solid #DCD7C8; border-radius: 6px; box-shadow: none; }
+        .container :is(h2, h3, h4) { font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; }
+        .container :is(.value-display, .val) { background: transparent; color: #1C1B18; font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-weight: 600; }
     </style>
 </head>
 <body>
-
-<div class="header">
-    <h1>The Bias-Variance Tradeoff</h1>
-    <div class="subtitle">Module 5 — Machine Learning for Time Series Forecasting</div>
-    <div class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</div>
-    <div class="links">
-        <a href="https://pedramjahangiry.com/" class="btn-website">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            Website
-        </a>
-        <a href="https://www.youtube.com/@pedramjahangiry" class="btn-youtube">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.8zM9.6 15.6V8.4L16 12l-6.4 3.6z"/></svg>
-            YouTube
-        </a>
-        <a href="https://github.com/pjalgotrader" class="btn-github">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12c0 5.3 3.4 9.8 8.2 11.4.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 24 12C24 5.4 18.6 0 12 0z"/></svg>
-            GitHub
-        </a>
+<header class="lab-head">
+    <div>
+        <p class="eyebrow">Interactive tool &middot; Machine learning</p>
+        <h1>The Bias-Variance Tradeoff</h1>
+        <p class="lede">This tool refits a polynomial to a fresh random sample every time you click "Draw Sample," so you can watch low-degree fits stay stable but miss the curve while high-degree fits chase the noise instead. Bias, variance, and the resulting mean squared error update from the accumulated draws, letting you see the tradeoff build up sample by sample rather than take it on faith.</p>
     </div>
-</div>
-
+    <div class="byline"><strong>Dr. Pedram Jahangiry</strong>
+        <a href="https://pedramjahangiry.com/" target="_blank" rel="noopener">Website</a>
+        <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" rel="noopener">YouTube</a>
+        <a href="https://github.com/pjalgotrader" target="_blank" rel="noopener">GitHub</a></div>
+</header>
 <div class="container">
 
-    <p style="max-width: 760px; margin: 0 auto 25px auto; text-align: center; color: #555; line-height: 1.6; font-size: 1.05em;">This tool refits a polynomial to a fresh random sample every time you click "Draw Sample," so you can watch low-degree fits stay stable but miss the curve while high-degree fits chase the noise instead. Bias, variance, and the resulting mean squared error update from the accumulated draws, letting you see the tradeoff build up sample by sample rather than take it on faith.</p>
 
     <div class="intro">
         <h3>Understanding Bias and Variance Through Repeated Sampling</h3>
@@ -345,13 +298,13 @@
     </div>
 
     <!-- Mathematical Definitions -->
-    <div style="background:#f8fafc; border-radius:12px; padding:20px 24px; margin-bottom:20px; border:2px solid #e2e8f0;">
+    <div style="background:#F1EDE2; border-radius:12px; padding:20px 24px; margin-bottom:20px; border:2px solid #e2e8f0;">
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap:20px;">
             <div>
                 <div style="font-weight:700; color:#2563eb; margin-bottom:8px; font-size:0.95em;">Bias² — Systematic Error</div>
                 <div style="background:white; padding:12px 16px; border-radius:8px; border-left:4px solid #2563eb; font-family:'Courier New',monospace; font-size:0.88em; color:#334155; line-height:1.8;">
                     Bias[f&#x0302;(x)] = E[f&#x0302;(x)] &minus; f(x)<br>
-                    <span style="color:#64748b; font-family:inherit; font-size:0.92em;">
+                    <span style="color:#6A675D; font-family:inherit; font-size:0.92em;">
                         How far is the <strong>average prediction</strong><br>
                         across all samples from the <strong>truth</strong>?
                     </span>
@@ -361,7 +314,7 @@
                 <div style="font-weight:700; color:#d97706; margin-bottom:8px; font-size:0.95em;">Variance — Instability</div>
                 <div style="background:white; padding:12px 16px; border-radius:8px; border-left:4px solid #d97706; font-family:'Courier New',monospace; font-size:0.88em; color:#334155; line-height:1.8;">
                     Var[f&#x0302;(x)] = E[(f&#x0302;(x) &minus; E[f&#x0302;(x)])&sup2;]<br>
-                    <span style="color:#64748b; font-family:inherit; font-size:0.92em;">
+                    <span style="color:#6A675D; font-family:inherit; font-size:0.92em;">
                         How much do <strong>individual predictions</strong><br>
                         vary around their <strong>average</strong>?
                     </span>
@@ -373,7 +326,7 @@
                 <span style="color:#dc2626; font-weight:700;">E[Test Error]</span> =
                 <span style="color:#2563eb; font-weight:700;">Bias&sup2;</span> +
                 <span style="color:#d97706; font-weight:700;">Variance</span> +
-                <span style="color:#64748b; font-weight:700;">&sigma;&sup2;</span>
+                <span style="color:#6A675D; font-weight:700;">&sigma;&sup2;</span>
                 <span style="color:#94a3b8;">&nbsp;&nbsp;(irreducible noise)</span>
             </span>
         </div>
