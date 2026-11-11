@@ -288,7 +288,10 @@
         :root[data-theme="dark"] .container { filter: invert(1) hue-rotate(180deg); }
         :root[data-theme="dark"] .js-plotly-plot .main-svg { background: transparent !important; }
         :root[data-theme="dark"] .js-plotly-plot rect.bg { fill: transparent !important; }
-        
+
+        /* Explanation panel in the page's own tones instead of the old peach gradient. */
+        .info-panel { background: var(--lab-band); border: 1px solid var(--lab-line); }
+        .info-panel h3 { color: #1C1B18; }
     </style>
 </head>
 <body>
