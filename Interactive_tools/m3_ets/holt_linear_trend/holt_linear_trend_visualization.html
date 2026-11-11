@@ -6,6 +6,9 @@
     <meta name="description" content="Holt's linear trend method, animated step by step on real airline data - drag the alpha and beta sliders and watch level, trend, and forecast update live.">
     <title>Holt's Linear Trend Method - Interactive Learning Tool</title>
     <script src="https://cdn.jsdelivr.net/npm/plotly.js@2.27.0/dist/plotly.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -15,79 +18,32 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0A1020 0%, #1B2A4A 100%);
+            background: #0A1020;
+            border-top: 3px solid #4FB3A5;
             min-height: 100vh;
             padding: 20px;
         }
         
+        /* Ledger chrome, shared with the rest of the site: flat paper page, serif title,
+           mono labels, hairlines and outlined links. Charts and controls are untouched. */
+        .header { padding: 26px 30px 24px; background: #0A1020; color: #E9E4D4; }
+        .eyebrow { margin-bottom: 8px; font-family: 'IBM Plex Mono', 'SF Mono', Menlo, monospace; font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: #4FB3A5; }
+        .header h1 { margin-bottom: 8px; font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; font-weight: 700; font-size: 2.4em; line-height: 1.05; letter-spacing: -0.02em; }
+        .header .subtitle { font-size: 1.1em; color: #C0BCAD; }
+        .header .attribution { margin-top: 10px; font-family: 'IBM Plex Mono', 'SF Mono', Menlo, monospace; font-size: 12.5px; letter-spacing: 0.02em; color: #8B8FA0; }
+        .header .links, .header-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+        :is(.header .links, .header-links) a { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 14px; border-radius: 4px; text-decoration: none; font-family: 'IBM Plex Mono', 'SF Mono', Menlo, monospace; font-size: 12.5px; font-weight: 500; transition: background-color 0.2s, border-color 0.2s, color 0.2s; border: 1px solid #3A4A70; color: #E9E4D4; }
+        :is(.header .links, .header-links) a:hover { background: #E9E4D4; border-color: #E9E4D4; color: #0A1020; }
+        :is(.header .links, .header-links) a.btn-website { border-color: #D0A63C; color: #D0A63C; }
+        :is(.header .links, .header-links) a.btn-website:hover { background: #D0A63C; color: #0A1020; }
+        @media (max-width: 640px) { .header h1 { font-size: 1.75em; } }
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 6px;
             overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #0A1020 0%, #1B2A4A 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.95;
-        }
-        
-        .attribution {
-            text-align: center;
-            color: rgba(255,255,255,0.9);
-            margin-bottom: 15px;
-            font-size: 1.1em;
-        }
-        
-        .header-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 25px;
-        }
-        
-        .header-links a {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            color: white;
-            font-weight: 600;
-            padding: 10px 20px;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-        
-        .header-links a:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        
-        .btn-website {
-            background: linear-gradient(135deg, #D0A63C, #E8C468); color: #0A1020 !important;
-        }
-        
-        .btn-youtube {
-            background: linear-gradient(135deg, #ff0000, #cc0000);
-        }
-        
-        .btn-github {
-            background: linear-gradient(135deg, #333, #000);
         }
         
         .subtitle {
@@ -444,6 +400,7 @@
 <body>
     <div class="container">
         <div class="header">
+            <p class="eyebrow">Interactive tool &middot; Exponential smoothing</p>
             <h1>📊 Holt's Linear Trend Method</h1>
             <p class="attribution">Created by Dr. Pedram Jahangiry | Enhanced with Claude</p>
             <div class="header-links">
