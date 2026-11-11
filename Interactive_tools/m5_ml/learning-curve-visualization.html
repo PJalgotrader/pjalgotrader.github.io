@@ -7,7 +7,7 @@
 <title>Learning Curves Interactive Tool | Dr. Pedram Jahangiry</title>
 <script>
 // Apply a saved light/dark choice before first paint; otherwise follow the device setting.
-try { const t = localStorage.getItem("lc-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+try { const t = localStorage.getItem("lab-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -841,7 +841,7 @@ function syncThemeBtn() {
 $("#themeBtn").addEventListener("click", () => {
   const next = isDark() ? "light" : "dark";
   document.documentElement.setAttribute("data-theme", next);
-  try { localStorage.setItem("lc-theme", next); } catch (e) {}
+  try { localStorage.setItem("lab-theme", next); } catch (e) {}
   syncThemeBtn();
 });
 syncThemeBtn();
