@@ -397,6 +397,48 @@
         .container { max-width: 1180px; margin: 0 auto; background: #FDFCF8; border: 1px solid #DCD7C8; border-radius: 6px; box-shadow: none; }
         .container :is(h2, h3, h4) { font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; }
         .container :is(.value-display, .val) { background: transparent; color: #1C1B18; font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-weight: 600; }
+
+        /* Lab density: tighter panels, controls and gaps, in the manner of the Boosting lab.
+           Appended last so it wins over the older spacing rules above. */
+        body { padding-top: 20px; }
+        .lab-head { margin-bottom: 14px; }
+        .lab-head .lede { max-width: 78ch; font-size: 15px; }
+        :where(.container) button { padding: 8px 16px; font-size: 13.5px; }
+        :where(.container) select { padding: 6px 8px; }
+        :where(.container) :is(.controls, .intro, .info-panel, .explanation, .chart-container, .chart-section, .tabs, .model-tabs, .button-group, .warning-box, .pipeline, .key-insight, .description, .usage-info, .stats-panel, .metrics-row, .charts-grid, .model-strip, .eq-box, .status-row, .lr-indicator, .complexity-bar, .equation-bar) { margin-bottom: 14px; }
+        :where(.container) :is(.controls, .intro, .info-panel, .explanation, .warning-box, .pipeline, .key-insight, .usage-info, .description, .chart-section) { padding: 14px 18px; }
+        :where(.container) :is(.intro, .info-panel, .explanation, .warning-box, .key-insight) :is(p, li) { margin-bottom: 6px; font-size: 14px; line-height: 1.55; }
+        :where(.container) :is(.intro, .info-panel, .explanation) :is(h2, h3) { margin-bottom: 8px; font-size: 18px; }
+        :where(.container) .control-group label { margin-bottom: 4px; font-size: 13px; }
+        input[type="range"]::-webkit-slider-thumb { width: 16px; height: 16px; }
+        input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; }
+        .train-button { margin-top: 12px; padding: 10px 16px; font-size: 14px; }
+        .equations-panel { padding: 14px 20px; }
+        .equations-panel:not(:has(.equations-grid)), .equations-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 10px; }
+        .equation-box { margin: 0; padding: 10px 14px; border: 1px solid #DCD7C8; box-shadow: none; }
+        .equation-box h3 { margin-bottom: 4px; font-size: 15px; }
+        .equation { margin: 4px 0; padding: 6px 8px; font-size: 14px; }
+        .equation-box p, .equation-description { margin-top: 4px !important; font-size: 12.5px; }
+        .comparison-box { margin: 10px 20px; padding: 10px 14px; font-size: 13.5px; }
+        .comparison-box h4 { margin-bottom: 4px; }
+        .controls-panel { padding: 14px 20px; gap: 10px; }
+        .control-row { justify-content: flex-start; gap: 10px 28px; margin-bottom: 6px; }
+        .control-group { max-width: none; }
+        .slider-container { gap: 8px; }
+        .value-display { min-width: 44px; padding: 0; font-size: 13px; text-align: right; }
+        .button-group { gap: 8px; margin: 10px 0 0; }
+        .bf-actions { margin-top: 10px; padding-top: 10px; }
+        .visualization-panel { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 12px; align-items: start; padding: 14px 20px; }
+        .visualization-panel > * { grid-column: 1 / -1; min-width: 0; }
+        .chart-container { margin-bottom: 0; padding: 8px; border: 1px solid #DCD7C8; box-shadow: none; }
+        .info-cards { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 0; }
+        .info-card { padding: 10px; }
+        .info-card h4 { margin-bottom: 2px; font-size: 12.5px; }
+        .info-card .value { font-size: 1.25em; }
+        .iteration-info { margin: 0; padding: 10px 14px; }
+        .component-container { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-bottom: 0; }
+        @media (min-width: 900px) { .component-container { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        /* end lab density */
     </style>
 </head>
 <body>
