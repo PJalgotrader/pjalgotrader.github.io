@@ -9,7 +9,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+    // Theme: follows the system until the button is pressed; the choice is shared by these tools.
+    try { const t = localStorage.getItem("lab-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+    </script>
     <style>
+        /* Neutral tones of the tool panel. In dark mode the whole panel is flipped by a filter
+           (see "Lab dark mode" below), so the dark values here are the colours that come out
+           as navy #0F1A31 / #141F3A / #263250 after the flip. */
+        :root { --lab-surface: #FDFCF8; --lab-band: #F1EDE2; --lab-line: #DCD7C8; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -23,7 +31,7 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: #FDFCF8;
+            background: var(--lab-surface);
             border-radius: 6px;
             padding: 40px;
         }
@@ -33,7 +41,7 @@
             display: flex;
             gap: 0;
             margin-bottom: 30px;
-            border-bottom: 3px solid #DCD7C8;
+            border-bottom: 3px solid var(--lab-line);
             overflow-x: auto;
         }
 
@@ -60,7 +68,7 @@
 
         /* Intro & boxes */
         .intro {
-            background: #F1EDE2;
+            background: var(--lab-band);
             border-radius: 6px;
             padding: 24px;
             margin-bottom: 28px;
@@ -111,7 +119,7 @@
             flex-wrap: wrap;
             margin-bottom: 24px;
             padding: 20px;
-            background: #F1EDE2;
+            background: var(--lab-band);
             border-radius: 6px;
         }
 
@@ -129,11 +137,11 @@
 
         .control-group select, .control-group input[type="range"] {
             padding: 8px 12px;
-            border: 2px solid #DCD7C8;
+            border: 2px solid var(--lab-line);
             border-radius: 6px;
             font-size: 0.95em;
             font-family: inherit;
-            background: #FDFCF8;
+            background: var(--lab-surface);
             cursor: pointer;
         }
 
@@ -180,7 +188,7 @@
         .stat-card {
             flex: 1;
             min-width: 130px;
-            background: #F1EDE2;
+            background: var(--lab-band);
             border-radius: 6px;
             padding: 16px;
             text-align: center;
@@ -213,11 +221,11 @@
 
         .comparison-table td {
             padding: 10px 16px;
-            border-bottom: 1px solid #DCD7C8;
+            border-bottom: 1px solid var(--lab-line);
             color: #6A675D;
         }
 
-        .comparison-table tr:nth-child(even) { background: #F1EDE2; }
+        .comparison-table tr:nth-child(even) { background: var(--lab-band); }
         .comparison-table .check { color: #10b981; font-weight: 700; }
         .comparison-table .cross { color: #ef4444; font-weight: 700; }
         .table-scroll { overflow-x: auto; }
@@ -226,22 +234,22 @@
         /* Segmented toggle */
         .seg {
             display: inline-flex;
-            border: 2px solid #DCD7C8;
+            border: 2px solid var(--lab-line);
             border-radius: 6px;
             overflow: hidden;
-            background: #FDFCF8;
+            background: var(--lab-surface);
         }
         .seg button {
             padding: 8px 14px;
             border: none;
-            background: #FDFCF8;
+            background: var(--lab-surface);
             font-family: inherit;
             font-size: 0.9em;
             font-weight: 600;
             color: #6A675D;
             cursor: pointer;
         }
-        .seg button + button { border-left: 2px solid #DCD7C8; }
+        .seg button + button { border-left: 2px solid var(--lab-line); }
         .seg button.on { background: #1C1B18; color: white; }
 
         .hint { flex-basis: 100%; font-size: 0.82em; color: #6A675D; line-height: 1.5; }
@@ -250,15 +258,15 @@
         .section-title { margin-top: 40px; color: #1C1B18; }
         .dist-panel {
             margin-top: 16px;
-            border: 2px solid #DCD7C8;
+            border: 2px solid var(--lab-line);
             border-radius: 6px;
             padding: 24px;
         }
 
         /* Pipeline box */
         .pipeline {
-            background: #F1EDE2;
-            border: 2px solid #DCD7C8;
+            background: var(--lab-band);
+            border: 2px solid var(--lab-line);
             border-radius: 6px;
             padding: 20px 24px;
             margin-bottom: 28px;
@@ -268,8 +276,8 @@
         .pipe-step {
             flex: 1;
             min-width: 180px;
-            background: #FDFCF8;
-            border: 2px solid #DCD7C8;
+            background: var(--lab-surface);
+            border: 2px solid var(--lab-line);
             border-radius: 6px;
             padding: 12px 14px;
             font-size: 0.88em;
@@ -277,7 +285,7 @@
             line-height: 1.5;
         }
         .pipe-step strong { display: block; color: #2C5AA0; margin-bottom: 4px; font-size: 1.02em; }
-        .pipe-step.hot { border-color: #2C5AA0; background: #F1EDE2; }
+        .pipe-step.hot { border-color: #2C5AA0; background: var(--lab-band); }
         .pipe-arrow { align-self: center; color: #94a3b8; font-size: 1.4em; font-weight: 700; }
         .pipeline .caveat { margin-top: 12px; font-size: 0.84em; color: #6A675D; line-height: 1.6; }
         @media (max-width: 768px) { .pipe-arrow { display: none; } }
@@ -285,7 +293,7 @@
         /* Next step callout */
         .next-box {
             margin-top: 32px;
-            background: #F1EDE2;
+            background: var(--lab-band);
             border-left: 5px solid #2C5AA0;
             border-radius: 6px;
             padding: 18px 24px;
@@ -320,7 +328,7 @@
         .lab-head .byline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: #6A675D; }
         .lab-head .byline strong { color: #1C1B18; font-weight: 600; }
         .lab-head .byline a { color: #1E5BC6; }
-        .container { max-width: 1180px; margin: 0 auto; background: #FDFCF8; border: 1px solid #DCD7C8; border-radius: 6px; box-shadow: none; }
+        .container { max-width: 1180px; margin: 0 auto; background: var(--lab-surface); border: 1px solid var(--lab-line); border-radius: 6px; box-shadow: none; }
         .container :is(h2, h3, h4) { font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; }
         .container :is(.value-display, .val) { background: transparent; color: #1C1B18; font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-weight: 600; }
 
@@ -341,6 +349,36 @@
         .train-button { margin-top: 12px; padding: 10px 16px; font-size: 14px; }
         .container { padding: 20px; }
         /* end lab density */
+
+        /* Lab dark mode. The header and page use the site's dark tones directly. The tool panel
+           has hundreds of hard-coded colours in its styles, charts and scripts, so it is flipped
+           as one piece: invert lightness, then rotate hue back, which keeps every colour's hue
+           and every text/background contrast. Follows the system unless data-theme is set. */
+        .theme-btn { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 1px solid #DCD7C8; border-radius: 8px; background: #FDFCF8; color: #1C1B18; cursor: pointer; }
+        .theme-btn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+        /* Text inside the panel must not inherit the page colour, which turns light in dark mode and would be flipped back to dark. */
+        .container { color: #1C1B18; }
+        @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) { --lab-surface: #DBE6FD; --lab-band: #D6E1FC; --lab-line: #C2CEEC; }
+        :root:not([data-theme="light"]) body { background: #0A1020; border-top-color: #E9E4D4; color: #E9E4D4; }
+        :root:not([data-theme="light"]) .lab-head h1, :root:not([data-theme="light"]) .lab-head .byline strong { color: #E9E4D4; }
+        :root:not([data-theme="light"]) .lab-head :is(.eyebrow, .lede, .byline) { color: #9A9DAB; }
+        :root:not([data-theme="light"]) .lab-head .byline a { color: #70A4FF; }
+        :root:not([data-theme="light"]) .theme-btn { background: #0F1A31; border-color: #263250; color: #E9E4D4; }
+        :root:not([data-theme="light"]) .container { filter: invert(1) hue-rotate(180deg); }
+        :root:not([data-theme="light"]) .js-plotly-plot .main-svg { background: transparent !important; }
+        :root:not([data-theme="light"]) .js-plotly-plot rect.bg { fill: transparent !important; }
+        }
+        :root[data-theme="dark"] { --lab-surface: #DBE6FD; --lab-band: #D6E1FC; --lab-line: #C2CEEC; }
+        :root[data-theme="dark"] body { background: #0A1020; border-top-color: #E9E4D4; color: #E9E4D4; }
+        :root[data-theme="dark"] .lab-head h1, :root[data-theme="dark"] .lab-head .byline strong { color: #E9E4D4; }
+        :root[data-theme="dark"] .lab-head :is(.eyebrow, .lede, .byline) { color: #9A9DAB; }
+        :root[data-theme="dark"] .lab-head .byline a { color: #70A4FF; }
+        :root[data-theme="dark"] .theme-btn { background: #0F1A31; border-color: #263250; color: #E9E4D4; }
+        :root[data-theme="dark"] .container { filter: invert(1) hue-rotate(180deg); }
+        :root[data-theme="dark"] .js-plotly-plot .main-svg { background: transparent !important; }
+        :root[data-theme="dark"] .js-plotly-plot rect.bg { fill: transparent !important; }
+        
     </style>
 </head>
 <body>
@@ -353,7 +391,8 @@
     <div class="byline"><strong>Dr. Pedram Jahangiry</strong>
         <a href="https://pedramjahangiry.com/" target="_blank" rel="noopener">Website</a>
         <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" rel="noopener">YouTube</a>
-        <a href="https://github.com/pjalgotrader" target="_blank" rel="noopener">GitHub</a></div>
+        <a href="https://github.com/pjalgotrader" target="_blank" rel="noopener">GitHub</a>
+        <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><svg id="themeIcon" viewBox="0 0 24 24"></svg></button></div>
 </header>
     <div class="container">
 
@@ -1650,6 +1689,18 @@
     runIID();
     runDistribution();
     </script>
+<script>
+(function () {
+    var SUN = '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>';
+    var MOON = '<path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/>';
+    var root = document.documentElement, btn = document.getElementById('themeBtn'), icon = document.getElementById('themeIcon');
+    function isDark() { var t = root.getAttribute('data-theme'); return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; }
+    function sync() { var d = isDark(), label = d ? 'Switch to light theme' : 'Switch to dark theme'; icon.innerHTML = d ? SUN : MOON; btn.setAttribute('aria-label', label); btn.title = label; }
+    btn.onclick = function () { var next = isDark() ? 'light' : 'dark'; root.setAttribute('data-theme', next); try { localStorage.setItem('lab-theme', next); } catch (e) {} sync(); };
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', sync);
+    sync();
+})();
+</script>
 <!-- Cloudflare Web Analytics -->
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
 <!-- End Cloudflare Web Analytics -->
