@@ -9,9 +9,7 @@
     <meta name="theme-color" content="#0A1020">
     <link rel="canonical" href="https://pedramjahangiry.com/teaching.html">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="styles.css?v=12">
-    <link rel="stylesheet" href="design-lab.css">
-    <script src="design-lab.js"></script>
+    <link rel="stylesheet" href="styles.css?v=13">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -27,24 +25,26 @@
         .phil p:last-child { margin-bottom: 0; }
 
         .hand { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 34px; }
-        /* Card faces keep their own colors in both themes, so their ink stays navy. */
-        .pc { --dark: #0A1020; --c: #D0A63C; --tilt: 0deg; position: relative; display: flex; min-width: 0; transform: rotate(var(--tilt)); perspective: 1400px; transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1.2); }
-        .c1 { --c: #D0A63C; --tilt: -0.8deg; }
-        .c2 { --c: #D0603F; --tilt: 0.7deg; }
-        .c3 { --c: #4FB3A5; --tilt: -0.7deg; }
-        .c4 { --c: #E9E4D4; --tilt: -0.8deg; }
-        .c5 { --c: #7DA2E8; --tilt: 0.7deg; }
-        .pc:hover { transform: rotate(0deg) translateY(-8px) scale(1.02); z-index: 2; }
+        /* Ledger cards (same system as styles.css): paper faces, each card's colour only as its top rule, top line, art and action bar. */
+        .pc { --c: #D0A63C; --c-ink: var(--c); --dark: var(--ink); position: relative; display: flex; min-width: 0; perspective: 1400px; transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1.2); }
+        [data-theme="light"] .pc { --c-ink: color-mix(in srgb, var(--c) 60%, #0A1020); }
+        .c1 { --c: #D0A63C; }
+        .c2 { --c: #D0603F; }
+        .c3 { --c: #4FB3A5; }
+        .c4 { --c: #E9E4D4; }
+        [data-theme="light"] .c4 { --c: #1B2A4A; }
+        .c5 { --c: #7DA2E8; }
+        .pc:hover { transform: translateY(-5px); z-index: 2; }
         .flipper { display: grid; flex: 1; min-width: 0; transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(0.3, 0.9, 0.3, 1); }
         .flipped .flipper { transform: rotateY(180deg); }
-        .face { grid-area: 1 / 1; display: flex; flex-direction: column; min-width: 0; padding: 9px; border-radius: 14px; background: var(--c); color: var(--dark); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .face { grid-area: 1 / 1; display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--line); border-top: 3px solid var(--c-ink); border-radius: 6px; background: var(--card); color: var(--ink); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
         .back { transform: rotateY(180deg); }
-        .inner { display: flex; flex-direction: column; flex: 1; gap: 7px; min-width: 0; padding: 11px 12px; border: 1.5px solid var(--dark); border-radius: 8px; }
-        .top { display: flex; justify-content: space-between; gap: 8px; font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; }
+        .inner { display: flex; flex-direction: column; flex: 1; gap: 7px; min-width: 0; padding: 15px 16px; }
+        .top { display: flex; justify-content: space-between; gap: 8px; font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; color: var(--c-ink); }
         .back .top { white-space: normal; }
         .back .top span:last-child { display: none; }
         .pc .name { font-family: var(--serif); font-weight: 800; font-size: 21px; line-height: 1.06; letter-spacing: -0.01em; min-height: 67px; margin: 0; color: var(--dark); }
-        .window { display: flex; align-items: center; justify-content: center; height: 60px; padding: 7px; border-radius: 5px; background: var(--dark); color: var(--c); }
+        .window { display: flex; align-items: center; justify-content: center; height: 60px; padding: 7px; border-radius: 5px; background: var(--paper-deep); color: var(--c-ink); }
         .window svg { display: block; width: 100%; height: auto; max-height: 46px; }
         .ln { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
         .thin { fill: none; stroke: currentColor; stroke-width: 1; stroke-linecap: round; opacity: 0.55; }
@@ -53,20 +53,21 @@
         .pc .desc { margin: 0; font-size: 13px; line-height: 1.35; font-weight: 500; color: var(--dark); }
         .pc .backdesc { display: none; }
         .stats { display: flex; flex-direction: column; margin-top: auto; font-family: var(--mono); font-size: 12px; font-weight: 500; }
-        .sr { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-top: 1px solid rgba(10, 16, 32, 0.45); }
+        .sr { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-top: 1px solid var(--line); }
         .sr b { font-weight: 600; }
-        .go { appearance: none; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; border-radius: 4px; background: var(--dark); color: var(--c); font-family: var(--mono); font-weight: 600; font-size: 13px; text-align: center; }
+        .go { appearance: none; border: 1px solid var(--c-ink); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; border-radius: 4px; background: transparent; color: var(--c-ink); transition: background-color 0.2s, color 0.2s; font-family: var(--mono); font-weight: 600; font-size: 13px; text-align: center; }
+        .go:hover { background: var(--c-ink); color: var(--card); }
         .go:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-        .keyt { margin: 0; font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dark); }
+        .keyt { margin: 0; font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-ink); }
         .keys { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; flex: 1; }
-        .keys li { font-size: 13px; line-height: 1.3; font-weight: 500; padding: 4px 0; border-top: 1px solid rgba(10, 16, 32, 0.35); color: var(--dark); }
+        .keys li { font-size: 13px; line-height: 1.3; font-weight: 500; padding: 4px 0; border-top: 1px solid var(--line); color: var(--ink-soft); }
         .phoneonly { display: none; }
         .spacer { min-height: 44px; }
 
         .row4, .row3 { display: grid; gap: 14px; }
         .row4 { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 34px; }
         .row3 { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 44px; }
-        .tile { display: flex; flex-direction: column; gap: 7px; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+        .tile { display: flex; flex-direction: column; gap: 7px; min-width: 0; padding: 16px; border: 1px solid var(--line); border-top: 3px solid var(--green); border-radius: 6px; background: var(--card); }
         .tile .tl { margin: 0; font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: 0.04em; color: var(--green); }
         .tile .tt { margin: 0; font-family: var(--serif); font-weight: 800; font-size: 20px; line-height: 1.12; color: var(--ink); }
         .tile .tb { margin: 0; font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
@@ -100,8 +101,7 @@
             .pc:not(.flipped) .back, .pc.flipped .front { display: none; }
             .pc.flipped .back { animation: turn 0.3s ease-out; }
             .pc { transform: none; }
-            .face { padding: 5px; border-radius: 10px; }
-            .inner { padding: 7px; gap: 6px; border-radius: 6px; }
+            .inner { padding: 9px; gap: 6px; }
             .top { font-size: 11px; }
             .tno { display: none; }
             .pc .name { font-size: 17px; min-height: 54px; }
