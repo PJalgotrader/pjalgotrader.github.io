@@ -141,6 +141,11 @@
         #s-thennow .card.past p.list { color: var(--ink-mute); }
         #s-thennow .display { font-size: 140px; }
 
+        .art-open { position: absolute; right: 150px; bottom: 150px; width: 360px; height: 383px; }
+        .art-close { width: 230px; height: 244px; margin-bottom: -12px; }
+        .can-inside { fill: color-mix(in srgb, var(--metal-2) 55%, #000); }
+        .bean { fill: color-mix(in srgb, var(--red) 70%, #5a2a14); }
+
         /* 10 mindset */
         .card .num { font-family: var(--serif); font-weight: 900; font-size: 104px; line-height: 0.9; color: var(--k); }
 
@@ -334,6 +339,20 @@
                 <div class="card k5 hero"><p class="k">This fall</p><p class="list">One professor<br>14 minutes<br>AI</p></div>
             </div>
             <h1 class="display push">The can opener is <em>real.</em></h1>
+            <svg class="art-open" viewBox="0 0 320 340" role="img" aria-label="A tin can with its lid popped open">
+                <ellipse class="shadow" cx="150" cy="318" rx="130" ry="16"/>
+                <ellipse class="metal-2" cx="150" cy="292" rx="100" ry="22"/>
+                <rect class="metal" x="50" y="140" width="200" height="152"/>
+                <rect class="metal-2" x="214" y="140" width="36" height="152"/>
+                <path d="M50 160 H250 M50 272 H250" stroke-width="3" style="stroke:color-mix(in srgb, var(--metal-2) 70%, #000)"/>
+                <rect class="fill-acc" x="50" y="178" width="200" height="80"/>
+                <rect class="fill-acc-d" x="214" y="178" width="36" height="80"/>
+                <ellipse class="metal-2" cx="150" cy="140" rx="100" ry="24"/>
+                <ellipse class="can-inside" cx="150" cy="140" rx="88" ry="18"/>
+                <circle class="bean" cx="118" cy="143" r="9"/><circle class="bean" cx="140" cy="137" r="9"/><circle class="bean" cx="163" cy="145" r="9"/><circle class="bean" cx="184" cy="138" r="8"/><circle class="bean" cx="104" cy="136" r="7"/>
+                <g transform="rotate(-42 58 132)"><ellipse class="metal" cx="148" cy="124" rx="94" ry="21" style="stroke:color-mix(in srgb, var(--metal-2) 70%, #000)" stroke-width="3"/><ellipse cx="148" cy="124" rx="70" ry="13" fill="none" style="stroke:var(--metal-2)" stroke-width="3"/></g>
+                <path class="stroke-acc" d="M268 96 l26 -14 M276 136 l30 2 M236 52 l14 -24" stroke-width="7" stroke-linecap="round" fill="none"/>
+            </svg>
             <div class="folio"><span>Pedram Jahangiry &middot; How do you open a can?</span><span class="n"></span></div>
         </section>
 
@@ -386,6 +405,20 @@
         <!-- 13 -->
         <section class="slide alt" id="s-close" aria-label="Close">
             <div style="display:flex;flex-direction:column;gap:40px">
+                <svg class="art-close" viewBox="0 0 320 340" role="img" aria-label="An open tin can with light shining out of it">
+                <ellipse class="shadow" cx="150" cy="318" rx="130" ry="16"/>
+                <ellipse class="metal-2" cx="150" cy="292" rx="100" ry="22"/>
+                <rect class="metal" x="50" y="140" width="200" height="152"/>
+                <rect class="metal-2" x="214" y="140" width="36" height="152"/>
+                <path d="M50 160 H250 M50 272 H250" stroke-width="3" style="stroke:color-mix(in srgb, var(--metal-2) 70%, #000)"/>
+                <rect class="fill-acc" x="50" y="178" width="200" height="80"/>
+                <rect class="fill-acc-d" x="214" y="178" width="36" height="80"/>
+                <ellipse class="metal-2" cx="150" cy="140" rx="100" ry="24"/>
+                <ellipse class="can-inside" cx="150" cy="140" rx="88" ry="18"/>
+                <circle class="bean" cx="118" cy="143" r="9"/><circle class="bean" cx="140" cy="137" r="9"/><circle class="bean" cx="163" cy="145" r="9"/><circle class="bean" cx="184" cy="138" r="8"/><circle class="bean" cx="104" cy="136" r="7"/>
+                <g transform="rotate(-42 58 132)"><ellipse class="metal" cx="148" cy="124" rx="94" ry="21" style="stroke:color-mix(in srgb, var(--metal-2) 70%, #000)" stroke-width="3"/><ellipse cx="148" cy="124" rx="70" ry="13" fill="none" style="stroke:var(--metal-2)" stroke-width="3"/></g>
+                <path class="stroke-acc" d="M150 92 V20 M108 98 L78 38 M192 98 L222 38 M76 116 L28 82 M224 116 L272 82" stroke-width="7" stroke-linecap="round" fill="none" opacity="0.85"/>
+                </svg>
                 <p class="lede">You don&rsquo;t have to assume the can opener anymore.</p>
                 <h1 class="display">What will you <em>open?</em></h1>
             </div>
