@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{var q=new URLSearchParams(location.search).get('theme');var t=q||localStorage.getItem('pj-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>How Do You Open a Can? · Pedram Jahangiry</title>
+    <meta name="description" content="Slides for How Do You Open a Can?, a 10 minute talk for the Huntsman School of Business Freshman Academy (Majors & Mindsets, Nov 13, 2026).">
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="canonical" href="https://pedramjahangiry.com/talks/how-do-you-open-a-can/">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Design tokens: the site's Ledger palette. Dark (midnight terminal) is the default, light (chart paper) via [data-theme="light"]. */
+        :root {
+            --paper: #0A1020; --paper-deep: #141F3A; --card: #0F1A31;
+            --ink: #E9E4D4; --ink-soft: #C0BCAD; --ink-mute: #8B8FA0;
+            --line: #263250; --line-soft: #16203A;
+            --acc: #D0A63C; --acc-bright: #E8C468; --on-acc: #0A1020;
+            --red: #D0603F; --teal: #4FB3A5; --blue: #7DA2E8;
+            --metal: #C9CCD6; --metal-2: #A3A9BA;
+            --letterbox: #05080F; --grain: 0.05;
+            --serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+            --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --mono: 'IBM Plex Mono', 'SF Mono', Menlo, monospace;
+        }
+        [data-theme="light"] {
+            --paper: #F7F4EC; --paper-deep: #EFEBDF; --card: #FDFCF8;
+            --ink: #1C1B18; --ink-soft: #4C4A43; --ink-mute: #807D72;
+            --line: #DCD7C8; --line-soft: #E7E3D6;
+            --acc: #0E7A4E; --acc-bright: #23A06C; --on-acc: #FFFFFF;
+            --red: #C2452D; --teal: #2E8074; --blue: #3E63AE;
+            --metal: #D3CFC4; --metal-2: #B3AE9F;
+            --letterbox: #E2DDCF; --grain: 0.028;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body { background: var(--letterbox); color: var(--ink); font-family: var(--sans); overflow: hidden; -webkit-font-smoothing: antialiased; }
+        ::selection { background: var(--acc); color: var(--on-acc); }
+        :focus-visible { outline: 3px solid var(--acc); outline-offset: 3px; }
+
+        /* The 1920 x 1080 stage, scaled to fit the window */
+        .stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center center; overflow: hidden; background: var(--paper); }
+        .stage::after { content: ''; position: absolute; inset: 0; z-index: 50; pointer-events: none; opacity: var(--grain); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
+        .slide { position: absolute; inset: 0; padding: 112px 128px 150px; background: var(--paper); color: var(--ink); opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s; display: flex; flex-direction: column; gap: 48px; }
+        .slide.on { opacity: 1; visibility: visible; }
+        .slide.alt { background: var(--paper-deep); }
+
+        /* Type */
+        .eyebrow { font-family: var(--mono); font-size: 26px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--acc); }
+        .display { font-family: var(--serif); font-weight: 900; font-size: 150px; line-height: 0.98; letter-spacing: -0.03em; word-spacing: 0.08em; }
+        .head { font-family: var(--serif); font-weight: 800; font-size: 96px; line-height: 1.04; letter-spacing: -0.025em; word-spacing: 0.08em; }
+        .display em, .head em { font-style: italic; font-weight: 800; color: var(--acc); }
+        .lede { font-size: 46px; line-height: 1.3; color: var(--ink-soft); }
+        .big { font-size: 44px; line-height: 1.3; }
+        .big b, .lede b, .acc { color: var(--acc); font-weight: 600; }
+        .mono { font-family: var(--mono); }
+
+        /* Ledger cards: paper face, colour only as the top rule and label */
+        .card { --k: var(--acc); display: flex; flex-direction: column; gap: 16px; padding: 44px; background: var(--card); border: 2px solid var(--line); border-top: 6px solid var(--k); border-radius: 10px; min-width: 0; }
+        .card .k { font-family: var(--mono); font-size: 24px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--k); }
+        .card h3 { font-family: var(--serif); font-weight: 800; font-size: 54px; line-height: 1.08; letter-spacing: -0.015em; word-spacing: 0.06em; }
+        .card h3 em { font-style: italic; color: var(--k); }
+        .card p { font-size: 34px; line-height: 1.4; color: var(--ink-soft); }
+        .card.hero { background: color-mix(in srgb, var(--k) 13%, var(--card)); border-color: var(--k); }
+        .k1 { --k: var(--red); } .k2 { --k: var(--teal); } .k3 { --k: var(--blue); } .k5 { --k: var(--acc); }
+        .card svg.ic { width: 60px; height: 60px; color: var(--k); }
+        .ic { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+        .arrow { flex: none; width: 64px; height: 64px; color: var(--acc); }
+
+        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+        .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 28px; }
+        .row { display: flex; align-items: center; gap: 20px; }
+        .row > .card { flex: 1; }
+        .push { margin-top: auto; }
+
+        /* Running folio */
+        .folio { position: absolute; left: 128px; right: 128px; bottom: 56px; display: flex; justify-content: space-between; gap: 40px; padding-top: 18px; border-top: 1px solid var(--line); font-family: var(--mono); font-size: 21px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-mute); }
+        .folio .n { color: var(--acc); font-weight: 600; }
+
+        /* 01 title */
+        #s-title .can { position: absolute; right: 150px; top: 200px; width: 520px; height: 600px; }
+        #s-title .sub { font-size: 46px; color: var(--ink-soft); }
+        #s-title .who { position: absolute; left: 128px; right: 128px; bottom: 96px; display: flex; justify-content: space-between; align-items: flex-end; }
+        #s-title .who p { font-size: 34px; line-height: 1.35; }
+        #s-title .who span { color: var(--ink-soft); }
+        #s-title .who .mono { font-size: 24px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-mute); }
+        .metal { fill: var(--metal); } .metal-2 { fill: var(--metal-2); } .metal-line { stroke: var(--metal-2); }
+        .fill-acc { fill: var(--acc); } .fill-acc-d { fill: color-mix(in srgb, var(--acc) 82%, #000); } .stroke-on { stroke: var(--on-acc); } .fill-on { fill: var(--on-acc); }
+        .stroke-acc { stroke: var(--acc); } .shadow { fill: var(--line-soft); }
+
+        /* 02 island */
+        #s-island { display: grid; grid-template-columns: 1fr 860px; gap: 64px; align-items: center; }
+        .isl-water { fill: color-mix(in srgb, var(--blue) 42%, var(--paper)); }
+        .isl-wave { stroke: color-mix(in srgb, var(--blue) 20%, var(--paper)); }
+        .isl-sand { fill: color-mix(in srgb, var(--acc) 48%, var(--paper)); }
+        .isl-trunk { stroke: color-mix(in srgb, #8B6A43 85%, var(--paper)); }
+        .isl-leaf { fill: var(--teal); } .isl-leaf-2 { fill: color-mix(in srgb, var(--teal) 75%, var(--paper)); }
+        .isl-label { fill: var(--red); } .isl-sun { fill: var(--acc); }
+
+        /* 03 punchline */
+        #s-punch { background: var(--acc); color: var(--on-acc); justify-content: center; }
+        #s-punch .display { font-size: 138px; color: var(--on-acc); }
+        #s-punch .by { font-family: var(--mono); font-size: 30px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.8; }
+        #s-punch .aside { position: absolute; left: 128px; right: 128px; bottom: 96px; font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 56px; line-height: 1.25; transition: opacity 0.4s ease, transform 0.4s ease; }
+        [data-step] { opacity: 0; transform: translateY(14px); }
+        [data-step].shown { opacity: 1; transform: none; }
+
+        /* 06 quiz, 13 close */
+        .split { display: grid; gap: 96px; align-items: center; }
+        #s-quiz { display: grid; grid-template-columns: 1fr 600px; gap: 96px; align-items: center; }
+        .chips { display: flex; gap: 20px; flex-wrap: wrap; }
+        .chip { font-family: var(--mono); font-size: 30px; font-weight: 500; padding: 14px 28px; border: 2px solid var(--line); border-radius: 999px; color: var(--ink); background: var(--card); }
+        .qr { display: flex; flex-direction: column; align-items: center; gap: 28px; }
+        .qr .box { display: flex; align-items: center; justify-content: center; background: #FFFFFF; border-radius: 18px; border: 2px solid var(--line); }
+        .qr img { display: block; image-rendering: pixelated; }
+        .qr .url { font-family: var(--mono); font-size: 34px; font-weight: 600; line-height: 1.3; color: var(--acc); text-align: center; }
+
+        /* 07 results */
+        #s-results .cols { flex: 1; display: grid; grid-template-columns: 1fr 600px; gap: 40px; min-height: 0; }
+        .live { align-items: center; justify-content: center; text-align: center; border-style: dashed; border-top-style: solid; }
+        .live .open { display: inline-flex; align-items: center; gap: 18px; padding: 22px 40px; border: 2px solid var(--acc); border-radius: 8px; font-family: var(--mono); font-size: 40px; font-weight: 600; color: var(--acc); text-decoration: none; transition: background 0.2s, color 0.2s; }
+        .live .open:hover { background: var(--acc); color: var(--on-acc); }
+        .talk { background: var(--acc); border-color: var(--acc); color: var(--on-acc); justify-content: center; }
+        .talk .k, .talk p, .talk h3 { color: var(--on-acc); }
+        .talk svg.ic { color: var(--on-acc); width: 80px; height: 80px; }
+
+        /* 08 behind */
+        #s-behind .card { padding: 30px 28px; gap: 12px; }
+        #s-behind .card h3 { font-size: 40px; }
+        #s-behind .card p { font-size: 26px; line-height: 1.35; }
+        #s-behind .row { gap: 12px; }
+        #s-behind .arrow { width: 44px; height: 44px; }
+
+        /* 09 then and now */
+        #s-thennow .card p.list { font-size: 50px; line-height: 1.38; color: var(--ink); }
+        #s-thennow .card.past p.list { color: var(--ink-mute); }
+        #s-thennow .display { font-size: 140px; }
+
+        /* 10 mindset */
+        .card .num { font-family: var(--serif); font-weight: 900; font-size: 104px; line-height: 0.9; color: var(--k); }
+
+        /* 12 fear */
+        #s-fear { display: grid; grid-template-columns: 1fr 560px; gap: 96px; align-items: center; }
+        .q-box { fill: var(--card); stroke: var(--line); stroke-width: 2; }
+        .q-hot { fill: var(--acc); }
+        .q-txt { font-family: var(--mono); font-size: 24px; letter-spacing: 0.06em; text-transform: uppercase; fill: var(--ink-mute); }
+        .q-txt.on { fill: var(--on-acc); font-weight: 600; }
+        .q-arrow { stroke: var(--ink); stroke-width: 8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* 13 close */
+        #s-close { display: grid; grid-template-columns: 1fr 440px; gap: 96px; align-items: center; }
+        #s-close .qr .box { width: 420px; height: 420px; }
+        #s-close .tag { font-size: 34px; color: var(--ink-soft); text-align: center; }
+
+        /* Presenter chrome (outside the stage) */
+        .bar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 100; display: flex; align-items: center; gap: 4px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: color-mix(in srgb, var(--card) 92%, transparent); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); font-family: var(--mono); font-size: 13px; transition: opacity 0.3s, transform 0.3s; }
+        .bar.idle { opacity: 0; transform: translate(-50%, 10px); pointer-events: none; }
+        .bar a, .bar button { display: inline-flex; align-items: center; justify-content: center; min-width: 38px; min-height: 36px; padding: 0 10px; border: 0; border-radius: 5px; background: transparent; color: var(--ink-soft); font: inherit; text-decoration: none; cursor: pointer; }
+        .bar a:hover, .bar button:hover { background: var(--paper-deep); color: var(--acc); }
+        .bar .count { min-width: 74px; text-align: center; color: var(--ink); font-weight: 600; }
+        .bar .sep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
+        .progress { position: fixed; left: 0; top: 0; height: 3px; background: var(--acc); z-index: 100; transition: width 0.35s ease; }
+        .hint { position: fixed; left: 50%; top: 22px; transform: translateX(-50%); z-index: 100; padding: 8px 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--ink-soft); font-family: var(--mono); font-size: 13px; transition: opacity 0.6s; }
+        .hint.gone { opacity: 0; pointer-events: none; }
+        body.idle-cursor { cursor: none; }
+
+        @media (prefers-reduced-motion: reduce) { .slide, [data-step], .bar, .progress { transition: none; } }
+
+        /* Print / PDF: every slide is one 1920 x 1080 page, builds shown */
+        @page { size: 1920px 1080px; margin: 0; }
+        @media print {
+            html, body { height: auto; overflow: visible; background: var(--paper); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .stage { position: static; transform: none !important; width: 1920px; height: auto; overflow: visible; }
+            .stage::after { display: none; }
+            .slide { position: relative; width: 1920px; height: 1080px; opacity: 1; visibility: visible; transition: none; break-after: page; page-break-after: always; }
+            .slide:last-child { break-after: auto; page-break-after: auto; }
+            [data-step] { opacity: 1; transform: none; }
+            .bar, .progress, .hint { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <main class="stage" id="stage" aria-roledescription="slide deck" aria-label="How do you open a can?">
+
+        <!-- 01 -->
+        <section class="slide alt" id="s-title" aria-label="Title">
+            <p class="eyebrow">Majors &amp; Mindsets &middot; Freshman Academy</p>
+            <div style="display:flex;flex-direction:column;gap:36px;margin-top:70px">
+                <h1 class="display">How do you<br><em>open a can?</em></h1>
+                <p class="sub">You don&rsquo;t know what you don&rsquo;t know</p>
+            </div>
+            <div class="who">
+                <p><b>Pedram Jahangiry</b><br><span>Data Analytics &amp; Information Systems</span></p>
+                <p class="mono">Huntsman School of Business &middot; Nov 13, 2026</p>
+            </div>
+            <svg class="can" viewBox="0 0 520 600" aria-label="A closed tin can with a big question mark on its label" role="img">
+                <ellipse class="shadow" cx="260" cy="560" rx="210" ry="26"/>
+                <ellipse class="metal-2" cx="260" cy="520" rx="170" ry="32"/>
+                <rect class="metal" x="90" y="110" width="340" height="410"/>
+                <rect class="metal-2" x="370" y="110" width="60" height="410"/>
+                <path class="metal-line" d="M90 140 H430 M90 158 H430 M90 472 H430 M90 490 H430" stroke-width="4" style="stroke:color-mix(in srgb, var(--metal-2) 70%, #000)"/>
+                <rect class="fill-acc" x="90" y="200" width="340" height="240"/>
+                <rect class="fill-acc-d" x="370" y="200" width="60" height="240"/>
+                <path class="stroke-on" d="M205 272 C205 232 230 214 260 214 C292 214 315 234 315 264 C315 292 292 302 276 312 C264 320 260 330 260 350" stroke-width="26" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle class="fill-on" cx="260" cy="396" r="17"/>
+                <ellipse class="metal-2" cx="260" cy="110" rx="170" ry="34"/>
+                <ellipse class="metal" cx="260" cy="106" rx="148" ry="25" style="stroke:color-mix(in srgb, var(--metal-2) 70%, #000)" stroke-width="4"/>
+                <path class="stroke-acc" d="M455 70 l26 -22 M470 112 l34 -4 M440 36 l8 -30" stroke-width="8" stroke-linecap="round"/>
+            </svg>
+        </section>
+
+        <!-- 02 -->
+        <section class="slide" id="s-island" aria-label="The joke">
+            <div style="display:flex;flex-direction:column;gap:40px">
+                <h2 class="head">A physicist, a chemist and an economist</h2>
+                <p class="lede">are stranded on an island.</p>
+                <p class="big"><b>One can of food. No can opener.</b></p>
+            </div>
+            <svg viewBox="0 0 900 600" width="860" height="573" role="img" aria-label="Cartoon of a small sandy island with a palm tree and a single tin can, sun in the sky">
+                <circle class="isl-sun" cx="150" cy="120" r="64"/>
+                <rect class="isl-water" x="0" y="390" width="900" height="210" rx="18"/>
+                <path class="isl-wave" d="M60 470 q30 -16 60 0 t60 0 M640 520 q30 -16 60 0 t60 0 M300 560 q30 -16 60 0 t60 0" stroke-width="6" fill="none" stroke-linecap="round"/>
+                <ellipse class="isl-sand" cx="450" cy="420" rx="360" ry="80"/>
+                <path class="isl-trunk" d="M600 420 C 610 330, 630 250, 660 170" stroke-width="24" fill="none" stroke-linecap="round"/>
+                <ellipse class="isl-leaf" cx="610" cy="160" rx="90" ry="24" transform="rotate(-25 610 160)"/>
+                <ellipse class="isl-leaf" cx="715" cy="160" rx="90" ry="24" transform="rotate(25 715 160)"/>
+                <ellipse class="isl-leaf-2" cx="660" cy="120" rx="80" ry="22" transform="rotate(-80 660 120)"/>
+                <ellipse class="isl-leaf-2" cx="600" cy="205" rx="75" ry="20" transform="rotate(30 600 205)"/>
+                <ellipse class="isl-leaf-2" cx="725" cy="210" rx="75" ry="20" transform="rotate(-30 725 210)"/>
+                <rect class="metal" x="360" y="290" width="110" height="130" rx="8"/>
+                <rect class="isl-label" x="360" y="322" width="110" height="62"/>
+                <ellipse class="metal-2" cx="415" cy="290" rx="55" ry="14"/>
+                <ellipse class="metal-2" cx="415" cy="420" rx="55" ry="12"/>
+            </svg>
+            <div class="folio"><span>Pedram Jahangiry &middot; How do you open a can?</span><span class="n"></span></div>
+        </section>
+
+        <!-- 03 -->
+        <section class="slide" id="s-punch" aria-label="The punchline">
+            <h1 class="display">&ldquo;Let&rsquo;s assume we have a can opener.&rdquo;</h1>
+            <p class="by">The economist</p>
+            <p class="aside" data-step>(I&rsquo;m an economist. I spent six years of a PhD learning to assume can openers.)</p>
+        </section>
+
+        <!-- 04 -->
+        <section class="slide" id="s-me" aria-label="Who I am">
+            <h2 class="head">I&rsquo;ve changed &ldquo;majors&rdquo; too</h2>
+            <div class="row push">
+                <div class="card k3"><p class="k">Then</p><h3>Economics</h3><p>PhD. Six years of assumptions.</p></div>
+                <svg class="arrow ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                <div class="card k2"><p class="k">Then</p><h3>Finance</h3><p>BlackRock. Models with real money.</p></div>
+                <svg class="arrow ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                <div class="card k5 hero"><p class="k">Now</p><h3>Data</h3><p>Analytics &amp; Information Systems</p></div>
+            </div>
+            <p class="big push">What my best colleagues shared wasn&rsquo;t a major. <b>It was a way of thinking.</b></p>
+            <div class="folio"><span>Pedram Jahangiry &middot; How do you open a can?</span><span class="n"></span></div>
+        </section>
+
+        <!-- 05 -->
+        <section class="slide" id="s-matrix" aria-label="Known and unknown">
+            <h2 class="head">You don&rsquo;t know what you don&rsquo;t know</h2>
+            <div class="grid2">
+                <div class="card k2"><h3>Known knowns</h3><p>A business needs customers and money.</p></div>
+                <div class="card k3"><h3>Known unknowns</h3><p>&ldquo;What does an Information Systems major actually do?&rdquo;</p></div>
+                <div class="card k5"><h3>Unknown knowns</h3><p>You might already think like an accountant. You just don&rsquo;t know it yet.</p></div>
+                <div class="card k1 hero"><h3><em>Unknown unknowns</em></h3><p>The questions you don&rsquo;t even know to ask. Jobs that don&rsquo;t exist yet.</p></div>
+            </div>
+            <div class="folio"><span>Pedram Jahangiry &middot; How do you open a can?</span><span class="n"></span></div>
+        </section>
+
+        <!-- 06 -->
+        <section class="slide alt" id="s-quiz" aria-label="Live quiz">
+            <div style="display:flex;flex-direction:column;gap:48px">
+                <p class="eyebrow">Phones out. Yes, really.</p>
+                <h2 class="display" style="font-size:124px">Let&rsquo;s collect some data. <em>Right now.</em></h2>
+                <div class="chips"><span class="chip">5 questions</span><span class="chip">60 seconds</span><span class="chip">Anonymous</span></div>
+            </div>
+            <div class="qr">
+                <div class="box" style="width:540px;height:540px"><img src="../../polls/mindsets/qr.png" alt="QR code for the quiz at pedramjahangiry.com/polls/mindsets" width="500" height="500"></div>
+                <p class="url">pedramjahangiry.com/<br>polls/mindsets</p>
+            </div>
+            <div class="folio"><span>Pedram Jahangiry &middot; How do you open a can?</span><span class="n"></span></div>
+        </section>
+
+        <!-- 07 -->
+        <section class="slide" id="s-results" aria-label="Live results">
+            <h2 class="head">This room, right now</h2>
+            <div class="cols">
+                <div class="card live k5">
+                    <svg class="ic" viewBox="0 0 24 24" style="width:96px;height:96px;color:var(--acc)" aria-hidden="true"><path d="M4 20V4M4 20h16M8.5 16v-5M13 16V8M17.5 16v-8"/></svg>
+                    <a class="open" href="../../polls/mindsets/results.html?live" target="_blank" rel="noopener">Open the live results &nearr;</a>
+                    <p>Mindsets in this room &middot; % numbers people &middot; 8:30 vs 9:30</p>
+                </div>
+                <div class="card talk">
+                    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.4 2.7-6 6-6s6 2.6 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.6 14.3c3 .2 5.4 2.5 5.4 5.7"/></svg>
+                    <p class="k">Turn and talk &middot; 30 sec</p>
+                    <h3>Tell your neighbor your result.</h3>
+                    <p>Did it get you right? Why or why not?</p>
+                </div>
+            </div>
+            <div class="folio"><span>Pedram Jahangiry &middot; How do you open a can?</span><span class="n"></span></div>
+        </section>
+
+        <!-- 08 -->
+        <section class="slide" id="s-behind" aria-label="Behind the curtain">
+            <h2 class="head">How long did that take to build?</h2>
+            <div class="row push">
+                <div class="card k5 hero"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.1v.1h5v-.1c0-.8.4-1.6 1.1-2.1A6 6 0 0 0 12 3z"/></svg><h3>Idea</h3><p>Help freshmen find their major</p></div>
+                <svg class="arrow ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                <div class="card k3"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9.5L5 20v-4H4z"/><path d="M8 9.5h8M8 12.5h5"/></svg><h3>Questions</h3><p>Five taps that say something about you</p></div>
+                <svg class="arrow ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                <div class="card k2"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg><h3>Database</h3><p>Supabase stores every answer</p></div>
+                <svg class="arrow ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                <div class="card k1"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.4 2.5 3.6 5.5 3.6 9s-1.2 6.5-3.6 9c-2.4-2.5-3.6-5.5-3.6-9S9.6 5.5 12 3z"/></svg><h3>Web app</h3><p>GitHub Pages puts it on your phone</p></div>
+                <svg class="arrow ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                <div class="card k5"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V4M4 20h16M8.5 16v-5M13 16V8M17.5 16v-8"/></svg><h3>Live chart</h3><p>The screen you just saw</p></div>
+            </div>
+            <p class="big push">You don&rsquo;t know what Supabase or GitHub Pages are. That&rsquo;s fine. <b>You understood the idea.</b></p>
+            <div class="folio"><span>Pedram Jahangiry &middot; How do you open a can?</span><span class="n"></span></div>
+        </section>
+
+        <!-- 09 -->
+        <section class="slide alt" id="s-thennow" aria-label="Then and now">
+            <div class="grid2">
+                <div class="card past k3"><p class="k">A few years ago</p><p class="list">A team of developers<br>A semester<br>A budget</p></div>
+                <div class="card k5 hero"><p class="k">This fall</p><p class="list">One professor<br>14 minutes<br>AI</p></div>
+            </div>
+            <h1 class="display push">The can opener is <em>real.</em></h1>
+            <div class="folio"><span>Pedram Jahangiry &middot; How do you open a can?</span><span class="n"></span></div>
+        </section>
+
+        <!-- 10 -->
+        <section class="slide" id="s-mindset" aria-label="The data mindset">
+            <h2 class="head">So what&rsquo;s still hard?</h2>
+            <div class="grid3">
+                <div class="card k3"><p class="num">1</p><h3>Ask a sharp question</h3><p>Not &ldquo;what major?&rdquo; but &ldquo;what do I actually like doing?&rdquo;</p></div>
+                <div class="card k2"><p class="num">2</p><h3>Find the data that answers it</h3><p>Your answers, from 200 people, in 60 seconds.</p></div>
+                <div class="card k5 hero"><p class="num">3</p><h3>Check whether you&rsquo;re wrong</h3><p>The result that missed is the most useful one.</p></div>
+            </div>
+            <p class="big push">That&rsquo;s the data mindset. <b>AI opens the can. You decide which can.</b></p>
+            <div class="folio"><span>Pedram Jahangiry &middot; How do you open a can?</span><span class="n"></span></div>
+        </section>
+
+        <!-- 11 -->
+        <section class="slide" id="s-multiply" aria-label="Data times every major">
+            <h2 class="head">Data &times; every major</h2>
+            <div class="grid2">
+                <div class="card k1"><h3>Accounting <em>&times; data</em></h3><p>Catch the odd transaction before the auditor does.</p></div>
+                <div class="card k2"><h3>Pro Sales <em>&times; data</em></h3><p>Know which customer to call first.</p></div>
+                <div class="card k3"><h3>Marketing <em>&times; data</em></h3><p>Know which ad actually worked, and why.</p></div>
+                <div class="card k5"><h3>Finance <em>&times; data</em></h3><p>Test the strategy before you bet the money.</p></div>
+            </div>
+            <p class="big push">Major or minor, <b>data multiplies whatever you pick.</b></p>
+            <div class="folio"><span>Pedram Jahangiry &middot; How do you open a can?</span><span class="n"></span></div>
+        </section>
+
+        <!-- 12 -->
+        <section class="slide alt" id="s-fear" aria-label="The fear">
+            <div style="display:flex;flex-direction:column;gap:40px">
+                <h2 class="head">Feeling a little scared about AI?</h2>
+                <p class="lede">You&rsquo;re not alone. So are the experts.</p>
+                <p class="big">Fear lives in the unknown unknowns. <b>Curiosity is how you move things out.</b></p>
+            </div>
+            <svg viewBox="0 0 560 560" width="560" height="560" role="img" aria-label="A two by two grid. An arrow moves from the unknown unknowns corner to the known corner.">
+                <defs><marker id="head" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3.4" markerHeight="3.4" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--ink)"/></marker></defs>
+                <rect class="q-box" x="1" y="1" width="270" height="270" rx="14"/>
+                <rect class="q-box" x="289" y="1" width="270" height="270" rx="14"/>
+                <rect class="q-box" x="1" y="289" width="270" height="270" rx="14"/>
+                <rect class="q-hot" x="289" y="289" width="270" height="270" rx="14"/>
+                <text class="q-txt" x="26" y="52">Known</text>
+                <text class="q-txt on" x="312" y="500">Unknown</text>
+                <text class="q-txt on" x="312" y="532">unknowns</text>
+                <path class="q-arrow" d="M420 420 L160 160" marker-end="url(#head)"/>
+            </svg>
+            <div class="folio"><span>Pedram Jahangiry &middot; How do you open a can?</span><span class="n"></span></div>
+        </section>
+
+        <!-- 13 -->
+        <section class="slide alt" id="s-close" aria-label="Close">
+            <div style="display:flex;flex-direction:column;gap:40px">
+                <p class="lede">You don&rsquo;t have to assume the can opener anymore.</p>
+                <h1 class="display">What will you <em>open?</em></h1>
+            </div>
+            <div class="qr">
+                <div class="box"><img src="../../polls/mindsets/qr.png" alt="QR code for the quiz at pedramjahangiry.com/polls/mindsets" width="380" height="380"></div>
+                <p class="tag">Retake it. Share it.</p>
+            </div>
+            <div class="folio"><span>Data Analytics &amp; Information Systems &middot; Analytics Solutions Center &middot; pedramjahangiry.com/polls/mindsets</span><span class="n"></span></div>
+        </section>
+    </main>
+
+    <div class="progress" id="progress" aria-hidden="true"></div>
+    <p class="hint" id="hint">&rarr; or space to advance &middot; F for full screen &middot; T for light or dark</p>
+    <nav class="bar" id="bar" aria-label="Slide controls">
+        <a href="../" title="All talks">&larr; Talks</a>
+        <span class="sep"></span>
+        <button type="button" id="prev" aria-label="Previous slide">&lsaquo;</button>
+        <span class="count" id="count" aria-live="polite">1 / 13</span>
+        <button type="button" id="next" aria-label="Next slide">&rsaquo;</button>
+        <span class="sep"></span>
+        <button type="button" id="theme" title="Light or dark (T)">Theme</button>
+        <button type="button" id="fs" title="Full screen (F)">Full screen</button>
+        <a href="slides.pdf" download title="Download the slides as a PDF">PDF</a>
+    </nav>
+
+    <script>
+    (function () {
+        const stage = document.getElementById('stage');
+        const slides = Array.from(stage.querySelectorAll('.slide'));
+        const total = slides.length;
+        const bar = document.getElementById('bar');
+        const hint = document.getElementById('hint');
+        let idx = 0;
+
+        slides.forEach((s, i) => {
+            const n = s.querySelector('.folio .n');
+            if (n) n.textContent = String(i + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+        });
+
+        function fit() {
+            const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+            stage.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
+        }
+
+        function steps(i) { return Array.from(slides[i].querySelectorAll('[data-step]')); }
+
+        function show(i, revealAll) {
+            idx = Math.max(0, Math.min(total - 1, i));
+            slides.forEach((s, j) => {
+                s.classList.toggle('on', j === idx);
+                s.setAttribute('aria-hidden', j === idx ? 'false' : 'true');
+            });
+            steps(idx).forEach(el => el.classList.toggle('shown', !!revealAll));
+            document.getElementById('count').textContent = (idx + 1) + ' / ' + total;
+            document.getElementById('progress').style.width = ((idx + 1) / total * 100) + '%';
+            try { history.replaceState(null, '', '#' + (idx + 1)); } catch (e) {}
+            if (idx > 0) hint.classList.add('gone');
+        }
+
+        function next() {
+            const hidden = steps(idx).filter(el => !el.classList.contains('shown'));
+            if (hidden.length) { hidden[0].classList.add('shown'); return; }
+            if (idx < total - 1) show(idx + 1, false);
+        }
+
+        function prev() {
+            const shown = steps(idx).filter(el => el.classList.contains('shown'));
+            if (shown.length) { shown[shown.length - 1].classList.remove('shown'); return; }
+            if (idx > 0) show(idx - 1, true);
+        }
+
+        function toggleTheme() {
+            const light = document.documentElement.getAttribute('data-theme') === 'light';
+            if (light) document.documentElement.removeAttribute('data-theme');
+            else document.documentElement.setAttribute('data-theme', 'light');
+            try { localStorage.setItem('pj-theme', light ? 'dark' : 'light'); } catch (e) {}
+        }
+
+        function toggleFullscreen() {
+            if (document.fullscreenElement) document.exitFullscreen();
+            else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+            const k = e.key;
+            if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter', 'n', 'N'].includes(k)) { e.preventDefault(); next(); }
+            else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace', 'p', 'P'].includes(k)) { e.preventDefault(); prev(); }
+            else if (k === 'Home') { e.preventDefault(); show(0, false); }
+            else if (k === 'End') { e.preventDefault(); show(total - 1, true); }
+            else if (k === 'f' || k === 'F') { toggleFullscreen(); }
+            else if (k === 't' || k === 'T') { toggleTheme(); }
+        });
+
+        stage.addEventListener('click', (e) => {
+            if (e.target.closest('a, button')) return;
+            const r = stage.getBoundingClientRect();
+            if (e.clientX < r.left + r.width * 0.25) prev(); else next();
+        });
+
+        let tx = null, ty = null;
+        stage.addEventListener('touchstart', (e) => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+        stage.addEventListener('touchend', (e) => {
+            if (tx === null) return;
+            const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { dx < 0 ? next() : prev(); }
+            tx = ty = null;
+        }, { passive: true });
+
+        document.getElementById('next').addEventListener('click', next);
+        document.getElementById('prev').addEventListener('click', prev);
+        document.getElementById('theme').addEventListener('click', toggleTheme);
+        document.getElementById('fs').addEventListener('click', toggleFullscreen);
+
+        // Controls fade out while presenting; any mouse movement brings them back.
+        let idleTimer = null;
+        function wake() {
+            bar.classList.remove('idle');
+            document.body.classList.remove('idle-cursor');
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                if (bar.matches(':hover')) return;
+                bar.classList.add('idle');
+                document.body.classList.add('idle-cursor');
+            }, 2500);
+        }
+        document.addEventListener('mousemove', wake);
+        document.addEventListener('keydown', () => { bar.classList.add('idle'); document.body.classList.add('idle-cursor'); });
+        setTimeout(() => hint.classList.add('gone'), 6000);
+
+        window.addEventListener('resize', fit);
+        window.addEventListener('hashchange', () => {
+            const n = parseInt(location.hash.slice(1), 10);
+            if (n && n - 1 !== idx) show(n - 1, false);
+        });
+
+        fit();
+        const start = parseInt(location.hash.slice(1), 10);
+        show(start ? start - 1 : 0, false);
+        wake();
+    })();
+    </script>
+
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>

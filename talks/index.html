@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{if(localStorage.getItem('pj-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>Talks · Pedram Jahangiry</title>
+    <meta name="description" content="Slides from talks and workshops by Pedram Jahangiry, ready to present straight from the browser.">
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="canonical" href="https://pedramjahangiry.com/talks/">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="../styles.css?v=15">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        .talks-wrap { max-width: 1160px; margin: 0 auto; padding: 92px 2rem 48px; min-height: calc(100vh - 160px); }
+        .talks-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 10px 40px; margin-bottom: 20px; }
+        .talks-head .eyebrow { display: block; margin-bottom: 6px; }
+        .talks-head h1 { font-family: var(--serif); font-weight: 900; font-size: 50px; line-height: 1; letter-spacing: -0.025em; margin: 0; color: var(--ink); }
+        .talks-lede { margin: 0; max-width: 430px; color: var(--ink-soft); font-size: 15.5px; line-height: 1.45; }
+        .talks-wrap .section-label { font-size: 12.5px; letter-spacing: 0.06em; margin: 0 0 12px; padding-bottom: 7px; border-bottom: 1px solid var(--line); }
+        .deck-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+
+        /* Ledger cards, same system as polls.html: paper faces, each card's colour only as its top rule, top line, art and action bar. */
+        .pc { --c: #D0A63C; --c-ink: var(--c); position: relative; display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--line); border-top: 3px solid var(--c-ink); border-radius: 6px; background: var(--card); color: var(--ink); transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1.2), box-shadow 0.22s, border-color 0.22s; }
+        [data-theme="light"] .pc { --c-ink: color-mix(in srgb, var(--c) 60%, #0A1020); }
+        .c1 { --c: #D0603F; }
+        .c5 { --c: #D0A63C; }
+        .pc:hover { transform: translateY(-5px); border-color: var(--c-ink); box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16); z-index: 2; }
+        .pc a:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+        .inner { display: flex; flex-direction: column; flex: 1; gap: 9px; min-width: 0; padding: 15px 16px; }
+        .top { display: flex; justify-content: space-between; gap: 8px; font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; color: var(--c-ink); }
+        .pc .name { display: block; font-family: var(--serif); font-weight: 800; font-size: 25px; line-height: 1.06; letter-spacing: -0.01em; margin: 0; color: var(--ink); }
+        .pc .name em { font-style: italic; color: var(--c-ink); }
+        .window { position: relative; display: block; aspect-ratio: 16 / 9; border-radius: 5px; overflow: hidden; background: var(--paper-deep); color: var(--c-ink); text-decoration: none; }
+        .window svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+        .ln { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+        .thin { fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; opacity: 0.5; }
+        .solid { fill: currentColor; }
+        .wtext { font-family: var(--serif); font-weight: 800; fill: var(--ink); }
+        .wtext em, .wacc { font-style: italic; fill: var(--c-ink); }
+        .wmono { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; fill: var(--c-ink); }
+        .desc { margin: 0; font-size: 13.5px; line-height: 1.4; font-weight: 500; color: var(--ink-soft); }
+        .stats { display: flex; flex-direction: column; margin-top: auto; font-family: var(--mono); font-size: 12px; font-weight: 500; }
+        .sr { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-top: 1px solid var(--line); }
+        .sr b { font-weight: 600; text-align: right; }
+        .pc .go { display: flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid var(--c-ink); border-radius: 4px; color: var(--c-ink); font-family: var(--mono); font-weight: 600; font-size: 13px; text-decoration: none; transition: background-color 0.2s, color 0.2s; }
+        .pc .go:hover { background: var(--c-ink); color: var(--card); }
+        .links { display: flex; justify-content: center; gap: 18px; }
+        .res { display: flex; align-items: center; justify-content: center; min-height: 30px; font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--ink); text-decoration: underline; }
+        .res:hover { color: var(--c-ink); }
+        .ghost { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 18px; border: 1.5px dashed var(--line); border-radius: 6px; }
+        .gy { font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-mute); }
+        .gn { font-family: var(--serif); font-weight: 800; font-size: 25px; line-height: 1.1; color: var(--ink-soft); }
+        .gd { margin: 0; font-size: 14px; line-height: 1.45; color: var(--ink-mute); }
+        .keys { margin-top: 26px; font-family: var(--mono); font-size: 12px; color: var(--ink-mute); }
+        .keys kbd { display: inline-block; min-width: 22px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 3px; font-family: var(--mono); font-size: 11.5px; color: var(--ink-soft); text-align: center; }
+        @media (prefers-reduced-motion: reduce) { .pc { transition: none; } }
+        @media (max-width: 1000px) { .deck-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 640px) {
+            .talks-wrap { padding: 78px 16px 24px; }
+            .talks-head h1 { font-size: 36px; }
+            .deck-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="../index.html">Pedram&nbsp;Jahangiry</a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="../index.html" class="nav-link">Home</a></li>
+                <li class="nav-item"><a href="../visualizations.html" class="nav-link">Interactive Tools</a></li>
+                <li class="nav-item"><a href="../teaching.html" class="nav-link">Teaching</a></li>
+                <li class="nav-item"><a href="../polls.html" class="nav-link">Polls</a></li>
+                <li class="nav-item"><a href="../projects.html" class="nav-link">Projects</a></li>
+                <li class="nav-item"><a href="../newsletter.html" class="nav-link">Newsletter</a></li>
+                <li class="nav-item"><a href="../contact.html" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-right">
+                <button class="theme-toggle" aria-label="Switch color theme">
+                    <i class="fas fa-sun icon-sun" aria-hidden="true"></i>
+                    <i class="fas fa-moon icon-moon" aria-hidden="true"></i>
+                </button>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main id="main">
+        <div class="talks-wrap">
+            <header class="talks-head">
+                <div>
+                    <p class="eyebrow">Talks &middot; pick a deck</p>
+                    <h1>Open the slides.</h1>
+                </div>
+                <p class="talks-lede">Every talk lives here as a web deck. Open it on any computer with a browser, press the right arrow, and start talking. A PDF copy sits next to each one.</p>
+            </header>
+
+            <p class="section-label">&sect; 2026</p>
+            <section class="deck-grid" aria-label="Talks from 2026">
+                <article class="pc c5">
+                    <div class="inner">
+                        <div class="top"><span>No. 01</span><span>Freshman Academy</span></div>
+                        <h2 class="name">How do you <em>open a can?</em></h2>
+                        <a class="window" href="how-do-you-open-a-can/" aria-label="Present How do you open a can?">
+                            <svg viewBox="0 0 320 180" aria-hidden="true">
+                                <text class="wmono" x="22" y="34">MAJORS &amp; MINDSETS</text>
+                                <text class="wtext" x="22" y="78" font-size="25">How do you</text>
+                                <text class="wtext wacc" x="22" y="108" font-size="25">open a can?</text>
+                                <path class="thin" d="M22 140h120"></path>
+                                <g transform="translate(212 34)">
+                                    <ellipse class="ln" cx="40" cy="12" rx="38" ry="9"></ellipse>
+                                    <path class="ln" d="M2 12v96c0 5 17 9 38 9s38-4 38-9V12"></path>
+                                    <path class="thin" d="M2 22c0 5 17 9 38 9s38-4 38-9M2 98c0 5 17 9 38 9s38-4 38-9"></path>
+                                    <path class="ln" d="M28 54c0-8 6-13 12-13s12 5 12 12c0 7-6 9-9 12-2 2-3 4-3 8"></path>
+                                    <circle class="solid" cx="40" cy="83" r="3"></circle>
+                                </g>
+                            </svg>
+                        </a>
+                        <p class="desc">Majors &amp; Mindsets at the Huntsman School. A can opener joke, a live quiz with 200 freshmen, and why a data mindset multiplies any major.</p>
+                        <div class="stats">
+                            <div class="sr"><span>Date</span><b>Nov 13, 2026</b></div>
+                            <div class="sr"><span>Where</span><b>Huntsman, EBB 215</b></div>
+                            <div class="sr"><span>Length</span><b>10 min &middot; 13 slides</b></div>
+                        </div>
+                        <a class="go" href="how-do-you-open-a-can/">Present &rarr;</a>
+                        <div class="links">
+                            <a class="res" href="how-do-you-open-a-can/slides.pdf" download>PDF</a>
+                            <a class="res" href="../polls/mindsets/">The quiz</a>
+                            <a class="res" href="../polls/mindsets/results.html">Results</a>
+                        </div>
+                    </div>
+                </article>
+                <div class="ghost">
+                    <span class="gy">Next</span>
+                    <span class="gn">More talks soon</span>
+                    <p class="gd">Each new talk gets its own card here, with the slides, a PDF, and any live poll it used.</p>
+                </div>
+            </section>
+            <p class="keys">In a deck: <kbd>&rarr;</kbd> or <kbd>space</kbd> next &middot; <kbd>&larr;</kbd> back &middot; <kbd>F</kbd> full screen &middot; <kbd>T</kbd> light or dark</p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p class="footer-note">&copy; 2026 Pedram Jahangiry &mdash; all residuals are my own.</p>
+            <div class="social-links">
+                <a href="https://x.com/PedramJahangiry" target="_blank" aria-label="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://www.linkedin.com/in/pedram-jahangiry-cfa-5778015a/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="https://github.com/PJalgotrader" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                <a href="mailto:pedram.jahangiry@usu.edu" aria-label="Email"><i class="fas fa-envelope"></i></a>
+            </div>
+            <p class="colophon">Set in Fraunces, Inter &amp; IBM Plex Mono &middot; hand&#8209;built, zero frameworks &middot; Logan, Utah &mdash; 41.74&deg;&nbsp;N, 111.81&deg;&nbsp;W</p>
+        </div>
+    </footer>
+
+    <script src="../script.js?v=3"></script>
+
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>
