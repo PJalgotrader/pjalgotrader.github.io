@@ -115,11 +115,10 @@
         /* 02 island */
         #s-island .isl-row { flex: 1; min-height: 0; display: grid; grid-template-columns: 800px 1fr; gap: 56px; align-items: center; }
         #s-island .isl { width: 800px; height: 533px; }
-        .cast { display: flex; flex-direction: column; gap: 18px; }
-        .cast .card { display: grid; grid-template-columns: 60px 1fr; column-gap: 26px; row-gap: 6px; padding: 24px 32px 26px; }
-        .cast .card svg.ic { grid-row: span 2; width: 60px; height: 60px; margin-top: 4px; }
-        .cast .card h3 { font-size: 44px; }
-        .cast .card p { font-family: var(--mono); font-size: 26px; line-height: 1.4; }
+        .cast { height: 533px; display: flex; flex-direction: column; gap: 24px; }
+        .cast .card { flex: 1; flex-direction: row; align-items: center; gap: 28px; padding: 0 40px; }
+        .cast .card svg.ic { width: 64px; height: 64px; }
+        .cast .card h3 { font-size: 52px; }
 
         /* 03 punchline */
         #s-punch { background: var(--acc); color: var(--on-acc); justify-content: center; gap: 30px; }
@@ -139,7 +138,12 @@
         .dare b { color: var(--acc); }
 
         /* 05 matrix */
-        #s-matrix .mx-wrap { flex: 1; min-height: 0; display: grid; grid-template-columns: 500px 1fr; gap: 48px; }
+        #s-matrix .mx-wrap { flex: 1; min-height: 0; display: grid; place-items: center; }
+        #s-matrix .mx-wrap > * { grid-area: 1 / 1; }
+        #s-matrix .meme { height: 100%; aspect-ratio: 399 / 501; }
+        #s-matrix .mx { width: 1360px; height: 100%; }
+        #s-matrix:not([data-at="1"]) .meme { opacity: 0; visibility: hidden; transform: scale(0.96); }
+        #s-matrix .meme { transition: opacity 0.4s ease, visibility 0.4s, transform 0.4s ease; }
         .meme { display: flex; flex-direction: column; justify-content: center; gap: 24px; padding: 40px; background: var(--card); border: 2px solid var(--line); border-top: 6px solid var(--blue); border-radius: 10px; }
         .meme.has-img { padding: 0; border: 0; background: none; }
         .mx { position: relative; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 24px; min-height: 0; }
@@ -291,17 +295,14 @@
                     <div class="card k3">
                         <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="1.6"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg>
                         <h3>The physicist</h3>
-                        <p data-step>rock &middot; 4&nbsp;m &middot; 9&nbsp;m/s &middot; hit the rim at 30&deg;</p>
                     </div>
                     <div class="card k1">
                         <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/><path d="M7 15h10"/></svg>
                         <h3>The chemist</h3>
-                        <p data-step>sun? too slow &rarr; fire &rarr; 120&nbsp;&deg;C steam &rarr; pressure &times;2 &rarr; the seam pops</p>
                     </div>
                     <div class="card k5">
                         <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M5 16l4-4 3 3 7-7"/><path d="M15 8h4v4"/></svg>
                         <h3>The economist</h3>
-                        <p data-step>hasn&rsquo;t said a word.</p>
                     </div>
                 </div>
             </div>
@@ -384,11 +385,11 @@
         <section class="slide" id="s-matrix" aria-label="Known and unknown">
             <h2 class="head">You don&rsquo;t know what you don&rsquo;t know</h2>
             <div class="mx-wrap">
-                <figure class="meme has-img"><img class="slot-img" src="img/05-friends.jpg" alt="Phoebe from Friends: they don't know we know they know we know" width="399" height="501"></figure>
-                <div class="mx">
+                <figure class="meme has-img" data-step="1"><img class="slot-img" src="img/05-friends.jpg" alt="Phoebe from Friends: they don't know we know they know we know" width="399" height="501"></figure>
+                <div class="mx" data-step="2">
                     <div class="card k2">
                         <h3>Known knowns</h3>
-                        <div class="q-body" data-step="3">
+                        <div class="q-body" data-step="5">
                             <p>You know exactly what you want. Great. Let&rsquo;s confirm it.</p>
                             <svg viewBox="0 0 120 120" aria-hidden="true">
                                 <ellipse class="metal-2" cx="52" cy="102" rx="32" ry="8"/>
@@ -402,7 +403,7 @@
                     </div>
                     <div class="card k3">
                         <h3>Known unknowns</h3>
-                        <div class="q-body" data-step="2">
+                        <div class="q-body" data-step="4">
                             <p>You picked Huntsman. Eight majors. Not sure what&rsquo;s inside.</p>
                             <svg viewBox="0 0 120 120" aria-hidden="true">
                                 <g><rect class="metal" x="4" y="50" width="32" height="50"/><rect class="kf" x="4" y="62" width="32" height="24"/><ellipse class="metal-2" cx="20" cy="50" rx="16" ry="5"/></g>
@@ -416,7 +417,7 @@
                     </div>
                     <div class="card k5 hero">
                         <h3>Unknown knowns</h3>
-                        <div class="q-body" data-step="4">
+                        <div class="q-body" data-step="6">
                             <p>You&rsquo;re good at something. We just don&rsquo;t know it yet.</p>
                             <svg viewBox="0 0 120 120" aria-hidden="true">
                                 <ellipse class="metal-2" cx="60" cy="106" rx="32" ry="8"/>
@@ -430,7 +431,7 @@
                     </div>
                     <div class="card k1">
                         <h3>Unknown unknowns</h3>
-                        <div class="q-body" data-step="1">
+                        <div class="q-body" data-step="3">
                             <p>High school you. Majors you&rsquo;d never heard of. Some don&rsquo;t exist yet.</p>
                             <svg viewBox="0 0 120 120" aria-hidden="true">
                                 <path d="M28 36 V100 M92 36 V100" fill="none" stroke-width="4" stroke-dasharray="7 7" style="stroke:var(--ink-mute)"/>
@@ -440,7 +441,7 @@
                             </svg>
                         </div>
                     </div>
-                    <div class="mx-go"><span data-step="5">&uarr; Today&rsquo;s goal</span></div>
+                    <div class="mx-go"><span data-step="7">&uarr; Today&rsquo;s goal</span></div>
                 </div>
             </div>
             <p class="bridge">The goal is clear. Now I need data.</p>
@@ -695,21 +696,27 @@
                 s.setAttribute('aria-hidden', j === idx ? 'false' : 'true');
             });
             groups(idx).flat().forEach((el) => el.classList.toggle('shown', !!revealAll));
+            mark();
             document.getElementById('count').textContent = (idx + 1) + ' / ' + total;
             document.getElementById('progress').style.width = ((idx + 1) / total * 100) + '%';
             try { history.replaceState(null, '', location.search + '#' + (idx + 1)); } catch (e) {}
             if (idx > 0) hint.classList.add('gone');
         }
 
+        // data-at on the slide = how many build steps are showing (slide 5 uses it to swap the meme for the matrix).
+        function mark() {
+            slides[idx].dataset.at = groups(idx).filter((grp) => grp[0].classList.contains('shown')).length;
+        }
+
         function next() {
             const g = groups(idx).find((grp) => !grp[0].classList.contains('shown'));
-            if (g) { g.forEach((el) => el.classList.add('shown')); return; }
+            if (g) { g.forEach((el) => el.classList.add('shown')); mark(); return; }
             if (idx < total - 1) show(idx + 1, false);
         }
 
         function prev() {
             const shown = groups(idx).filter((grp) => grp[0].classList.contains('shown'));
-            if (shown.length) { shown[shown.length - 1].forEach((el) => el.classList.remove('shown')); return; }
+            if (shown.length) { shown[shown.length - 1].forEach((el) => el.classList.remove('shown')); mark(); return; }
             if (idx > 0) show(idx - 1, true);
         }
 
