@@ -63,6 +63,8 @@
         /* The connecting line at the bottom of each slide: what to say on the way to the next one */
         .bridge { position: absolute; left: 128px; right: 128px; bottom: 108px; text-align: right; font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 40px; line-height: 1.2; color: var(--ink-soft); }
         .bridge::after { content: '\2192'; margin-left: 18px; font-family: var(--sans); font-style: normal; font-weight: 600; color: var(--acc); }
+        .bridge.center { text-align: center; }
+        .bridge.center::after { content: none; }
 
         /* Ledger cards: paper face, colour only as the top rule and label */
         .card { --k: var(--acc); display: flex; flex-direction: column; gap: 16px; padding: 44px; background: var(--card); border: 2px solid var(--line); border-top: 6px solid var(--k); border-radius: 10px; min-width: 0; }
@@ -601,7 +603,6 @@
                 <div class="card k5"><div class="ttl"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M5 16l4-4 3 3 7-7"/><path d="M15 8h4v4"/></svg><h3>Econ &amp; Finance <em>&times; data</em></h3></div><p>Test the theory and the strategy before you bet the money.</p></div>
             </div>
             <p class="big push">Major or minor, data multiplies whatever you pick. <b>Data is the mindset.</b></p>
-            <p class="bridge" data-step="9999">So what is the can opener, really?</p>
             <div class="folio"><span>Pedram Jahangiry &middot; How do you open a can?</span><span class="n"></span></div>
         </section>
 
@@ -613,14 +614,14 @@
                 <ul class="ai-list">
                     <li data-step>Yes, it will take a lot of jobs.</li>
                     <li data-step>It will open a lot of new ones.</li>
-                    <li data-step><b>Don&rsquo;t be scared, be excited!</b> Stay adaptable. Train your critical thinking, soft skills and problem solving. And most importantly, learn to build and use the can opener fast and efficiently.</li>
+                    <li data-step><b>Don&rsquo;t be scared, be excited!</b> Stay adaptable. Sharpen your thinking, soft skills and problem solving. Learn to build and use the can opener.</li>
                 </ul>
             </div>
             <figure class="card chess k5" data-step>
                 <div class="pic"><img class="slot-img" src="img/12-chess.jpg" alt="A student grinning while losing a game of chess to a friendly robot" width="1536" height="1024"></div>
                 <figcaption>A computer beat the world chess champion in 1997. <b>We still play chess. We love it.</b></figcaption>
             </figure>
-            <p class="bridge" data-step="9999">So whatever you pick, pick what excites you.</p>
+            <p class="bridge center" data-step="9999">So whatever you pick, pick what excites you.</p>
             <div class="folio"><span>Pedram Jahangiry &middot; How do you open a can?</span><span class="n"></span></div>
         </section>
 
