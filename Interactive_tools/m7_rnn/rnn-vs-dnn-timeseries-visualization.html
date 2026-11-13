@@ -11,8 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script>
-    // Theme: follows the system until the button is pressed; the choice is shared by these tools.
-    try { const t = localStorage.getItem("lab-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+    // Theme: light by default; the button switches it, and the choice is shared by these tools.
+    try { const t = localStorage.getItem("lab-theme"); document.documentElement.setAttribute("data-theme", t === "dark" ? "dark" : "light"); } catch (e) {}
     </script>
     <style>
         /* Neutral tones of the tool panel. In dark mode the whole panel is flipped by a filter

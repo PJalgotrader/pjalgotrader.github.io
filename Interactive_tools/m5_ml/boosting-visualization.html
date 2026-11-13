@@ -6,8 +6,8 @@
 <meta name="description" content="Gradient boosting on the airline passengers data: add small trees one round at a time, watch each tree fit the residuals, and find the best round with early stopping. Histogram and GOSS split finding on the model's real residuals. In your browser, no install.">
 <title>Boosting Interactive Tool | Dr. Pedram Jahangiry</title>
 <script>
-// Apply a saved light/dark choice before first paint; otherwise follow the device setting.
-try { const t = localStorage.getItem("lab-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+// Apply the saved light/dark choice before first paint; light by default.
+try { const t = localStorage.getItem("lab-theme"); document.documentElement.setAttribute("data-theme", t === "dark" ? "dark" : "light"); } catch (e) {}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

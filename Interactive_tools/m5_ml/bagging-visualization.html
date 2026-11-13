@@ -6,8 +6,8 @@
 <meta name="description" content="Bagging on the airline passengers data: train many regression trees on bootstrap resamples, average their one-month-ahead forecasts, and watch test error fall. Bootstrap calendar, OOB error, seasonal naive benchmark, and why trees can't extrapolate. In your browser, no install.">
 <title>Bagging Interactive Tool | Dr. Pedram Jahangiry</title>
 <script>
-// Apply a saved light/dark choice before first paint; otherwise follow the device setting.
-try { const t = localStorage.getItem("lab-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+// Apply the saved light/dark choice before first paint; light by default.
+try { const t = localStorage.getItem("lab-theme"); document.documentElement.setAttribute("data-theme", t === "dark" ? "dark" : "light"); } catch (e) {}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -6,8 +6,8 @@
 <meta name="description" content="How LightGBM speeds up gradient boosting: exact vs histogram split finding, and GOSS row sampling with top_rate, other_rate and an error concentration control. In your browser, no install.">
 <title>Histogram vs GOSS Splitting Interactive Tool | Dr. Pedram Jahangiry</title>
 <script>
-// Apply a saved light/dark choice before first paint; otherwise follow the device setting.
-try { const t = localStorage.getItem("lab-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+// Apply the saved light/dark choice before first paint; light by default.
+try { const t = localStorage.getItem("lab-theme"); document.documentElement.setAttribute("data-theme", t === "dark" ? "dark" : "light"); } catch (e) {}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
