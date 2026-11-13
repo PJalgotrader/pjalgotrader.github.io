@@ -162,6 +162,8 @@
         .qr .box { display: flex; align-items: center; justify-content: center; background: #FFFFFF; border-radius: 18px; border: 2px solid var(--line); }
         .qr img { display: block; image-rendering: pixelated; }
         .qr .url { font-family: var(--mono); font-size: 34px; font-weight: 600; line-height: 1.3; color: var(--acc); text-align: center; }
+        a.url { text-decoration: none; border-bottom: 3px solid transparent; transition: border-color 0.2s; }
+        a.url:hover { border-bottom-color: var(--acc); }
 
         /* 07 results */
         #s-results .cols { flex: 1; display: grid; grid-template-columns: 1fr 600px; gap: 40px; min-height: 0; }
@@ -460,7 +462,7 @@
             </div>
             <div class="qr">
                 <div class="box" style="width:520px;height:520px"><img src="../../polls/mindsets/qr.png" alt="QR code for the quiz at pedramjahangiry.com/polls/mindsets" width="480" height="480"></div>
-                <p class="url">pedramjahangiry.com/<br>polls/mindsets</p>
+                <a class="url" href="https://pedramjahangiry.com/polls/mindsets/" target="_blank" rel="noopener">pedramjahangiry.com/<br>polls/mindsets</a>
             </div>
             <p class="bridge" data-step="9999">Let&rsquo;s see what this room looks like.</p>
             <div class="folio"><span>Pedram Jahangiry &middot; How do you open a can?</span><span class="n"></span></div>
