@@ -184,7 +184,7 @@ const POLL = {
     questions: [
         { id: 'q1', title: 'Words or numbers?', options: [
             { value: 'words',   label: 'Words',          pts: { mkt: 2, sales: 1, mgmt: 1 } },
-            { value: 'numbers', label: 'Numbers',        pts: { acct: 2, fin: 2, da: 2, econ: 1 } },
+            { value: 'numbers', label: 'Numbers',        pts: { acct: 1, fin: 2, da: 2, econ: 2 } },
             { value: 'both',    label: 'Honestly, both', pts: { econ: 1, is: 1, da: 1, mgmt: 1 } }
         ] },
         { id: 'q2', title: 'A campus coffee shop’s sales dropped 20% last month. Your first move?', options: [
@@ -201,10 +201,10 @@ const POLL = {
             { value: 'present', label: 'Presents and convinces the room',            pts: { sales: 3 } },
             { value: 'check',   label: 'Checks every number twice',                  pts: { acct: 3 } },
             { value: 'budget',  label: 'Keeps an eye on the budget',                 pts: { fin: 3 } },
-            { value: 'build',   label: 'Builds the thing everyone else talks about', pts: { is: 2, da: 1 } }
+            { value: 'build',   label: 'Builds the thing everyone else talks about', pts: { is: 2, da: 2 } }
         ] },
         { id: 'q4', title: 'Pick a superpower.', options: [
-            { value: 'predict',  label: 'Predict tomorrow',                   pts: { da: 3 } },
+            { value: 'predict',  label: 'Predict tomorrow',                   pts: { da: 2, econ: 1 } },
             { value: 'worth',    label: 'Know what anything is really worth', pts: { fin: 3 } },
             { value: 'mistake',  label: 'Spot the mistake nobody else sees',  pts: { acct: 3 } },
             { value: 'convince', label: 'Convince anyone of anything',        pts: { sales: 2, mkt: 1 } },
