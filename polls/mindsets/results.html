@@ -201,6 +201,8 @@ const MAJOR_KEYS = Object.keys(POLL.majors);
 // clicked, so the room never sees earlier results before class), 'all', a
 // session number, or 'live' (sentinel → resolves to the current session).
 let view = new URLSearchParams(location.search).has('live') ? 'live' : 'lobby';
+let extra = new Set();  // sessions combined with `view` (Ctrl/Cmd/Shift-click a session button)
+function picked() { return typeof view === 'number' ? new Set([view, ...extra]) : new Set(); }
 let segSig = null;   // signature of the rendered session buttons, to avoid rebuilding mid-click
 let sessions = [];   // [{session, label, closed_at}] — includes the hidden anchor
 let votes = [];      // [{session, question, choice, voter_id}] — only the two questions this page charts
@@ -270,16 +272,22 @@ function render() {
     if (view === 'lobby' && pollIsOpen()) view = current.session;
     if (view === 'live') view = current.session;
     if (view !== 'all' && view !== 'lobby' && !sessions.some(s => s.session === view)) view = 'lobby';
+    if (typeof view !== 'number') extra.clear();
+    for (const x of [...extra]) if (x === view || !sessions.some(s => s.session === x)) extra.delete(x);
+    const multi = extra.size > 0;
+    const sel = picked();
 
     const lobby = view === 'lobby';
-    const rows = lobby ? [] : (view === 'all' ? votes : votes.filter(v => v.session === view));
+    const rows = lobby ? [] : (view === 'all' ? votes : votes.filter(v => sel.has(v.session)));
     const t = tally(rows);
-    const viewing = (lobby || view === 'all') ? null : sessions.find(s => s.session === view);
+    const viewing = (lobby || view === 'all') ? null : (multi ? null : sessions.find(s => s.session === view));
 
     document.getElementById('total').textContent = lobby ? '–' : t.n;
     document.getElementById('totalLabel').textContent = lobby
         ? 'poll closed'
-        : viewing
+        : multi
+            ? 'responses · ' + sel.size + ' sessions combined'
+            : viewing
             ? 'responses · ' + viewing.label
             : 'responses · ' + picker.length + ' session' + (picker.length !== 1 ? 's' : '');
 
@@ -290,7 +298,7 @@ function render() {
     if (sig !== segSig) {
         segSig = sig;
         seg.innerHTML = picker.map(s =>
-            '<button data-view="' + s.session + '">' + esc(s.label) +
+            '<button data-view="' + s.session + '" title="Ctrl- or Cmd-click to combine sessions">' + esc(s.label) +
             (s.session === current.session && !s.closed_at ? ' · live' : '') + '</button>').join('') +
             '<button data-view="all"></button>';
     }
@@ -298,13 +306,13 @@ function render() {
         'All sessions · ' + picker.length;
     seg.querySelectorAll('button').forEach(b => {
         const v = b.dataset.view === 'all' ? 'all' : Number(b.dataset.view);
-        b.classList.toggle('on', v === view);
+        b.classList.toggle('on', v === view || sel.has(v));
     });
 
     // "Close session" appears only while viewing the live session. "Delete
     // session" works on any specific session view, but never on the poll's only
     // session, and never on the hidden anchor.
-    const viewingLive = pollIsOpen() && view === current.session;
+    const viewingLive = pollIsOpen() && !multi && view === current.session;
     const viewingReal = viewing && viewing.label !== POLL.anchorLabel;
     document.getElementById('closeBtn').hidden = !viewingLive;
     document.getElementById('deleteBtn').hidden = !viewingReal || sessions.length <= 1;
@@ -399,7 +407,7 @@ function viewIsLive() {
     if (view === 'lobby') return true;
     if (!pollIsOpen()) return false;
     if (view === 'all' || view === 'live') return true;
-    return view === sessions[sessions.length - 1].session;
+    return picked().has(sessions[sessions.length - 1].session);
 }
 
 // ── masked PIN dialog (replaces prompt(), which showed the PIN in clear text) ──
@@ -431,7 +439,16 @@ function askPin(message, withLabel) {
 document.getElementById('seg').addEventListener('click', (e) => {
     const b = e.target.closest('button');
     if (!b) return;
-    view = b.dataset.view === 'all' ? 'all' : Number(b.dataset.view);
+    const v = b.dataset.view === 'all' ? 'all' : Number(b.dataset.view);
+    if ((e.metaKey || e.ctrlKey || e.shiftKey) && typeof v === 'number' && typeof view === 'number') {
+        // Combine: add or remove this session from the current selection.
+        if (v === view) { if (extra.size) { view = extra.values().next().value; extra.delete(view); } }
+        else if (extra.has(v)) extra.delete(v);
+        else extra.add(v);
+    } else {
+        view = v;
+        extra.clear();
+    }
     render();
     if (viewIsLive()) refresh(); // catch up immediately after a dormant stretch
 });
