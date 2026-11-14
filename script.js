@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNavigation();
     initializeAnimations();
     initializeHeroWalk();
+    initializeSubscribe();
 });
 
 // Theme toggle — dark is the default; light is stored as a preference.
@@ -397,4 +398,46 @@ if (typeof module !== 'undefined' && module.exports) {
         initializeAnimations,
         handleResponsiveGrid
     };
+}
+
+// Newsletter signup. Each .subscribe-form posts the email to a Kit form in the
+// background and swaps in a "check your inbox" note, so readers stay on the page.
+// Kit sends its own confirmation email (double opt-in). The form's action URL
+// comes from the Kit form builder (Embed -> HTML); until a real one is set, the
+// card stays hidden instead of offering a form that goes nowhere.
+function initializeSubscribe() {
+    document.querySelectorAll('.subscribe-form').forEach(function(form) {
+        var card = form.closest('.subscribe');
+        if (!/\/forms\/\d+\/subscriptions$/.test(form.getAttribute('action') || '')) {
+            if (card) card.hidden = true;
+            return;
+        }
+        var status = form.querySelector('.subscribe-status');
+        var button = form.querySelector('button');
+        var email = form.querySelector('input[type="email"]');
+        var trap = form.querySelector('input[name="website"]');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (trap && trap.value) return;   // bots fill the hidden field
+            if (!email.checkValidity()) { email.reportValidity(); return; }
+            button.disabled = true;
+            status.className = 'subscribe-status';
+            status.textContent = 'Signing you up…';
+            var data = new FormData();
+            data.append('email_address', email.value.trim());
+            // Kit does not send CORS headers, so the reply is opaque; a network
+            // failure is the only error the page can see.
+            fetch(form.action, { method: 'POST', body: data, mode: 'no-cors' })
+                .then(function() {
+                    status.className = 'subscribe-status is-ok';
+                    status.textContent = 'Almost done: check your inbox and click the confirmation link.';
+                    email.value = '';
+                })
+                .catch(function() {
+                    status.className = 'subscribe-status is-error';
+                    status.textContent = 'That did not go through. Check your connection and try again.';
+                })
+                .then(function() { button.disabled = false; });
+        });
+    });
 }

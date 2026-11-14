@@ -44,6 +44,7 @@ For each of the 10 items:
    - Update source links
 6. **Update closing section**:
    - Replace "If you try one thing" content
+7. **Keep the signup card**: the `<section class="subscribe">` block just before `</main>` stays exactly as it is in the template, including the Kit form `action` URL. Styles live in `styles.css` and the behaviour in `initializeSubscribe()` in `script.js`. If the `action` isn't a Kit `/forms/<id>/subscriptions` URL, the card hides itself.
 
 ### 3. Add entry to newsletter.html
 
