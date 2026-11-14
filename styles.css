@@ -1884,7 +1884,8 @@ footer .container {
    field and an outlined button. Posts to a Kit form; see initializeSubscribe().
    ========================================================================== */
 .subscribe { padding: 28px 0 8px; }
-.newsletter-closing + .subscribe { padding: 36px 0 56px; }
+.newsletter-closing + .subscribe,
+main > .subscribe:last-child { padding: 36px 0 56px; }
 .subscribe-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 18px 36px; align-items: center; padding: 22px 24px; background: var(--card); border: 1px solid var(--line); border-top: 3px solid var(--green); border-radius: 6px; }
 .subscribe-top { margin: 0 0 6px; font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--green); }
 .subscribe-card h2 { margin: 0 0 6px; font-family: var(--serif); font-size: 26px; font-weight: 800; line-height: 1.1; letter-spacing: -0.01em; color: var(--ink); }
