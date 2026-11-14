@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{if(localStorage.getItem('pj-theme')!=='dark')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+    <title>PJ AI Newsletter: Week of Nov 9-13, 2026 | Pedram Jahangiry</title>
+    <meta name="description" content="This was a model week. Anthropic shipped Claude Fable 5.2 and Mythos 5.2, Google made Gemini 4 Carbon broadly available and then put the fast Gemini 4 Hydrogen in front of everyone, Meta released its cheapest Muse model for agent grunt work, and Thinking Machines published open weights for a 594B model. Around the models, the stack kept filling in: self-hosted Claude Managed Agents, Claude in meetings and shared sheets, a Gemini API built just for fast decisions, and OpenAI turning its cyber models into Red Team and Defense Factory products. Then two shocks from outside the labs: nonprofits sued five frontier developers to freeze new models, and Jensen Huang resigned as Nvidia's CEO. The theme: the tiered model stack (frontier planner, fast executor, cheap volume model) is now the default design, while the pressure on who builds the frontier, and whether they may, is rising.">
+    <meta property="og:title" content="PJ AI Newsletter: Week of Nov 9-13, 2026">
+    <meta property="og:description" content="This was a model week. Anthropic shipped Claude Fable 5.2 and Mythos 5.2, Google made Gemini 4 Carbon broadly available and then put the fast Gemini 4 Hydrogen in front of everyone, Meta released its cheapest Muse model for agent grunt work, and Thinking Machines published open weights for a 594B model. Around the models, the stack kept filling in: self-hosted Claude Managed Agents, Claude in meetings and shared sheets, a Gemini API built just for fast decisions, and OpenAI turning its cyber models into Red Team and Defense Factory products. Then two shocks from outside the labs: nonprofits sued five frontier developers to freeze new models, and Jensen Huang resigned as Nvidia's CEO. The theme: the tiered model stack (frontier planner, fast executor, cheap volume model) is now the default design, while the pressure on who builds the frontier, and whether they may, is rising.">
+    <meta property="og:image" content="https://pedramjahangiry.com/newsletter/images/2026-11-13/01-claude-fable-5-2.webp">
+    <meta property="og:url" content="https://pedramjahangiry.com/newsletter/2026-11-13.html">
+    <meta property="og:type" content="article">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://pedramjahangiry.com/newsletter/images/2026-11-13/01-claude-fable-5-2.webp">
+    <meta name="theme-color" content="#0A1020">
+    <link rel="canonical" href="https://pedramjahangiry.com/newsletter/2026-11-13.html">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="../styles.css?v=15">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="../index.html">Pedram&nbsp;Jahangiry</a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="../index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../visualizations.html" class="nav-link">Interactive Tools</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../teaching.html" class="nav-link">Teaching</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../polls.html" class="nav-link">Polls</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../projects.html" class="nav-link">Projects</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../newsletter.html" class="nav-link active">Newsletter</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../contact.html" class="nav-link">Contact</a>
+                </li>
+            </ul>
+            <div class="nav-right">
+                <button class="theme-toggle" aria-label="Switch color theme">
+                    <i class="fas fa-sun icon-sun" aria-hidden="true"></i>
+                    <i class="fas fa-moon icon-moon" aria-hidden="true"></i>
+                </button>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main id="main">
+        <section class="newsletter-hero">
+            <div class="container">
+                <a href="../newsletter.html" class="back-link">&larr; All issues</a>
+                <h1>PJ AI Newsletter: Week of Nov 9-13, 2026</h1>
+                <p class="meta">Saturday Nov 7 through Friday Nov 13, 2026 · Collected by Pedram</p>
+                <p class="theme-line">
+                    This was a model week. Anthropic shipped Claude Fable 5.2 and Mythos 5.2, Google made Gemini 4 Carbon broadly available and then put the fast Gemini 4 Hydrogen in front of everyone, Meta released its cheapest Muse model for agent grunt work, and Thinking Machines published open weights for a 594B model. Around the models, the stack kept filling in: self-hosted Claude Managed Agents, Claude in meetings and shared sheets, a Gemini API built just for fast decisions, and OpenAI turning its cyber models into Red Team and Defense Factory products. Then two shocks from outside the labs: nonprofits sued five frontier developers to freeze new models, and Jensen Huang resigned as Nvidia's CEO. The theme: the tiered model stack (frontier planner, fast executor, cheap volume model) is now the default design, while the pressure on who builds the frontier, and whether they may, is rising.
+                </p>
+            </div>
+        </section>
+
+        <section class="newsletter-toc">
+            <div class="container">
+                <h2>In this issue</h2>
+                <ol>
+                    <li><a href="#item-01"><span class="toc-num">01</span><span class="toc-title">Anthropic ships Claude Fable 5.2 and Mythos 5.2, faster and 20% cheaper</span></a></li>
+                    <li><a href="#item-02"><span class="toc-num">02</span><span class="toc-title">Google opens Gemini 4 Carbon, then gives everyone Gemini 4 Hydrogen</span></a></li>
+                    <li><a href="#item-03"><span class="toc-num">03</span><span class="toc-title">OpenAI turns its cyber models into Daybreak Red Team and Defense Factory</span></a></li>
+                    <li><a href="#item-04"><span class="toc-num">04</span><span class="toc-title">Nonprofits sue five frontier labs to freeze new AI models</span></a></li>
+                    <li><a href="#item-05"><span class="toc-num">05</span><span class="toc-title">Jensen Huang resigns as Nvidia CEO</span></a></li>
+                    <li><a href="#item-06"><span class="toc-num">06</span><span class="toc-title">Thinking Machines releases Inkling 2 Small weights under Apache 2.0</span></a></li>
+                    <li><a href="#item-07"><span class="toc-num">07</span><span class="toc-title">Meta's Muse Ember targets the cheap, repetitive work agents do all day</span></a></li>
+                    <li><a href="#item-08"><span class="toc-num">08</span><span class="toc-title">Anthropic lets companies self-host Claude Managed Agents</span></a></li>
+                    <li><a href="#item-09"><span class="toc-num">09</span><span class="toc-title">Claude joins your meetings and gets shared whiteboards and sheets</span></a></li>
+                    <li><a href="#item-10"><span class="toc-num">10</span><span class="toc-title">Google's Gemini Decisions API scores up to 1,000 questions in one pass</span></a></li>
+                </ol>
+            </div>
+        </section>
+
+        <article class="newsletter-item" id="item-01">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 01 of 10</div>
+                    <h3>Anthropic ships Claude Fable 5.2 and Mythos 5.2, faster and 20% cheaper</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-13/01-claude-fable-5-2.webp" alt="Anthropic graphic reading Claude Fable 5.2 and Mythos 5.2 over a glowing horizon" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://www.anthropic.com/claude-fable-and-mythos-5-2" target="_blank" rel="noopener noreferrer">Anthropic</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 9, Anthropic upgraded its top tier with Claude Fable 5.2 (available to everyone) and Claude Mythos 5.2 (the same underlying model, offered only to organizations verified through its cyber and life-sciences programs). Anthropic says the models output up to 30% faster than the 5.1 versions and cost $8 per million input tokens and $40 per million output (down from $10 and $50), with a 1M-token context, 128k max output, and an optional fast mode up to 2.5x faster at double the price. On Anthropic's own table, Fable 5.2 scores 49.1% on FrontierCode 2.0 (xhigh effort) versus 45.5% for Opus 5.5 and 69.9% on FrontierSWE v2. Anthropic still recommends Opus 5.5 as the daily driver, with Fable as an Advisor or Orchestrator for the hardest work. API notes flag breaking changes: a stricter prefix check on thinking blocks and a new computer-use toolset.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>This is the clearest "planner plus workers" design from a major lab: a top model that advises or orchestrates cheaper ones. That is exactly how serious Claude Code and agent setups are being built now, and it is a useful pattern to teach.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">For one hard task. Use Fable 5.2 as the advisor or planner on a messy migration or debugging job, and read the migration notes before switching any production code.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://www.anthropic.com/claude-fable-and-mythos-5-2" target="_blank" rel="noopener noreferrer">Anthropic: Claude Fable 5.2 and Mythos 5.2</a></li>
+                            <li><a href="https://platform.claude.com/docs/en/release-notes/overview" target="_blank" rel="noopener noreferrer">Claude Platform release notes</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-02">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 02 of 10</div>
+                    <h3>Google opens Gemini 4 Carbon, then gives everyone Gemini 4 Hydrogen</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-13/02-gemini-4-hydrogen.webp" alt="Google graphic reading Gemini 4 Hydrogen beside a translucent blue form" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/" target="_blank" rel="noopener noreferrer">Google</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 10, Google made Gemini 4 Carbon, its strongest model for long-horizon coding, science, and cyber work, available to paying API developers, enterprises, and Google AI Ultra subscribers, at an introductory $2/$10 per million tokens through Nov 30 (then $4/$20). Two days later it launched Gemini 4 Hydrogen, a fast model for everyday coding and agent work, rolling out globally in the Gemini API (all tiers), AI Studio, the Gemini app, Google Search, and Antigravity for paid subscribers. Google says Hydrogen beats Gemini 4 Argon on the Artificial Analysis Intelligence Index (51 vs. 50 at default thinking, 54 at xhigh) and costs a flat $1.50/$7.50 per million tokens across its 1M context. 9to5Google reports Google's claims of more than tripling Terminal-Bench 4.1 versus Gemini 3.8 Flash (57% vs. 18.2%) and finishing tasks 2.5x faster. Google also called Hydrogen the biggest model upgrade to Search yet.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>A frontier-adjacent model on the free API tier and in Search changes the baseline for what students and casual users get by default, and Carbon gives coding agents another top-tier option (GitHub added it to Copilot the same day).</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Hydrogen is the cheapest way this week to test a strong agent model on your own repo or data in AI Studio.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-carbon-now-available/" target="_blank" rel="noopener noreferrer">Google: Gemini 4 Carbon is now available</a></li>
+                            <li><a href="https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/" target="_blank" rel="noopener noreferrer">Google: Introducing Gemini 4 Hydrogen</a></li>
+                            <li><a href="https://blog.google/products-and-platforms/products/search/gemini-4-hydrogen-search-upgrade/" target="_blank" rel="noopener noreferrer">Google Search upgrade</a></li>
+                            <li><a href="https://9to5google.com/2026/11/12/gemini-4-hydrogen-launch/" target="_blank" rel="noopener noreferrer">9to5Google</a></li>
+                            <li><a href="https://github.blog/changelog/2026-11-10-gemini-4-carbon-in-github-copilot/" target="_blank" rel="noopener noreferrer">GitHub Changelog</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-03">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 03 of 10</div>
+                    <h3>OpenAI turns its cyber models into Daybreak Red Team and Defense Factory</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-13/03-daybreak-red-team.webp" alt="Illustration of agents inspecting a boxed web page beside a shield and a reviewed code patch" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Illustration: generated for this issue</p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>At its Cyber at the Frontier event on Nov 12, OpenAI introduced two Daybreak products. Daybreak Red Team uses multiple agents to pentest web applications, using source code and app context to investigate attack paths and confirm vulnerabilities, inside isolated environments with Guardian review enforcing testing boundaries. Defense Factory traces findings (from Red Team or tools like Wiz, Snyk, and Endor Labs) through your code and prepares patches, which engineers review, edit with Codex, and open as draft GitHub pull requests; nothing deploys automatically. Red Team is in early access, and Defense Factory is a preview plugin in ChatGPT for Daybreak workspaces. This follows last week's GPT-6 Cyber launch.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Security is becoming an agent workflow with humans approving the merge, which is the same review discipline anyone running coding agents should already practice.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">Only if your team does authorized security work and has Daybreak access. Everyone else: read the product pages to see how OpenAI scopes and sandboxes offensive agents.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://openai.com/daybreak/red-team/" target="_blank" rel="noopener noreferrer">OpenAI: Daybreak Red Team</a></li>
+                            <li><a href="https://openai.com/daybreak/defense-factory/" target="_blank" rel="noopener noreferrer">OpenAI: Daybreak Defense Factory</a></li>
+                            <li><a href="https://www.securityweek.com/openai-unveils-daybreak-red-team-defense-factory-security-tools/" target="_blank" rel="noopener noreferrer">SecurityWeek</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-04">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 04 of 10</div>
+                    <h3>Nonprofits sue five frontier labs to freeze new AI models</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-13/04-frontier-ai-lawsuit.webp" alt="Public Citizen logo on a blue background" width="1200" height="628">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://www.citizen.org/news/coalition-of-nonprofits-files-landmark-lawsuit-to-stop-development-of-advanced-ai-systems-at-anthropic-google-meta-openai-and-spacexsi-that-proliferate-bioweapons-and-cyberattacks/" target="_blank" rel="noopener noreferrer">Public Citizen</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 12, Irreplaceable Education Fund, Public Citizen, Heat Initiative, and The Alliance for Secure AI sued Anthropic, Google, Meta, OpenAI, and SpaceXSI in San Francisco Superior Court. Invoking California's Unfair Competition Law, they ask the court to freeze development of models more capable than today's, citing the companies' own warnings about cyberattacks, bioweapons, and loss of human control. The complaint was filed by former New Jersey Attorney General Matthew Platkin. It is a filing, not a ruling: no court has ordered anything.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>It is the first broad legal attempt to stop frontier development outright, and it uses the labs' own safety language as evidence. Even if it fails, it shapes how labs talk about risk.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge no">No</span>
+                        <span class="explore-text">There is nothing to try. Worth reading the Just Security summary for a good classroom discussion on AI risk and the law.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://www.citizen.org/news/coalition-of-nonprofits-files-landmark-lawsuit-to-stop-development-of-advanced-ai-systems-at-anthropic-google-meta-openai-and-spacexsi-that-proliferate-bioweapons-and-cyberattacks/" target="_blank" rel="noopener noreferrer">Public Citizen announcement</a></li>
+                            <li><a href="https://apnews.com/article/artificial-intelligence-ai-lawsuit-cyberattacks-anthropic-openai-03ece37b96979fe834f60976648504ba" target="_blank" rel="noopener noreferrer">AP News</a></li>
+                            <li><a href="https://www.politico.com/news/2026/11/12/nonprofits-sue-ai-companies-over-existential-risk-01161965" target="_blank" rel="noopener noreferrer">POLITICO</a></li>
+                            <li><a href="https://www.justsecurity.org/164494/nonprofits-lawsuit-freeze-frontier-ai-development/" target="_blank" rel="noopener noreferrer">Just Security</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-05">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 05 of 10</div>
+                    <h3>Jensen Huang resigns as Nvidia CEO</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-13/05-nvidia-ceo-transition.webp" alt="NVIDIA logo on a black background" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition" target="_blank" rel="noopener noreferrer">NVIDIA Newsroom</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 12, Nvidia's board announced that Jensen Huang resigned as president, CEO, and board member, effective immediately, after 33 years leading the company. CFO Colette Kress is interim CEO while the board searches for a permanent successor, and Harvey C. Jones (former Synopsys CEO) becomes the board's first-ever chair. Nvidia says operations, customer commitments, and the product roadmap continue without interruption. The announcement gave no reason for the resignation, so treat any explanation you read elsewhere as unconfirmed.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Nvidia is the hardware and CUDA backbone of almost every AI lab and course lab. A sudden leadership change at the center of the compute supply chain is an industry-level event, even if day-to-day tools do not change.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge no">No</span>
+                        <span class="explore-text">Nothing to try; just watch for roadmap or developer-program changes.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition" target="_blank" rel="noopener noreferrer">NVIDIA Newsroom</a></li>
+                            <li><a href="https://techcrunch.com/2026/11/12/nvidias-jensen-huang-resigns-chipmaker-names-cfo-colette-kress-as-interim-ceo/" target="_blank" rel="noopener noreferrer">TechCrunch</a></li>
+                            <li><a href="https://www.npr.org/2026/11/13/nx-s1-6038889/colette-kress-becomes-nvidias-interim-ceo-after-jensen-huang-resigns" target="_blank" rel="noopener noreferrer">NPR</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-06">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 06 of 10</div>
+                    <h3>Thinking Machines releases Inkling 2 Small weights under Apache 2.0</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-13/06-inkling-2-small.webp" alt="Thinking Machines graphic of looping outlines around a grid of dots" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://thinkingmachines.ai/news/inkling-2-small/" target="_blank" rel="noopener noreferrer">Thinking Machines Lab</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 12, Thinking Machines published the weights for Inkling 2 Small on Hugging Face under Apache 2.0, after a week of closed access on its Tinker platform for safety testing. It is a mixture-of-experts model with 594B total and 17B active parameters, supports image input and variable effort, and scores 31 on the Artificial Analysis Intelligence Index per the company. It is integrated with vLLM, SGLang, and Unsloth, and offered via API at providers including NVIDIA, Fireworks, Together, and Cloudflare. The catch: the main NVFP4 checkpoint needs roughly 500 GB of aggregate GPU memory.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>A permissively licensed, agent-trained model of this size is a real option for research, fine-tuning, and teaching open-weight workflows, and its "closed first, open after red-teaming" release is a template others may follow.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">Try it through a hosted API or Tinker Playground; self-hosting is for teams with serious GPU clusters.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://thinkingmachines.ai/news/inkling-2-small/" target="_blank" rel="noopener noreferrer">Thinking Machines: Inkling 2 Small</a></li>
+                            <li><a href="https://huggingface.co/thinkingmachines/Inkling-2-Small" target="_blank" rel="noopener noreferrer">Hugging Face model card</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-07">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 07 of 10</div>
+                    <h3>Meta's Muse Ember targets the cheap, repetitive work agents do all day</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-13/07-muse-ember.webp" alt="Meta graphic of blue arcs connecting points in a radial pattern" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: Meta Superintelligence Labs, via <a href="https://techcrunch.com/2026/11/09/meta-releases-muse-ember-a-new-lightweight-model-for-agent-execution/" target="_blank" rel="noopener noreferrer">TechCrunch</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 9, Meta Superintelligence Labs released Muse Ember, its smallest and most cost-efficient model, built for tool calls, coding subtasks, routing, extraction, and long document parsing. It has a 1M-token context, handles text, images, and audio, and starts at $0.10 per million input tokens and $0.50 per million output (rates triple above 200K input tokens). Meta pitches it as the volume worker under its frontier Muse Wonder: "Muse Wonder plans, Muse Ember handles the volume." Meta's cost-per-task comparisons against Haiku and Luna are its own claims.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>The cheapest tier is where agent bills actually live. A capable 10-cent model makes large batch jobs (grading rubrics, extraction, ticket routing) affordable for small teams.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge maybe">Maybe</span>
+                        <span class="explore-text">Benchmark it on one high-volume extraction or routing task against your current small model before switching.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://research.meta.ai/blog/muse-ember" target="_blank" rel="noopener noreferrer">Meta AI: Muse Ember</a></li>
+                            <li><a href="https://dev.meta.ai/docs/muse-ember" target="_blank" rel="noopener noreferrer">Meta Model API docs</a></li>
+                            <li><a href="https://techcrunch.com/2026/11/09/meta-releases-muse-ember-a-new-lightweight-model-for-agent-execution/" target="_blank" rel="noopener noreferrer">TechCrunch</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-08">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 08 of 10</div>
+                    <h3>Anthropic lets companies self-host Claude Managed Agents</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-13/08-claude-managed-agents.webp" alt="Claude Platform Docs page titled Claude Platform release notes" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: Anthropic, <a href="https://platform.claude.com/docs/en/release-notes/overview" target="_blank" rel="noopener noreferrer">Claude Platform release notes</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 12, Anthropic launched self-hosted Claude Managed Agents in private beta. Companies can run the entire Managed Agents service on their own infrastructure, not just the sandboxes, and keep agents, sessions, and session history there. Model requests go to the provider the customer chooses (Anthropic by default). Access is by request through Anthropic's account team.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Universities, hospitals, and regulated companies often cannot let agent session logs leave their walls. Self-hosting removes one of the biggest blockers to deploying long-running agents in those places.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge no">No</span>
+                        <span class="explore-text">Not for most people right now. It is private beta and aimed at enterprises; worth a request if your institution has strict data-residency rules.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://platform.claude.com/docs/en/release-notes/overview" target="_blank" rel="noopener noreferrer">Claude Platform release notes</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-09">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 09 of 10</div>
+                    <h3>Claude joins your meetings and gets shared whiteboards and sheets</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-13/09-claude-meetings.webp" alt="Anthropic illustration of a cursor arrow on a simple monitor against a peach background" width="1200" height="630">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://claude.com/resources/articles/claude-meetings" target="_blank" rel="noopener noreferrer">Anthropic</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>Anthropic moved Claude deeper into team workspaces this week. On Nov 10 it launched Claude Whiteboards and Claude Sheets in beta and made Claude Dashboards generally available as Claude Data (with certified queries and live sharing), on all paid plans, and let interactive connectors open as full apps beside the chat. On Nov 12, Claude Meetings entered beta on Team and Enterprise plans: Claude joins Google Meet calls as a visible participant, answers questions, builds docs and whiteboards live, and writes notes and action items. By default it stays out of calls with outside guests, and it saves transcripts and summaries, not audio.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Claude is shifting from a chat box to a teammate that sits in the meeting and the shared doc. For research groups and project teams, that means notes, plans, and data stories can live in one place.</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">If you are on a Team plan, build one project tracker in Claude Sheets or run one internal meeting with Claude attending, and get everyone's consent to transcription first.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://claude.com/resources/articles/sheets-whiteboards-data" target="_blank" rel="noopener noreferrer">Claude: Whiteboards, Sheets, and Data</a></li>
+                            <li><a href="https://claude.com/resources/articles/claude-meetings" target="_blank" rel="noopener noreferrer">Claude: Introducing Claude Meetings</a></li>
+                            <li><a href="https://claude.com/resources/articles/interactive-connectors-full-tool" target="_blank" rel="noopener noreferrer">Claude: Apps open in Claude</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="newsletter-item" id="item-10">
+            <div class="container">
+                <div class="newsletter-item-inner">
+                    <div class="newsletter-item-num">Item 10 of 10</div>
+                    <h3>Google's Gemini Decisions API scores up to 1,000 questions in one pass</h3>
+                    
+                    <div class="newsletter-item-image">
+                        <img src="images/2026-11-13/10-gemini-decisions-api.webp" alt="Google graphic reading Gemini Decisions API on a blue gradient" width="1200" height="675">
+                    </div>
+                    <p class="image-credit">Image: <a href="https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/" target="_blank" rel="noopener noreferrer">Google</a></p>
+                    
+                    <div class="newsletter-item-text">
+                        <p>On Nov 11, Google introduced the Gemini Decisions API, powered by a new Gemini Decision 1 model. Instead of generating text, it scores candidate options for closed-set questions (yes/no, multiple choice, rubric scores) in a single forward pass over one multimodal input of up to 256K tokens, returning probabilities and confidence. Google cites 150 to 250 ms end-to-end latency, $0.10 per million input tokens, and no output-token charges, with a no-cost tier in AI Studio. Integrations are rolling out across OpenRouter, LangChain, Vercel, LiteLLM, and others.</p>
+                    </div>
+                    
+                    <div class="newsletter-callout">
+                        <div class="newsletter-callout-label">Why it matters</div>
+                        <p>Routing, policy checks, and rubric grading are a huge share of agent and classroom workloads. Calibrated probabilities at this price are better suited to those jobs than asking a chat model to "answer yes or no."</p>
+                    </div>
+                    
+                    <div class="newsletter-explore">
+                        <span class="explore-badge yes">Yes</span>
+                        <span class="explore-text">Try it on a rubric: pass one student-style submission and a list of rubric questions, and compare its scores to your own.</span>
+                    </div>
+                    
+                    <div class="newsletter-sources">
+                        <h4>Sources</h4>
+                        <ul>
+                            <li><a href="https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/" target="_blank" rel="noopener noreferrer">Google: Gemini Decisions API</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <section class="newsletter-closing">
+            <div class="container">
+                <div class="newsletter-closing-inner">
+                    <h2>If you try one thing this weekend</h2>
+                    <p>Build a tiny three-tier agent loop and watch the costs. Use a frontier model (Fable 5.2 or Gemini 4 Carbon) to write the plan, a fast model (Gemini 4 Hydrogen) to do the steps, and the Gemini Decisions API to grade each step with yes/no checks. It is this week's biggest idea in one afternoon project: big models plan, small models execute, and cheap calibrated checks keep everyone honest.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p class="footer-note">&copy; 2026 Pedram Jahangiry &mdash; all residuals are my own.</p>
+            <div class="social-links">
+                <a href="https://x.com/PedramJahangiry" target="_blank" aria-label="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://www.linkedin.com/in/pedram-jahangiry-cfa-5778015a/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="https://github.com/PJalgotrader" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                <a href="mailto:pedram.jahangiry@usu.edu" aria-label="Email"><i class="fas fa-envelope"></i></a>
+            </div>
+            <p class="colophon">Set in Fraunces, Inter &amp; IBM Plex Mono &middot; hand&#8209;built, zero frameworks &middot; Logan, Utah &mdash; 41.74&deg;&nbsp;N, 111.81&deg;&nbsp;W</p>
+        </div>
+    </footer>
+
+    <script src="../script.js?v=3"></script>
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>
