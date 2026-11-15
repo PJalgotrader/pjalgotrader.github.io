@@ -42,7 +42,8 @@ This is the personal website of Pedram Jahangiry, Professional Practice Associat
 ├── script.js              # Interactive functionality
 ├── election-viz.js        # Election visualization script
 └── images/               # Image assets
-    └── pedram.jpg        # Profile photo
+    ├── pedram-headshot.jpg    # Profile photo (link previews)
+    └── pedram-cutout-v2.png   # Background-free cutout for the home hero
 ```
 
 ## 🔧 Local Development
