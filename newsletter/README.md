@@ -101,9 +101,9 @@ newsletter/
 
 ## "From Pedram" extras (added by hand, not by the newsletter bot)
 
-Pedram's own news (a new YouTube video, an app release, a talk, a tool worth trying) goes into a published issue as a `<section class="nl-extras" id="from-pedram">`, wrapped in the `FROM-PEDRAM:START` / `FROM-PEDRAM:END` comments.
+Pedram's own news (a new YouTube video, an app release, a talk, a tool worth trying) goes into a published issue as a compact strip right after the hero, before "In this issue": a `<section class="nl-extras" id="from-pedram">` wrapped in the `FROM-PEDRAM:START` / `FROM-PEDRAM:END` comments.
 
-- Each item is a `.plate` card: `.plate-num` top line (kind · topic), `.plate-title`, then a picture (`img.plate-shot` for a photo or video thumbnail, or an `svg.plate-art` drawing), `.plate-desc`, and a `.proj-cta` action ("Watch on YouTube ↗", "Open →"). One to four cards; the grid centres itself.
+- Inside: `.nl-extras-box`, a `.nl-extras-label` ("From Pedram · also this week"), then a `ul.nl-extras-list` with one `a.nl-extra` row per item: `.nl-extra-thumb` (an `img` or a small `svg.plate-art` drawing), `.nl-extra-body` holding `.nl-extra-kind` (kind · topic), `.nl-extra-title` and a one-line `.nl-extra-desc`, then a `.nl-extra-go` arrow (↗ external, → on the site). One to four rows.
 - Images go in the issue's `images/YYYY-MM-DD/` folder, named `extra-*.webp`, 800×450 for video thumbnails.
 - Add the extras **before** the Kit email goes out, so subscribers get them too.
 - An issue with no extras has no block at all.
