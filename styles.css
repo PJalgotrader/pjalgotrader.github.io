@@ -658,43 +658,6 @@ body::after {
 }
 
 /* "At a glance" panel — every tool visible in one screen */
-/* Compact table-of-contents variant (visualizations page) */
-.toc .section-label {
-    margin: 4rem 0 1.5rem;
-}
-
-.toc .section-label:first-of-type {
-    margin-top: 0;
-}
-
-.toc .index-row {
-    grid-template-columns: 64px 1fr auto;
-    gap: 1.5rem;
-    padding: 1.5rem 0.5rem;
-}
-
-.toc .index-title {
-    font-size: clamp(1.2rem, 1.9vw, 1.55rem);
-    margin-bottom: 0.35rem;
-}
-
-.toc .index-desc {
-    font-size: 0.92rem;
-    max-width: 48rem;
-}
-
-.toc .index-arrow {
-    font-size: 1.25rem;
-}
-
-.toc-foot {
-    margin-top: 3rem;
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
 /* ==========================================================================
    Plates — featured tools as engravings
    ========================================================================== */
@@ -1017,22 +980,12 @@ body::after {
     color: var(--ink);
 }
 
-.content-card .card-list-title {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 1.2rem 0 0.2rem;
-}
-
 /* Contact page */
 .contact-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
     gap: 1.5rem;
-    align-items: start;
+    align-items: stretch;
 }
 
 .contact-row {
@@ -1068,64 +1021,6 @@ body::after {
 .contact-row p {
     margin-bottom: 0.15rem;
     color: var(--ink-soft);
-}
-
-.social-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.9rem;
-}
-
-.social-card {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    padding: 1rem;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    background: var(--paper);
-    text-decoration: none;
-    transition: border-color 0.25s ease, transform 0.25s ease;
-}
-
-.social-card:hover {
-    border-color: var(--green);
-    transform: translateY(-2px);
-}
-
-.social-card i {
-    font-size: 1.35rem;
-    color: var(--ink-soft);
-    transition: color 0.25s ease;
-}
-
-.social-card:hover i {
-    color: var(--green);
-}
-
-.social-name {
-    font-weight: 500;
-    color: var(--ink);
-    font-size: 0.95rem;
-}
-
-.social-desc {
-    font-size: 0.8rem;
-    color: var(--ink-mute);
-}
-
-.address-block {
-    margin-top: 3rem;
-    text-align: center;
-    padding: 3rem 2rem;
-}
-
-.address-block .btn-row {
-    display: flex;
-    justify-content: center;
-    gap: 1.25rem;
-    flex-wrap: wrap;
-    margin-top: 1.75rem;
 }
 
 /* ==========================================================================
@@ -1244,20 +1139,13 @@ footer .container {
         height: 32%;
     }
 
-    .toc .index-row {
-        grid-template-columns: 48px 1fr;
-        gap: 1.25rem;
-        padding: 1.8rem 0.25rem;
-    }
-
     .index-meta {
         display: none;
     }
 
     .content-grid.cols-2,
     .content-grid.cols-3,
-    .contact-grid,
-    .social-grid {
+    .contact-grid {
         grid-template-columns: 1fr;
     }
 
@@ -1909,6 +1797,54 @@ main > .subscribe:last-child { padding: 36px 0 56px; }
 }
 
 /* ==========================================================================
+   Quiet list (Projects, Nov 2026): hairline rows of label, one or two
+   sentences, and at most one link. For prose that should not be a card.
+   ========================================================================== */
+.quiet-list { border-top: 1px solid var(--line); }
+.quiet-row { display: grid; grid-template-columns: 210px minmax(0, 1fr) 200px; gap: 6px 32px; align-items: baseline; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.quiet-row p { margin: 0; max-width: 68ch; font-size: 15px; line-height: 1.6; color: var(--ink-soft); }
+.quiet-row .quiet-label { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; color: var(--green); }
+.quiet-link { justify-self: end; font-family: var(--mono); font-size: 12.5px; color: var(--ink); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; white-space: nowrap; }
+.quiet-link:hover { color: var(--green); text-decoration-color: var(--green); }
+@media (max-width: 760px) {
+    .quiet-row { grid-template-columns: minmax(0, 1fr); padding: 14px 0; }
+    .quiet-link { justify-self: start; }
+    .quiet-link:empty { display: none; }
+}
+
+/* ==========================================================================
+   Contact profiles (Nov 2026): four Ledger cards, each with a snapshot of
+   the real profile page (images/contact/*.webp, 800x500), dealt the five
+   card accents in order like the other card collections.
+   ========================================================================== */
+.profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.profile-card { --c: var(--p1); --c-ink: var(--c); display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 12px 12px 14px; background: var(--card); color: var(--ink); border: 1px solid var(--line); border-top: 3px solid var(--c-ink); border-radius: 6px; text-decoration: none; transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1.2), box-shadow 0.22s, border-color 0.22s; }
+.profile-card:nth-of-type(2) { --c: var(--p3); }
+.profile-card:nth-of-type(3) { --c: var(--p4); }
+.profile-card:nth-of-type(4) { --c: var(--p5); }
+[data-theme="light"] .profile-card { --c-ink: color-mix(in srgb, var(--c) 60%, #0A1020); }
+.profile-card:hover { transform: translateY(-4px); border-color: var(--c-ink); box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12); }
+.profile-shot { display: block; aspect-ratio: 16 / 10; overflow: hidden; border-radius: 4px; border: 1px solid var(--line); background: var(--paper-deep); }
+.profile-shot img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top left; transition: transform 0.4s ease; }
+.profile-card:hover .profile-shot img { transform: scale(1.03); }
+.profile-meta { display: flex; align-items: center; gap: 10px; }
+.profile-meta i { font-size: 20px; color: var(--c-ink); width: 22px; text-align: center; }
+.profile-meta > span:not(.profile-go) { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.profile-name { font-family: var(--serif); font-weight: 800; font-size: 19px; line-height: 1.1; color: var(--ink); }
+.profile-handle { font-family: var(--mono); font-size: 11.5px; color: var(--ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-go { font-family: var(--mono); font-size: 15px; color: var(--c-ink); }
+.profile-desc { font-size: 13.5px; line-height: 1.4; color: var(--ink-soft); }
+.contact-office { display: flex; flex-direction: column; justify-content: center; }
+@media (max-width: 1000px) { .contact-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) {
+    .profile-grid { gap: 9px; }
+    .profile-card { padding: 8px 8px 10px; gap: 7px; }
+    .profile-name { font-size: 16px; }
+    .profile-meta i { display: none; }
+    .profile-desc { display: none; }
+}
+
+/* ==========================================================================
    Ledger cards — the site-wide card system (Nov 2026)
 
    Every collection on the site is a set of cards with one anatomy:
@@ -1938,11 +1874,8 @@ main > .subscribe:last-child { padding: 36px 0 56px; }
 .glance { padding: 6px 0 22px; }
 .plates { padding: 22px 0 34px; }
 .index-section:not(.toc) { padding: 44px 0 22px; }
-.index-section.toc { padding: 0 0 48px; }
 main > section:last-child { padding-bottom: 52px; }
 :is(.content-section, .glance, .index-section) .section-label { font-size: 12.5px; letter-spacing: 0.06em; margin: 0 0 14px; padding-bottom: 7px; border-bottom: 1px solid var(--line); }
-.toc .section-label { margin-top: 34px; }
-.toc .section-label:first-of-type { margin-top: 12px; }
 .plates .section-head { margin-bottom: 14px; padding-bottom: 7px; border-bottom: 1px solid var(--line); }
 .plates .section-label { margin-bottom: 0; font-size: 12.5px; letter-spacing: 0.06em; }
 

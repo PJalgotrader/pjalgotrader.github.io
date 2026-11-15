@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{if(localStorage.getItem('pj-theme')!=='dark')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
-    <title>Interactive Tools — Pedram Jahangiry</title>
+    <title>Tools — Pedram Jahangiry</title>
     <meta name="description" content="Interactive visualizations for time series, machine learning, and deep learning — random walks, exponential smoothing, SARIMA, cross-validation, gradient descent, and neural networks that train in your browser.">
     <meta name="theme-color" content="#0A1020">
     <link rel="canonical" href="https://pedramjahangiry.com/visualizations.html">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="styles.css?v=17">
+    <link rel="stylesheet" href="styles.css?v=18">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -27,7 +27,7 @@
                     <a href="index.html" class="nav-link">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a href="visualizations.html" class="nav-link active">Interactive Tools</a>
+                    <a href="visualizations.html" class="nav-link active">Tools</a>
                 </li>
                 <li class="nav-item">
                     <a href="teaching.html" class="nav-link">Teaching</a>
@@ -62,8 +62,8 @@
     <main id="main">
         <section class="page-header">
             <div class="container">
-                <p class="eyebrow">Table of contents</p>
-                <h1>Interactive Tools</h1>
+                <p class="eyebrow">Interactive teaching tools</p>
+                <h1>Tools</h1>
                 <p>Every tool is a standalone HTML page &mdash; no installs, no accounts, no APIs. Open one and start turning knobs. The math moves.</p>
             </div>
         </section>
@@ -117,189 +117,6 @@
             </div>
         </section>
 
-        <section class="index-section toc">
-            <div class="container">
-
-                <p class="section-label">&sect; 01 &mdash; Time series foundations</p>
-                <a class="index-row" href="Interactive_tools/random-walk-teaching-tool.html" target="_blank" rel="noopener">
-                    <span class="index-num">01</span>
-                    <span class="index-body">
-                        <span class="index-title">The Random Walk</span>
-                        <span class="index-desc">Stock prices as a random walk with drift: annual drift and volatility, fat-tailed shocks, a forecast cone that widens with &radic;t, and the noise behind every apparent trend.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-                <a class="index-row" href="Interactive_tools/stationarity-visualizer.html" target="_blank" rel="noopener">
-                    <span class="index-num">02</span>
-                    <span class="index-body">
-                        <span class="index-title">Stationarity Visualizer</span>
-                        <span class="index-desc">Why constant mean, variance, and autocovariance matter &mdash; trending, seasonal, and white-noise processes compared through ensemble versus time means.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-
-                <p class="section-label">&sect; 02 &mdash; Exponential smoothing</p>
-                <a class="index-row" href="Interactive_tools/m3_ets/ses/ses_interactive_visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">03</span>
-                    <span class="index-body">
-                        <span class="index-title">Simple Exponential Smoothing</span>
-                        <span class="index-desc">How &alpha; trades stability for responsiveness &mdash; and why &alpha; near 1 is a confession that your model is missing trend or season.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-                <a class="index-row" href="Interactive_tools/m3_ets/holt_linear_trend/holt_linear_trend_visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">04</span>
-                    <span class="index-body">
-                        <span class="index-title">Holt's Linear Trend</span>
-                        <span class="index-desc">Level and trend decomposed, each with its own smoothing parameter &mdash; flat forecasts become sloped ones.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-                <a class="index-row" href="Interactive_tools/m3_ets/holt_winter/holt_winters_visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">05</span>
-                    <span class="index-body">
-                        <span class="index-title">Holt&ndash;Winters Seasonal</span>
-                        <span class="index-desc">The full triple: &alpha;, &beta;*, and &gamma; working together to capture level, trend, and seasonality at once.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-
-                <p class="section-label">&sect; 03 &mdash; ARIMA</p>
-                <a class="index-row" href="Interactive_tools/m4_arima/ar-ma-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">06</span>
-                    <span class="index-body">
-                        <span class="index-title">AR(1) &amp; MA(1) Building Blocks</span>
-                        <span class="index-desc">Past values versus past errors: stationarity conditions, autocorrelation signatures, and how each block forecasts.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-                <a class="index-row" href="Interactive_tools/m4_arima/sarima-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">07</span>
-                    <span class="index-body">
-                        <span class="index-title">SARIMA Explorer</span>
-                        <span class="index-desc">Dial in (p,&nbsp;d,&nbsp;q)(P,&nbsp;D,&nbsp;Q)&#8342; on the airline-passengers data and watch trend and seasonality get captured &mdash; forecasts with confidence intervals included.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-
-                <p class="section-label">&sect; 04 &mdash; Machine learning</p>
-                <a class="index-row" href="Interactive_tools/m5_ml/bias-variance-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">08</span>
-                    <span class="index-body">
-                        <span class="index-title">Bias&ndash;Variance Tradeoff</span>
-                        <span class="index-desc">Repeated sampling makes bias and variance visible: fit polynomials to noisy draws and watch underfitting and overfitting emerge on a live tradeoff curve.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-                <a class="index-row" href="Interactive_tools/m5_ml/cross-validation-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">09</span>
-                    <span class="index-body">
-                        <span class="index-title">Cross-Validation</span>
-                        <span class="index-desc">K-Fold, Stratified, and Leave-One-Out, animated fold by fold &mdash; see exactly where validation scores come from.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-                <a class="index-row" href="Interactive_tools/m5_ml/learning-curve-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">10</span>
-                    <span class="index-body">
-                        <span class="index-title">Learning Curves</span>
-                        <span class="index-desc">Training and validation error as data grows &mdash; diagnose high bias versus high variance, and learn when more data actually helps.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-                <a class="index-row" href="Interactive_tools/m5_ml/gradient-descent-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">11</span>
-                    <span class="index-body">
-                        <span class="index-title">Gradient Descent &amp; SGD</span>
-                        <span class="index-desc">Watch optimization crawl a contour loss surface in real time. Compare smooth Batch GD with noisy SGD, and push the learning rate until it diverges.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-                <a class="index-row" href="Interactive_tools/m5_ml/dt-regression-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">12</span>
-                    <span class="index-body">
-                        <span class="index-title">Decision Trees for Time Series</span>
-                        <span class="index-desc">Trees partitioning lag space, rendered as both structure and decision boundaries &mdash; and why they struggle with trend once forecasts go recursive.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-                <a class="index-row" href="Interactive_tools/m5_ml/bagging-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">13</span>
-                    <span class="index-body">
-                        <span class="index-title">Bagging</span>
-                        <span class="index-desc">Many trees, bootstrap resamples, one averaged forecast on the airline-passengers data &mdash; watch test error fall as trees are added, see which months each tree trained on, and why trees can't extrapolate a trend.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-                <a class="index-row" href="Interactive_tools/m5_ml/boosting-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">14</span>
-                    <span class="index-body">
-                        <span class="index-title">Boosting</span>
-                        <span class="index-desc">Small trees added one round at a time on the airline-passengers data &mdash; watch each tree fit the residuals, see training and test error part ways, and find the round where early stopping should quit.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-                <a class="index-row" href="Interactive_tools/m5_ml/histogram-goss-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">15</span>
-                    <span class="index-body">
-                        <span class="index-title">Histogram vs GOSS Splitting</span>
-                        <span class="index-desc">How LightGBM finds splits fast &mdash; histograms test fewer thresholds, GOSS looks at fewer rows. Dial the bins, top_rate, and other_rate, and see when GOSS wins and when it doesn&rsquo;t.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-
-                <p class="section-label">&sect; 05 &mdash; Leakage &amp; dependence <span class="section-note" style="text-transform: none; letter-spacing: 0.03em;">&mdash; where honest backtests live or die</span></p>
-                <a class="index-row" href="Interactive_tools/m5_ml/ts-cross-validation-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">16</span>
-                    <span class="index-body">
-                        <span class="index-title">Time Series Cross-Validation</span>
-                        <span class="index-desc">Purged K-Fold with embargo, Walk-Forward windows, and Combinatorial Purged CV with backtest-path reconstruction &mdash; the machinery that keeps evaluations honest.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-                <a class="index-row" href="Interactive_tools/m5_ml/ts-bootstrapping-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">17</span>
-                    <span class="index-body">
-                        <span class="index-title">Time Series Bootstrapping</span>
-                        <span class="index-desc">Moving Block, Circular Block, Stationary, and parametric AR(1) bootstraps &mdash; resampling dependent data without destroying its structure.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-
-                <p class="section-label">&sect; 06 &mdash; Deep learning</p>
-                <a class="index-row" href="Interactive_tools/m6_dl/dnn-timeseries-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">18</span>
-                    <span class="index-body">
-                        <span class="index-title">Deep Neural Networks, Live</span>
-                        <span class="index-desc">Configure layers, neurons, activations, and lags, then train in your browser with TensorFlow.js &mdash; live loss curves, feature importance, and a linear-regression benchmark to keep the hype honest.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-                <a class="index-row" href="Interactive_tools/m7_rnn/rnn-vs-dnn-timeseries-visualization.html" target="_blank" rel="noopener">
-                    <span class="index-num">19</span>
-                    <span class="index-body">
-                        <span class="index-title">RNN vs DNN</span>
-                        <span class="index-desc">Train both side by side and discover the key lesson: preprocessing (log + differencing) turns RNN performance from poor to excellent on non-stationary data.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&rarr;</span></span>
-                </a>
-
-                <p class="section-label">&sect; 07 &mdash; From around the web</p>
-                <a class="index-row" href="https://zenith-wavelength-8c2.notion.site/NN-visualization-3271bcf20cbb807c8d8ff7434bf785b6" target="_blank" rel="noopener noreferrer">
-                    <span class="index-num">&#8599;</span>
-                    <span class="index-body">
-                        <span class="index-title">Neural Network Visualization</span>
-                        <span class="index-desc">A curated external find: architectures, activations, and how networks learn. Opens on Notion.</span>
-                    </span>
-                    <span class="index-meta"><span class="index-arrow">&#8599;</span></span>
-                </a>
-
-                <div class="toc-foot">
-                    <p class="plates-footnote">&#9734; In preparation: stock market &amp; trading tools.</p>
-                    <p class="plates-footnote">All tools by Dr.&nbsp;Pedram Jahangiry &middot; enhanced with Claude.</p>
-                </div>
-            </div>
-        </section>
         <section class="subscribe" aria-labelledby="subscribe-title">
             <div class="container">
                 <div class="subscribe-card">
@@ -325,7 +142,7 @@
         <div class="container">
             <p class="footer-note">&copy; 2026 Pedram Jahangiry &mdash; all residuals are my own.</p>
             <div class="social-links">
-                <a href="https://x.com/PedramJahangiry" target="_blank" aria-label="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://x.com/pjalgo" target="_blank" aria-label="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
                 <a href="https://www.linkedin.com/in/pedram-jahangiry-cfa-5778015a/" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
                 <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
                 <a href="https://github.com/PJalgotrader" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>

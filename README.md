@@ -81,7 +81,7 @@ Utah State University
 
 - **Email**: pedram.jahangiry@usu.edu
 - **LinkedIn**: [pedram-jahangiry-cfa](https://www.linkedin.com/in/pedram-jahangiry-cfa-5778015a/)
-- **X (Twitter)**: [@PedramJahangiry](https://x.com/PedramJahangiry)
+- **X (Twitter)**: [@PedramJahangiry](https://x.com/pjalgo)
 - **YouTube**: [@pedramjahangiry](https://www.youtube.com/@pedramjahangiry) 
 
 ---
