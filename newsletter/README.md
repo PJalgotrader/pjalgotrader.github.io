@@ -44,7 +44,8 @@ For each of the 10 items:
    - Update source links
 6. **Update closing section**:
    - Replace "If you try one thing" content
-7. **Keep the signup card**: the `<section class="subscribe">` block just before `</main>` stays exactly as it is in the template, including the Kit form `action` URL. Styles live in `styles.css` and the behaviour in `initializeSubscribe()` in `script.js`. If the `action` isn't a Kit `/forms/<id>/subscriptions` URL, the card hides itself.
+7. **Leave out the "From Pedram" block**: some issues carry a block between `<!-- FROM-PEDRAM:START` and `<!-- FROM-PEDRAM:END -->` (it may sit near the top or the bottom of the page). It holds Pedram's own news, added by hand after the issue is published. When you copy an issue as a template, **delete that whole block** from the new page, and never create, edit or move one yourself. Your issue is only the ten AI items, the closing and the signup card.
+8. **Keep the signup card**: the `<section class="subscribe">` block just before `</main>` stays exactly as it is in the template, including the Kit form `action` URL. Styles live in `styles.css` and the behaviour in `initializeSubscribe()` in `script.js`. If the `action` isn't a Kit `/forms/<id>/subscriptions` URL, the card hides itself.
 
 ### 3. Add entry to newsletter.html
 
@@ -97,6 +98,15 @@ newsletter/
 - All "Why it matters" and "Worth exploring" sections should speak to a general public audience
 - Use CSS placeholders for items without suitable images (see item 09 example)
 - **No em dashes** (`—` or `&mdash;`) anywhere: not in titles, copy, captions or code. Use a comma, colon, full stop or brackets instead. Titles read `Issue name | Pedram Jahangiry`; section labels read `&sect; 01 &middot; Label`
+
+## "From Pedram" extras (added by hand, not by the newsletter bot)
+
+Pedram's own news (a new YouTube video, an app release, a talk, a tool worth trying) goes into a published issue as a `<section class="nl-extras" id="from-pedram">`, wrapped in the `FROM-PEDRAM:START` / `FROM-PEDRAM:END` comments.
+
+- Each item is a `.plate` card: `.plate-num` top line (kind · topic), `.plate-title`, then a picture (`img.plate-shot` for a photo or video thumbnail, or an `svg.plate-art` drawing), `.plate-desc`, and a `.proj-cta` action ("Watch on YouTube ↗", "Open →"). One to four cards; the grid centres itself.
+- Images go in the issue's `images/YYYY-MM-DD/` folder, named `extra-*.webp`, 800×450 for video thumbnails.
+- Add the extras **before** the Kit email goes out, so subscribers get them too.
+- An issue with no extras has no block at all.
 
 ## Image optimization tips
 
