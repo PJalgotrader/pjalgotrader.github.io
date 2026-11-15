@@ -470,8 +470,11 @@ body::after {
 /* Portrait — background-free cutout melting into the theme */
 .hero-portrait {
     position: absolute;
-    /* align the portrait's right edge with the container's content edge */
-    right: calc(max(0px, 50vw - 580px) + 2rem);
+    /* keep the face where the old 2:3 portrait put it; the wider cutout's
+       shoulders spread out from there (0.3365 = half the extra width per unit
+       of height, (1184/884 - 733/1100) / 2) and may run off the right edge,
+       which .hero clips */
+    right: calc(max(0px, 50vw - 580px) + 2rem - min(62vh, 540px) * 0.3365);
     top: 44%;
     transform: translateY(-50%);
     height: min(62vh, 540px);
@@ -490,9 +493,8 @@ body::after {
     mix-blend-mode: normal;
     filter: grayscale(1) contrast(1.04) brightness(1.06)
             drop-shadow(0 0 48px rgba(233, 228, 212, 0.14));
-    /* the source photo crops the arms at its frame; fade those straight cuts */
-    -webkit-mask-image: linear-gradient(to right, transparent 1%, #000 16%, #000 84%, transparent 99%);
-    mask-image: linear-gradient(to right, transparent 1%, #000 16%, #000 84%, transparent 99%);
+    /* the cutout's shoulders run past the photo frame and fade out on their own
+       (images/pedram-cutout-v3.png), so no sideways mask is needed */
 }
 
 [data-theme="light"] .hero-portrait img {
@@ -1129,7 +1131,7 @@ footer .container {
 
     .hero-portrait img {
         height: auto;
-        width: 74%;
+        width: 100%;
         margin: 0 auto;
         -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
         mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
