@@ -1994,3 +1994,31 @@ main > section:last-child { padding-bottom: 52px; }
     :is(.plate .plate-desc, .index-section:not(.toc) .index-desc, .newsletter-list-desc) { display: none; }
     .glance-item { font-size: 12.5px; }
 }
+
+/* ---- Newsletter issue: "From Pedram" strip. Pedram's own news (videos,
+        releases, tools) as slim rows right under the issue hero, before the
+        AI items. The newsletter bot never writes here; see newsletter/README.md. ---- */
+.nl-extras { padding: 30px 0 34px; scroll-margin-top: 88px; }
+.nl-extras-box { max-width: 48rem; padding: 14px 18px 6px; background: var(--card); border: 1px solid var(--line); border-top: 3px solid var(--green); border-radius: 6px; }
+.nl-extras-label { margin: 0 0 4px; font-family: var(--mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); }
+.nl-extras-list { list-style: none; margin: 0; padding: 0; }
+.nl-extra { display: grid; grid-template-columns: 120px minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 12px 0; border-top: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+.nl-extras-list li:first-child .nl-extra { border-top: 0; }
+.nl-extra-thumb { --c-ink: var(--green); display: block; width: 120px; height: 68px; overflow: hidden; border-radius: 4px; background: var(--paper-deep); color: var(--green); }
+.nl-extra-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.nl-extra-thumb svg { display: block; width: 100%; height: 100%; padding: 6px; }
+.nl-extra-body { display: block; min-width: 0; }
+.nl-extra-kind { display: block; margin-bottom: 2px; font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.02em; color: var(--ink-mute); }
+.nl-extra-title { display: block; font-family: var(--serif); font-size: 18px; font-weight: 700; line-height: 1.2; color: var(--ink); transition: color 0.2s; }
+.nl-extra-desc { display: block; margin-top: 3px; font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
+.nl-extra-go { font-family: var(--mono); font-size: 15px; color: var(--green); }
+.nl-extra:hover .nl-extra-title { color: var(--green); }
+@media (max-width: 640px) {
+    .nl-extras { padding: 22px 0 26px; }
+    .nl-extras-box { padding: 12px 14px 4px; }
+    .nl-extra { grid-template-columns: 88px minmax(0, 1fr); gap: 12px; padding: 10px 0; }
+    .nl-extra-thumb { width: 88px; height: 56px; }
+    .nl-extra-go { display: none; }
+    .nl-extra-title { font-size: 16px; }
+    .nl-extra-desc { font-size: 13px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+}
