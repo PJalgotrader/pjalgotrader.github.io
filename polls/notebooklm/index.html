@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{if(localStorage.getItem('pj-theme')!=='dark')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
-    <title>AI Tools Pulse Check — Pedram Jahangiry</title>
+    <title>AI Tools Pulse Check | Pedram Jahangiry</title>
     <meta name="description" content="Live classroom poll: which AI tools have you worked with?">
     <meta name="robots" content="noindex">
     <meta name="theme-color" content="#0A1020">
@@ -83,14 +83,14 @@
 
         <div id="done">
             <div class="mark">&Sigma;</div>
-            <h2>Thanks &mdash; you're in.</h2>
+            <h2>Thanks, you're in.</h2>
             <p>Watch the screen up front for the live results.</p>
         </div>
 
         <div id="closed">
             <div class="mark">&empty;</div>
             <h2>This poll isn't open right now.</h2>
-            <p>Voting opens when a session starts &mdash; check back in class.</p>
+            <p>Voting opens when a session starts. Check back in class.</p>
         </div>
 
         <a class="home" href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com &middot; all polls</a>
@@ -119,7 +119,7 @@ const POLL = {
         },
         {
             id: 'why_not_nblm', type: 'single',
-            title: "If you haven't used NotebookLM (Gemini Notebook) — why not?", hint: 'pick the closest one',
+            title: "If you haven't used NotebookLM (Gemini Notebook), why not?", hint: 'pick the closest one',
             options: [
                 { value: 'Never heard of it', label: "I'd never heard of it" },
                 { value: 'Not sure how it differs from ChatGPT', label: "Heard of it, but not sure how it's different from ChatGPT" },
@@ -220,7 +220,7 @@ form.addEventListener('submit', async (e) => {
         localStorage.setItem(votedKey(session, sessionStartedAt), '1');
         showDone();
     } catch (err) {
-        showError("Couldn't submit — check your connection and try again.");
+        showError("Couldn't submit. Check your connection and try again.");
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit';
     }

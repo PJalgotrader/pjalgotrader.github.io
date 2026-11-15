@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{if(localStorage.getItem('pj-theme')!=='dark')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
-    <title>Deep Learning Module Pulse — Pedram Jahangiry</title>
+    <title>Deep Learning Module Pulse | Pedram Jahangiry</title>
     <meta name="description" content="Live classroom poll: how did that Deep Learning module land?">
     <meta name="robots" content="noindex">
     <meta name="theme-color" content="#0A1020">
@@ -84,20 +84,20 @@
     <div class="wrap">
         <p class="kicker">DATA 5610 &middot; Deep Learning &middot; Live Poll</p>
         <h1>How did that module land?</h1>
-        <p class="dek">Two taps and one word, twenty seconds. Anonymous &mdash; no names, ever. Results appear live on screen.</p>
+        <p class="dek">Two taps and one word, twenty seconds. Anonymous, no names, ever. Results appear live on screen.</p>
 
         <form id="pollForm"></form>
 
         <div id="done">
             <div class="mark">&Sigma;</div>
-            <h2>Thanks &mdash; you're in.</h2>
+            <h2>Thanks, you're in.</h2>
             <p>Watch the screen up front for the live results.</p>
         </div>
 
         <div id="closed">
             <div class="mark">&empty;</div>
             <h2>This poll isn't open right now.</h2>
-            <p>Voting opens at the end of each module &mdash; check back in class.</p>
+            <p>Voting opens at the end of each module. Check back in class.</p>
         </div>
 
         <a class="home" href="https://pedramjahangiry.com/polls.html">pedramjahangiry.com &middot; all polls</a>
@@ -113,12 +113,12 @@ const POLL = {
     questions: [
         {
             id: 'feeling', type: 'single',
-            title: 'How do you feel coming out of this module?', hint: 'be honest — this is how I fix things',
+            title: 'How do you feel coming out of this module?', hint: 'be honest: this is how I fix things',
             options: [
                 { value: 'Confident', label: '😄 Confident', sub: 'I could explain this to a classmate' },
                 { value: 'Good', label: '🙂 Good', sub: 'solid, a few minor gaps' },
                 { value: 'Okay', label: '😐 Okay', sub: "following along, but it's shaky" },
-                { value: 'Confused', label: '😕 Confused', sub: 'big gaps — parts lost me' },
+                { value: 'Confused', label: '😕 Confused', sub: 'big gaps, parts lost me' },
                 { value: 'Lost', label: '😩 Lost', sub: 'I need help before we move on' }
             ]
         },
@@ -232,7 +232,7 @@ form.addEventListener('submit', async (e) => {
         localStorage.setItem(votedKey(session, sessionStartedAt), '1');
         showDone();
     } catch (err) {
-        showError("Couldn't submit — check your connection and try again.");
+        showError("Couldn't submit. Check your connection and try again.");
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit';
     }

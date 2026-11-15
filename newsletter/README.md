@@ -96,6 +96,7 @@ newsletter/
 - Include proper Open Graph meta tags for social sharing (especially Twitter cards)
 - All "Why it matters" and "Worth exploring" sections should speak to a general public audience
 - Use CSS placeholders for items without suitable images (see item 09 example)
+- **No em dashes** (`—` or `&mdash;`) anywhere: not in titles, copy, captions or code. Use a comma, colon, full stop or brackets instead. Titles read `Issue name | Pedram Jahangiry`; section labels read `&sect; 01 &middot; Label`
 
 ## Image optimization tips
 

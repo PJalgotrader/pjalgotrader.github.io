@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Design tokens — "chart paper editorial"
+   Design tokens - "chart paper editorial"
    Dark (midnight terminal) is the default; light (chart paper) is the
    offering, applied via [data-theme="light"] on <html>.
    ========================================================================== */
@@ -330,7 +330,7 @@ body::after {
 }
 
 /* ==========================================================================
-   Hero — chart paper with a live random walk + forecast fan
+   Hero - chart paper with a live random walk + forecast fan
    ========================================================================== */
 .hero {
     position: relative;
@@ -467,7 +467,7 @@ body::after {
     color: var(--paper);
 }
 
-/* Portrait — background-free cutout melting into the theme */
+/* Portrait - background-free cutout melting into the theme */
 .hero-portrait {
     position: absolute;
     /* keep the face where the old 2:3 portrait put it; the wider cutout's
@@ -498,12 +498,12 @@ body::after {
 }
 
 [data-theme="light"] .hero-portrait img {
-    /* light: ink-print — multiply lets the chart grid show through */
+    /* light: ink-print - multiply lets the chart grid show through */
     mix-blend-mode: multiply;
     filter: grayscale(1) contrast(1.06);
 }
 
-/* Credential ticker — market-data strip over the candlestick banner */
+/* Credential ticker - market-data strip over the candlestick banner */
 .ticker {
     position: relative;
     z-index: 1;
@@ -659,9 +659,9 @@ body::after {
     transform: translateX(6px);
 }
 
-/* "At a glance" panel — every tool visible in one screen */
+/* "At a glance" panel - every tool visible in one screen */
 /* ==========================================================================
-   Plates — featured tools as engravings
+   Plates - featured tools as engravings
    ========================================================================== */
 .plate-art .ln {
     fill: none;
@@ -866,7 +866,7 @@ body::after {
 .swatch.s4 { background: var(--paper-deep); }
 
 /* ==========================================================================
-   Inner pages — header, sections, cards
+   Inner pages - header, sections, cards
    ========================================================================== */
 .page-header .eyebrow {
     display: block;
@@ -960,7 +960,7 @@ body::after {
 }
 
 .content-card ul li::before {
-    content: '—';
+    content: '•';
     position: absolute;
     left: 0;
     color: var(--green);
@@ -1393,7 +1393,7 @@ footer .container {
 }
 
 /* ==========================================================================
-   Newsletter — visual newsletter layout with images and structured items
+   Newsletter - visual newsletter layout with images and structured items
    ========================================================================== */
 .newsletter-hero {
     padding: 140px 0 42px;
@@ -1847,7 +1847,7 @@ main > .subscribe:last-child { padding: 36px 0 56px; }
 }
 
 /* ==========================================================================
-   Ledger cards — the site-wide card system (Nov 2026)
+   Ledger cards - the site-wide card system (Nov 2026)
 
    Every collection on the site is a set of cards with one anatomy:
      top line (mono) -> name (serif) -> window (art) -> description -> action bar

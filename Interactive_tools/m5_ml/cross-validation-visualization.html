@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Compare K-Fold, Stratified K-Fold, and Leave-One-Out cross-validation live — drag the fold count and watch the train/validation splits animate, no install.">
+    <meta name="description" content="Compare K-Fold, Stratified K-Fold, and Leave-One-Out cross-validation live: drag the fold count and watch the train/validation splits animate, no install.">
     <title>Cross Validation Interactive Tool | Dr. Pedram Jahangiry</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -694,7 +694,7 @@
         <div class="intro">
             <h3>Stratified K-Fold Cross Validation</h3>
             <p>
-                Standard K-Fold may create folds where <strong>class proportions are unbalanced</strong> — one fold might
+                Standard K-Fold may create folds where <strong>class proportions are unbalanced</strong>, so one fold might
                 have mostly one class. <strong>Stratified K-Fold</strong> ensures each fold has approximately the
                 <strong>same percentage of samples from each class</strong> as the complete dataset. This is especially
                 important for <em>imbalanced classification</em> problems.
@@ -739,13 +739,13 @@
                 a <em>single sample</em> as the validation set and all remaining N−1 samples for training.
             </p>
             <p style="margin-top:10px;">
-                <strong>Why is it almost unbiased?</strong> Each training set contains N−1 out of N samples — nearly
+                <strong>Why is it almost unbiased?</strong> Each training set contains N−1 out of N samples, nearly
                 the entire dataset. So the model trained in each fold is almost identical to a model trained on all the data.
                 The performance estimate therefore closely approximates the true generalization error. It's <em>"almost"</em>
                 rather than exactly unbiased because each fold is still missing one sample, introducing a tiny amount of bias.
             </p>
             <p style="margin-top:10px;">
-                The downside: it is <strong>computationally expensive</strong> — the model must be trained <strong>N times</strong>,
+                The downside: it is <strong>computationally expensive</strong>: the model must be trained <strong>N times</strong>,
                 and the estimate can have <strong>high variance</strong>: the N training sets overlap almost completely, so the N
                 fold errors are highly correlated and averaging them cancels out little of their noise.
             </p>
@@ -760,7 +760,7 @@
                 fraction of those random marks, so you can see how a LOOCV accuracy is averaged.
             </p>
             <p style="margin-top:8px;">
-                For <strong>regression</strong> tasks, the logic is the same — but instead of correct/incorrect, each
+                For <strong>regression</strong> tasks, the logic is the same, but instead of correct/incorrect, each
                 iteration produces a prediction error (e.g., squared error), and the final LOOCV score is the <em>average
                 error</em> across all N iterations.
             </p>
@@ -851,7 +851,7 @@
                 <h4 style="color:#059669;">LOOCV (K=N)</h4>
                 <ul>
                     <li class="pro">Uses maximum data for training each time</li>
-                    <li class="pro">Deterministic — no randomness in splits</li>
+                    <li class="pro">Deterministic: no randomness in splits</li>
                     <li class="con">Very expensive: trains N separate models</li>
                 </ul>
             </div>
@@ -1039,7 +1039,7 @@ function renderStratDataset() {
     const nA = 9, nB = 21, n = 30;
     const info = document.getElementById('strat-dataset-info');
     info.innerHTML = `
-        <div class="dataset-label">Dataset: ${n} samples — Class A: ${nA} (${Math.round(nA/n*100)}%) | Class B: ${nB} (${Math.round(nB/n*100)}%)</div>
+        <div class="dataset-label">Dataset: ${n} samples · Class A: ${nA} (${Math.round(nA/n*100)}%) | Class B: ${nB} (${Math.round(nB/n*100)}%)</div>
         <div style="display:flex;gap:2px;justify-content:center;margin-top:6px;">
             ${Array.from({length: n}, (_, i) => {
                 const isA = i < nA;

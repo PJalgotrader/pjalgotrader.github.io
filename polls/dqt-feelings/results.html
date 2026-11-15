@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{if(localStorage.getItem('pj-theme')!=='dark')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
-    <title>Deep Quantitative Trading Module Pulse — Results</title>
+    <title>Deep Quantitative Trading Module Pulse | Results</title>
     <meta name="description" content="Live results of the Deep Quantitative Trading module pulse poll.">
     <meta name="robots" content="noindex">
     <meta name="theme-color" content="#0A1020">
@@ -199,11 +199,11 @@ const POLL = {
     supabaseUrl: 'https://daimsfgtfrjbkegxmwag.supabase.co',
     supabaseKey: 'sb_publishable_O_xS8NobEAWlHn_cR0SwOw_LYnB9o2d',
     resetUrl: 'https://daimsfgtfrjbkegxmwag.supabase.co/functions/v1/reset-poll',
-    // Charts render only once a view has minN responses — with one or two
+    // Charts render only once a view has minN responses - with one or two
     // responses on the projector, a bar chart is a person, not a distribution.
     minN: 3,
     // Sessions with this label are structural anchors (a poll must always keep
-    // at least one session row) — hidden from the picker and from trends.
+    // at least one session row) - hidden from the picker and from trends.
     anchorLabel: 'Setup',
     charts: [
         { id: 'feeling', el: 'chart1', trendEl: 'trendBody1', trendWrap: 'trend1',
@@ -232,7 +232,7 @@ const POLL = {
 
 const HEADERS = { 'apikey': POLL.supabaseKey, 'Authorization': 'Bearer ' + POLL.supabaseKey };
 const HOT = new Set(POLL.hot);
-// view: 'lobby' (default — nothing shown until a session opens or a chip is
+// view: 'lobby' (default - nothing shown until a session opens or a chip is
 // clicked, so the room never sees earlier results before class), 'all', a
 // session number, or 'live' (sentinel → resolves to the current session).
 const urlParams = new URLSearchParams(location.search);
@@ -243,7 +243,7 @@ let view = urlParams.has('live') ? 'live' : urlTerm === 'all' ? 'all' : 'lobby';
 let extra = new Set();  // sessions combined with `view` (Ctrl/Cmd/Shift-click a session button)
 function picked() { return typeof view === 'number' ? new Set([view, ...extra]) : new Set(); }
 let segSig = null;   // signature of the rendered session buttons, to avoid rebuilding mid-click
-let sessions = [];   // [{session, label, closed_at}] — includes the hidden anchor
+let sessions = [];   // [{session, label, closed_at}] - includes the hidden anchor
 let votes = [];      // [{session, question, choice, voter_id}]
 let refreshCount = 0;     // numbers each refresh in the order it started
 let oldestUsable = 0;     // responses from refreshes older than this are stale and get dropped
@@ -288,7 +288,7 @@ async function refresh() {
         sessions = freshSessions;
         votes = vRows;
         render();
-    } catch (e) { /* transient network error — next tick retries */ }
+    } catch (e) { /* transient network error - next tick retries */ }
 }
 
 // After opening, closing or deleting a session, a refresh already in flight holds
@@ -358,8 +358,8 @@ function render() {
     });
 
     // "Close session" appears only while viewing the live session. "Delete
-    // session" works on ANY specific session view — live or closed (the edge
-    // function allows both from v6 on) — but never on the poll's only session,
+    // session" works on ANY specific session view - live or closed (the edge
+    // function allows both from v6 on) - but never on the poll's only session,
     // and never on the hidden anchor.
     const viewingLive = pollIsOpen() && !multi && view === current.session;
     const viewingReal = viewing && viewing.label !== POLL.anchorLabel;
@@ -367,14 +367,14 @@ function render() {
     document.getElementById('deleteBtn').hidden = !viewingReal || sessions.length <= 1;
 
     document.getElementById('liveState').innerHTML = lobby
-        ? 'Poll closed &mdash; dormant until a new module opens'
+        ? 'Poll closed: dormant until a new module opens'
         : pastTerm
-            ? esc(termName) + ' is finished &mdash; results are frozen'
+            ? esc(termName) + ' is finished: results are frozen'
         : viewIsLive()
             ? '<span class="dot"></span>Updates automatically'
             : (view !== 'all' && view !== current.session)
-                ? 'Past module &mdash; results are frozen'
-                : 'Poll closed &mdash; dormant until a new module opens';
+                ? 'Past module: results are frozen'
+                : 'Poll closed: dormant until a new module opens';
 
     // Privacy floor: below minN responses a bar chart is close to a roster.
     // The count still shows n; the distribution waits for the room.
@@ -382,12 +382,12 @@ function render() {
     for (const c of POLL.charts) {
         if (lobby) {
             document.getElementById(c.el).innerHTML =
-                '<div class="waiting">Results are hidden while the poll is closed &mdash; start a session to begin.</div>';
+                '<div class="waiting">Results are hidden while the poll is closed. Start a session to begin.</div>';
         } else {
             renderChart(c, rows.filter(r => r.question === c.id), n, suppressed);
         }
         // Trends are cross-module by design: shown under EVERY module view and
-        // under All modules — hidden only in the pre-class lobby.
+        // under All modules - hidden only in the pre-class lobby.
         document.getElementById(c.trendWrap).hidden = lobby;
         if (!lobby) renderTrend(c);
     }
@@ -405,7 +405,7 @@ function renderCloud(rows, lobby) {
     const body = document.getElementById('cloudBody');
     if (words.length < (POLL.minN || 0)) {
         meta.textContent = '';
-        body.innerHTML = '<div class="waiting">' + words.length + ' in &mdash; the cloud appears at ' +
+        body.innerHTML = '<div class="waiting">' + words.length + ' in. The cloud appears at ' +
             POLL.minN + ' words (keeps individual answers private).</div>';
         return;
     }
@@ -427,7 +427,7 @@ function renderChart(cfg, rows, totalVoters, suppressed) {
     const el = document.getElementById(cfg.el);
     if (totalVoters === 0) { el.innerHTML = '<div class="waiting">Waiting for votes&hellip;</div>'; return; }
     if (suppressed) {
-        el.innerHTML = '<div class="waiting">' + totalVoters + ' in &mdash; the chart appears at ' +
+        el.innerHTML = '<div class="waiting">' + totalVoters + ' in. The chart appears at ' +
             POLL.minN + ' responses (keeps individual answers private).</div>';
         return;
     }
@@ -453,7 +453,7 @@ function renderChart(cfg, rows, totalVoters, suppressed) {
 
 // One equal-weighted score per module (mean of cfg.scores over that module's
 // responses), plotted across the semester. Modules under the privacy floor are
-// skipped — an average of two people is still those two people.
+// skipped - an average of two people is still those two people.
 function sessionScores(cfg) {
     const out = [];
     // num = class number: the k-th real session (Setup excluded) is class k. A class
@@ -504,7 +504,7 @@ function renderTrend(cfg) {
         // class is the one being viewed, and the visible dot. Hover/focus shows the class,
         // click or Enter opens it (see wireTrend).
         const cur = p.session === view;
-        const tip = 'Class ' + p.num + ' · ' + p.label + ' — ' + fmt(p.score) + ' (n=' + p.n + ')';
+        const tip = 'Class ' + p.num + ' · ' + p.label + ': ' + fmt(p.score) + ' (n=' + p.n + ')';
         svg += '<g class="tpt' + (cur ? ' cur' : '') + '" data-session="' + p.session + '" data-tip="' + esc(tip) +
                '" tabindex="0" role="button" aria-label="' + esc(tip + '. Open this class.') + '">' +
                '<circle class="hit" cx="' + x(i) + '" cy="' + y(p.score) + '" r="16" fill="transparent"/>' +
@@ -581,8 +581,8 @@ function pollIsOpen() {
     return sessions.length > 0 && !sessions[sessions.length - 1].closed_at;
 }
 
-// Polling is worth it for data that can still change — an OPEN current session
-// or the all-time view — and for the lobby, which must notice a session
+// Polling is worth it for data that can still change - an OPEN current session
+// or the all-time view - and for the lobby, which must notice a session
 // opening (possibly from another device) and wake the projector.
 function viewIsLive() {
     if (!sessions.length) return true;
@@ -652,9 +652,9 @@ document.getElementById('closeBtn').addEventListener('click', async (e) => {
             view = 'lobby';
             await refreshAfterChange();
         } else {
-            alert(res.status === 401 ? 'Wrong PIN.' : 'Could not close the session — try again.');
+            alert(res.status === 401 ? 'Wrong PIN.' : 'Could not close the session. Try again.');
         }
-    } catch (err) { alert('Could not close the session — check your connection.'); }
+    } catch (err) { alert('Could not close the session. Check your connection.'); }
 });
 
 document.getElementById('deleteBtn').addEventListener('click', async (e) => {
@@ -676,11 +676,11 @@ document.getElementById('deleteBtn').addEventListener('click', async (e) => {
         } else if (res.status === 401) {
             alert('Wrong PIN.');
         } else if (out.error === 'cannot delete the only session') {
-            alert('This is the only session — start a new one first, then delete this one.');
+            alert('This is the only session. Start a new one first, then delete this one.');
         } else {
-            alert('Could not delete the session — try again.');
+            alert('Could not delete the session. Try again.');
         }
-    } catch (err) { alert('Could not delete the session — check your connection.'); }
+    } catch (err) { alert('Could not delete the session. Check your connection.'); }
 });
 
 document.getElementById('resetBtn').addEventListener('click', async (e) => {
@@ -698,9 +698,9 @@ document.getElementById('resetBtn').addEventListener('click', async (e) => {
             view = 'live';
             await refreshAfterChange();
         } else {
-            alert(res.status === 401 ? 'Wrong PIN.' : 'Could not start a session — try again.');
+            alert(res.status === 401 ? 'Wrong PIN.' : 'Could not start a session. Try again.');
         }
-    } catch (err) { alert('Could not start a session — check your connection.'); }
+    } catch (err) { alert('Could not start a session. Check your connection.'); }
 });
 
 refresh();

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{if(localStorage.getItem('pj-theme')!=='dark')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
-    <title>AI Tools Pulse Check — Results</title>
+    <title>AI Tools Pulse Check | Results</title>
     <meta name="description" content="Live results of the AI tools pulse check poll.">
     <meta name="robots" content="noindex">
     <meta name="theme-color" content="#0A1020">
@@ -136,7 +136,7 @@
             <div id="chart1"><div class="waiting">Loading&hellip;</div></div>
         </section>
         <section class="panel">
-            <h2 id="q2title">If you haven't used NotebookLM (Gemini Notebook) &mdash; why not?</h2>
+            <h2 id="q2title">If you haven't used NotebookLM (Gemini Notebook), why not?</h2>
             <div id="chart2"><div class="waiting">Loading&hellip;</div></div>
         </section>
     </div>
@@ -176,7 +176,7 @@ const POLL = {
           labels: {
             'Not sure how it differs from ChatGPT': 'Unsure how it differs from ChatGPT',
             'Nobody showed me how to use it': 'Nobody showed me how',
-            "Tried it, but it didn't stick": "Tried it — didn't stick",
+            "Tried it, but it didn't stick": "Tried it, didn't stick",
             'I have used NotebookLM': 'I have used it' } }
     ],
     hot: ['NotebookLM (Google)', 'Nobody showed me how to use it']
@@ -185,7 +185,7 @@ const POLL = {
 
 const HEADERS = { 'apikey': POLL.supabaseKey, 'Authorization': 'Bearer ' + POLL.supabaseKey };
 const HOT = new Set(POLL.hot);
-// view: 'all', a session number, or 'live' (sentinel — resolves to the
+// view: 'all', a session number, or 'live' (sentinel - resolves to the
 // current session once the session list has loaded)
 let view = new URLSearchParams(location.search).has('live') ? 'live' : 'all';
 let extra = new Set();  // sessions combined with `view` (Ctrl/Cmd/Shift-click a session button)
@@ -228,7 +228,7 @@ async function refresh() {
         sessions = freshSessions;
         votes = vRows;
         render();
-    } catch (e) { /* transient network error — next tick retries */ }
+    } catch (e) { /* transient network error - next tick retries */ }
 }
 
 // After opening, closing or deleting a session, a refresh already in flight holds
@@ -279,19 +279,19 @@ function render() {
     });
 
     // "Close session" acts on the live session only. "Delete session" works on
-    // ANY specific session view — live or closed (edge function v6) — but never
+    // ANY specific session view - live or closed (edge function v6) - but never
     // on the poll's only session.
     const viewingLive = pollIsOpen() && !multi && view === current.session;
     document.getElementById('closeBtn').hidden = !viewingLive;
     document.getElementById('deleteBtn').hidden = view === 'all' || multi || sessions.length <= 1;
 
     // Closed sessions are immutable (RLS only allows inserts into an OPEN
-    // current session), so polling them is waste — show the state instead.
+    // current session), so polling them is waste - show the state instead.
     document.getElementById('liveState').innerHTML = viewIsLive()
         ? '<span class="dot"></span>Updates automatically'
         : (view !== 'all' && view !== current.session)
-            ? 'Past session &mdash; results are frozen'
-            : 'Poll closed &mdash; dormant until a new session starts';
+            ? 'Past session: results are frozen'
+            : 'Poll closed: dormant until a new session starts';
 
     for (const c of POLL.charts) renderChart(c, rows.filter(r => r.question === c.id), n);
 }
@@ -326,7 +326,7 @@ function pollIsOpen() {
 
 // Polling is worth it only for data that can still change: an OPEN current
 // session, or the all-time view while a session is open. A closed poll is
-// fully dormant — every view is frozen.
+// fully dormant - every view is frozen.
 function viewIsLive() {
     if (!sessions.length) return true;
     if (!pollIsOpen()) return false;
@@ -393,9 +393,9 @@ document.getElementById('closeBtn').addEventListener('click', async (e) => {
             await refreshAfterChange();
             alert('Session "' + current.label + '" closed. The poll is now dormant.');
         } else {
-            alert(res.status === 401 ? 'Wrong PIN.' : 'Could not close the session — try again.');
+            alert(res.status === 401 ? 'Wrong PIN.' : 'Could not close the session. Try again.');
         }
-    } catch (err) { alert('Could not close the session — check your connection.'); }
+    } catch (err) { alert('Could not close the session. Check your connection.'); }
 });
 
 document.getElementById('deleteBtn').addEventListener('click', async (e) => {
@@ -418,11 +418,11 @@ document.getElementById('deleteBtn').addEventListener('click', async (e) => {
         } else if (res.status === 401) {
             alert('Wrong PIN.');
         } else if (out.error === 'cannot delete the only session') {
-            alert('This is the only session — start a new one first, then delete this one.');
+            alert('This is the only session. Start a new one first, then delete this one.');
         } else {
-            alert('Could not delete the session — try again.');
+            alert('Could not delete the session. Try again.');
         }
-    } catch (err) { alert('Could not delete the session — check your connection.'); }
+    } catch (err) { alert('Could not delete the session. Check your connection.'); }
 });
 
 document.getElementById('resetBtn').addEventListener('click', async (e) => {
@@ -441,9 +441,9 @@ document.getElementById('resetBtn').addEventListener('click', async (e) => {
             await refreshAfterChange();
             alert('Session ' + out.session + ' started. The room can vote now.');
         } else {
-            alert(res.status === 401 ? 'Wrong PIN.' : 'Could not start a session — try again.');
+            alert(res.status === 401 ? 'Wrong PIN.' : 'Could not start a session. Try again.');
         }
-    } catch (err) { alert('Could not start a session — check your connection.'); }
+    } catch (err) { alert('Could not start a session. Check your connection.'); }
 });
 
 refresh();

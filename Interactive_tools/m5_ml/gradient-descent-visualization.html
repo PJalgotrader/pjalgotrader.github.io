@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Set the learning rate and starting point, then watch batch gradient descent and SGD chase the MSE minimum across a live loss surface — no install required.">
+    <meta name="description" content="Set the learning rate and starting point, then watch batch gradient descent and SGD chase the MSE minimum across a live loss surface, with no install required.">
     <title>Gradient Descent Interactive Tool | Dr. Pedram Jahangiry</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -205,7 +205,7 @@
     <div>
         <p class="eyebrow">Interactive tool &middot; Machine learning</p>
         <h1>Gradient Descent & SGD</h1>
-        <p class="lede">This tool runs batch gradient descent and stochastic gradient descent side by side on the same simple linear fit, so you can set the learning rate and starting corner, then step through the optimization one iteration at a time. Watch the loss surface, the fitted line, the loss curve, and the parameter path update live &mdash; a smooth, deliberate descent for the batch method versus a noisy zigzag for SGD.</p>
+        <p class="lede">This tool runs batch gradient descent and stochastic gradient descent side by side on the same simple linear fit, so you can set the learning rate and starting corner, then step through the optimization one iteration at a time. Watch the loss surface, the fitted line, the loss curve, and the parameter path update live: a smooth, deliberate descent for the batch method versus a noisy zigzag for SGD.</p>
     </div>
     <div class="byline"><strong>Dr. Pedram Jahangiry</strong>
         <a href="https://pedramjahangiry.com/" target="_blank" rel="noopener">Website</a>
@@ -230,7 +230,7 @@
                 slope <strong>w</strong> and intercept <strong>b</strong> that minimize the
                 <strong>Mean Squared Error (MSE)</strong> over all training data.
                 Gradient descent starts at the point you pick (bottom-right by default) and iteratively updates both parameters by moving in the direction
-                of the <strong>negative gradient</strong> — the steepest descent on the loss surface.
+                of the <strong>negative gradient</strong>, the steepest descent on the loss surface.
             </p>
             <p style="margin-top:8px;">
                 Each step uses the <strong>entire dataset</strong> to compute the gradient.
@@ -281,21 +281,21 @@
             </div>
             <div class="status-card sc-w">
                 <div class="s-label">Slope (w)</div>
-                <div class="s-value" id="gd-w">—</div>
+                <div class="s-value" id="gd-w">-</div>
             </div>
             <div class="status-card sc-b">
                 <div class="s-label">Intercept (b)</div>
-                <div class="s-value" id="gd-b">—</div>
+                <div class="s-value" id="gd-b">-</div>
             </div>
             <div class="status-card sc-loss">
                 <div class="s-label">MSE Loss</div>
-                <div class="s-value" id="gd-loss">—</div>
+                <div class="s-value" id="gd-loss">-</div>
             </div>
         </div>
 
         <div class="charts-grid">
             <div class="chart-box">
-                <div class="chart-title">Loss Surface — MSE(w, b)</div>
+                <div class="chart-title">Loss Surface: MSE(w, b)</div>
                 <div id="gd-contour" style="height:420px;"></div>
             </div>
             <div class="chart-box">
@@ -326,7 +326,7 @@
                 <strong>noisy and zigzags</strong> toward the optimum instead of following a smooth curve.
             </p>
             <p style="margin-top:8px;">
-                The noise can actually be helpful — it can escape shallow local minima in complex loss
+                The noise can actually be helpful: it can escape shallow local minima in complex loss
                 landscapes. For our simple linear MSE, the noise is just noise, but the speed advantage
                 is dramatic on large datasets.
             </p>
@@ -374,21 +374,21 @@
             </div>
             <div class="status-card sc-w">
                 <div class="s-label">Slope (w)</div>
-                <div class="s-value" id="sgd-w">—</div>
+                <div class="s-value" id="sgd-w">-</div>
             </div>
             <div class="status-card sc-b">
                 <div class="s-label">Intercept (b)</div>
-                <div class="s-value" id="sgd-b">—</div>
+                <div class="s-value" id="sgd-b">-</div>
             </div>
             <div class="status-card sc-loss">
                 <div class="s-label">MSE Loss</div>
-                <div class="s-value" id="sgd-loss">—</div>
+                <div class="s-value" id="sgd-loss">-</div>
             </div>
         </div>
 
         <div class="charts-grid">
             <div class="chart-box">
-                <div class="chart-title">Loss Surface — SGD Path (noisy!)</div>
+                <div class="chart-title">Loss Surface: SGD Path (noisy!)</div>
                 <div id="sgd-contour" style="height:420px;"></div>
             </div>
             <div class="chart-box">
@@ -412,7 +412,7 @@
 
 <script>
 // ============================================================
-// SHARED DATA — simple linear dataset y = 2x + 1 + noise
+// SHARED DATA - simple linear dataset y = 2x + 1 + noise
 // ============================================================
 const DATA_X = [-2.5, -2.0, -1.5, -1.2, -0.8, -0.3, 0.0, 0.4, 0.9, 1.2, 1.6, 2.0, 2.3, 2.7, 3.0];
 const DATA_Y = [-3.8, -2.5, -1.9, -1.0, -0.2, 0.9, 1.3, 2.1, 2.5, 3.8, 4.0, 5.2, 5.8, 6.1, 7.3];
@@ -593,8 +593,8 @@ function createEngine(prefix, isSGD) {
             if (animTimer) { clearInterval(animTimer); animTimer = null; }
             enableButtons(true);
             document.getElementById(prefix + '-loss').textContent = 'diverged';
-            document.getElementById(prefix + '-w').textContent = '—';
-            document.getElementById(prefix + '-b').textContent = '—';
+            document.getElementById(prefix + '-w').textContent = '-';
+            document.getElementById(prefix + '-b').textContent = '-';
             return;
         }
 
@@ -727,7 +727,7 @@ function createEngine(prefix, isSGD) {
                           line: {color: '#8b5cf6', width: 3} }
             });
             document.getElementById('sgd-sample-label').textContent =
-                `— using sample #${cur.sampleIdx + 1}`;
+                `, using sample #${cur.sampleIdx + 1}`;
         }
 
         Plotly.react(prefix + '-fit', traces, {

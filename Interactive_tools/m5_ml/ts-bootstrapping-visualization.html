@@ -399,7 +399,7 @@
         <div class="warning-box">
             <h4>&#9888; Why Not Standard (i.i.d.) Bootstrap?</h4>
             <p>
-                Standard bootstrap draws observations independently with replacement &mdash; this <strong>destroys the
+                Standard bootstrap draws observations independently with replacement, which <strong>destroys the
                 temporal dependence structure</strong> that defines time series data. Autocorrelations, trends, and
                 seasonal patterns would be completely lost. Time series bootstrapping must preserve the local
                 dependence by resampling in <strong>blocks</strong> or through <strong>model-based</strong> approaches.
@@ -531,12 +531,12 @@
             <div class="block-viz" id="mbb-block-viz"></div>
 
             <div class="key-insight">
-                <h4>Key Insight &mdash; Edge Bias</h4>
+                <h4>Key Insight: Edge Bias</h4>
                 <p>
                     Observations near the boundaries (y<sub>1</sub> and y<sub>T</sub>) appear in fewer possible blocks
                     than observations in the middle. For example, y<sub>1</sub> only appears in B<sub>1</sub>, while
                     a middle observation y<sub>t</sub> appears in up to <em>m</em> different blocks. This creates an
-                    <strong>edge bias</strong> where boundary observations are undersampled &mdash; a limitation
+                    <strong>edge bias</strong> where boundary observations are undersampled, a limitation
                     addressed by CBB.
                 </p>
             </div>
@@ -580,11 +580,11 @@
             <div class="block-viz" id="cbb-block-viz"></div>
 
             <div class="key-insight">
-                <h4>Key Insight &mdash; Circular Wrap</h4>
+                <h4>Key Insight: Circular Wrap</h4>
                 <p>
                     By connecting y<sub>T</sub> back to y<sub>1</sub>, the CBB ensures that observations near the
                     series boundaries have equal representation. This eliminates the edge bias of MBB. The trade-off
-                    is that <strong>the wrap-around junction is artificial</strong> &mdash; the connection from the
+                    is that <strong>the wrap-around junction is artificial</strong>: the connection from the
                     end back to the start may not reflect genuine temporal dynamics, especially for non-seasonal data.
                 </p>
             </div>
@@ -629,7 +629,7 @@
             <div class="block-viz" id="sb-block-viz"></div>
 
             <div class="key-insight">
-                <h4>Key Insight &mdash; Stationarity Preservation</h4>
+                <h4>Key Insight: Stationarity Preservation</h4>
                 <p>
                     Among the classic block methods, the SB is the one whose <strong>resampled series is stationary</strong>
                     (conditional on the data) when the original is stationary. The memoryless Geometric block lengths
@@ -644,7 +644,7 @@
         <!-- ============ TAB 4: PARAMETRIC AR(1) ============ -->
         <div id="tab-parametric" class="tab-content">
             <div class="intro">
-                <h3>Model-based Bootstrap &mdash; Decomposition + AR(1)</h3>
+                <h3>Model-based Bootstrap: Decomposition + AR(1)</h3>
                 <p>
                     This tab uses the <strong>same classical decomposition</strong> as the block methods
                     (Trend + Seasonal + Residual on log data), but instead of resampling residuals in blocks, it
@@ -687,7 +687,7 @@
             <div class="chart-container" id="arima-resid-chart" style="height: 300px;"></div>
 
             <div class="key-insight">
-                <h4>Key Insight &mdash; Two Kinds of Shock, One Model</h4>
+                <h4>Key Insight: Two Kinds of Shock, One Model</h4>
                 <p>
                     Both flavors trust the AR(1) to carry the memory, so neither has block joins, and both can keep
                     running past the last month. They differ only in the shocks. The <strong>semiparametric</strong>
@@ -747,7 +747,7 @@
             </div>
 
             <div class="key-insight">
-                <h4>Key Insight &mdash; What to Look For</h4>
+                <h4>Key Insight: What to Look For</h4>
                 <p>
                     <strong>Lag 1:</strong> the i.i.d. bootstrap collapses to about zero, because it erased the memory.
                     The block methods sit a little below the original: only pairs that land inside the same block keep
@@ -1515,7 +1515,7 @@
         let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">`;
 
         // Title
-        svg += `<text x="${svgW/2}" y="16" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">Where Each Residual Block Was Copied From (Bootstrap Sample 1) &mdash; ${isCircular ? 'Circular' : 'Linear'}</text>`;
+        svg += `<text x="${svgW/2}" y="16" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">Where Each Residual Block Was Copied From (Bootstrap Sample 1): ${isCircular ? 'Circular' : 'Linear'}</text>`;
 
         // Original series bar
         const origY = 28;
@@ -1570,7 +1570,7 @@
         const step = cellW + gap;
 
         let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">`;
-        svg += `<text x="${svgW/2}" y="14" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">Bootstrap Sample 1 &mdash; Random block lengths (${blockLengths.length} blocks)</text>`;
+        svg += `<text x="${svgW/2}" y="14" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">Bootstrap Sample 1: Random block lengths (${blockLengths.length} blocks)</text>`;
 
         // Same color and tint as each block's band in the Step 1 chart
         let pos = 0;

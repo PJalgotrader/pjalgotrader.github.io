@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSubscribe();
 });
 
-// Theme toggle — dark is the default; light is stored as a preference.
+// Theme toggle - dark is the default; light is stored as a preference.
 // Pages set data-theme="light" on <html> before first paint via an inline
 // head script, so this only needs to handle clicks.
 function initializeThemeToggle() {
@@ -137,7 +137,7 @@ function initializeAnimations() {
 
 }
 
-// Hero random walk — a quiet nod to the random walk teaching tool.
+// Hero random walk - a quiet nod to the random walk teaching tool.
 // A seeded X_t = X_{t-1} + mu + eps walk drawn live inside its own theoretical
 // ±2σ√t forecast fan, with ghost realizations behind it. Click to re-roll.
 function initializeHeroWalk() {
@@ -260,7 +260,7 @@ function initializeHeroWalk() {
             }));
         }
 
-        // Ghost realizations — same process, other draws
+        // Ghost realizations - same process, other draws
         [ghostA, ghostB].forEach(g => {
             svg.appendChild(el('polyline', {
                 points: pts(g), fill: 'none', stroke: inkColor,
@@ -286,7 +286,7 @@ function initializeHeroWalk() {
             x: 12, y: h - 8, fill: muteColor,
             'font-family': "'IBM Plex Mono', monospace", 'font-size': '11'
         });
-        label.textContent = 'fig. 00 — Xₜ = Xₜ₋₁ + μ + εₜ · '
+        label.textContent = 'fig. 00 · Xₜ = Xₜ₋₁ + μ + εₜ · '
             + '±2σ√t · seed ' + String(seed).padStart(3, '0')
             + ' · click to re-roll';
         svg.appendChild(label);

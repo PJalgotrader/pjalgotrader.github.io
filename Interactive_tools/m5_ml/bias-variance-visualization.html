@@ -341,7 +341,7 @@
         <h3>Understanding Bias and Variance Through Repeated Sampling</h3>
         <p>
             The <strong>true relationship</strong> between x and y is a quadratic function (degree 2) plus random noise.
-            You don't know this — you only observe noisy samples of 20 points.
+            You don't know this. You only observe noisy samples of 20 points.
             Each time you click <strong>"Draw Sample"</strong>, a fresh sample of 20 points is generated and a polynomial
             of your chosen degree is fit to it. By drawing many samples, you can see how the fitted model behaves
             <em>across repeated experiments</em>.
@@ -349,8 +349,8 @@
         <p style="margin-top:10px;">
             <strong>Bias</strong> = how far the <em>average</em> prediction is from the truth (systematic error).
             <strong>Variance</strong> = how much predictions <em>scatter</em> across different samples (instability).
-            A simple model (degree 0 or 1) is stable but consistently wrong — <span style="color:#2563eb;font-weight:600;">high bias</span>.
-            A complex model (degree 3 or 4) has extra parameters and changes more between samples — <span style="color:#d97706;font-weight:600;">high variance</span>.
+            A simple model (degree 0 or 1) is stable but consistently wrong: <span style="color:#2563eb;font-weight:600;">high bias</span>.
+            A complex model (degree 3 or 4) has extra parameters and changes more between samples: <span style="color:#d97706;font-weight:600;">high variance</span>.
         </p>
     </div>
 
@@ -358,7 +358,7 @@
     <div style="background:var(--lab-band); border-radius:12px; padding:20px 24px; margin-bottom:20px; border:2px solid #e2e8f0;">
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap:20px;">
             <div>
-                <div style="font-weight:700; color:#2563eb; margin-bottom:8px; font-size:0.95em;">Bias² — Systematic Error</div>
+                <div style="font-weight:700; color:#2563eb; margin-bottom:8px; font-size:0.95em;">Bias²: Systematic Error</div>
                 <div style="background:white; padding:12px 16px; border-radius:8px; border-left:4px solid #2563eb; font-family:'Courier New',monospace; font-size:0.88em; color:#334155; line-height:1.8;">
                     Bias[f&#x0302;(x)] = E[f&#x0302;(x)] &minus; f(x)<br>
                     <span style="color:#5F6573; font-family:inherit; font-size:0.92em;">
@@ -368,7 +368,7 @@
                 </div>
             </div>
             <div>
-                <div style="font-weight:700; color:#d97706; margin-bottom:8px; font-size:0.95em;">Variance — Instability</div>
+                <div style="font-weight:700; color:#d97706; margin-bottom:8px; font-size:0.95em;">Variance: Instability</div>
                 <div style="background:white; padding:12px 16px; border-radius:8px; border-left:4px solid #d97706; font-family:'Courier New',monospace; font-size:0.88em; color:#334155; line-height:1.8;">
                     Var[f&#x0302;(x)] = E[(f&#x0302;(x) &minus; E[f&#x0302;(x)])&sup2;]<br>
                     <span style="color:#5F6573; font-family:inherit; font-size:0.92em;">
@@ -413,7 +413,7 @@
         Expected Test Error = <span class="eq-part eq-bias">Bias²</span>
         + <span class="eq-part eq-var">Variance</span>
         + <span class="eq-part eq-irr">Irreducible Noise</span>
-        = <span class="eq-part eq-total" id="eq-total-val">—</span>
+        = <span class="eq-part eq-total" id="eq-total-val">-</span>
         <span id="eq-source" style="font-size:0.78em; color:#94a3b8; margin-left:10px;"></span>
     </div>
 
@@ -421,12 +421,12 @@
     <div class="metrics-row">
         <div class="metric-card mc-bias">
             <div class="metric-label">Bias²</div>
-            <div class="metric-value" id="m-bias">—</div>
+            <div class="metric-value" id="m-bias">-</div>
             <div class="metric-note" id="m-bias-note">Draw samples to estimate</div>
         </div>
         <div class="metric-card mc-var">
             <div class="metric-label">Variance</div>
-            <div class="metric-value" id="m-var">—</div>
+            <div class="metric-value" id="m-var">-</div>
             <div class="metric-note" id="m-var-note">Draw samples to estimate</div>
         </div>
         <div class="metric-card mc-irr">
@@ -436,7 +436,7 @@
         </div>
         <div class="metric-card mc-total">
             <div class="metric-label">Total Expected Error</div>
-            <div class="metric-value" id="m-total">—</div>
+            <div class="metric-value" id="m-total">-</div>
             <div class="metric-note" id="m-total-note">Bias² + Variance + σ²</div>
         </div>
     </div>
@@ -481,7 +481,7 @@ for (let i = 0; i < N_GRID; i++) {
 const yTrueGrid = xGrid.map(trueF);
 
 // ============================================================
-// POLYNOMIAL FITTING — normalized x to [0,1] for stability
+// POLYNOMIAL FITTING - normalized x to [0,1] for stability
 // ============================================================
 function normalizeX(xArr) {
     return xArr.map(x => (x - X_MIN) / (X_MAX - X_MIN));
@@ -682,7 +682,7 @@ function updateComplexityIndicator() {
         bar.style.background = 'linear-gradient(135deg, #dbeafe, #bfdbfe)';
         tag.style.background = '#2563eb';
         tag.textContent = 'Underfitting';
-        desc.innerHTML = '<strong>Degree 0 (constant):</strong> Predicts the same value everywhere — just the mean. ' +
+        desc.innerHTML = '<strong>Degree 0 (constant):</strong> Predicts the same value everywhere, just the mean. ' +
             '<strong>High bias</strong> (misses all structure). <strong>Variance is small but not zero</strong>: each draw has its own x values, so the fitted constant moves by more than σ²/n.';
     } else if (d === 1) {
         bar.style.background = 'linear-gradient(135deg, #dbeafe, #bfdbfe)';
@@ -695,19 +695,19 @@ function updateComplexityIndicator() {
         tag.style.background = '#059669';
         tag.textContent = 'Good Balance';
         desc.innerHTML = '<strong>Degree 2 (quadratic):</strong> Matches the true function! ' +
-            '<strong>Low bias</strong> and <strong>low variance</strong> — the sweet spot.';
+            '<strong>Low bias</strong> and <strong>low variance</strong>: the sweet spot.';
     } else if (d === 3) {
         bar.style.background = 'linear-gradient(135deg, #fef9c3, #fde68a)';
         tag.style.background = '#b45309';
         tag.textContent = 'Slightly Complex';
         desc.innerHTML = '<strong>Degree 3 (cubic):</strong> One extra parameter beyond what\'s needed. Bias stays low ' +
-            'but <strong>variance starts to grow</strong> — the cubic term begins fitting noise.';
+            'but <strong>variance starts to grow</strong>, and the cubic term begins fitting noise.';
     } else {
         bar.style.background = 'linear-gradient(135deg, #fee2e2, #fecaca)';
         tag.style.background = '#dc2626';
         tag.textContent = 'Overfitting';
         desc.innerHTML = '<strong>Degree 4 (quartic):</strong> Two extra parameters beyond what\'s needed. ' +
-            '<strong>Low bias</strong> but <strong>noticeably higher variance</strong> — the model wiggles between samples, fitting noise.';
+            '<strong>Low bias</strong> but <strong>noticeably higher variance</strong>: the model wiggles between samples, fitting noise.';
     }
 }
 
@@ -768,11 +768,11 @@ function updateMetrics() {
     const nDraws = allDraws.length;
 
     if (nDraws < 2) {
-        // Not enough draws — show placeholder
-        document.getElementById('m-bias').textContent = nDraws === 0 ? '—' : 'Need 2+';
-        document.getElementById('m-var').textContent = nDraws === 0 ? '—' : 'Need 2+';
-        document.getElementById('m-total').textContent = '—';
-        document.getElementById('eq-total-val').textContent = '—';
+        // Not enough draws - show placeholder
+        document.getElementById('m-bias').textContent = nDraws === 0 ? '-' : 'Need 2+';
+        document.getElementById('m-var').textContent = nDraws === 0 ? '-' : 'Need 2+';
+        document.getElementById('m-total').textContent = '-';
+        document.getElementById('eq-total-val').textContent = '-';
         document.getElementById('eq-source').textContent = '';
         document.getElementById('m-bias-note').textContent = 'Draw samples to estimate';
         document.getElementById('m-var-note').textContent = 'Draw samples to estimate';
@@ -799,8 +799,8 @@ function updateMetrics() {
     const mcBias = tradeoffData.bias2[currentDegree];
     const mcVar = tradeoffData.variance[currentDegree];
     if (nDraws < 10) {
-        document.getElementById('m-bias-note').textContent = `From ${nDraws} draws — keep drawing!`;
-        document.getElementById('m-var-note').textContent = `From ${nDraws} draws — keep drawing!`;
+        document.getElementById('m-bias-note').textContent = `From ${nDraws} draws. Keep drawing!`;
+        document.getElementById('m-var-note').textContent = `From ${nDraws} draws. Keep drawing!`;
         document.getElementById('m-total-note').textContent = `Estimates stabilize with more draws`;
     } else {
         document.getElementById('m-bias-note').textContent = `From ${nDraws} draws (MC ≈ ${mcBias.toFixed(2)})`;
@@ -810,7 +810,7 @@ function updateMetrics() {
 }
 
 // ============================================================
-// CHART: Fitted Models (left chart — interactive)
+// CHART: Fitted Models (left chart - interactive)
 // ============================================================
 function renderFitsChart() {
     const traces = [];
@@ -883,7 +883,7 @@ function renderFitsChart() {
 }
 
 // ============================================================
-// CHART: Bias-Variance Tradeoff (right chart — STATIC curve)
+// CHART: Bias-Variance Tradeoff (right chart - STATIC curve)
 // ============================================================
 function renderTradeoffChart() {
     const traces = [
