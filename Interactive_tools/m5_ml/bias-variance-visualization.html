@@ -17,7 +17,7 @@
         /* Neutral tones of the tool panel. In dark mode the whole panel is flipped by a filter
            (see "Lab dark mode" below), so the dark values here are the colours that come out
            as navy #0F1A31 / #141F3A / #263250 after the flip. */
-        :root { --lab-surface: #FDFCF8; --lab-band: #F1EDE2; --lab-line: #DCD7C8; }
+        :root { --lab-surface: #F6F7F9; --lab-band: #EEF0F4; --lab-line: #DCE0E7; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -45,7 +45,7 @@
         }
 
         .intro h3 { color: #2C5AA0; margin-bottom: 10px; font-size: 1.15em; }
-        .intro p { color: #6A675D; line-height: 1.7; font-size: 0.95em; }
+        .intro p { color: #5F6573; line-height: 1.7; font-size: 0.95em; }
 
         /* Controls */
         .controls {
@@ -118,7 +118,7 @@
 
         .draw-count {
             font-size: 0.88em;
-            color: #6A675D;
+            color: #5F6573;
             font-weight: 500;
             margin-left: auto;
         }
@@ -149,7 +149,7 @@
 
         .complexity-bar .desc {
             font-size: 0.9em;
-            color: #6A675D;
+            color: #5F6573;
             line-height: 1.5;
         }
 
@@ -197,7 +197,7 @@
         .metric-card .metric-label {
             font-size: 0.78em;
             font-weight: 600;
-            color: #6A675D;
+            color: #5F6573;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 6px;
@@ -221,7 +221,7 @@
         .mc-var .metric-value { color: #d97706; }
 
         .mc-irr { border-color: #94a3b8; }
-        .mc-irr .metric-value { color: #6A675D; }
+        .mc-irr .metric-value { color: #5F6573; }
 
         .mc-total { border-color: #ef4444; }
         .mc-total .metric-value { color: #dc2626; }
@@ -240,7 +240,7 @@
         .equation-bar .eq-part { font-weight: 700; }
         .eq-bias { color: #2563eb; }
         .eq-var { color: #d97706; }
-        .eq-irr { color: #6A675D; }
+        .eq-irr { color: #5F6573; }
         .eq-total { color: #dc2626; }
 
         @media (max-width: 900px) {
@@ -259,13 +259,13 @@
         /* Lab chrome, the same page as the Boosting, Bagging, Learning Curve and Histogram labs:
            paper page with an ink top rule, header on the paper (mono top line, serif title, lede,
            byline with text links), then the tool in a flat surface panel. */
-        body { background: #F7F4EC; border-top: 3px solid #1C1B18; color: #1C1B18; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 0; min-height: 0;
+        body { background: #FFFFFF; border-top: 3px solid #1C1B18; color: #1C1B18; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 0; min-height: 0;
                padding: 28px max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)); }
         .lab-head { max-width: 1180px; margin: 0 auto 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px 24px; text-align: left; }
-        .lab-head .eyebrow { margin: 0; font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 11.5px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: #6A675D; }
+        .lab-head .eyebrow { margin: 0; font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 11.5px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: #5F6573; }
         .lab-head h1 { margin: 6px 0 8px; font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.05; letter-spacing: -.01em; text-align: left; text-wrap: balance; color: #1C1B18; }
-        .lab-head .lede { margin: 0; max-width: 66ch; font-size: 16px; line-height: 1.55; text-align: left; color: #6A675D; }
-        .lab-head .byline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: #6A675D; }
+        .lab-head .lede { margin: 0; max-width: 66ch; font-size: 16px; line-height: 1.55; text-align: left; color: #5F6573; }
+        .lab-head .byline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: #5F6573; }
         .lab-head .byline strong { color: #1C1B18; font-weight: 600; }
         .lab-head .byline a { color: #1E5BC6; }
         .container { max-width: 1180px; margin: 0 auto; background: var(--lab-surface); border: 1px solid var(--lab-line); border-radius: 6px; box-shadow: none; }
@@ -294,7 +294,7 @@
            has hundreds of hard-coded colours in its styles, charts and scripts, so it is flipped
            as one piece: invert lightness, then rotate hue back, which keeps every colour's hue
            and every text/background contrast. Follows the system unless data-theme is set. */
-        .theme-btn { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 1px solid #DCD7C8; border-radius: 8px; background: #FDFCF8; color: #1C1B18; cursor: pointer; }
+        .theme-btn { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 1px solid #DCE0E7; border-radius: 8px; background: #F6F7F9; color: #1C1B18; cursor: pointer; }
         .theme-btn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
         /* Text inside the panel must not inherit the page colour, which turns light in dark mode and would be flipped back to dark. */
         .container { color: #1C1B18; }
@@ -361,7 +361,7 @@
                 <div style="font-weight:700; color:#2563eb; margin-bottom:8px; font-size:0.95em;">Bias² — Systematic Error</div>
                 <div style="background:white; padding:12px 16px; border-radius:8px; border-left:4px solid #2563eb; font-family:'Courier New',monospace; font-size:0.88em; color:#334155; line-height:1.8;">
                     Bias[f&#x0302;(x)] = E[f&#x0302;(x)] &minus; f(x)<br>
-                    <span style="color:#6A675D; font-family:inherit; font-size:0.92em;">
+                    <span style="color:#5F6573; font-family:inherit; font-size:0.92em;">
                         How far is the <strong>average prediction</strong><br>
                         across all samples from the <strong>truth</strong>?
                     </span>
@@ -371,7 +371,7 @@
                 <div style="font-weight:700; color:#d97706; margin-bottom:8px; font-size:0.95em;">Variance — Instability</div>
                 <div style="background:white; padding:12px 16px; border-radius:8px; border-left:4px solid #d97706; font-family:'Courier New',monospace; font-size:0.88em; color:#334155; line-height:1.8;">
                     Var[f&#x0302;(x)] = E[(f&#x0302;(x) &minus; E[f&#x0302;(x)])&sup2;]<br>
-                    <span style="color:#6A675D; font-family:inherit; font-size:0.92em;">
+                    <span style="color:#5F6573; font-family:inherit; font-size:0.92em;">
                         How much do <strong>individual predictions</strong><br>
                         vary around their <strong>average</strong>?
                     </span>
@@ -383,7 +383,7 @@
                 <span style="color:#dc2626; font-weight:700;">E[Test Error]</span> =
                 <span style="color:#2563eb; font-weight:700;">Bias&sup2;</span> +
                 <span style="color:#d97706; font-weight:700;">Variance</span> +
-                <span style="color:#6A675D; font-weight:700;">&sigma;&sup2;</span>
+                <span style="color:#5F6573; font-weight:700;">&sigma;&sup2;</span>
                 <span style="color:#94a3b8;">&nbsp;&nbsp;(irreducible noise)</span>
             </span>
         </div>

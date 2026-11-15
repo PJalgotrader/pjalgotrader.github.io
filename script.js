@@ -192,7 +192,7 @@ function initializeHeroWalk() {
         const rootStyle = getComputedStyle(document.documentElement);
         const inkColor = (rootStyle.getPropertyValue('--ink') || '#1C1B18').trim();
         const accentColor = (rootStyle.getPropertyValue('--green') || '#0E7A4E').trim();
-        const muteColor = (rootStyle.getPropertyValue('--ink-mute') || '#807D72').trim();
+        const muteColor = (rootStyle.getPropertyValue('--ink-mute') || '#6E7483').trim();
         const fanOpacity = (rootStyle.getPropertyValue('--walk-fan-opacity') || '0.05').trim();
 
         const w = svg.clientWidth || window.innerWidth;

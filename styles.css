@@ -36,30 +36,30 @@
 }
 
 [data-theme="light"] {
-    --paper: #F7F4EC;
-    --paper-deep: #EFEBDF;
-    --card: #FDFCF8;
+    --paper: #FFFFFF;
+    --paper-deep: #EEF0F4;
+    --card: #F6F7F9;
     --ink: #1C1B18;
-    --ink-soft: #4C4A43;
-    --ink-mute: #807D72;
-    --line: #DCD7C8;
-    --line-soft: #E7E3D6;
+    --ink-soft: #4A505E;
+    --ink-mute: #6E7483;
+    --line: #DCE0E7;
+    --line-soft: #E9ECF1;
     --green: #0E7A4E;
     --green-bright: #23A06C;
     --red: #C2452D;
 
     --walk-fan-opacity: 0.05;
-    --nav-bg: rgba(247, 244, 236, 0.88);
+    --nav-bg: rgba(255, 255, 255, 0.88);
     --nav-shadow: rgba(28, 27, 24, 0.06);
     --grain-opacity: 0.028;
     --ticker-overlay: rgba(9, 14, 27, 0.78);
     --btn-hover-text: #FFFFFF;
     --footer-bg: #1C1B18;
     --footer-border: transparent;
-    --footer-note: rgba(247, 244, 236, 0.75);
-    --footer-social: rgba(247, 244, 236, 0.6);
-    --colophon-text: rgba(247, 244, 236, 0.45);
-    --colophon-border: rgba(247, 244, 236, 0.12);
+    --footer-note: rgba(255, 255, 255, 0.75);
+    --footer-social: rgba(255, 255, 255, 0.6);
+    --colophon-text: rgba(255, 255, 255, 0.45);
+    --colophon-border: rgba(255, 255, 255, 0.12);
     --plate-shadow: rgba(14, 122, 78, 0.14);
 }
 

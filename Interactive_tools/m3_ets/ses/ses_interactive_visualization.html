@@ -17,7 +17,7 @@
         /* Neutral tones of the tool panel. In dark mode the whole panel is flipped by a filter
            (see "Lab dark mode" below), so the dark values here are the colours that come out
            as navy #0F1A31 / #141F3A / #263250 after the flip. */
-        :root { --lab-surface: #FDFCF8; --lab-band: #F1EDE2; --lab-line: #DCD7C8; }
+        :root { --lab-surface: #F6F7F9; --lab-band: #EEF0F4; --lab-line: #DCE0E7; }
         * {
             margin: 0;
             padding: 0;
@@ -97,7 +97,7 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #6A675D;
+            color: #5F6573;
             font-size: 1.1em;
         }
         
@@ -312,11 +312,11 @@
 
         .bf-panel .bf-title { font-weight: 700; color: #1C1B18; margin-bottom: 6px; }
         .bf-panel .bf-row { margin: 4px 0; }
-        .bf-panel .bf-note { font-size: 0.85em; color: #6A675D; margin-top: 8px; }
+        .bf-panel .bf-note { font-size: 0.85em; color: #5F6573; margin-top: 8px; }
         .bf-panel code { font-family: 'IBM Plex Mono', Menlo, Consolas, monospace; }
 
         .bf-explain {
-            background: #F7F4EC;
+            background: #FFFFFF;
             border-left: 5px solid #D0A63C;
             border-radius: 6px;
             padding: 22px 26px;
@@ -339,13 +339,13 @@
         /* Lab chrome, the same page as the Boosting, Bagging, Learning Curve and Histogram labs:
            paper page with an ink top rule, header on the paper (mono top line, serif title, lede,
            byline with text links), then the tool in a flat surface panel. */
-        body { background: #F7F4EC; border-top: 3px solid #1C1B18; color: #1C1B18; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 0; min-height: 0;
+        body { background: #FFFFFF; border-top: 3px solid #1C1B18; color: #1C1B18; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 0; min-height: 0;
                padding: 28px max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)); }
         .lab-head { max-width: 1180px; margin: 0 auto 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px 24px; text-align: left; }
-        .lab-head .eyebrow { margin: 0; font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 11.5px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: #6A675D; }
+        .lab-head .eyebrow { margin: 0; font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 11.5px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: #5F6573; }
         .lab-head h1 { margin: 6px 0 8px; font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.05; letter-spacing: -.01em; text-align: left; text-wrap: balance; color: #1C1B18; }
-        .lab-head .lede { margin: 0; max-width: 66ch; font-size: 16px; line-height: 1.55; text-align: left; color: #6A675D; }
-        .lab-head .byline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: #6A675D; }
+        .lab-head .lede { margin: 0; max-width: 66ch; font-size: 16px; line-height: 1.55; text-align: left; color: #5F6573; }
+        .lab-head .byline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: #5F6573; }
         .lab-head .byline strong { color: #1C1B18; font-weight: 600; }
         .lab-head .byline a { color: #1E5BC6; }
         .container { max-width: 1180px; margin: 0 auto; background: var(--lab-surface); border: 1px solid var(--lab-line); border-radius: 6px; box-shadow: none; }
@@ -400,7 +400,7 @@
            has hundreds of hard-coded colours in its styles, charts and scripts, so it is flipped
            as one piece: invert lightness, then rotate hue back, which keeps every colour's hue
            and every text/background contrast. Follows the system unless data-theme is set. */
-        .theme-btn { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 1px solid #DCD7C8; border-radius: 8px; background: #FDFCF8; color: #1C1B18; cursor: pointer; }
+        .theme-btn { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 1px solid #DCE0E7; border-radius: 8px; background: #F6F7F9; color: #1C1B18; cursor: pointer; }
         .theme-btn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
         /* Text inside the panel must not inherit the page colour, which turns light in dark mode and would be flipped back to dark. */
         .container { color: #1C1B18; }
@@ -434,10 +434,10 @@
         .pg-box { margin-bottom: 10px; padding: 12px 16px; background: var(--lab-band); border-left: 4px solid var(--lab-line); border-radius: 6px; }
         .guide-grid .pg-box, .pg-box:last-child { margin-bottom: 0; }
         .pg-box h4 { margin-bottom: 4px; font-size: 15px; }
-        .pg-box :is(p, li) { margin: 0; font-size: 14px; line-height: 1.55; color: #6A675D; }
+        .pg-box :is(p, li) { margin: 0; font-size: 14px; line-height: 1.55; color: #5F6573; }
         .pg-box p + p, .pg-box p + ul { margin-top: 6px; }
         .pg-box ul { margin: 0; padding-left: 20px; }
-        .pg-note { margin-top: 10px; font-size: 13.5px; color: #6A675D; }
+        .pg-note { margin-top: 10px; font-size: 13.5px; color: #5F6573; }
     </style>
 </head>
 <body>
@@ -460,7 +460,7 @@
             <div class="equation-box">
                 <h3>🎯 Forecast Equation</h3>
                 <div class="equation">ŷ<sub>t+h|t</sub> = ℓ<sub>t</sub></div>
-                <p style="text-align: center; color: #6A675D; margin-top: 10px;">
+                <p style="text-align: center; color: #5F6573; margin-top: 10px;">
                     The forecast for any future period is simply the current level
                 </p>
             </div>
@@ -468,7 +468,7 @@
             <div class="equation-box">
                 <h3>🔄 Smoothing Equation</h3>
                 <div class="equation">ℓ<sub>t</sub> = α·y<sub>t</sub> + (1-α)·ℓ<sub>t-1</sub></div>
-                <p style="text-align: center; color: #6A675D; margin-top: 10px;">
+                <p style="text-align: center; color: #5F6573; margin-top: 10px;">
                     Level at time t is a weighted average of current observation and previous level
                 </p>
             </div>
@@ -481,7 +481,7 @@
                     <input type="range" id="alpha" min="0" max="1" step="0.01" value="0.3">
                     <span class="value-display" id="alphaValue">0.30</span>
                 </div>
-                <small style="color: #6A675D; margin-top: 5px; display: block;">
+                <small style="color: #5F6573; margin-top: 5px; display: block;">
                     Higher α = More weight on recent data
                 </small>
             </div>
@@ -492,7 +492,7 @@
                     <input type="range" id="l0" min="50" max="200" step="0.1" value="112">
                     <span class="value-display" id="l0Value">112</span>
                 </div>
-                <small style="color: #6A675D; margin-top: 5px; display: block;">
+                <small style="color: #5F6573; margin-top: 5px; display: block;">
                     Starting point for smoothing
                 </small>
             </div>

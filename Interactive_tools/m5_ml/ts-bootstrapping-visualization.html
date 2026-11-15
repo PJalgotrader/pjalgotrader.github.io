@@ -17,7 +17,7 @@
         /* Neutral tones of the tool panel. In dark mode the whole panel is flipped by a filter
            (see "Lab dark mode" below), so the dark values here are the colours that come out
            as navy #0F1A31 / #141F3A / #263250 after the flip. */
-        :root { --lab-surface: #FDFCF8; --lab-band: #F1EDE2; --lab-line: #DCD7C8; }
+        :root { --lab-surface: #F6F7F9; --lab-band: #EEF0F4; --lab-line: #DCE0E7; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -60,7 +60,7 @@
             white-space: nowrap;
         }
 
-        .tab-btn:hover { color: #6A675D; }
+        .tab-btn:hover { color: #5F6573; }
         .tab-btn.active { color: #2C5AA0; border-bottom-color: #2C5AA0; }
 
         .tab-content { display: none; }
@@ -76,7 +76,7 @@
         }
 
         .intro h3 { color: #2C5AA0; margin-bottom: 10px; font-size: 1.15em; }
-        .intro p, .intro ul { color: #6A675D; line-height: 1.7; font-size: 0.95em; }
+        .intro p, .intro ul { color: #5F6573; line-height: 1.7; font-size: 0.95em; }
         .intro ul { margin-top: 8px; padding-left: 20px; }
         .intro li { margin-bottom: 4px; }
 
@@ -195,7 +195,7 @@
         }
 
         .stat-card .stat-value { font-size: 1.6em; font-weight: 700; color: #2C5AA0; }
-        .stat-card .stat-label { font-size: 0.78em; color: #6A675D; margin-top: 4px; font-weight: 500; }
+        .stat-card .stat-label { font-size: 0.78em; color: #5F6573; margin-top: 4px; font-weight: 500; }
 
         /* Chart */
         .chart-container { margin: 20px 0; border-radius: 6px; overflow: hidden; }
@@ -222,14 +222,14 @@
         .comparison-table td {
             padding: 10px 16px;
             border-bottom: 1px solid var(--lab-line);
-            color: #6A675D;
+            color: #5F6573;
         }
 
         .comparison-table tr:nth-child(even) { background: var(--lab-band); }
         .comparison-table .check { color: #10b981; font-weight: 700; }
         .comparison-table .cross { color: #ef4444; font-weight: 700; }
         .table-scroll { overflow-x: auto; }
-        .table-note { font-size: 0.82em; color: #6A675D; margin-top: 12px; line-height: 1.6; }
+        .table-note { font-size: 0.82em; color: #5F6573; margin-top: 12px; line-height: 1.6; }
 
         /* Segmented toggle */
         .seg {
@@ -246,13 +246,13 @@
             font-family: inherit;
             font-size: 0.9em;
             font-weight: 600;
-            color: #6A675D;
+            color: #5F6573;
             cursor: pointer;
         }
         .seg button + button { border-left: 2px solid var(--lab-line); }
         .seg button.on { background: #1C1B18; color: white; }
 
-        .hint { flex-basis: 100%; font-size: 0.82em; color: #6A675D; line-height: 1.5; }
+        .hint { flex-basis: 100%; font-size: 0.82em; color: #5F6573; line-height: 1.5; }
 
         /* Bootstrap distribution panel */
         .section-title { margin-top: 40px; color: #1C1B18; }
@@ -281,13 +281,13 @@
             border-radius: 6px;
             padding: 12px 14px;
             font-size: 0.88em;
-            color: #6A675D;
+            color: #5F6573;
             line-height: 1.5;
         }
         .pipe-step strong { display: block; color: #2C5AA0; margin-bottom: 4px; font-size: 1.02em; }
         .pipe-step.hot { border-color: #2C5AA0; background: var(--lab-band); }
         .pipe-arrow { align-self: center; color: #94a3b8; font-size: 1.4em; font-weight: 700; }
-        .pipeline .caveat { margin-top: 12px; font-size: 0.84em; color: #6A675D; line-height: 1.6; }
+        .pipeline .caveat { margin-top: 12px; font-size: 0.84em; color: #5F6573; line-height: 1.6; }
         @media (max-width: 768px) { .pipe-arrow { display: none; } }
 
         /* Next step callout */
@@ -319,13 +319,13 @@
         /* Lab chrome, the same page as the Boosting, Bagging, Learning Curve and Histogram labs:
            paper page with an ink top rule, header on the paper (mono top line, serif title, lede,
            byline with text links), then the tool in a flat surface panel. */
-        body { background: #F7F4EC; border-top: 3px solid #1C1B18; color: #1C1B18; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 0; min-height: 0;
+        body { background: #FFFFFF; border-top: 3px solid #1C1B18; color: #1C1B18; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 0; min-height: 0;
                padding: 28px max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)); }
         .lab-head { max-width: 1180px; margin: 0 auto 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px 24px; text-align: left; }
-        .lab-head .eyebrow { margin: 0; font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 11.5px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: #6A675D; }
+        .lab-head .eyebrow { margin: 0; font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 11.5px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: #5F6573; }
         .lab-head h1 { margin: 6px 0 8px; font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.05; letter-spacing: -.01em; text-align: left; text-wrap: balance; color: #1C1B18; }
-        .lab-head .lede { margin: 0; max-width: 66ch; font-size: 16px; line-height: 1.55; text-align: left; color: #6A675D; }
-        .lab-head .byline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: #6A675D; }
+        .lab-head .lede { margin: 0; max-width: 66ch; font-size: 16px; line-height: 1.55; text-align: left; color: #5F6573; }
+        .lab-head .byline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: #5F6573; }
         .lab-head .byline strong { color: #1C1B18; font-weight: 600; }
         .lab-head .byline a { color: #1E5BC6; }
         .container { max-width: 1180px; margin: 0 auto; background: var(--lab-surface); border: 1px solid var(--lab-line); border-radius: 6px; box-shadow: none; }
@@ -354,7 +354,7 @@
            has hundreds of hard-coded colours in its styles, charts and scripts, so it is flipped
            as one piece: invert lightness, then rotate hue back, which keeps every colour's hue
            and every text/background contrast. Follows the system unless data-theme is set. */
-        .theme-btn { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 1px solid #DCD7C8; border-radius: 8px; background: #FDFCF8; color: #1C1B18; cursor: pointer; }
+        .theme-btn { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 1px solid #DCE0E7; border-radius: 8px; background: #F6F7F9; color: #1C1B18; cursor: pointer; }
         .theme-btn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
         /* Text inside the panel must not inherit the page colour, which turns light in dark mode and would be flipped back to dark. */
         .container { color: #1C1B18; }

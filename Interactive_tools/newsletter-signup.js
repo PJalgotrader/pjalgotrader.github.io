@@ -11,7 +11,7 @@
     if (document.querySelector('.nl-signup')) return;
 
     var css = [
-        '.nl-signup{--nl-card:#FDFCF8;--nl-paper:#F7F4EC;--nl-line:#DCD7C8;--nl-ink:#1C1B18;--nl-soft:#4C4A43;--nl-mute:#807D72;--nl-acc:#0E7A4E;--nl-on-acc:#FFFFFF;--nl-err:#C2452D;',
+        '.nl-signup{--nl-card:#F6F7F9;--nl-paper:#FFFFFF;--nl-line:#DCE0E7;--nl-ink:#1C1B18;--nl-soft:#4A505E;--nl-mute:#6E7483;--nl-acc:#0E7A4E;--nl-on-acc:#FFFFFF;--nl-err:#C2452D;',
         '  box-sizing:border-box;width:100%;max-width:1180px;margin:20px auto 0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px 36px;align-items:center;',
         '  padding:20px 24px;background:var(--nl-card);border:1px solid var(--nl-line);border-top:3px solid var(--nl-acc);border-radius:6px;color:var(--nl-ink);',
         '  font-family:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;text-align:left;}',
