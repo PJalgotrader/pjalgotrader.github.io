@@ -29,7 +29,8 @@ For each of the 10 items:
    - Update title, meta tags, and Open Graph tags with new date/description
    - Set `og:image` and `twitter:image` to item 1's image absolute URL
 3. **Update the hero**:
-   - Replace date range and theme line
+   - Replace the date range
+   - Replace the ten bullets in `<ul class="theme-list">`: exactly **10 short bullets, one per item, in item order**, each one line of about 4 to 10 words (under ~65 characters). No intro paragraph and no closing "theme" sentence; the hero is the title, the date line and the ten bullets
 4. **Update "In this issue" list**:
    - Replace all 10 item headlines and anchor links
 5. **For each of the 10 items**:
