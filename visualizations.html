@@ -15,7 +15,7 @@
     <meta name="theme-color" content="#0A1020">
     <link rel="canonical" href="https://pedramjahangiry.com/visualizations.html">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="styles.css?v=23">
+    <link rel="stylesheet" href="styles.css?v=24">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -78,37 +78,52 @@
             <div class="container">
                 <p class="section-label">At a glance &middot; every tool, one click</p>
                 <div class="glance-grid">
-                    <div class="glance-group">
-                        <p class="glance-cat">Time series foundations</p>
-                        <a class="glance-item" href="Interactive_tools/random-walk-teaching-tool.html" target="_blank" rel="noopener"><span>01</span>The Random Walk</a>
-                        <a class="glance-item" href="Interactive_tools/stationarity-visualizer.html" target="_blank" rel="noopener"><span>02</span>Stationarity Visualizer</a>
-                    </div>
-                    <div class="glance-group">
-                        <p class="glance-cat">Exponential smoothing</p>
-                        <a class="glance-item" href="Interactive_tools/m3_ets/ses/ses_interactive_visualization.html" target="_blank" rel="noopener"><span>03</span>Simple Exponential Smoothing</a>
-                        <a class="glance-item" href="Interactive_tools/m3_ets/holt_linear_trend/holt_linear_trend_visualization.html" target="_blank" rel="noopener"><span>04</span>Holt's Linear Trend</a>
-                        <a class="glance-item" href="Interactive_tools/m3_ets/holt_winter/holt_winters_visualization.html" target="_blank" rel="noopener"><span>05</span>Holt&ndash;Winters Seasonal</a>
-                    </div>
-                    <div class="glance-group">
-                        <p class="glance-cat">ARIMA</p>
-                        <a class="glance-item" href="Interactive_tools/m4_arima/ar-ma-visualization.html" target="_blank" rel="noopener"><span>06</span>AR(1) &amp; MA(1) Building Blocks</a>
-                        <a class="glance-item" href="Interactive_tools/m4_arima/sarima-visualization.html" target="_blank" rel="noopener"><span>07</span>SARIMA Explorer</a>
+                    <div class="glance-group glance-feature">
+                        <p class="glance-cat">3D books</p>
+                        <svg class="glance-art" viewBox="0 0 220 112" aria-hidden="true">
+                            <path class="ga-fill" d="M110 72 L30 77 L12 106 L110 101 Z"/>
+                            <path class="ga-fill" d="M110 72 L190 77 L208 106 L110 101 Z"/>
+                            <path class="ga-ln" d="M110 72 L30 77 L12 106 L110 101 Z M110 72 L190 77 L208 106 L110 101 Z"/>
+                            <path class="ga-soft" d="M40 83 L100 79 M36 89 L100 85 M32 95 L100 91 M28 101 L78 98"/>
+                            <path class="ga-soft" d="M122 80 L196 100 M150 76 L122 98 M178 78 L150 102"/>
+                            <path class="ga-ln" d="M118 30 Q160 96 202 24"/>
+                            <path class="ga-ln" d="M126 18 Q160 70 194 12"/>
+                            <path class="ga-soft" d="M118 30 L126 18 M202 24 L194 12 M139 55 L144 39 M181 52 L177 36 M160 62 L160 41"/>
+                            <path class="ga-path" d="M130 34 L141 44 L147 54 L155 55 L160 58"/>
+                            <circle class="ga-dot" cx="160" cy="58" r="3.2"/>
+                        </svg>
+                        <p class="glance-note">Pop-up books you can play with. A surface rises off the page and the math runs on it.</p>
+                        <a class="glance-item" href="Interactive_tools/3d_books/gradient-descent-book.html" target="_blank" rel="noopener"><span>B1</span>Gradient Descent</a>
+                        <p class="glance-more">More books on the way</p>
                     </div>
                     <div class="glance-group">
                         <p class="glance-cat">Machine learning</p>
-                        <a class="glance-item" href="Interactive_tools/m5_ml/bias-variance-visualization.html" target="_blank" rel="noopener"><span>08</span>Bias&ndash;Variance Tradeoff</a>
-                        <a class="glance-item" href="Interactive_tools/m5_ml/cross-validation-visualization.html" target="_blank" rel="noopener"><span>09</span>Cross-Validation</a>
-                        <a class="glance-item" href="Interactive_tools/m5_ml/learning-curve-visualization.html" target="_blank" rel="noopener"><span>10</span>Learning Curves</a>
-                        <a class="glance-item" href="Interactive_tools/m5_ml/gradient-descent-visualization.html" target="_blank" rel="noopener"><span>11</span>Gradient Descent &amp; SGD</a>
-                        <a class="glance-item" href="Interactive_tools/m5_ml/dt-regression-visualization.html" target="_blank" rel="noopener"><span>12</span>Decision Trees for Time Series</a>
-                        <a class="glance-item" href="Interactive_tools/m5_ml/bagging-visualization.html" target="_blank" rel="noopener"><span>13</span>Bagging</a>
-                        <a class="glance-item" href="Interactive_tools/m5_ml/boosting-visualization.html" target="_blank" rel="noopener"><span>14</span>Boosting</a>
-                        <a class="glance-item" href="Interactive_tools/m5_ml/histogram-goss-visualization.html" target="_blank" rel="noopener"><span>15</span>Histogram vs GOSS Splitting</a>
+                        <a class="glance-item" href="Interactive_tools/m5_ml/bias-variance-visualization.html" target="_blank" rel="noopener"><span>01</span>Bias&ndash;Variance Tradeoff</a>
+                        <a class="glance-item" href="Interactive_tools/m5_ml/cross-validation-visualization.html" target="_blank" rel="noopener"><span>02</span>Cross-Validation</a>
+                        <a class="glance-item" href="Interactive_tools/m5_ml/learning-curve-visualization.html" target="_blank" rel="noopener"><span>03</span>Learning Curves</a>
+                        <a class="glance-item" href="Interactive_tools/m5_ml/gradient-descent-visualization.html" target="_blank" rel="noopener"><span>04</span>Gradient Descent &amp; SGD</a>
+                        <a class="glance-item" href="Interactive_tools/m5_ml/dt-regression-visualization.html" target="_blank" rel="noopener"><span>05</span>Decision Trees for Time Series</a>
+                        <a class="glance-item" href="Interactive_tools/m5_ml/bagging-visualization.html" target="_blank" rel="noopener"><span>06</span>Bagging</a>
+                        <a class="glance-item" href="Interactive_tools/m5_ml/boosting-visualization.html" target="_blank" rel="noopener"><span>07</span>Boosting</a>
+                        <a class="glance-item" href="Interactive_tools/m5_ml/histogram-goss-visualization.html" target="_blank" rel="noopener"><span>08</span>Histogram vs GOSS Splitting</a>
                     </div>
                     <div class="glance-group">
-                        <p class="glance-cat">Leakage &amp; dependence</p>
-                        <a class="glance-item" href="Interactive_tools/m5_ml/ts-cross-validation-visualization.html" target="_blank" rel="noopener"><span>16</span>Time Series Cross-Validation</a>
-                        <a class="glance-item" href="Interactive_tools/m5_ml/ts-bootstrapping-visualization.html" target="_blank" rel="noopener"><span>17</span>Time Series Bootstrapping</a>
+                        <p class="glance-cat">Time series foundations</p>
+                        <a class="glance-item" href="Interactive_tools/random-walk-teaching-tool.html" target="_blank" rel="noopener"><span>09</span>The Random Walk</a>
+                        <a class="glance-item" href="Interactive_tools/stationarity-visualizer.html" target="_blank" rel="noopener"><span>10</span>Stationarity Visualizer</a>
+                        <a class="glance-item" href="Interactive_tools/m5_ml/ts-cross-validation-visualization.html" target="_blank" rel="noopener"><span>11</span>Time Series Cross-Validation</a>
+                        <a class="glance-item" href="Interactive_tools/m5_ml/ts-bootstrapping-visualization.html" target="_blank" rel="noopener"><span>12</span>Time Series Bootstrapping</a>
+                    </div>
+                    <div class="glance-group">
+                        <p class="glance-cat">Exponential smoothing</p>
+                        <a class="glance-item" href="Interactive_tools/m3_ets/ses/ses_interactive_visualization.html" target="_blank" rel="noopener"><span>13</span>Simple Exponential Smoothing</a>
+                        <a class="glance-item" href="Interactive_tools/m3_ets/holt_linear_trend/holt_linear_trend_visualization.html" target="_blank" rel="noopener"><span>14</span>Holt's Linear Trend</a>
+                        <a class="glance-item" href="Interactive_tools/m3_ets/holt_winter/holt_winters_visualization.html" target="_blank" rel="noopener"><span>15</span>Holt&ndash;Winters Seasonal</a>
+                    </div>
+                    <div class="glance-group">
+                        <p class="glance-cat">ARIMA</p>
+                        <a class="glance-item" href="Interactive_tools/m4_arima/ar-ma-visualization.html" target="_blank" rel="noopener"><span>16</span>AR(1) &amp; MA(1) Building Blocks</a>
+                        <a class="glance-item" href="Interactive_tools/m4_arima/sarima-visualization.html" target="_blank" rel="noopener"><span>17</span>SARIMA Explorer</a>
                     </div>
                     <div class="glance-group">
                         <p class="glance-cat">Deep learning</p>

@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gradient Descent, a 3D Book | Pedram Jahangiry</title>
+<meta name="description" content="An interactive 3D pop-up book on gradient descent: a loss surface rises off the page and you run the descent yourself. Four spreads cover the algorithm, the learning rate, momentum and stochastic gradients.">
+<link rel="canonical" href="https://pedramjahangiry.com/Interactive_tools/3d_books/gradient-descent-book.html">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Libre+Caslon+Text:wght@700&family=STIX+Two+Text:ital,wght@0,600;1,600;1,700&family=Source+Serif+4:ital,wght@0,600;0,700;1,600&display=swap">
+<style>
+  /* Layout: one full-bleed WebGL desk scene (a single night-desk look, by choice) above a docked control bar. */
+  :root {
+    color-scheme: dark;
+    --desk: #120c08;
+    --panel: rgba(28, 20, 15, 0.94);
+    --panel-edge: rgba(240, 226, 204, 0.16);
+    --text: #f3e9d8;
+    --muted: #bfae94;
+    --lamp: #e8a640;
+    --lamp-ink: #1d1209;
+    --field: rgba(240, 226, 204, 0.09);
+    --font-ui: "IBM Plex Sans", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body {
+    background: var(--desk);
+    color: var(--text);
+    font-family: var(--font-ui);
+    overflow: hidden;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  #stage { position: fixed; inset: 0 0 var(--hud-h, 120px) 0; }
+  #stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .vignette {
+    position: fixed; inset: 0 0 var(--hud-h, 120px) 0; pointer-events: none;
+    background: radial-gradient(120% 95% at 45% 40%, transparent 60%, rgba(6, 4, 2, 0.5) 100%);
+  }
+  .hud {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 11px calc(11px + env(safe-area-inset-bottom, 0px));
+    background: var(--panel);
+    border-top: 1px solid var(--panel-edge);
+  }
+  .hud-inner { max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 9px 20px; }
+  .group { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .label { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .label .sym { text-transform: none; letter-spacing: 0; font-size: 14px; }
+  select, button {
+    font: 500 14px var(--font-ui); color: var(--text);
+    background: var(--field); border: 1px solid var(--panel-edge);
+    border-radius: 6px; padding: 7px 12px; cursor: pointer; white-space: nowrap;
+  }
+  select option { background: #241a13; }
+  button:hover:not(:disabled) { background: rgba(240, 226, 204, 0.16); }
+  button.primary, button[aria-pressed="true"] { background: var(--lamp); color: var(--lamp-ink); border-color: var(--lamp); }
+  button.primary { min-width: 82px; }
+  button:disabled { opacity: 0.4; cursor: default; }
+  :is(select, button, input):focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+  input[type="range"] { width: 150px; accent-color: var(--lamp); }
+  output { font: 500 14px var(--font-mono); font-variant-numeric: tabular-nums; min-width: 3.4em; }
+  .chk { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; white-space: nowrap; }
+  .chk input { accent-color: var(--lamp); width: 16px; height: 16px; }
+  .buttons { display: flex; gap: 8px; }
+  .seg { display: flex; }
+  .seg button { border-radius: 0; margin-left: -1px; }
+  .seg button:first-child { border-radius: 6px 0 0 6px; margin-left: 0; }
+  .seg button:last-child { border-radius: 0 6px 6px 0; }
+  .pager { display: flex; align-items: center; gap: 10px; padding-right: 20px; border-right: 1px solid var(--panel-edge); }
+  .pagelabel { font: 500 13px var(--font-mono); font-variant-numeric: tabular-nums; color: var(--muted); min-width: 9em; text-align: center; }
+  .spacer { flex: 1 1 0; }
+  .hint { flex-basis: 100%; margin: 0; font-size: 12.5px; color: var(--muted); }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .fallback { position: fixed; inset: 0 0 var(--hud-h, 120px) 0; display: grid; place-items: center; color: var(--muted); padding: 24px; text-align: center; }
+  @media (max-width: 700px) {
+    input[type="range"] { width: 112px; }
+    .hud-inner { gap: 9px 14px; }
+    .pager { border-right: 0; padding-right: 0; flex-basis: 100%; justify-content: space-between; }
+    .spacer { display: none; }
+  }
+</style>
+
+<div id="stage" role="img" aria-label="An open textbook on a desk about gradient descent. On every spread the left page explains one idea and a loss surface pops up from the right page, with beads stepping downhill across it."></div>
+<div class="vignette"></div>
+<p id="fallback" class="fallback" hidden>This page needs WebGL to draw the 3D book. Try a recent desktop browser.</p>
+
+<div class="hud" id="hud">
+  <div class="hud-inner">
+    <nav class="pager" aria-label="Book pages">
+      <button id="prev" aria-label="Previous pages">← Prev</button>
+      <span id="pageLabel" class="pagelabel">pp. 87–88 · 1 of 4</span>
+      <button id="next" aria-label="Next pages">Next →</button>
+    </nav>
+    <div class="group" data-spreads="0">
+      <label class="label" for="surface">Surface</label>
+      <select id="surface">
+        <option value="ravine">Narrow ravine</option>
+        <option value="valleys">Two valleys</option>
+      </select>
+    </div>
+    <div class="group">
+      <label class="label" for="eta">Learning rate <span class="sym">η</span></label>
+      <input type="range" id="eta" min="0" max="1" step="0.001">
+      <output id="etaOut" for="eta">1.100</output>
+    </div>
+    <label class="chk" for="momentum" data-spreads="0"><input type="checkbox" id="momentum"> Momentum β = 0.9</label>
+    <div class="buttons" data-spreads="1" role="group" aria-label="Learning rate presets">
+      <button data-eta="0.3">Glide</button>
+      <button data-eta="1">Zig-zag</button>
+      <button data-eta="1.3">Diverge</button>
+    </div>
+    <div class="group" data-spreads="2">
+      <label class="label" for="beta">Momentum <span class="sym">β</span></label>
+      <input type="range" id="beta" min="0" max="0.98" step="0.01">
+      <output id="betaOut" for="beta">0.90</output>
+    </div>
+    <label class="chk" for="decay" data-spreads="3"><input type="checkbox" id="decay"> Decay η over time</label>
+    <div class="buttons">
+      <button id="play" class="primary">Play</button>
+      <button id="step">Step</button>
+      <button id="reset">Reset</button>
+      <button id="resample" data-spreads="3">New noise</button>
+    </div>
+    <span class="spacer"></span>
+    <button id="light" aria-pressed="true" title="Switch the reading light on or off">Light</button>
+    <div class="seg" role="group" aria-label="Camera view">
+      <button id="viewBook" data-view="book" aria-pressed="true">Book</button>
+      <button id="viewText" data-view="text" aria-pressed="false">Text</button>
+      <button id="viewFigure" data-view="figure" aria-pressed="false">Figure</button>
+    </div>
+    <p class="hint" id="hint"></p>
+  </div>
+</div>
+<p id="live" class="sr-only" aria-live="polite"></p>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { Line2 } from 'three/addons/lines/Line2.js';
+import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+
+/* ================= constants ================= */
+const W = 1.1, H = 1.45, BASE = 0.03, HS = 0.22, LIFT = 0.004, BEAD_R = 0.02;
+const CW = 1024, CH = 1350, SPLIT = 800;                       // page in logical px; the left page is static above SPLIT, live below
+const SCALE = Math.min(innerWidth, innerHeight) < 600 ? 1.5 : 2; // backing-store scale of the page canvases
+const MX0 = 112, MY0 = 150, MS = 800, DOM = 3, LIM = 2.97;      // figure box on right pages; domain is [-3, 3]^2
+const X0 = 96, XR = 928, TW = XR - X0;                          // text column on left pages
+const TOL = 2e-3, FLIP_MS = 950;
+const INK = '#000000', INK_SOFT = '#1a2130', PAPER = '#ffffff';
+const AMBER = '#a85300', ROSE = '#b0124f', GREEN = '#0d6b45', RED = '#a01a10', BLUE = '#1f44a8';
+const FONT = {
+  head: '"Libre Caslon Text", Georgia, serif',
+  body: '"Source Serif 4", Georgia, serif',
+  math: '"STIX Two Text", "Cambria Math", "Times New Roman", serif',
+  mono: '"IBM Plex Mono", ui-monospace, monospace',
+  hand: 'Caveat, "Segoe Print", cursive',
+};
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const pageLift = d => 0.02 * (1 - Math.exp(-d / 0.08)) - 0.006 * (d / W);
+const pageY = d => BASE + pageLift(d);
+const toCanvas = (x, y) => [MX0 + ((x + DOM) / (2 * DOM)) * MS, MY0 + ((DOM - y) / (2 * DOM)) * MS];
+function mulberry32(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const gauss = rng => Math.sqrt(-2 * Math.log(rng() + 1e-12)) * Math.cos(2 * Math.PI * rng());
+const fmt = n => (!isFinite(n) ? '∞' : Math.abs(n) >= 100 ? n.toFixed(1) : n.toFixed(4));
+
+/* ================= loss surfaces ================= */
+const SURF = {
+  ravine: {
+    f(x, y) { const c = Math.cos(0.5), s = Math.sin(0.5), u = c * x + s * y, v = -s * x + c * y; return 0.5 * (0.12 * u * u + 1.6 * v * v); },
+    h: d => 1 - Math.exp(-d / 5),
+  },
+  valleys: {
+    f(x, y) { return 1.5 - 1.2 * Math.exp(-((x - 1.3) ** 2 + (y - 0.8) ** 2) / 1.2) - 0.8 * Math.exp(-((x + 1.3) ** 2 + (y + 1.1) ** 2) / 0.7) + 0.06 * (x * x + y * y); },
+    h: d => d / 2.4,
+  },
+  trough: { f(x) { return 0.8 * x * x; }, h: d => d / 9 },   // L = ½λθ₁² with λ = 1.6
+};
+for (const s of Object.values(SURF)) {
+  s.fmin = Infinity;
+  for (let j = 0; j <= 240; j++) for (let i = 0; i <= 240; i++) s.fmin = Math.min(s.fmin, s.f(-DOM + i * 0.025, -DOM + j * 0.025));
+  s.hOf = (x, y) => clamp(s.h(s.f(x, y) - s.fmin), 0, 1);
+  s.grad = (x, y) => { const e = 1e-4; return [(s.f(x + e, y) - s.f(x - e, y)) / (2 * e), (s.f(x, y + e) - s.f(x, y - e)) / (2 * e)]; };
+}
+
+/* contour map: the same image is printed on the page and wrapped over the 3D pop-up */
+const STOPS = [[0, 18, 44, 110], [0.3, 62, 108, 186], [0.65, 160, 188, 224], [1, 238, 232, 216]];
+function makeCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function buildMap(s) {
+  const R = 1200, hA = new Float32Array(R * R);
+  for (let py = 0; py < R; py++) { const y = DOM - ((py + 0.5) / R) * 2 * DOM; for (let px = 0; px < R; px++) hA[py * R + px] = s.hOf(-DOM + ((px + 0.5) / R) * 2 * DOM, y); }
+  const c = makeCanvas(R, R), ctx = c.getContext('2d'), img = ctx.createImageData(R, R), d = img.data, STEP = 0.05, lw = (R / 800) * 0.9;
+  for (let py = 0; py < R; py++) for (let px = 0; px < R; px++) {
+    const i = py * R + px, h = hA[i];
+    const gx = (hA[py * R + Math.min(px + 1, R - 1)] - hA[py * R + Math.max(px - 1, 0)]) * 0.5;
+    const gy = (hA[Math.min(py + 1, R - 1) * R + px] - hA[Math.max(py - 1, 0) * R + px]) * 0.5;
+    const gm = Math.hypot(gx, gy);
+    let line = 0;
+    if (gm > 1e-6) { const t = h / STEP, fr = t - Math.floor(t); line = clamp(lw + 0.5 - (Math.min(fr, 1 - fr) * STEP) / gm, 0, 1) * 0.72; }
+    let k = 1; while (k < STOPS.length - 1 && h > STOPS[k][0]) k++;
+    const a = STOPS[k - 1], b = STOPS[k], u = clamp((h - a[0]) / (b[0] - a[0]), 0, 1), p = i * 4;
+    d[p] = lerp(lerp(a[1], b[1], u) * 0.84 + 39, 12, line);
+    d[p + 1] = lerp(lerp(a[2], b[2], u) * 0.84 + 38, 24, line);
+    d[p + 2] = lerp(lerp(a[3], b[3], u) * 0.84 + 36, 66, line);
+    d[p + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  return c;
+}
+for (const s of Object.values(SURF)) s.map = buildMap(s);
+
+/* ================= page canvases ================= */
+function mk(w, h) { const canvas = makeCanvas(Math.round(w * SCALE), Math.round(h * SCALE)); return { canvas, ctx: canvas.getContext('2d') }; }
+const P = { top: mk(CW, SPLIT), live: mk(CW, CH - SPLIT), right: mk(CW, CH), front: mk(CW, CH), back: mk(CW, CH) };
+
+function prep(c, dy = 0) { c.setTransform(SCALE, 0, 0, SCALE, 0, -dy * SCALE); c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.setLineDash([]); }
+function paper(c, gutterRight, y0, y1) {
+  c.fillStyle = PAPER; c.fillRect(0, y0, CW, y1 - y0);
+  const g = c.createLinearGradient(gutterRight ? CW : 0, 0, gutterRight ? CW - 90 : 90, 0);   // a soft shadow in the gutter only: the rest stays pure white
+  g.addColorStop(0, 'rgba(20,24,32,0.22)'); g.addColorStop(1, 'rgba(20,24,32,0)');
+  c.fillStyle = g; c.fillRect(0, y0, CW, y1 - y0);
+}
+function wrap(c, text, x, y, maxW, lh) {
+  let line = '';
+  for (const w of text.split(' ')) {
+    const test = line ? line + ' ' + w : w;
+    if (c.measureText(test).width > maxW && line) { c.fillText(line, x, y); y += lh; line = w; } else line = test;
+  }
+  if (line) { c.fillText(line, x, y); y += lh; }
+  return y;
+}
+function spaced(c, text, x, y, sp) { if ('letterSpacing' in c) { c.letterSpacing = sp + 'px'; c.fillText(text, x, y); c.letterSpacing = '0px'; } else c.fillText(text, x, y); }
+function fitText(c, text, x, y, maxW, style, size, fam) {
+  let s = size; c.font = `${style} ${s}px ${fam}`;
+  while (c.measureText(text).width > maxW && s > 14) { s -= 1; c.font = `${style} ${s}px ${fam}`; }
+  c.fillText(text, x, y);
+}
+function header(c, sec, title) {
+  c.fillStyle = INK_SOFT; c.font = `600 22px ${FONT.mono}`; spaced(c, `§ ${sec}  ·  OPTIMISATION`, X0, 112, 3);
+  c.fillStyle = INK; fitText(c, title, X0, 196, TW, '700', 68, FONT.head);
+  c.fillRect(X0, 224, TW, 3);
+  return 290;
+}
+function para(c, text, y) { c.font = `600 32px ${FONT.body}`; c.fillStyle = INK; return wrap(c, text, X0, y, TW, 46) + 14; }
+const UPRIGHT = /([∇Σ←√]+)/;   // operators stay upright; everything else in an equation is italic
+function mathText(c, text, x, y, size, align) {
+  const parts = text.split(UPRIGHT).filter(Boolean), fonts = parts.map(p => `${UPRIGHT.test(p) ? '' : 'italic '}600 ${size}px ${FONT.math}`), gap = size * 0.07;
+  const ws = parts.map((p, i) => { c.font = fonts[i]; return c.measureText(p).width; });
+  let cx = x - (align === 'center' ? (ws.reduce((a, b) => a + b, 0) + (parts.length - 1) * gap) / 2 : 0);
+  c.textAlign = 'left';
+  parts.forEach((p, i) => { c.font = fonts[i]; c.fillText(p, cx, y); cx += ws[i] + gap; });
+}
+function eqBox(c, lines, label, y) {
+  const top = y - 24, h = 36 + lines.length * 56;
+  c.fillStyle = 'rgba(8,16,34,0.07)'; c.fillRect(X0, top, TW, h);
+  c.strokeStyle = INK; c.lineWidth = 1.5; c.strokeRect(X0 + 0.75, top + 0.75, TW - 1.5, h - 1.5);
+  c.fillStyle = INK;
+  lines.forEach((l, i) => mathText(c, l, X0 + TW / 2, top + 58 + i * 56, 40, 'center'));
+  c.textAlign = 'right'; c.font = `600 25px ${FONT.body}`; c.fillStyle = INK_SOFT; c.fillText(label, XR - 18, top + h / 2 + 9);
+  c.textAlign = 'left';
+  return top + h + 54;
+}
+function liveHead(c, label) {
+  c.fillStyle = INK; c.fillRect(X0, 820, TW, 1.5);
+  c.fillStyle = INK_SOFT; c.font = `600 19px ${FONT.mono}`; spaced(c, label, X0, 852, 2.5);
+}
+function rows(c, list, x, y, w) {
+  list.forEach(([k, v, col], i) => {
+    const ry = y + i * 44;
+    c.font = `600 25px ${FONT.body}`; c.fillStyle = INK_SOFT; c.fillText(k, x, ry);
+    c.font = `600 24px ${FONT.mono}`; c.fillStyle = col || INK; c.textAlign = 'right'; c.fillText(v, x + w, ry); c.textAlign = 'left';
+    c.fillStyle = 'rgba(8,16,34,0.22)'; c.fillRect(x, ry + 13, w, 1.2);
+  });
+}
+function swatch(c, color, x, y) { c.fillStyle = color; c.fillRect(x, y - 11, 34, 6); }
+function statusLine(c, text, color) { c.fillStyle = color || INK; fitText(c, text, X0, 1106, TW, '700', 28, FONT.body); }
+function note(c, text) {
+  c.save(); c.translate(X0 + 4, 1176); c.rotate(-0.022);
+  c.fillStyle = BLUE; fitText(c, text, 0, 0, TW - 20, '700', 40, FONT.hand); c.restore();
+}
+function pageNum(c, n) { c.font = `600 23px ${FONT.body}`; c.fillStyle = INK_SOFT; c.textAlign = 'center'; c.fillText(String(n), CW / 2, 1298); c.textAlign = 'left'; }
+function lineChart(c, bx, by, bw, bh, title, series, o = {}) {
+  c.font = `600 18px ${FONT.mono}`; c.fillStyle = INK_SOFT; spaced(c, title, bx, by + 14, 2);
+  const top = by + 34, bot = by + bh - 28, n = Math.max(o.nMin || 20, ...series.map(s => s.v.length - 1));
+  c.fillStyle = INK; c.fillRect(bx, bot, bw, 2); c.fillRect(bx, top - 4, 2, bot - top + 4);
+  c.font = `600 17px ${FONT.mono}`; c.fillStyle = INK_SOFT;
+  c.fillText('0', bx, bot + 23); c.textAlign = 'right'; c.fillText(`t = ${n}`, bx + bw, bot + 23); c.textAlign = 'left';
+  const val = v => (o.log ? Math.log10(Math.max(v, 1e-7)) : v);
+  let mn = Infinity, mx = -Infinity;
+  for (const s of series) for (const v of s.v) { const q = val(v); if (q < mn) mn = q; if (q > mx) mx = q; }
+  if (!isFinite(mn)) return;
+  if (mx - mn < 1e-9) mx = mn + 1;
+  const X = i => bx + 3 + (i / n) * (bw - 8), Y = q => bot - 4 - ((q - mn) / (mx - mn)) * (bot - top - 8);
+  c.textAlign = 'right'; c.fillText(o.log ? 'log scale' : `max ${fmt(Math.max(...series.map(s => Math.max(...s.v))))}`, bx + bw, by + 14); c.textAlign = 'left';
+  for (const s of series) {
+    if (s.v.length < 2) continue;
+    c.beginPath(); s.v.forEach((v, i) => (i ? c.lineTo(X(i), Y(val(v))) : c.moveTo(X(i), Y(val(v)))));
+    c.strokeStyle = s.color; c.lineWidth = 3.2; c.lineJoin = 'round'; c.stroke();
+    c.beginPath(); c.arc(X(s.v.length - 1), Y(val(s.v[s.v.length - 1])), 6, 0, Math.PI * 2); c.fillStyle = s.color; c.fill();
+  }
+}
+
+/* ================= simulation state ================= */
+let spread = 0, cfg = null, st = null, playing = false, busy = false, acc = 0, liveDirty = true, lastA = 1;
+const sim = { t: 0, status: 'ready', t0: 0, tracks: [] };
+const pop = { s: SURF.ravine, rise: 0 };
+
+function stepTrack(tr, t) {
+  tr.from = [tr.x, tr.y];
+  if (tr.done) return;
+  const s = pop.s; let [gx, gy] = s.grad(tr.x, tr.y);
+  if (tr.sd) { gx += tr.sd * gauss(tr.rng); gy += tr.sd * gauss(tr.rng); }
+  const lr = tr.decay ? st.eta / (1 + t / 30) : st.eta;
+  if (tr.beta) { tr.vx = tr.beta * tr.vx + gx; tr.vy = tr.beta * tr.vy + gy; gx = tr.vx; gy = tr.vy; }
+  let nx = tr.x - lr * gx, ny = tr.y - lr * gy;
+  if (!isFinite(nx) || !isFinite(ny)) { nx = tr.x; ny = tr.y; tr.done = 'diverged'; }
+  if (Math.abs(nx) > LIM || Math.abs(ny) > LIM) {
+    if (tr.sd) { nx = clamp(nx, -LIM, LIM); ny = clamp(ny, -LIM, LIM); }
+    else {
+      const dx = nx - tr.x, dy = ny - tr.y; let k = 1;
+      if (dx > 0) k = Math.min(k, (LIM - tr.x) / dx); if (dx < 0) k = Math.min(k, (-LIM - tr.x) / dx);
+      if (dy > 0) k = Math.min(k, (LIM - tr.y) / dy); if (dy < 0) k = Math.min(k, (-LIM - tr.y) / dy);
+      nx = tr.x + dx * k; ny = tr.y + dy * k; tr.done = 'diverged';
+    }
+  }
+  tr.x = nx; tr.y = ny; tr.steps = t; tr.movedAt = t; tr.f = s.f(nx, ny); tr.hist.push([nx, ny, tr.f]);
+  if (!tr.sd) {
+    const g = s.grad(nx, ny); tr.g = Math.hypot(g[0], g[1]);
+    if (!tr.done && tr.g < TOL && (!tr.beta || Math.hypot(tr.vx, tr.vy) < TOL * 5)) tr.done = 'converged';
+  }
+}
+function stepSim() {
+  if (sim.status === 'done') return;
+  sim.t++;
+  for (const tr of sim.tracks) stepTrack(tr, sim.t);
+  sim.t0 = performance.now();
+  if (sim.tracks.every(t => t.done) || sim.t >= cfg.maxSteps) { sim.status = 'done'; playing = false; }
+  if (!cfg.smooth) rebuildTrails(1);
+  liveDirty = true;
+}
+function resetSim() {
+  const start = st.start || cfg.start(st), defs = cfg.tracks(st), s = pop.s;
+  sim.t = 0; sim.status = 'ready'; sim.t0 = 0; playing = false;
+  sim.tracks.forEach((tr, i) => {
+    const d = defs[i]; tr.def = d; tr.beta = d.beta || 0; tr.sd = d.sd || 0; tr.decay = !!d.decay;
+    tr.rng = mulberry32((st.seed || 1) * 97 + i * 13 + 5);
+    tr.x = start[0]; tr.y = start[1]; tr.vx = tr.vy = 0; tr.steps = 0; tr.movedAt = -1; tr.done = null;
+    tr.f = s.f(tr.x, tr.y); const g = s.grad(tr.x, tr.y); tr.g = Math.hypot(g[0], g[1]);
+    tr.hist = [[tr.x, tr.y, tr.f]]; tr.from = [tr.x, tr.y];
+  });
+  rebuildTrails(1); lastA = 1; liveDirty = true;
+}
+
+/* ================= spreads: copy, figures, live read-outs ================= */
+function runState() {
+  if (sim.status === 'running') return ['Stepping downhill…', INK];
+  if (sim.status === 'paused') return [`Paused at step ${sim.t}`, INK];
+  return ['Ready: press Play or Step', INK];
+}
+function s0Status() {
+  const tr = sim.tracks[0];
+  if (tr.done === 'converged') return [`Converged in ${tr.steps} steps: the slope is nearly zero`, INK];
+  if (tr.done === 'diverged') return [`Left the surface at step ${tr.steps}: η is too large`, RED];
+  if (sim.status === 'done') return [`Stopped after ${sim.t} steps, still descending`, INK];
+  return runState();
+}
+function s1Status() {
+  const tr = sim.tracks[0], r = st.eta * 1.6;
+  if (tr.done === 'diverged') return [`Thrown out of the pipe at step ${tr.steps}`, RED];
+  if (tr.done === 'converged') return [`Settled at the bottom in ${tr.steps} steps`, INK];
+  if (sim.status === 'ready') return ['Ready: press Play or Step', INK];
+  return r < 1 ? ['Gliding in: no overshoot', INK] : r < 2 ? ['Zig-zag: overshoots, then settles', INK] : ['Diverging: every overshoot is larger', RED];
+}
+function s2Status() {
+  const [p, m] = sim.tracks, nm = t => t.def.name, div = sim.tracks.find(t => t.done === 'diverged');
+  if (div) return [`${nm(div)} left the surface at step ${div.steps}`, RED];
+  if (p.done && m.done) { const w = p.steps <= m.steps ? p : m, l = w === p ? m : p; return p.steps === m.steps ? [`A tie: both arrive in ${p.steps} steps`, INK] : [`${nm(w)} wins: ${w.steps} steps against ${l.steps}`, INK]; }
+  const one = p.done ? p : m.done ? m : null;
+  if (one) return sim.status === 'done' ? [`${nm(one)} is home in ${one.steps} steps; the other needs ${cfg.maxSteps}+`, INK] : [`${nm(one)} is home at step ${one.steps}; the other is still rolling`, INK];
+  if (sim.status === 'done') return [`Neither run is home after ${cfg.maxSteps} steps`, INK];
+  return sim.status === 'running' ? ['Racing downhill…', INK] : runState();
+}
+const basinOf = tr => (Math.hypot(tr.x - 1.2, tr.y - 0.75) < 0.95 ? 'deep' : Math.hypot(tr.x + 1.25, tr.y + 1.05) < 0.85 ? 'shallow' : 'between');
+function s3Status() {
+  if (sim.status === 'done') {
+    const out = sim.tracks.filter(t => basinOf(t) === 'deep').map(t => t.def.name);
+    return out.length ? [`Ended in the deep basin: ${out.join(', ')}`, INK] : ['No run left the shallow basin this time', INK];
+  }
+  if (sim.status === 'running') return [`Step ${sim.t} of ${cfg.maxSteps}`, INK];
+  return runState();
+}
+function factorChart(c, bx, by, bw, bh, eta) {
+  c.font = `600 18px ${FONT.mono}`; c.fillStyle = INK_SOFT; spaced(c, 'ERROR FACTOR |1 − ηλ|', bx, by + 14, 2);
+  const top = by + 34, bot = by + bh - 28, Xe = e => bx + (e / 1.5) * bw, Yf = f => bot - (Math.min(f, 1.5) / 1.5) * (bot - top);
+  [[0, 0.625, 'rgba(31,68,168,0.14)'], [0.625, 1.25, 'rgba(168,83,0,0.17)'], [1.25, 1.5, 'rgba(160,26,16,0.2)']].forEach(([a, b, col]) => { c.fillStyle = col; c.fillRect(Xe(a), top, Xe(b) - Xe(a), bot - top); });
+  c.fillStyle = INK; c.fillRect(bx, bot, bw, 2); c.fillRect(bx, top - 4, 2, bot - top + 4);
+  c.setLineDash([7, 6]); c.strokeStyle = INK; c.lineWidth = 1.6; c.beginPath(); c.moveTo(bx, Yf(1)); c.lineTo(bx + bw, Yf(1)); c.stroke(); c.setLineDash([]);
+  c.beginPath(); for (let e = 0; e <= 1.5001; e += 0.0125) { const px = Xe(e), py = Yf(Math.abs(1 - 1.6 * e)); e ? c.lineTo(px, py) : c.moveTo(px, py); }
+  c.strokeStyle = INK; c.lineWidth = 3.2; c.lineJoin = 'round'; c.stroke();
+  const ce = clamp(eta, 0, 1.5); c.fillStyle = AMBER; c.beginPath(); c.arc(Xe(ce), Yf(Math.abs(1 - 1.6 * ce)), 9, 0, Math.PI * 2); c.fill();
+  c.strokeStyle = PAPER; c.lineWidth = 2; c.stroke();
+  c.font = `600 17px ${FONT.mono}`; c.fillStyle = INK_SOFT; c.textAlign = 'center';
+  c.fillText('0', Xe(0) + 5, bot + 23); c.fillText('1/λ', Xe(0.625), bot + 23); c.fillText('2/λ', Xe(1.25), bot + 23);
+  c.textAlign = 'right'; c.fillText('η', bx + bw, bot + 23); c.fillText('1', bx - 8, Yf(1) + 6); c.textAlign = 'left';
+}
+
+const SPREADS = [
+  {
+    st: { surfKey: 'ravine', eta: 1.1, momentum: false, start: null },
+    surf: st => st.surfKey, start: st => (st.surfKey === 'ravine' ? [-2.6, -0.2] : [0.3, -2.6]),
+    stepMs: 150, maxSteps: 300, smooth: true,
+    tracks: st => [{ name: 'Descent', css: AMBER, line: 0xffab3d, bead: 0xc9973a, metal: 0.75, dots: true, beta: st.momentum ? 0.9 : 0 }],
+    hint: 'Click the surface to drop the bead somewhere new. Drag to orbit, scroll to zoom. Arrow keys or the page edges turn pages. Click the lamp to switch the light.',
+    static(c, st) {
+      let y = header(c, '4.2', 'Gradient Descent');
+      y = para(c, 'A loss L(θ) scores every setting of the parameters θ. Gradient descent starts somewhere on that surface and steps downhill, against the gradient ∇L, again and again.', y);
+      y = eqBox(c, st.momentum ? ['v ← βv + ∇L(θ)', 'θ ← θ − ηv'] : ['θ ← θ − η∇L(θ)'], st.momentum ? '(4.8)' : '(4.7)', y);
+      para(c, st.momentum
+        ? 'With momentum, every step also carries a fraction β = 0.9 of the one before. Section 4.4 shows when that helps.'
+        : 'The learning rate η sets the step length. Too small and progress crawls. Too large and each step overshoots the valley floor, so the path zig-zags or leaves the surface.', y);
+    },
+    live(c) {
+      const tr = sim.tracks[0];
+      liveHead(c, 'RUN LOG');
+      rows(c, [['step t', String(sim.t)], ['learning rate η', st.eta.toFixed(3)], ['loss L(θ)', fmt(tr.f)], ['slope ‖∇L‖', fmt(tr.g)]], X0, 898, 380);
+      lineChart(c, 530, 838, 398, 214, 'LOSS BY STEP', [{ v: tr.hist.map(p => p[2]), color: AMBER }]);
+      statusLine(c, ...s0Status());
+      note(c, st.surfKey === 'ravine' ? 'push η past 1.25 and the bead flies out' : 'drop the bead in a few places: the start picks the bowl');
+      pageNum(c, 87);
+    },
+    fig: st => (st.surfKey === 'ravine'
+      ? { num: '4.3', title: 'Loss surface: a narrow ravine', caption: 'Steep across and nearly flat along. One learning rate has to serve both directions, so large steps zig-zag across the floor while progress along it stays slow.' }
+      : { num: '4.4', title: 'Loss surface: two valleys', caption: 'Two basins of different depth. Descent only follows the local slope, so the starting point decides which minimum it finds. The ring marks the start.' }),
+  },
+  {
+    st: { eta: 1.0, start: null },
+    surf: () => 'trough', start: () => [-1.6, -0.5],
+    stepMs: 400, maxSteps: 60, smooth: true,
+    tracks: () => [{ name: 'Descent', css: AMBER, line: 0xffab3d, bead: 0xc9973a, metal: 0.75, dots: true }],
+    hint: 'Try the three presets, or move η and watch the bead cross the half-pipe. The limit is η = 2/λ = 1.25.',
+    static(c) {
+      let y = header(c, '4.3', 'The Learning Rate');
+      y = para(c, 'Close to a minimum, any smooth loss looks like a bowl. Along a direction with curvature λ, each step multiplies the distance e to the minimum by one fixed factor:', y);
+      y = eqBox(c, ['eₜ₊₁ = (1 − ηλ) eₜ'], '(4.9)', y);
+      [['ηλ < 1', 'glides in and never crosses the minimum'], ['1 < ηλ < 2', 'overshoots, flips sides, still settles'], ['ηλ > 2', 'every overshoot grows, so it diverges']].forEach(([k, v], i) => {
+        c.font = `italic 600 30px ${FONT.math}`; c.fillStyle = INK; c.fillText(k, X0 + 8, y + i * 46);
+        c.font = `600 30px ${FONT.body}`; c.fillText(v, X0 + 200, y + i * 46);
+      });
+      c.font = `700 32px ${FONT.body}`; c.fillText('Gradient descent is stable only when η < 2/λ.', X0, y + 3 * 46 + 8);
+    },
+    live(c) {
+      const tr = sim.tracks[0], r = st.eta * 1.6;
+      liveHead(c, 'RUN LOG  ·  λ = 1.6');
+      rows(c, [['step t', String(sim.t)], ['product ηλ', r.toFixed(2), r >= 2 ? RED : INK], ['factor |1 − ηλ|', Math.abs(1 - r).toFixed(3), r >= 2 ? RED : INK], ['distance |e|', Math.abs(tr.x).toFixed(4)]], X0, 898, 380);
+      factorChart(c, 540, 838, 388, 214, st.eta);
+      statusLine(c, ...s1Status());
+      note(c, 'the pipe has λ = 1.6, so the limit is η = 1.25');
+      pageNum(c, 89);
+    },
+    fig: () => ({ num: '4.5', title: 'A half-pipe with curvature λ = 1.6', caption: 'The loss depends on θ₁ alone, so every step moves straight across the pipe. Each landing sits a factor |1 − ηλ| from the floor of the one before.' }),
+  },
+  {
+    st: { eta: 0.12, beta: 0.9, start: null },
+    surf: () => 'ravine', start: () => [-2.6, -0.2],
+    stepMs: 40, maxSteps: 300,
+    tracks: st => [
+      { name: 'Plain descent', css: ROSE, line: 0xff6b96, bead: 0xd9486e, metal: 0.25, beta: 0 },
+      { name: 'Momentum', css: AMBER, line: 0xffab3d, bead: 0xc9973a, metal: 0.75, beta: st.beta },
+    ],
+    hint: 'Two beads race from the same start with the same η. Change η or β to see who gets home first.',
+    static(c) {
+      let y = header(c, '4.4', 'Momentum');
+      y = para(c, 'Plain descent forgets each step once it is taken. Momentum keeps a velocity v, a decaying sum of past gradients, and moves along that instead:', y);
+      y = eqBox(c, ['v ← βv + ∇L(θ)', 'θ ← θ − ηv'], '(4.10)', y);
+      para(c, 'Gradients that agree step after step add up, so travel along the ravine floor speeds up by as much as 1/(1 − β). Gradients that keep flipping sign cancel. The price is inertia.', y);
+    },
+    live(c) {
+      liveHead(c, 'RACE LOG');
+      c.font = `600 18px ${FONT.mono}`; c.fillStyle = INK_SOFT; c.textAlign = 'right';
+      spaced(c, 'STEPS', X0 + 300, 892, 2); spaced(c, 'LOSS', X0 + 420, 892, 2); c.textAlign = 'left';
+      sim.tracks.forEach((tr, i) => {
+        const ry = 936 + i * 44;
+        swatch(c, tr.def.css, X0, ry);
+        c.font = `600 25px ${FONT.body}`; c.fillStyle = INK; c.fillText(tr.def.name, X0 + 46, ry);
+        c.font = `600 24px ${FONT.mono}`; c.textAlign = 'right';
+        c.fillStyle = tr.done === 'diverged' ? RED : INK; c.fillText(tr.done === 'diverged' ? 'out' : String(tr.steps), X0 + 300, ry);
+        c.fillStyle = INK; c.fillText(tr.f.toFixed(3), X0 + 420, ry); c.textAlign = 'left';
+        c.fillStyle = 'rgba(8,16,34,0.22)'; c.fillRect(X0, ry + 13, 420, 1.2);
+      });
+      c.font = `600 23px ${FONT.mono}`; c.fillStyle = INK_SOFT; c.fillText(`η = ${st.eta.toFixed(3)}    β = ${st.beta.toFixed(2)}`, X0, 1030);
+      lineChart(c, 556, 838, 372, 214, 'LOSS BY STEP', sim.tracks.map(tr => ({ v: tr.hist.map(p => p[2]), color: tr.def.css })), { log: true, nMin: 60 });
+      statusLine(c, ...s2Status());
+      note(c, 'raise η toward 1 and plain descent wins the race');
+      pageNum(c, 91);
+    },
+    fig: () => ({ num: '4.6', title: 'Two beads race down the ravine', caption: 'Both beads start at the ring with the same learning rate. Momentum builds speed along the flat floor; plain descent takes equal care on every step.', legend: true }),
+  },
+  {
+    st: { eta: 0.25, decay: false, seed: 3, start: null },
+    surf: () => 'valleys', start: () => [-1.3, -1.1],
+    stepMs: 55, maxSteps: 200,
+    tracks: st => [[1, AMBER, 0xffab3d, 0xc9973a, 0.75], [8, ROSE, 0xff6b96, 0xd9486e, 0.25], [64, GREEN, 0x7be3ad, 0x3fae7c, 0.25]].map(([B, css, line, bead, metal]) => ({ name: `B = ${B}`, css, line, bead, metal, sd: 1.4 / Math.sqrt(B), decay: st.decay, tail: 45 })),
+    hint: 'Three runs of SGD start in the shallow basin. New noise redraws the mini-batches; decay shrinks η as the run goes on.',
+    static(c) {
+      let y = header(c, '4.5', 'Stochastic Gradients');
+      y = para(c, 'Real losses average over millions of examples, so the exact gradient is too costly to compute at every step. SGD estimates it from a random mini-batch of B examples:', y);
+      y = eqBox(c, ['θ ← θ − ηĝ,    ĝ = (1/B) Σ ∇ℓᵢ(θ)'], '(4.11)', y);
+      para(c, 'The estimate is unbiased but noisy, and the noise shrinks like 1/√B. Small batches can shake the iterate out of a shallow minimum. Decaying η lets it settle.', y);
+    },
+    live(c) {
+      liveHead(c, st.decay ? 'RUN LOG  ·  ηₜ = η / (1 + t/30)' : 'RUN LOG  ·  FIXED η');
+      c.font = `600 18px ${FONT.mono}`; c.fillStyle = INK_SOFT; c.textAlign = 'right';
+      spaced(c, 'LOSS', X0 + 270, 892, 2); c.textAlign = 'left'; spaced(c, 'BASIN', X0 + 300, 892, 2);
+      sim.tracks.forEach((tr, i) => {
+        const ry = 936 + i * 44;
+        swatch(c, tr.def.css, X0, ry);
+        c.font = `600 25px ${FONT.body}`; c.fillStyle = INK; c.fillText(tr.def.name, X0 + 46, ry);
+        c.font = `600 24px ${FONT.mono}`; c.textAlign = 'right'; c.fillText(tr.f.toFixed(3), X0 + 270, ry); c.textAlign = 'left';
+        c.font = `600 25px ${FONT.body}`; c.fillText(basinOf(tr), X0 + 300, ry);
+        c.fillStyle = 'rgba(8,16,34,0.22)'; c.fillRect(X0, ry + 13, 420, 1.2);
+      });
+      lineChart(c, 556, 838, 372, 214, 'LOSS BY STEP', sim.tracks.map(tr => ({ v: tr.hist.map(p => p[2]), color: tr.def.css })), { nMin: 60 });
+      statusLine(c, ...s3Status());
+      note(c, 'press New noise a few times: every draw tells a new story');
+      pageNum(c, 93);
+    },
+    fig: () => ({ num: '4.7', title: 'SGD starts in the shallow basin', caption: 'Gradient noise shrinks with batch size, so the smallest batch wanders furthest and is the one most likely to hop the ridge into the deeper basin. Trails show the last 45 steps.', legend: true }),
+  },
+];
+
+function drawLeftTop() { const c = P.top.ctx; prep(c); paper(c, true, 0, SPLIT); cfg.static(c, st); }
+function drawLeftLive() { const c = P.live.ctx; prep(c, SPLIT); paper(c, true, SPLIT, CH); cfg.live(c); }
+function drawLeftFull(c) { prep(c); paper(c, true, 0, CH); cfg.static(c, st); cfg.live(c); }
+function drawRight(c, i, withPaths) {
+  const sp = SPREADS[i], fg = sp.fig(sp.st), s = SURF[sp.surf(sp.st)], start = sp.st.start || sp.start(sp.st);
+  prep(c); paper(c, false, 0, CH);
+  c.fillStyle = INK_SOFT; c.font = `600 22px ${FONT.mono}`; spaced(c, `FIG. ${fg.num}`, MX0, MY0 + MS + 92, 3);
+  c.fillStyle = INK; fitText(c, fg.title, MX0 + 160, MY0 + MS + 92, MS - 160, 'italic 600', 33, FONT.body);
+  c.drawImage(s.map, MX0, MY0, MS, MS);
+  c.strokeStyle = INK; c.lineWidth = 2.5; c.strokeRect(MX0, MY0, MS, MS);
+  c.font = `600 19px ${FONT.mono}`; c.fillStyle = INK;
+  for (let k = -3; k <= 3; k++) {
+    const X = MX0 + ((k + 3) / 6) * MS, Y = MY0 + ((3 - k) / 6) * MS;
+    c.fillRect(X - 1, MY0 + MS, 2, 10); c.textAlign = 'center'; c.fillText(String(k), X, MY0 + MS + 33);
+    c.fillRect(MX0 - 10, Y - 1, 10, 2); c.textAlign = 'right'; c.fillText(String(k), MX0 - 16, Y + 7);
+  }
+  c.textAlign = 'left'; c.font = `italic 600 27px ${FONT.math}`;
+  c.fillText('θ₁', MX0 + MS + 14, MY0 + MS + 8); c.fillText('θ₂', MX0 - 8, MY0 - 16);
+  if (withPaths && i === spread) {
+    c.save(); c.beginPath(); c.rect(MX0, MY0, MS, MS); c.clip();
+    for (const tr of sim.tracks) {
+      c.beginPath(); tr.hist.slice(-(tr.def.tail || Infinity)).forEach((p, k) => { const [X, Y] = toCanvas(p[0], p[1]); k ? c.lineTo(X, Y) : c.moveTo(X, Y); });
+      c.strokeStyle = tr.def.css; c.lineWidth = 3.5; c.lineJoin = 'round'; c.stroke();
+    }
+    c.restore();
+  }
+  const [sx, sy] = toCanvas(start[0], start[1]);
+  c.strokeStyle = INK; c.lineWidth = 3; c.beginPath(); c.arc(sx, sy, 12, 0, Math.PI * 2); c.stroke();
+  c.font = `600 25px ${FONT.body}`; c.fillStyle = INK; wrap(c, fg.caption, MX0, MY0 + MS + 138, MS, 35);
+  if (fg.legend) {
+    let lx = MX0;
+    for (const d of sp.tracks(sp.st)) { swatch(c, d.css, lx, 1240); c.font = `600 24px ${FONT.body}`; c.fillStyle = INK; c.fillText(d.name, lx + 46, 1240); lx += 46 + c.measureText(d.name).width + 44; }
+  }
+  pageNum(c, 88 + 2 * i);
+}
+
+/* ================= three.js scene ================= */
+const stage = $('stage');
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ antialias: true }); }
+catch (e) { $('fallback').hidden = false; throw e; }
+renderer.setPixelRatio(2);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.NoToneMapping;
+stage.appendChild(renderer.domElement);
+renderer.domElement.setAttribute('aria-hidden', 'true');
+const maxAniso = renderer.capabilities.getMaxAnisotropy();
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#120c08');
+scene.fog = new THREE.Fog('#120c08', 5, 11);
+const camera = new THREE.PerspectiveCamera(34, 1, 0.05, 50);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.minDistance = 0.7; controls.maxDistance = 6.5; controls.maxPolarAngle = 1.4;
+
+// Light budget: with the reading light on, a flat page receives almost exactly 1.0, so white paper renders as
+// pure white. With it off only a dim room light is left: dark, but the page can still be read.
+const LIGHT = { key: 2.63, roomOn: 0.75, roomOff: 0.36, fillOn: 0.25, fillOff: 0.12 };
+const room = new THREE.HemisphereLight(0xffffff, 0x241a14, LIGHT.roomOn); scene.add(room);
+const lamp = new THREE.SpotLight(0xffffff, LIGHT.key, 0, 0.8, 0.45, 0);
+lamp.position.set(1.4, 2.9, 0.5); lamp.target.position.set(0, 0, 0.05);
+lamp.castShadow = true; lamp.shadow.mapSize.set(2048, 2048); lamp.shadow.bias = -0.0003; lamp.shadow.normalBias = 0.01;
+lamp.shadow.camera.near = 1; lamp.shadow.camera.far = 7;
+scene.add(lamp, lamp.target);
+const fill = new THREE.DirectionalLight(0xffffff, LIGHT.fillOn); fill.position.set(-2.2, 1.6, 2.6); scene.add(fill);
+
+function canvasTex(canvas, mirror) {
+  const t = new THREE.CanvasTexture(canvas); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = maxAniso;
+  if (mirror) { t.wrapS = THREE.RepeatWrapping; t.repeat.x = -1; t.offset.x = 1; }
+  return t;
+}
+for (const s of Object.values(SURF)) s.tex = canvasTex(s.map);
+
+// desk
+(() => {
+  const c = makeCanvas(1024, 1024), g = c.getContext('2d');
+  g.fillStyle = '#3a2416'; g.fillRect(0, 0, 1024, 1024);
+  for (let i = 0; i < 280; i++) {
+    const y = Math.random() * 1100 - 40, amp = 3 + Math.random() * 12, fr = 0.002 + Math.random() * 0.006, ph = Math.random() * 6;
+    g.strokeStyle = Math.random() < 0.5 ? `rgba(18,9,4,${0.12 + Math.random() * 0.25})` : `rgba(100,66,38,${0.1 + Math.random() * 0.22})`;
+    g.lineWidth = 1 + Math.random() * 3; g.beginPath();
+    for (let x = 0; x <= 1024; x += 16) { const yy = y + Math.sin(x * fr + ph) * amp; x ? g.lineTo(x, yy) : g.moveTo(x, yy); }
+    g.stroke();
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  const desk = new THREE.Mesh(new THREE.PlaneGeometry(8, 6), new THREE.MeshStandardMaterial({ map: t, roughness: 0.7 }));
+  desk.rotation.x = -Math.PI / 2; desk.position.y = -0.022; desk.receiveShadow = true; scene.add(desk);
+})();
+
+// book: cloth cover, two page blocks with visible page edges, a ribbon
+const cover = new THREE.Mesh(new THREE.BoxGeometry(2 * W + 0.12, 0.022, H + 0.1), new THREE.MeshStandardMaterial({ color: 0x4d525b, roughness: 0.9 }));
+cover.position.y = -0.011; cover.castShadow = cover.receiveShadow = true; scene.add(cover);
+function stripeTex(alongU) {
+  const c = makeCanvas(alongU ? 128 : 4, alongU ? 4 : 128), g = c.getContext('2d');
+  for (let i = 0; i < 128; i++) { const v = 206 + Math.random() * 44; g.fillStyle = `rgb(${v},${v},${v})`; alongU ? g.fillRect(i, 0, 1, 4) : g.fillRect(0, i, 4, 1); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  alongU ? t.repeat.set(9, 1) : t.repeat.set(1, 9); return t;
+}
+const blockMats = [new THREE.MeshStandardMaterial({ map: stripeTex(false), roughness: 1 }), new THREE.MeshStandardMaterial({ map: stripeTex(true), roughness: 1 })];
+for (const side of [-1, 1]) {
+  const sh = new THREE.Shape(); sh.moveTo(0, 0);
+  for (let i = 0; i <= 40; i++) { const d = (i / 40) * W; sh.lineTo(side * d, pageY(d) - 0.0004); }
+  sh.lineTo(side * W, 0); sh.closePath();
+  const g = new THREE.ExtrudeGeometry(sh, { depth: H, bevelEnabled: false }); g.translate(0, 0, -H / 2);
+  const m = new THREE.Mesh(g, blockMats); m.castShadow = m.receiveShadow = true; scene.add(m);
+}
+(() => {
+  const z = H / 2, curve = new THREE.CatmullRomCurve3([[0, 0.016, z - 0.004], [0.003, 0.009, z + 0.02], [0.008, 0.004, z + 0.053], [0.015, -0.012, z + 0.07], [0.03, -0.0205, z + 0.11], [0.07, -0.021, z + 0.21]].map(p => new THREE.Vector3(...p)));
+  const pts = curve.getPoints(28), pos = [], idx = [];
+  pts.forEach((p, i) => { pos.push(p.x - 0.011, p.y, p.z, p.x + 0.011, p.y, p.z); if (i) { const a = (i - 1) * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } });
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x9a1f1a, roughness: 0.55, side: THREE.DoubleSide })); m.castShadow = true; scene.add(m);
+})();
+
+// Page textures are sampled one notch sharper than the default, so small text holds up when the book is far away.
+function crisp(mat) {
+  mat.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#ifdef USE_MAP\n  diffuseColor *= texture2D( map, vMapUv, -0.65 );\n#endif'); };
+  return mat;
+}
+function gridGeo(nu, nv) {
+  const uv = [], idx = [];
+  for (let j = 0; j <= nv; j++) for (let i = 0; i <= nu; i++) uv.push(i / nu, 1 - j / nv);
+  for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { const a = j * (nu + 1) + i, b = a + 1, c = a + nu + 1, d = c + 1; idx.push(a, c, b, b, c, d); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array((nu + 1) * (nv + 1) * 3), 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
+  return g;
+}
+function pageSheet(side, tex, v0, v1) {
+  const nu = 56, nv = 2, g = gridGeo(nu, nv), a = g.attributes.position.array;
+  for (let j = 0; j <= nv; j++) for (let i = 0; i <= nu; i++) {
+    const u = i / nu, d = side > 0 ? u * W : (1 - u) * W, k = (j * (nu + 1) + i) * 3;
+    a[k] = side * d; a[k + 1] = pageY(d) + 0.0006; a[k + 2] = -H / 2 + lerp(v0, v1, j / nv) * H;
+  }
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g, crisp(new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95 }))); m.receiveShadow = true; scene.add(m); return m;
+}
+const TX = { top: canvasTex(P.top.canvas), live: canvasTex(P.live.canvas), right: canvasTex(P.right.canvas), front: canvasTex(P.front.canvas), back: canvasTex(P.back.canvas, true) };
+pageSheet(-1, TX.top, 0, SPLIT / CH); pageSheet(-1, TX.live, SPLIT / CH, 1); pageSheet(1, TX.right, 0, 1);
+
+// the turning leaf: its front carries the old right page, its back the new left page
+const FNU = 44, FNV = 2, flipGeo = gridGeo(FNU, FNV), flipper = new THREE.Group();
+for (const [tex, sideMode] of [[TX.front, THREE.FrontSide], [TX.back, THREE.BackSide]]) {
+  const m = new THREE.Mesh(flipGeo, crisp(new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95, side: sideMode })));
+  m.castShadow = m.receiveShadow = true; m.frustumCulled = false; flipper.add(m);
+}
+flipper.visible = false; scene.add(flipper);
+function setFlip(phi, dir) {
+  const a = flipGeo.attributes.position.array, D = W / FNU, xs = [0], ys = [0];
+  let x = 0, y = 0;
+  for (let i = 1; i <= FNU; i++) {
+    const ang = clamp(phi - dir * 0.85 * Math.sin(phi) * Math.pow(((i - 0.5) * D) / W, 1.3), 0, Math.PI);
+    x += Math.cos(ang) * D; y += Math.sin(ang) * D; xs.push(x); ys.push(y);
+  }
+  for (let j = 0; j <= FNV; j++) for (let i = 0; i <= FNU; i++) {
+    const k = (j * (FNU + 1) + i) * 3;
+    a[k] = xs[i]; a[k + 1] = BASE + ys[i] + (1 - Math.sin(phi)) * pageLift(i * D) + 0.0016; a[k + 2] = -H / 2 + (j / FNV) * H;
+  }
+  flipGeo.attributes.position.needsUpdate = true; flipGeo.computeVertexNormals();
+}
+
+// reading light: a desk lamp to the right of the book. Click it (or the Light button) to switch it on and off.
+const lampModel = new THREE.Group();
+const lampGlow = { bulb: new THREE.MeshBasicMaterial({ color: 0xfff4dc }), inner: new THREE.MeshBasicMaterial({ color: 0xffe3ad, side: THREE.BackSide }) };
+(() => {
+  const V = (x, y, z) => new THREE.Vector3(x, y, z), UP = V(0, 1, 0);
+  const dark = new THREE.MeshStandardMaterial({ color: 0x3b3f47, roughness: 0.42, metalness: 0.25 });
+  const brass = new THREE.MeshStandardMaterial({ color: 0xb98a3c, roughness: 0.35, metalness: 0.35 });
+  const rod = (p, q, r, mat) => { const d = q.clone().sub(p), m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, d.length(), 14), mat); m.position.copy(p).addScaledVector(d, 0.5); m.quaternion.setFromUnitVectors(UP, d.normalize()); return m; };
+  const ball = (p, r, mat) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 14), mat); m.position.copy(p); return m; };
+  const foot = V(1.46, -0.022, -0.12), elbow = V(1.57, 0.42, -0.32), head = V(1.27, 0.62, -0.14), aimAt = V(0.62, 0, 0.1);
+  const dir = aimAt.clone().sub(head).normalize(), q = new THREE.Quaternion().setFromUnitVectors(V(0, -1, 0), dir);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.108, 0.024, 40), dark); base.position.copy(foot).add(V(0, 0.012, 0));
+  const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.026, 0.03, 20), brass); collar.position.copy(foot).add(V(0, 0.038, 0));
+  const shadeGeo = new THREE.CylinderGeometry(0.032, 0.1, 0.15, 40, 1, true);
+  const shade = new THREE.Mesh(shadeGeo, dark), inner = new THREE.Mesh(shadeGeo, lampGlow.inner);
+  for (const m of [shade, inner]) { m.position.copy(head).addScaledVector(dir, 0.075); m.quaternion.copy(q); }
+  inner.scale.setScalar(0.985);
+  lampModel.add(base, collar, rod(foot.clone().add(V(0, 0.04, 0)), elbow, 0.0085, brass), rod(elbow, head, 0.0085, brass),
+    ball(elbow, 0.017, dark), ball(head, 0.034, dark), shade, inner, ball(head.clone().addScaledVector(dir, 0.1), 0.03, lampGlow.bulb));
+  base.receiveShadow = true;
+  scene.add(lampModel);
+})();
+let lampOn = true, lampLevel = 1;
+function setLampLevel(k) {
+  lampLevel = k; lamp.intensity = LIGHT.key * k; room.intensity = lerp(LIGHT.roomOff, LIGHT.roomOn, k); fill.intensity = lerp(LIGHT.fillOff, LIGHT.fillOn, k);
+  lampGlow.bulb.color.set(0x57534c).lerp(new THREE.Color(0xfff4dc), k); lampGlow.inner.color.set(0x25262a).lerp(new THREE.Color(0xffe3ad), k);
+}
+function setLamp(on, instant) {
+  lampOn = !!on; $('light').setAttribute('aria-pressed', String(lampOn));
+  const from = lampLevel, to = lampOn ? 1 : 0;
+  if (instant) setLampLevel(to); else tween(260, p => setLampLevel(lerp(from, to, p)));
+  $('live').textContent = lampOn ? 'Reading light on' : 'Reading light off';
+}
+
+/* ================= the pop-up: the printed map lifts off the page ================= */
+const _v = new THREE.Vector3(), _m = new THREE.Matrix4();
+function d2w(x, y, lift, out) {
+  const [X, Y] = toCanvas(x, y), d = (X / CW) * W;
+  return (out || new THREE.Vector3()).set(d, pageY(d) + LIFT + HS * pop.rise * pop.s.hOf(x, y) + (lift || 0), -H / 2 + (Y / CH) * H);
+}
+function w2d(p) { const X = (p.x / W) * CW, Y = ((p.z + H / 2) / H) * CH; return [((X - MX0) / MS) * 2 * DOM - DOM, DOM - ((Y - MY0) / MS) * 2 * DOM]; }
+pop.group = new THREE.Group(); scene.add(pop.group);
+const NS = 128, NV = (NS + 1) * (NS + 1);
+const surfGeo = gridGeo(NS, NS), sPos = surfGeo.attributes.position.array, sBase = new Float32Array(NV), sH = new Float32Array(NV);
+for (let j = 0; j <= NS; j++) for (let i = 0; i <= NS; i++) {
+  const k = j * (NS + 1) + i, [X, Y] = toCanvas(-DOM + (i / NS) * 2 * DOM, DOM - (j / NS) * 2 * DOM), d = (X / CW) * W;
+  sPos[3 * k] = d; sPos[3 * k + 2] = -H / 2 + (Y / CH) * H; sBase[k] = pageY(d) + LIFT;
+}
+const surfMat = new THREE.MeshStandardMaterial({ map: SURF.ravine.tex, roughness: 0.9, side: THREE.DoubleSide });
+const surfMesh = new THREE.Mesh(surfGeo, surfMat); surfMesh.castShadow = surfMesh.receiveShadow = true; pop.group.add(surfMesh);
+const EDGE = []; { const M = 96; for (let i = 0; i <= M; i++) EDGE.push([-DOM + (i / M) * 2 * DOM, DOM]); for (let i = 1; i <= M; i++) EDGE.push([DOM, DOM - (i / M) * 2 * DOM]); for (let i = 1; i <= M; i++) EDGE.push([DOM - (i / M) * 2 * DOM, -DOM]); for (let i = 1; i <= M; i++) EDGE.push([-DOM, -DOM + (i / M) * 2 * DOM]); }
+const skGeo = new THREE.BufferGeometry(), skPos = new Float32Array(EDGE.length * 6), skBase = new Float32Array(EDGE.length), skH = new Float32Array(EDGE.length), rimPos = new Float32Array(EDGE.length * 3);
+{ const idx = []; EDGE.forEach(([x, y], k) => {
+    const [X, Y] = toCanvas(x, y), d = (X / CW) * W, z = -H / 2 + (Y / CH) * H;
+    skPos[6 * k] = skPos[6 * k + 3] = rimPos[3 * k] = d; skPos[6 * k + 2] = skPos[6 * k + 5] = rimPos[3 * k + 2] = z;
+    skPos[6 * k + 4] = pageY(d) + 0.0008; skBase[k] = pageY(d) + LIFT;
+    if (k) { const a = (k - 1) * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+  });
+  skGeo.setAttribute('position', new THREE.BufferAttribute(skPos, 3)); skGeo.setIndex(idx); }
+const skirt = new THREE.Mesh(skGeo, new THREE.MeshStandardMaterial({ color: 0xf0f0ee, roughness: 1, side: THREE.DoubleSide })); skirt.castShadow = true; skirt.frustumCulled = false; pop.group.add(skirt);
+const rimGeo = new THREE.BufferGeometry(); rimGeo.setAttribute('position', new THREE.BufferAttribute(rimPos, 3));
+const rim = new THREE.Line(rimGeo, new THREE.LineBasicMaterial({ color: 0x0a1630 })); rim.frustumCulled = false; pop.group.add(rim);
+
+function setSurface(s) {
+  pop.s = s; surfMat.map = s.tex; surfMat.needsUpdate = true;
+  for (let j = 0; j <= NS; j++) for (let i = 0; i <= NS; i++) sH[j * (NS + 1) + i] = s.hOf(-DOM + (i / NS) * 2 * DOM, DOM - (j / NS) * 2 * DOM);
+  EDGE.forEach(([x, y], k) => { skH[k] = s.hOf(x, y); });
+  applyRise(pop.rise);
+}
+function applyRise(r) {
+  pop.rise = r;
+  for (let k = 0; k < NV; k++) sPos[3 * k + 1] = sBase[k] + HS * r * sH[k];
+  surfGeo.attributes.position.needsUpdate = true; surfGeo.computeVertexNormals(); surfGeo.computeBoundingSphere();
+  for (let k = 0; k < EDGE.length; k++) { const y = skBase[k] + HS * r * skH[k]; skPos[6 * k + 1] = y; rimPos[3 * k + 1] = y + 0.0006; }
+  skGeo.attributes.position.needsUpdate = true; skGeo.computeVertexNormals(); rimGeo.attributes.position.needsUpdate = true;
+  rebuildTrails(1);
+}
+
+// beads and their trails
+const beadGeo = new THREE.SphereGeometry(BEAD_R, 32, 16), dotGeo = new THREE.SphereGeometry(0.0062, 12, 8), lineRes = new THREE.Vector2(800, 600);
+function buildTracks() {
+  for (const tr of sim.tracks) {
+    pop.group.remove(tr.bead, tr.line); tr.bead.material.dispose(); tr.line.geometry.dispose(); tr.line.material.dispose();
+    if (tr.dots) { pop.group.remove(tr.dots); tr.dots.material.dispose(); tr.dots.dispose(); }
+  }
+  sim.tracks = cfg.tracks(st).map(def => {
+    const bead = new THREE.Mesh(beadGeo, new THREE.MeshStandardMaterial({ color: def.bead, metalness: def.metal, roughness: 0.3 })); bead.castShadow = true;
+    const mat = new LineMaterial({ color: def.line, linewidth: def.lw || 3 }); mat.resolution.copy(lineRes);
+    const line = new Line2(new LineGeometry(), mat); line.frustumCulled = false; line.visible = false;
+    let dots = null;
+    if (def.dots) { dots = new THREE.InstancedMesh(dotGeo, new THREE.MeshStandardMaterial({ color: 0xfff1cf, roughness: 0.5 }), cfg.maxSteps + 2); dots.count = 0; dots.frustumCulled = false; pop.group.add(dots); }
+    pop.group.add(bead, line);
+    return { def, bead, line, dots, hist: [], from: [0, 0], x: 0, y: 0 };
+  });
+}
+function rebuildTrail(tr, a) {
+  const hs = tr.hist, n = hs.length, partial = a < 1 && tr.movedAt === sim.t && n > 1, pts = [];
+  const add = (x, y) => { d2w(x, y, 0.005, _v); pts.push(_v.x, _v.y, _v.z); };
+  const i0 = tr.def.tail ? Math.max(0, n - tr.def.tail) : 0;   // noisy runs keep only a recent tail, so the figure stays readable
+  if (n) add(hs[i0][0], hs[i0][1]);
+  for (let i = i0 + 1; i < n; i++) {
+    const p = hs[i - 1], q = hs[i], lim = partial && i === n - 1 ? a : 1;
+    if (lim < 0.03) break;
+    const sub = clamp(Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / 0.12), 1, 16);
+    for (let s = 1; s <= sub; s++) { const t = (s / sub) * lim; add(lerp(p[0], q[0], t), lerp(p[1], q[1], t)); }
+  }
+  if (pts.length >= 6) { tr.line.geometry.dispose(); const g = new LineGeometry(); g.setPositions(pts); tr.line.geometry = g; tr.line.visible = true; }
+  else tr.line.visible = false;
+  if (tr.dots) {
+    const cnt = partial ? n - 1 : n;
+    for (let i = 0; i < cnt; i++) { d2w(hs[i][0], hs[i][1], 0.005, _v); _m.makeTranslation(_v.x, _v.y, _v.z); tr.dots.setMatrixAt(i, _m); }
+    tr.dots.count = cnt; tr.dots.instanceMatrix.needsUpdate = true;
+  }
+}
+function rebuildTrails(a) { for (const tr of sim.tracks) if (tr.hist.length) rebuildTrail(tr, a); }
+
+/* ================= tweens, camera views ================= */
+const tweens = [];
+function tween(dur, fn, done) { if (reduced || dur <= 0) { fn(1); if (done) done(); return; } tweens.push({ t0: performance.now(), dur, fn, done }); }
+const easeOut = t => 1 - Math.pow(1 - t, 3), easeIO = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const easeBack = t => 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2);
+let view = 'book', camTween = null, lastW = 0;
+const BOOKX = 0.12, BOOKW = 2.9;
+function viewPose(name) {
+  const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
+  const V = { book: [[BOOKX, 0.05, 0.04], [0, 1.35, 1], BOOKW, 1.72], text: [[-W / 2 - 0.01, 0.03, 0], [0, 1, 0.38], 1.2, 1.5], figure: [[W / 2, 0.08, 0.03], [0.12, 1, 0.85], 1.22, 1.42] }[name];
+  const target = new THREE.Vector3(...V[0]), dist = Math.max(V[2] / 2 / Math.tan(hf / 2), V[3] / 2 / Math.tan(vf / 2));
+  return { target, pos: target.clone().addScaledVector(new THREE.Vector3(...V[1]).normalize(), dist) };
+}
+function setView(name, instant) {
+  view = name; const v = viewPose(name);
+  document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
+  if (instant || reduced) { camTween = null; camera.position.copy(v.pos); controls.target.copy(v.target); controls.update(); }
+  else camTween = { p0: camera.position.clone(), q0: controls.target.clone(), p1: v.pos, q1: v.target, t0: performance.now() };
+}
+controls.addEventListener('start', () => { camTween = null; });
+function resize() {
+  const w = stage.clientWidth, h = Math.max(1, stage.clientHeight);
+  renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix();
+  lineRes.set(w, h); for (const tr of sim.tracks) tr.line.material.resolution.copy(lineRes);
+  if (w !== lastW) { if (!lastW && w / h < 0.95) view = 'figure'; setView(view, true); lastW = w; }
+}
+
+/* ================= control flow ================= */
+const etaIn = $('eta'), etaOut = $('etaOut'), betaIn = $('beta'), betaOut = $('betaOut'), playBtn = $('play'), stepBtn = $('step'), liveEl = $('live');
+const sliderToEta = s => 0.01 * Math.pow(150, s), etaToSlider = e => Math.log(e / 0.01) / Math.log(150);
+let lastAnnounce = '', lastLiveDraw = 0;
+
+function updateButtons() { playBtn.textContent = playing ? 'Pause' : sim.status === 'done' ? 'Replay' : 'Play'; stepBtn.disabled = sim.status === 'done'; }
+function syncHud() {
+  document.querySelectorAll('[data-spreads]').forEach(el => { el.hidden = !el.dataset.spreads.split(' ').includes(String(spread)); });
+  $('pageLabel').textContent = `pp. ${87 + 2 * spread}–${88 + 2 * spread} · ${spread + 1} of ${SPREADS.length}`;
+  $('prev').disabled = spread === 0; $('next').disabled = spread === SPREADS.length - 1;
+  $('hint').textContent = cfg.hint;
+  etaIn.value = etaToSlider(st.eta); etaOut.textContent = st.eta.toFixed(3);
+  if (st.beta !== undefined) { betaIn.value = st.beta; betaOut.textContent = st.beta.toFixed(2); }
+  if (st.surfKey) $('surface').value = st.surfKey;
+  if (st.momentum !== undefined) $('momentum').checked = st.momentum;
+  if (st.decay !== undefined) $('decay').checked = st.decay;
+  updateButtons();
+  document.documentElement.style.setProperty('--hud-h', $('hud').offsetHeight + 'px');
+}
+function enterSpread() { cfg = SPREADS[spread]; st = cfg.st; setSurface(SURF[cfg.surf(st)]); buildTracks(); resetSim(); }
+function play() { if (busy) return; if (sim.status === 'done') resetSim(); playing = true; sim.status = 'running'; acc = cfg.stepMs; updateButtons(); liveDirty = true; }
+function pause() { playing = false; if (sim.status === 'running') sim.status = 'paused'; updateButtons(); liveDirty = true; }
+function restart() { if (busy) return; resetSim(); play(); }
+function refreshTex(...keys) { for (const k of keys) TX[k].needsUpdate = true; }
+function redrawAll() { drawLeftTop(); drawLeftLive(); drawRight(P.right.ctx, spread, false); refreshTex('top', 'live', 'right'); liveDirty = false; }
+const riseUp = then => tween(850, p => applyRise(easeBack(p)), () => { applyRise(1); if (then) then(); });
+
+function goTo(n) {
+  if (busy || n < 0 || n >= SPREADS.length || n === spread) return;
+  busy = true; pause();
+  drawLeftLive(); drawRight(P.right.ctx, spread, true); refreshTex('live', 'right');   // print the paths before the model folds flat
+  tween(240, p => applyRise(1 - p * p), () => startFlip(n));
+}
+function startFlip(n) {
+  const dir = n > spread ? 1 : -1, raw = c => c.setTransform(1, 0, 0, 1, 0, 0);
+  pop.group.visible = false;
+  if (dir > 0) { raw(P.front.ctx); P.front.ctx.drawImage(P.right.canvas, 0, 0); }
+  else { raw(P.back.ctx); P.back.ctx.drawImage(P.top.canvas, 0, 0); P.back.ctx.drawImage(P.live.canvas, 0, Math.round(SPLIT * SCALE)); }
+  spread = n; enterSpread();
+  if (dir > 0) { drawLeftFull(P.back.ctx); drawRight(P.right.ctx, n, false); }
+  else { drawRight(P.front.ctx, n, false); drawLeftTop(); drawLeftLive(); }
+  if (dir > 0) refreshTex('right', 'front', 'back'); else refreshTex('top', 'live', 'front', 'back');
+  syncHud(); liveEl.textContent = `Pages ${87 + 2 * n} and ${88 + 2 * n}`;
+  setFlip(dir > 0 ? 0 : Math.PI, dir); flipper.visible = true;
+  tween(FLIP_MS, p => { const e = easeIO(p); setFlip(dir > 0 ? e * Math.PI : (1 - e) * Math.PI, dir); }, () => {
+    flipper.visible = false; redrawAll();
+    pop.group.visible = true; busy = false;
+    riseUp(() => { if (!reduced && autoplay) play(); });
+  });
+}
+function changeSurface(key) {
+  if (busy) { $('surface').value = st.surfKey; return; }
+  busy = true; pause();
+  tween(200, p => applyRise(1 - p * p), () => {
+    st.surfKey = key; st.eta = key === 'ravine' ? 1.1 : 0.35; st.start = null;
+    enterSpread(); redrawAll(); syncHud(); busy = false;
+    riseUp(() => { if (!reduced && autoplay) play(); });
+  });
+}
+
+$('prev').addEventListener('click', () => goTo(spread - 1));
+$('next').addEventListener('click', () => goTo(spread + 1));
+addEventListener('keydown', e => {
+  if (['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName)) return;
+  if (e.key === 'ArrowRight') goTo(spread + 1);
+  else if (e.key === 'ArrowLeft') goTo(spread - 1);
+  else if (e.key === ' ') { e.preventDefault(); playing ? pause() : play(); }
+});
+playBtn.addEventListener('click', () => (playing ? pause() : play()));
+stepBtn.addEventListener('click', () => { if (busy) return; playing = false; stepSim(); if (sim.status !== 'done') sim.status = 'paused'; updateButtons(); });
+$('reset').addEventListener('click', () => { if (busy) return; resetSim(); updateButtons(); });
+$('surface').addEventListener('change', e => changeSurface(e.target.value));
+$('momentum').addEventListener('change', e => { st.momentum = e.target.checked; drawLeftTop(); refreshTex('top'); restart(); });
+$('decay').addEventListener('change', e => { st.decay = e.target.checked; restart(); });
+$('resample').addEventListener('click', () => { st.seed++; restart(); });
+etaIn.addEventListener('input', () => { st.eta = sliderToEta(+etaIn.value); etaOut.textContent = st.eta.toFixed(3); restart(); });
+betaIn.addEventListener('input', () => { st.beta = +betaIn.value; betaOut.textContent = st.beta.toFixed(2); restart(); });
+document.querySelectorAll('[data-eta]').forEach(b => b.addEventListener('click', () => { st.eta = +b.dataset.eta; etaIn.value = etaToSlider(st.eta); etaOut.textContent = st.eta.toFixed(3); restart(); }));
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+$('light').addEventListener('click', () => setLamp(!lampOn));
+
+// pointer: click the surface to drop the bead, click a page edge to turn, double-click the text to read it
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), cv = renderer.domElement;
+function aim(e) { const r = cv.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, camera); }
+function pickSurface() { if (busy || pop.rise < 0.9 || !pop.group.visible) return null; const hit = ray.intersectObject(surfMesh)[0]; return hit ? w2d(hit.point) : null; }
+const pickLamp = () => ray.intersectObject(lampModel, true).length > 0;
+function pickPage() { const t = (BASE + 0.012 - ray.ray.origin.y) / ray.ray.direction.y; if (!(t > 0)) return null; const p = ray.ray.at(t, _v); return Math.abs(p.z) <= H / 2 && Math.abs(p.x) <= W ? p.x : null; }
+const edgeOf = x => (x === null ? 0 : x > W * 0.87 ? 1 : x < -W * 0.87 ? -1 : 0);
+let down = null, hoverT = 0;
+cv.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+cv.addEventListener('pointerup', e => {
+  if (!down) return; const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y), quick = performance.now() - down.t < 450; down = null;
+  if (moved > 6 || !quick) return;
+  aim(e); if (pickLamp()) { setLamp(!lampOn); return; }
+  const p = pickSurface();
+  if (p) { st.start = [clamp(p[0], -2.9, 2.9), clamp(p[1], -2.9, 2.9)]; restart(); return; }
+  const edge = edgeOf(pickPage()); if (edge) goTo(spread + edge);
+});
+cv.addEventListener('dblclick', e => { aim(e); if (pickLamp() || pickSurface()) return; const x = pickPage(); if (x !== null && x < 0) setView(view === 'text' ? 'book' : 'text'); else if (x === null) setView('book'); });
+cv.addEventListener('pointermove', e => {
+  if (e.buttons || performance.now() - hoverT < 60) return; hoverT = performance.now();
+  aim(e); cv.style.cursor = pickLamp() ? 'pointer' : pickSurface() ? 'crosshair' : edgeOf(pickPage()) ? 'pointer' : 'grab';
+});
+
+new ResizeObserver(() => { document.documentElement.style.setProperty('--hud-h', $('hud').offsetHeight + 'px'); resize(); }).observe($('hud'));
+addEventListener('resize', resize);
+
+/* ================= frame loop ================= */
+let prevT = performance.now();
+function tick(now) {
+  const dt = Math.min(100, now - prevT); prevT = now;
+  for (let i = tweens.length - 1; i >= 0; i--) {
+    const tw = tweens[i], p = clamp((now - tw.t0) / tw.dur, 0, 1); tw.fn(p);
+    if (p >= 1) { tweens.splice(i, 1); if (tw.done) tw.done(); }
+  }
+  if (playing && !busy) {
+    acc += dt; let k = 0;
+    while (acc >= cfg.stepMs && playing && k < 4) { acc -= cfg.stepMs; stepSim(); k++; }
+    if (!playing) updateButtons();
+  }
+  const a = reduced || !sim.t0 ? 1 : easeOut(clamp((now - sim.t0) / Math.min(cfg.stepMs * 0.85, 330), 0, 1));
+  for (const tr of sim.tracks) tr.bead.position.copy(d2w(lerp(tr.from[0], tr.x, a), lerp(tr.from[1], tr.y, a), BEAD_R, _v));
+  if (cfg.smooth && a !== lastA) { rebuildTrails(a); lastA = a; }
+  if (liveDirty && !busy && now - lastLiveDraw > 90) {
+    drawLeftLive(); TX.live.needsUpdate = true; lastLiveDraw = now; liveDirty = false;
+    if (sim.status !== 'running') { const s = cfg === SPREADS[0] ? s0Status()[0] : ''; if (s && s !== lastAnnounce) { lastAnnounce = s; liveEl.textContent = s; } }
+  }
+  if (camTween) {
+    const p = clamp((now - camTween.t0) / 700, 0, 1), e = easeIO(p);
+    camera.position.lerpVectors(camTween.p0, camTween.p1, e); controls.target.lerpVectors(camTween.q0, camTween.q1, e);
+    if (p >= 1) camTween = null;
+  }
+  controls.update(); renderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+
+/* ================= start ================= */
+enterSpread(); syncHud(); resize(); redrawAll();
+requestAnimationFrame(tick);
+let autoplay = true;
+// scripting hook, used for testing and for recording walkthrough videos
+window.__book = {
+  P, sim, SPREADS, SURF, HS, goTo, camera, controls, d2w, applyRise, play, pause, restart,
+  dropAt(x, y) { st.start = [x, y]; restart(); },
+  setLamp, get lampOn() { return lampOn; },
+  get spread() { return spread; }, get busy() { return busy; }, get st() { return st; },
+  get autoplay() { return autoplay; }, set autoplay(v) { autoplay = v; },
+};
+Promise.all([
+  `700 68px "Libre Caslon Text"`, `600 30px "Source Serif 4"`, `700 30px "Source Serif 4"`, `italic 600 33px "Source Serif 4"`, `600 22px "IBM Plex Mono"`, `700 40px Caveat`,
+].map(f => document.fonts.load(f, 'Aaθηβλ')).concat(document.fonts.load(`italic 600 40px "STIX Two Text"`, 'θηβλ←−∇₁₂ĝℓΣ')))
+  .catch(() => {}).then(() => document.fonts.ready).catch(() => {}).then(() => {
+    redrawAll();
+    riseUp(() => { if (!reduced && autoplay) setTimeout(() => { if (sim.status === 'ready' && !busy && autoplay) play(); }, 350); });
+  });
+</script>
+
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
