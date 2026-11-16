@@ -4,6 +4,8 @@ A weekly email: the ten things that mattered in AI, plus Pedram's latest teachin
 
 **Name:** always "Pedram's Newsletter" (renamed from "PJ AI Newsletter" on 2026-11-16). Issue titles, `og:title` and the `<h1>` read `Pedram's Newsletter: Week of Nov 9-13, 2026`.
 
+**Readers:** students, people working in data and AI, and anyone who found the site. Write the "Why it matters" and "Worth exploring" notes so they are useful to someone starting or building a career in data and AI.
+
 ## Adding a new issue
 
 ### 1. Prepare images
