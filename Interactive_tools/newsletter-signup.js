@@ -1,6 +1,6 @@
 /* Newsletter signup card for the interactive tool pages.
    Shared by all tools: each page loads this file with
-   <script src="/Interactive_tools/newsletter-signup.js?v=2" defer></script>
+   <script src="/Interactive_tools/newsletter-signup.js?v=3" defer></script>
    It adds one card at the end of the page, in the site's Ledger style, and posts
    the email to the same Kit form as the site's newsletter pages (Kit then sends
    the confirmation email from news@pedramjahangiry.com and redirects to
@@ -48,7 +48,7 @@
             '<div>' +
                 '<p class="nl-top">Free &middot; one email a week</p>' +
                 '<h2 id="nl-title">Like this tool? Get the newsletter.</h2>' +
-                '<p class="nl-lede">The ten things that mattered in AI each week, plus my latest teaching material, interactive visualizations, YouTube videos and news on the job market.</p>' +
+                '<p class="nl-lede">The ten things that mattered in AI each week, plus my latest teaching material, interactive visualizations, YouTube videos, the projects I&rsquo;m working on and news on the job market.</p>' +
             '</div>' +
             '<form action="' + KIT_ACTION + '" method="post" novalidate>' +
                 '<label class="nl-sr" aria-hidden="true">Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label>' +
