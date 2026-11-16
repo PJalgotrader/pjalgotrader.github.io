@@ -1,6 +1,8 @@
-# PJ AI Newsletter
+# Pedram's Newsletter
 
-A weekly roundup of the ten most important things that happened in AI.
+A weekly email: the ten things that mattered in AI, plus Pedram's latest teaching material, interactive visualizations, YouTube videos and news on the job market. The ten AI items are what the newsletter bot writes; Pedram adds the rest by hand.
+
+**Name:** always "Pedram's Newsletter" (renamed from "PJ AI Newsletter" on 2026-11-16). Issue titles, `og:title` and the `<h1>` read `Pedram's Newsletter: Week of Nov 9-13, 2026`.
 
 ## Adding a new issue
 

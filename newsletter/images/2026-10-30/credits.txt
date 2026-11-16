@@ -1,4 +1,4 @@
-PJ AI Newsletter, Oct 30 2026 issue: image credits
+Pedram's Newsletter, Oct 30 2026 issue: image credits
 item | filename | credit | type | original image URL | source page
 01 | item-01.webp | Image: OpenAI | real (og:image) | https://cdn.openai.com/mdx-assets/71f084db-a08b-48c5-b96e-5fbdc21a1a00/terra-art-card-16x9.0394724b.png | https://openai.com/index/introducing-gpt-6-1-terra/
 02 | item-02.webp | Image: Google | real (og:image) | https://storage.googleapis.com/gweb-uniblog-publish-prod/images/gemini_carbon_102726_social_share.width-1300.png | https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-carbon/
