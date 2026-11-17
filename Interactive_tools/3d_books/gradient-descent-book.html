@@ -75,7 +75,11 @@
   .pager { display: flex; align-items: center; gap: 10px; padding-right: 20px; border-right: 1px solid var(--panel-edge); }
   .pagelabel { font: 500 13px var(--font-mono); font-variant-numeric: tabular-nums; color: var(--muted); min-width: 9em; text-align: center; }
   .spacer { flex: 1 1 0; }
-  .hint { flex-basis: 100%; margin: 0; font-size: 12.5px; color: var(--muted); }
+  .hint { flex: 1 1 320px; margin: 0; font-size: 12.5px; color: var(--muted); }
+  .site { flex: none; font: 600 12.5px var(--font-mono); letter-spacing: 0.02em; color: var(--lamp); text-decoration: none; white-space: nowrap; }
+  .site:hover { text-decoration: underline; }
+  .site:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+  .rowbreak { flex-basis: 100%; height: 0; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .fallback { position: fixed; inset: 0 0 var(--hud-h, 120px) 0; display: grid; place-items: center; color: var(--muted); padding: 24px; text-align: center; }
   @media (max-width: 700px) {
@@ -134,7 +138,9 @@
       <button id="viewText" data-view="text" aria-pressed="false">Text</button>
       <button id="viewFigure" data-view="figure" aria-pressed="false">Figure</button>
     </div>
+    <span class="rowbreak"></span>
     <p class="hint" id="hint"></p>
+    <a class="site" href="https://pedramjahangiry.com/newsletter.html" target="_blank" rel="noopener">For more tools, sign up for the free newsletter at pedramjahangiry.com &rarr;</a>
   </div>
 </div>
 <p id="live" class="sr-only" aria-live="polite"></p>
@@ -251,7 +257,7 @@ function fitText(c, text, x, y, maxW, style, size, fam) {
   c.fillText(text, x, y);
 }
 function header(c, sec, title) {
-  c.fillStyle = INK_SOFT; c.font = `600 22px ${FONT.mono}`; spaced(c, `§ ${sec}  ·  OPTIMISATION`, X0, 112, 3);
+  c.fillStyle = INK_SOFT; c.font = `600 22px ${FONT.mono}`; spaced(c, `§ ${sec}  ·  OPTIMIZATION`, X0, 112, 3);
   c.fillStyle = INK; fitText(c, title, X0, 196, TW, '700', 68, FONT.head);
   c.fillRect(X0, 224, TW, 3);
   return 290;
@@ -293,7 +299,11 @@ function note(c, text) {
   c.save(); c.translate(X0 + 4, 1176); c.rotate(-0.022);
   c.fillStyle = BLUE; fitText(c, text, 0, 0, TW - 20, '700', 40, FONT.hand); c.restore();
 }
-function pageNum(c, n) { c.font = `600 23px ${FONT.body}`; c.fillStyle = INK_SOFT; c.textAlign = 'center'; c.fillText(String(n), CW / 2, 1298); c.textAlign = 'left'; }
+function pageNum(c, n) {
+  c.font = `600 23px ${FONT.body}`; c.fillStyle = INK_SOFT; c.textAlign = 'center'; c.fillText(String(n), CW / 2, 1298);
+  c.font = `600 17px ${FONT.mono}`; c.textAlign = n % 2 ? 'left' : 'right'; spaced(c, 'pedramjahangiry.com', n % 2 ? X0 : XR, 1298, 1.5);   // running footer at the outer corner
+  c.textAlign = 'left';
+}
 function lineChart(c, bx, by, bw, bh, title, series, o = {}) {
   c.font = `600 18px ${FONT.mono}`; c.fillStyle = INK_SOFT; spaced(c, title, bx, by + 14, 2);
   const top = by + 34, bot = by + bh - 28, n = Math.max(o.nMin || 20, ...series.map(s => s.v.length - 1));
@@ -432,7 +442,7 @@ const SPREADS = [
       y = eqBox(c, st.momentum ? ['v ← βv + ∇L(θ)', 'θ ← θ − ηv'] : ['θ ← θ − η∇L(θ)'], st.momentum ? '(4.8)' : '(4.7)', y);
       para(c, st.momentum
         ? 'With momentum, every step also carries a fraction β = 0.9 of the one before. Section 4.4 shows when that helps.'
-        : 'The learning rate η sets the step length. Too small and progress crawls. Too large and each step overshoots the valley floor, so the path zig-zags or leaves the surface.', y);
+        : 'The learning rate η scales every step. Too small and progress crawls. Too large and each step overshoots the valley floor, so the path zig-zags or leaves the surface.', y);
     },
     live(c) {
       const tr = sim.tracks[0];
@@ -455,13 +465,13 @@ const SPREADS = [
     hint: 'Try the three presets, or move η and watch the bead cross the half-pipe. The limit is η = 2/λ = 1.25.',
     static(c) {
       let y = header(c, '4.3', 'The Learning Rate');
-      y = para(c, 'Close to a minimum, any smooth loss looks like a bowl. Along a direction with curvature λ, each step multiplies the distance e to the minimum by one fixed factor:', y);
+      y = para(c, 'Close to a minimum, a smooth loss usually looks like a bowl. Along a direction with curvature λ, each step multiplies the distance e to the minimum by one fixed factor:', y);
       y = eqBox(c, ['eₜ₊₁ = (1 − ηλ) eₜ'], '(4.9)', y);
       [['ηλ < 1', 'glides in and never crosses the minimum'], ['1 < ηλ < 2', 'overshoots, flips sides, still settles'], ['ηλ > 2', 'every overshoot grows, so it diverges']].forEach(([k, v], i) => {
         c.font = `italic 600 30px ${FONT.math}`; c.fillStyle = INK; c.fillText(k, X0 + 8, y + i * 46);
         c.font = `600 30px ${FONT.body}`; c.fillText(v, X0 + 200, y + i * 46);
       });
-      c.font = `700 32px ${FONT.body}`; c.fillText('Gradient descent is stable only when η < 2/λ.', X0, y + 3 * 46 + 8);
+      fitText(c, 'Stable only when η < 2/λ for the steepest direction.', X0, y + 3 * 46 + 8, TW, '700', 32, FONT.body);
     },
     live(c) {
       const tr = sim.tracks[0], r = st.eta * 1.6;
@@ -472,7 +482,7 @@ const SPREADS = [
       note(c, 'the pipe has λ = 1.6, so the limit is η = 1.25');
       pageNum(c, 89);
     },
-    fig: () => ({ num: '4.5', title: 'A half-pipe with curvature λ = 1.6', caption: 'The loss depends on θ₁ alone, so every step moves straight across the pipe. Each landing sits a factor |1 − ηλ| from the floor of the one before.' }),
+    fig: () => ({ num: '4.5', title: 'A half-pipe with curvature λ = 1.6', caption: 'The loss depends on θ₁ alone, so every step moves straight across the pipe. Each landing is |1 − ηλ| times as far from the floor as the one before.' }),
   },
   {
     st: { eta: 0.12, beta: 0.9, start: null },
@@ -518,7 +528,7 @@ const SPREADS = [
     hint: 'Three runs of SGD start in the shallow basin. New noise redraws the mini-batches; decay shrinks η as the run goes on.',
     static(c) {
       let y = header(c, '4.5', 'Stochastic Gradients');
-      y = para(c, 'Real losses average over millions of examples, so the exact gradient is too costly to compute at every step. SGD estimates it from a random mini-batch of B examples:', y);
+      y = para(c, 'Real losses often average over millions of examples, so the exact gradient is too costly to compute at every step. SGD estimates it from a random mini-batch of B examples:', y);
       y = eqBox(c, ['θ ← θ − ηĝ,    ĝ = (1/B) Σ ∇ℓᵢ(θ)'], '(4.11)', y);
       para(c, 'The estimate is unbiased but noisy, and the noise shrinks like 1/√B. Small batches can shake the iterate out of a shallow minimum. Decaying η lets it settle.', y);
     },
