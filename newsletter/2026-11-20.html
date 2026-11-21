@@ -17,7 +17,7 @@
     <meta name="theme-color" content="#0A1020">
     <link rel="canonical" href="https://pedramjahangiry.com/newsletter/2026-11-20.html">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="../styles.css?v=25">
+    <link rel="stylesheet" href="../styles.css?v=26">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -70,35 +70,47 @@
     <main id="main">
         <section class="newsletter-hero">
             <div class="container">
-                <a href="../newsletter.html" class="back-link">&larr; All issues</a>
+                <p class="issue-nav"><a href="../newsletter.html" class="back-link">&larr; All issues</a><a href="2026-11-13.html" class="back-link">&larr; Previous issue: Nov 9-13</a></p>
                 <h1>Pedram's Newsletter: Week of Nov 16-20, 2026</h1>
                 <p class="meta">Saturday Nov 14 through Friday Nov 20, 2026 · Collected by Pedram</p>
-                <ul class="theme-list" aria-label="This week in ten lines">
-                    <li>Anthropic lists as ANT after a $93.5 billion IPO</li>
-                    <li>GPT-6.2 Astra and Sol: better and 20% cheaper at the top</li>
-                    <li>Gemini 4 Neon fills Google's middle tier with 1M context</li>
-                    <li>Alibaba opens Qwen4-Max to every developer</li>
-                    <li>ChatGPT dots start testing on the $20 Plus plan</li>
-                    <li>Gemini for Mac can now drive your desktop apps</li>
-                    <li>California sues OpenAI over agents that escaped testing</li>
-                    <li>US closes the remote-access loophole for AI chips</li>
-                    <li>Microsoft's agent-framework package was poisoned on PyPI</li>
-                    <li>AI bug hunters hit nginx and delay PostgreSQL 19</li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- FROM-PEDRAM:START  Pedram's own news, added by hand. The newsletter bot leaves this block out of new issues. -->
-        <section class="nl-extras" id="from-pedram" aria-label="From Pedram">
-            <div class="container">
-                <div class="nl-extras-box">
+                <div class="hero-pair">
+                    <div class="week-ai" aria-label="This week in AI">
+                        <div class="week-banner" aria-hidden="true">
+                            <img src="images/2026-11-20/01-anthropic-ipo.webp" alt="" width="120" height="68">
+                            <img src="images/2026-11-20/02-gpt-6-2-astra-sol.webp" alt="" width="120" height="68">
+                            <img src="images/2026-11-20/03-gemini-4-neon.webp" alt="" width="120" height="68">
+                            <img src="images/2026-11-20/04-qwen4-max.webp" alt="" width="120" height="68">
+                            <img src="images/2026-11-20/05-chatgpt-dots.webp" alt="" width="120" height="68">
+                            <img src="images/2026-11-20/06-gemini-computer-use-mac.webp" alt="" width="120" height="68">
+                            <img src="images/2026-11-20/07-california-agents.webp" alt="" width="120" height="68">
+                            <img src="images/2026-11-20/08-remote-chip-access.webp" alt="" width="120" height="68">
+                            <img src="images/2026-11-20/09-agent-framework-pypi.webp" alt="" width="120" height="68">
+                            <img src="images/2026-11-20/10-ai-bug-hunting.webp" alt="" width="120" height="68">
+                        </div>
+                        <p class="week-label">This week in AI</p>
+                        <ol class="week-list">
+                            <li><a href="#item-01"><span class="wk-num">01</span>Anthropic lists as ANT after a $93.5 billion IPO</a></li>
+                            <li><a href="#item-02"><span class="wk-num">02</span>GPT-6.2 Astra and Sol: better and 20% cheaper at the top</a></li>
+                            <li><a href="#item-03"><span class="wk-num">03</span>Gemini 4 Neon fills Google's middle tier with 1M context</a></li>
+                            <li><a href="#item-04"><span class="wk-num">04</span>Alibaba opens Qwen4-Max to every developer</a></li>
+                            <li><a href="#item-05"><span class="wk-num">05</span>ChatGPT dots start testing on the $20 Plus plan</a></li>
+                            <li><a href="#item-06"><span class="wk-num">06</span>Gemini for Mac can now drive your desktop apps</a></li>
+                            <li><a href="#item-07"><span class="wk-num">07</span>California sues OpenAI over agents that escaped testing</a></li>
+                            <li><a href="#item-08"><span class="wk-num">08</span>US closes the remote-access loophole for AI chips</a></li>
+                            <li><a href="#item-09"><span class="wk-num">09</span>Microsoft's agent-framework package was poisoned on PyPI</a></li>
+                            <li><a href="#item-10"><span class="wk-num">10</span>AI bug hunters hit nginx and delay PostgreSQL 19</a></li>
+                        </ol>
+                    </div>
+                    <!-- FROM-PEDRAM:START  Pedram's own news, added by hand. The newsletter bot deletes this block from new issues. -->
+                    <aside class="nl-extras hero-side" id="from-pedram" aria-label="From Pedram">
+                        <div class="nl-extras-box">
                     <p class="nl-extras-label">From Pedram &middot; also this week</p>
                     <ul class="nl-extras-list">
                         <li><a class="nl-extra" href="https://www.youtube.com/watch?v=yKJGb6FOHZw" target="_blank" rel="noopener noreferrer">
                             <span class="nl-extra-thumb"><img src="images/2026-11-20/extra-youtube-gradient-descent.webp" alt="" width="800" height="450" loading="lazy"></span>
                             <span class="nl-extra-body">
                                 <span class="nl-extra-kind">YouTube &middot; 3D books</span>
-                                <span class="nl-extra-title">Gradient descent, explained visually in 3D</span>
+                                <span class="nl-extra-title">Gradient descent, explained in 3D</span>
                                 <span class="nl-extra-desc">My first 3D book video: a ball rolling down a loss surface, and what learning rate, momentum and noise do to its path.</span>
                             </span>
                             <span class="nl-extra-go" aria-hidden="true">&#8599;</span>
@@ -141,25 +153,9 @@
                         </a></li>
                     </ul>
                 </div>
-            </div>
-        </section>
-        <!-- FROM-PEDRAM:END -->
-
-        <section class="newsletter-toc">
-            <div class="container">
-                <h2>In this issue</h2>
-                <ol>
-                    <li><a href="#item-01"><span class="toc-num">01</span><span class="toc-title">Anthropic goes public on Nasdaq</span></a></li>
-                    <li><a href="#item-02"><span class="toc-num">02</span><span class="toc-title">OpenAI ships GPT-6.2 Astra and GPT-6.2 Sol</span></a></li>
-                    <li><a href="#item-03"><span class="toc-num">03</span><span class="toc-title">Google launches Gemini 4 Neon</span></a></li>
-                    <li><a href="#item-04"><span class="toc-num">04</span><span class="toc-title">Alibaba releases Qwen4-Max</span></a></li>
-                    <li><a href="#item-05"><span class="toc-num">05</span><span class="toc-title">ChatGPT dots start reaching Plus and Business Standard</span></a></li>
-                    <li><a href="#item-06"><span class="toc-num">06</span><span class="toc-title">Gemini for Mac gets computer use</span></a></li>
-                    <li><a href="#item-07"><span class="toc-num">07</span><span class="toc-title">California sues OpenAI over agents that escaped testing</span></a></li>
-                    <li><a href="#item-08"><span class="toc-num">08</span><span class="toc-title">US closes the remote-access loophole on AI chips</span></a></li>
-                    <li><a href="#item-09"><span class="toc-num">09</span><span class="toc-title">Microsoft's agent-framework was poisoned on PyPI</span></a></li>
-                    <li><a href="#item-10"><span class="toc-num">10</span><span class="toc-title">AI bug hunting hits nginx and delays PostgreSQL 19</span></a></li>
-                </ol>
+                    </aside>
+                    <!-- FROM-PEDRAM:END -->
+                </div>
             </div>
         </section>
 
