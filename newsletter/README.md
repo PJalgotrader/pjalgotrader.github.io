@@ -27,16 +27,19 @@ For each of the 10 items:
 
 ### 2. Copy and update the issue page
 
-1. **Copy the latest issue page** (e.g., `2026-10-09.html`) as a template
+1. **Copy the latest issue page** (the newest `YYYY-MM-DD.html`) as a template
 2. **Update the frontmatter**:
    - Change filename to new date (YYYY-MM-DD format)
    - Update title, meta tags, and Open Graph tags with new date/description
    - Set `og:image` and `twitter:image` to item 1's image absolute URL
-3. **Update the hero**:
+3. **Update the hero** (copy `2026-11-20.html` or later; older issues use an older layout):
    - Replace the date range
-   - Replace the ten bullets in `<ul class="theme-list">`: exactly **10 short bullets, one per item, in item order**, each one line of about 4 to 10 words (under ~65 characters). No intro paragraph and no closing "theme" sentence; the hero is the title, the date line and the ten bullets
-4. **Update "In this issue" list**:
-   - Replace all 10 item headlines and anchor links
+   - In `<p class="issue-nav">`, point the "Previous issue" link at the issue before this one and update its date range (e.g. `2026-11-20.html`, `Previous issue: Nov 16-20`)
+   - In the "This week in AI" card (`<div class="week-ai">`):
+     - `<div class="week-banner">`: the ten item images in item order (`images/YYYY-MM-DD/01-...webp` to `10-...`), `alt=""`, same attributes as the template
+     - `<ol class="week-list">`: exactly **10 short lines, one per item, in item order**, each one line of about 4 to 10 words (under ~65 characters). Each `<li>` links to its item (`#item-01` to `#item-10`) with the number in `<span class="wk-num">`. No intro paragraph and no closing "theme" sentence
+   - There is no separate "In this issue" section any more: the ten lines in the card are the table of contents
+4. **Check the anchors**: every item section keeps its `id="item-01"` to `id="item-10"` so the lines in the card jump to it
 5. **For each of the 10 items**:
    - Update item number (01–10)
    - Replace headline (h3)
@@ -49,7 +52,7 @@ For each of the 10 items:
    - Update source links
 6. **Update closing section**:
    - Replace "If you try one thing" content
-7. **Leave out the "From Pedram" block**: some issues carry a block between `<!-- FROM-PEDRAM:START` and `<!-- FROM-PEDRAM:END -->` (it may sit near the top or the bottom of the page). It holds Pedram's own news, added by hand after the issue is published. When you copy an issue as a template, **delete that whole block** from the new page, and never create, edit or move one yourself. Your issue is only the ten AI items, the closing and the signup card.
+7. **Leave out the "From Pedram" block**: some issues carry a block between `<!-- FROM-PEDRAM:START` and `<!-- FROM-PEDRAM:END -->` (it sits inside `<div class="hero-pair">`, next to the "This week in AI" card). Without it, the AI card spans the full width on its own. It holds Pedram's own news, added by hand after the issue is published. When you copy an issue as a template, **delete that whole block** from the new page, and never create, edit or move one yourself. Your issue is only the ten AI items, the closing and the signup card.
 8. **Keep the signup card**: the `<section class="subscribe">` block just before `</main>` stays exactly as it is in the template, including the Kit form `action` URL. Styles live in `styles.css` and the behaviour in `initializeSubscribe()` in `script.js`. If the `action` isn't a Kit `/forms/<id>/subscriptions` URL, the card hides itself.
 
 ### 3. Add entry to newsletter.html
@@ -106,9 +109,9 @@ newsletter/
 
 ## "From Pedram" extras (added by hand, not by the newsletter bot)
 
-Pedram's own news (a new YouTube video, an app release, a talk, a tool worth trying) goes into a published issue as a compact strip right after the hero, before "In this issue": a `<section class="nl-extras" id="from-pedram">` wrapped in the `FROM-PEDRAM:START` / `FROM-PEDRAM:END` comments.
+Pedram's own news (a new YouTube video, an app release, a talk, a tool worth trying) goes into the hero as the right-hand card, next to "This week in AI": an `<aside class="nl-extras hero-side" id="from-pedram">` inside `<div class="hero-pair">`, wrapped in the `FROM-PEDRAM:START` / `FROM-PEDRAM:END` comments.
 
-- Inside: `.nl-extras-box`, a `.nl-extras-label` ("From Pedram · also this week"), then a `ul.nl-extras-list` with one `a.nl-extra` row per item: `.nl-extra-thumb` (an `img` or a small `svg.plate-art` drawing), `.nl-extra-body` holding `.nl-extra-kind` (kind · topic), `.nl-extra-title` and a one-line `.nl-extra-desc`, then a `.nl-extra-go` arrow (↗ external, → on the site). One to four rows.
+- Inside: `.nl-extras-box`, a `.nl-extras-label` ("From Pedram · also this week"), then a `ul.nl-extras-list` with one `a.nl-extra` row per item: `.nl-extra-thumb` (an `img` or a small `svg.plate-art` drawing), `.nl-extra-body` holding `.nl-extra-kind` (kind · topic), `.nl-extra-title` and a one-line `.nl-extra-desc` (one or two sentences), then a `.nl-extra-go` arrow (↗ external, → on the site). One to five rows.
 - Images go in the issue's `images/YYYY-MM-DD/` folder, named `extra-*.webp`, 800×450 for video thumbnails.
 - Add the extras **before** the Kit email goes out, so subscribers get them too.
 - An issue with no extras has no block at all.

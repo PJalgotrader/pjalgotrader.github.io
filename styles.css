@@ -2067,3 +2067,37 @@ main > section:last-child { padding-bottom: 52px; }
     .nl-extra-title { font-size: 16px; }
     .nl-extra-desc { font-size: 13px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 }
+
+/* ---- Newsletter issue hero (from Nov 20, 2026): two equal cards under the
+        title. Left, "This week in AI": a banner of the ten item images and the
+        ten lines, each linking to its item. Right, the "From Pedram" cards.
+        Without a From Pedram block the AI card spans the full width. ---- */
+.issue-nav { display: flex; flex-wrap: wrap; gap: 6px 28px; margin: 0 0 1.4rem; }
+.issue-nav .back-link { margin-bottom: 0; }
+.hero-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; margin-top: 22px; }
+.week-ai, .hero-side .nl-extras-box { height: 100%; max-width: none; background: var(--card); border: 1px solid var(--line); border-top: 3px solid var(--green); border-radius: 6px; padding: 16px 20px 10px; }
+.week-ai { display: flex; flex-direction: column; border-top-color: var(--ink); }
+.week-ai:only-child { grid-column: 1 / -1; }
+.hero-side.nl-extras { padding: 0; }
+.week-banner { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 0 0 14px; border-radius: 4px; overflow: hidden; }
+.week-banner img { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; object-fit: cover; background: var(--paper-deep); }
+.week-label { margin: 0 0 6px; font-family: var(--mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); }
+.week-list { flex: 1; display: flex; flex-direction: column; list-style: none; margin: 0; padding: 0; }
+.week-list li { flex: 1; display: flex; align-items: center; border-top: 1px solid var(--line); }
+.week-list li:first-child { border-top: 0; }
+.week-list a { display: grid; grid-template-columns: 28px 1fr; gap: 6px; width: 100%; padding: 8px 0; font-size: 15.5px; line-height: 1.4; color: var(--ink-soft); text-decoration: none; transition: color 0.2s; }
+.week-list a:hover { color: var(--green); }
+.wk-num { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--green); padding-top: 2px; }
+.hero-side .nl-extra { grid-template-columns: 120px minmax(0, 1fr); gap: 14px; padding: 10px 0; }
+.hero-side .nl-extra-go { display: none; }
+.hero-side .nl-extra-title { font-size: 16px; }
+.hero-side .nl-extra-desc { font-size: 13.5px; }
+.newsletter-hero:has(.hero-pair) { padding-bottom: 48px; }
+@media (max-width: 900px) {
+    .hero-pair { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+    .week-ai, .hero-side .nl-extras-box { padding: 12px 14px 6px; }
+    .hero-side .nl-extra { grid-template-columns: 88px minmax(0, 1fr); gap: 12px; }
+    .week-list a { font-size: 15px; }
+}
