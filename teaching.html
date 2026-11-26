@@ -67,6 +67,14 @@
         .keyt { margin: 0; font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-ink); }
         .keys { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; flex: 1; }
         .keys li { font-size: 13px; line-height: 1.3; font-weight: 500; padding: 4px 0; border-top: 1px solid var(--line); color: var(--ink-soft); }
+        /* YouTube rows on the course cards: a fixed height on every card keeps the stats rows level. */
+        .yt { display: flex; flex-direction: column; justify-content: flex-start; min-height: 80px; font-family: var(--mono); }
+        .ytl { margin: 2px 0 3px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-ink); }
+        .ytl i { margin-right: 3px; }
+        .yt a { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid var(--line); font-size: 12px; font-weight: 600; color: var(--c-ink); text-decoration: none; }
+        .yt a:hover span:first-child { text-decoration: underline; text-underline-offset: 3px; }
+        .yt a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+        .yt .new { margin-left: 6px; padding: 1px 5px; border-radius: 3px; background: var(--c-ink); color: var(--card); font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase; vertical-align: 1px; }
         .phoneonly { display: none; }
         .spacer { min-height: 44px; }
 
@@ -120,6 +128,9 @@
             .go { font-size: 12px; }
             .phoneonly { display: flex; }
             .spacer { display: none; }
+            .yt { min-height: 0; }
+            .yt:empty { display: none; }
+            .yt a { min-height: 34px; font-size: 11.5px; }
             .row4, .row3 { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 10px; margin: 0 -16px 24px; padding: 0 16px 6px; }
             .tile { flex: 0 0 82%; scroll-snap-align: center; padding: 14px; }
         }
@@ -204,6 +215,7 @@
                                 <div class="window"><svg viewBox="0 0 220 110" aria-hidden="true"><path class="ln" d="M10 96C60 92 92 74 118 52S176 16 212 12"></path><circle class="solid" cx="28" cy="82" r="4.5"></circle><circle class="solid" cx="52" cy="96" r="4.5"></circle><circle class="solid" cx="74" cy="70" r="4.5"></circle><circle class="solid" cx="98" cy="78" r="4.5"></circle><circle class="solid" cx="116" cy="42" r="4.5"></circle><circle class="solid" cx="138" cy="56" r="4.5"></circle><circle class="solid" cx="160" cy="22" r="4.5"></circle><circle class="solid" cx="186" cy="32" r="4.5"></circle><circle class="solid" cx="204" cy="8" r="4.5"></circle></svg></div>
                                 <p class="desc">The foundational course of the Data Analytics track. Real-time coding sessions on Google Colab so concepts get applied, and tested, immediately.</p>
                                 <div class="stats"><div class="sr"><span>Home</span><b>DAIS department</b></div><div class="sr"><span>Status</span><b>Ongoing</b></div></div>
+                                <div class="yt" aria-label="Machine Learning on YouTube"><p class="ytl"><i class="fab fa-youtube" aria-hidden="true"></i> On YouTube</p><a href="https://www.youtube.com/playlist?list=PL2GWo47BFyUNeLIH127rVovSqKFm1rk07" target="_blank" rel="noopener noreferrer"><span>Codes and concepts</span><span aria-hidden="true">&#8599;</span></a></div>
                                 <button class="go" type="button" data-flip aria-expanded="false">Key areas &rarr;</button>
                             </div></div>
                             <div class="face back" inert><div class="inner">
@@ -223,6 +235,7 @@
                                 <div class="window"><svg viewBox="0 0 220 110" aria-hidden="true"><path class="thin" d="M30 25L110 15M30 25L110 55M30 25L110 95M30 55L110 15M30 55L110 55M30 55L110 95M30 85L110 15M30 85L110 55M30 85L110 95M110 15L190 40M110 55L190 40M110 95L190 40M110 15L190 70M110 55L190 70M110 95L190 70"></path><circle class="solid" cx="30" cy="25" r="7"></circle><circle class="solid" cx="30" cy="55" r="7"></circle><circle class="solid" cx="30" cy="85" r="7"></circle><circle class="solid" cx="110" cy="15" r="7"></circle><circle class="solid" cx="110" cy="55" r="7"></circle><circle class="solid" cx="110" cy="95" r="7"></circle><circle class="solid" cx="190" cy="40" r="7"></circle><circle class="solid" cx="190" cy="70" r="7"></circle></svg></div>
                                 <p class="desc">From fundamentals to the frontier: modern architectures for vision and sequence modeling, taught with working code.</p>
                                 <div class="stats"><div class="sr"><span>Home</span><b>DAIS department</b></div><div class="sr"><span>Status</span><b>Ongoing</b></div></div>
+                                <div class="yt" aria-label="Deep Learning on YouTube"><p class="ytl"><i class="fab fa-youtube" aria-hidden="true"></i> On YouTube</p><a href="https://www.youtube.com/playlist?list=PL2GWo47BFyUO6Fiy2mJCxR8sUrBEfT6BM" target="_blank" rel="noopener noreferrer"><span>Codes and concepts</span><span aria-hidden="true">&#8599;</span></a></div>
                                 <button class="go" type="button" data-flip aria-expanded="false">Key areas &rarr;</button>
                             </div></div>
                             <div class="face back" inert><div class="inner">
@@ -242,6 +255,7 @@
                                 <div class="window"><svg viewBox="0 0 220 110" aria-hidden="true"><path class="thin dash" d="M128 52L214 12M128 52L214 88"></path><path class="ln" d="M6 82l14-10 12 8 14-16 12 7 14-15 12 6 14-18 12 7 18-9"></path><path class="ln dash" d="M128 52l14-7 12 6 14-11 12 5 14-9 20-4"></path><circle class="solid" cx="128" cy="52" r="4.5"></circle></svg></div>
                                 <p class="desc">Classical time series models meet modern machine learning and deep learning. Launched as a special topic; its success made it a permanent part of the curriculum.</p>
                                 <div class="stats"><div class="sr"><span>Origin</span><b>From scratch</b></div><div class="sr"><span>First run</span><b>Spring 2023</b></div></div>
+                                <div class="yt" aria-label="Deep Forecasting on YouTube"><p class="ytl"><i class="fab fa-youtube" aria-hidden="true"></i> On YouTube</p><a href="https://www.youtube.com/playlist?list=PLG1FN7Dkkeu8" target="_blank" rel="noopener noreferrer"><span>2027 series<span class="new">New</span></span><span aria-hidden="true">&#8599;</span></a><a href="https://www.youtube.com/playlist?list=PL2GWo47BFyUPW_lptTNwpKNrpEQvUZerR" target="_blank" rel="noopener noreferrer"><span>Codes and concepts</span><span aria-hidden="true">&#8599;</span></a></div>
                                 <button class="go" type="button" data-flip aria-expanded="false">Key areas &rarr;</button>
                             </div></div>
                             <div class="face back" inert><div class="inner">
@@ -261,6 +275,7 @@
                                 <div class="window"><svg viewBox="0 0 220 110" aria-hidden="true"><path class="ln" d="M26 44V88M56 36V78M86 50V94M116 28V72M146 18V60M176 30V66M200 14V50"></path><rect class="solid" x="18" y="54" width="16" height="24"></rect><rect class="solid" x="48" y="44" width="16" height="24"></rect><rect class="solid" x="78" y="58" width="16" height="26"></rect><rect class="solid" x="108" y="36" width="16" height="28"></rect><rect class="solid" x="138" y="26" width="16" height="24"></rect><rect class="solid" x="168" y="36" width="16" height="22"></rect><rect class="solid" x="192" y="20" width="16" height="22"></rect></svg></div>
                                 <p class="desc">Building trading strategies with machine learning and AI, without fooling yourself. One 100-ETF momentum case study runs from first signal to a paper-trading bot at Interactive Brokers.</p>
                                 <div class="stats"><div class="sr"><span>First run</span><b>Fall 2027</b></div><div class="sr"><span>Format</span><b>Project-based</b></div></div>
+                                <div class="yt" aria-hidden="true"></div>
                                 <button class="go" type="button" data-flip aria-expanded="false">Key areas &rarr;</button>
                             </div></div>
                             <div class="face back" inert><div class="inner">
@@ -281,6 +296,7 @@
                                 <p class="desc">Helping freshmen find their footing in college. Teaching this course keeps me close to the challenges new students actually face, and it shapes how I teach everything else.</p>
                                 <div class="stats"><div class="sr"><span>Type</span><b>First-year course</b></div><div class="sr"><span>Taught</span><b>Fall 2023</b></div></div>
                                 <span class="spacer"></span>
+                                <div class="yt" aria-hidden="true"></div>
                                 <button class="go phoneonly" type="button" data-flip aria-expanded="false">About &rarr;</button>
                             </div></div>
                             <div class="face back" inert><div class="inner">
