@@ -89,6 +89,43 @@
   .rowbreak { flex-basis: 100%; height: 0; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .fallback { position: fixed; inset: 0 0 var(--hud-h, 120px) 0; display: grid; place-items: center; color: var(--muted); padding: 24px; text-align: center; }
+  /* Guide: red-pen labels over the figure, with arrows to what they explain */
+  .guide-layer { position: fixed; inset: 0 0 var(--hud-h, 120px) 0; pointer-events: none; --g-red: #c8174f; }
+  .guide-layer svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .g-label {
+    position: absolute; left: 0; top: 0; box-sizing: border-box; width: 262px; padding: 9px 12px 10px;
+    background: #fbf8f1; color: #1b1511; border-radius: 7px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    font: 400 14px/1.42 var(--font-ui); will-change: transform;
+  }
+  .g-label b { display: block; font-weight: 600; font-size: 15px; color: var(--g-red); margin-bottom: 2px; }
+  .g-list {
+    position: absolute; top: 8px; left: 16px; right: 16px; margin: 0; padding: 9px 12px; list-style: none;
+    background: #fbf8f1; color: #1b1511; border-radius: 7px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    font: 400 12.5px/1.36 var(--font-ui);
+    max-height: 42%; overflow-y: auto; overscroll-behavior: contain; pointer-events: auto;   /* long lists scroll, so the figure keeps most of the screen */
+  }
+  .g-list::before { content: "Guide"; display: block; margin: -1px 0 10px; font: 600 12px/26px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--g-red); }
+  .g-list li { display: flex; gap: 8px; }
+  .g-list li + li { margin-top: 5px; }
+  .g-list b { font-weight: 600; color: var(--g-red); }
+  .g-num, .g-badge {
+    flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--g-red); color: #fff;
+    font: 600 12px/20px var(--font-ui); text-align: center;
+  }
+  .g-badge { position: absolute; left: 0; top: 0; width: 24px; height: 24px; line-height: 24px; font-size: 13px; box-shadow: 0 0 0 2px #fff, 0 2px 6px rgba(0, 0, 0, 0.4); }
+  .guide-layer.narrow .g-label, .guide-layer:not(.narrow) .g-list, .guide-layer:not(.narrow) .g-badge { display: none; }
+  /* the Guide button floats beside the figure, so it is always in the same place relative to the picture */
+  .guide-fab {
+    position: fixed; left: 0; top: 0; z-index: 3; display: inline-flex; align-items: center; gap: 7px;
+    min-height: 36px; padding: 6px 14px 6px 7px; border: 0; border-radius: 999px;
+    background: #fbf8f1; color: #1b1511; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+    font: 600 14px var(--font-ui); will-change: transform;
+  }
+  .guide-fab .q { width: 23px; height: 23px; border-radius: 50%; background: #c8174f; color: #fff; font: 700 14px/23px var(--font-ui); text-align: center; }
+  .guide-fab:hover:not(:disabled) { background: #ffffff; }
+  .guide-fab[aria-pressed="true"], .guide-fab[aria-pressed="true"]:hover { background: #c8174f; color: #fff; }
+  .guide-fab[aria-pressed="true"] .q { background: #fff; color: #c8174f; }
+  .guide-fab:focus-visible { outline: 2px solid var(--lamp); outline-offset: 3px; }
   @media (max-width: 700px) {
     input[type="range"] { width: 112px; }
     .hud-inner { gap: 9px 14px; }
@@ -99,6 +136,11 @@
 
 <div id="stage" role="img" aria-label="An open textbook on a desk about gradient descent. On every spread the left page explains one idea and a loss surface pops up from the right page, with beads stepping downhill across it."></div>
 <div class="vignette"></div>
+<div id="guideLayer" class="guide-layer" hidden>
+  <svg id="guideSvg" aria-hidden="true"></svg>
+  <ol id="guideList" class="g-list" aria-label="Guide to the figure"></ol>
+</div>
+<button id="guideFab" class="guide-fab" aria-pressed="false" hidden title="Show labels that explain the figure"><span class="q" aria-hidden="true">?</span><span id="guideFabText">Guide</span></button>
 <p id="fallback" class="fallback" hidden>This page needs WebGL to draw the 3D book. Try a recent desktop browser.</p>
 
 <div class="hud" id="hud">
@@ -152,7 +194,7 @@
         <svg viewBox="0 0 28 20" aria-hidden="true"><rect width="28" height="20" rx="5" fill="#ff0033"/><path d="M11 5.5 19 10 11 14.5Z" fill="#fff"/></svg>
         <span>Watch the walkthrough on YouTube</span>
       </a>
-    <a class="site" href="https://pedramjahangiry.com/newsletter.html" target="_blank" rel="noopener">For more tools, sign up for the free newsletter at <span>pedramjahangiry.com &rarr;</span></a>
+    <a class="site" href="https://pedramjahangiry.com/newsletter.html" target="_blank" rel="noopener">For more tools, sign up for the weekly newsletter at <span>pedramjahangiry.com &rarr;</span></a>
     </div>
   </div>
 </div>
@@ -448,7 +490,7 @@ const SPREADS = [
     surf: st => st.surfKey, start: st => (st.surfKey === 'ravine' ? [-2.6, -0.2] : [0.3, -2.6]),
     stepMs: 150, maxSteps: 300, smooth: true,
     tracks: st => [{ name: 'Descent', css: AMBER, line: 0xffab3d, bead: 0xc9973a, metal: 0.75, dots: true, beta: st.momentum ? 0.9 : 0 }],
-    hint: 'Click the surface to drop the bead somewhere new. Drag to orbit, scroll to zoom. Arrow keys or the page edges turn pages. Click the lamp to switch the light.',
+    hint: 'Click the surface to drop the bead somewhere new. Drag to orbit, scroll to zoom. Arrow keys or the page edges turn pages. Press ? Guide by the figure for labels.',
     static(c, st) {
       let y = header(c, '4.2', 'Gradient Descent');
       y = para(c, 'A loss L(θ) scores every setting of the parameters θ. Gradient descent starts somewhere on that surface and steps downhill, against the gradient ∇L, again and again.', y);
@@ -475,7 +517,7 @@ const SPREADS = [
     surf: () => 'trough', start: () => [-1.6, -0.5],
     stepMs: 400, maxSteps: 60, smooth: true,
     tracks: () => [{ name: 'Descent', css: AMBER, line: 0xffab3d, bead: 0xc9973a, metal: 0.75, dots: true }],
-    hint: 'Try the three presets, or move η and watch the bead cross the half-pipe. The limit is η = 2/λ = 1.25.',
+    hint: 'Try the three presets, or move η and watch the bead cross the half-pipe. The limit is η = 2/λ = 1.25. Press ? Guide by the figure for labels.',
     static(c) {
       let y = header(c, '4.3', 'The Learning Rate');
       y = para(c, 'Close to a minimum, a smooth loss usually looks like a bowl. Along a direction with curvature λ, each step multiplies the distance e to the minimum by one fixed factor:', y);
@@ -505,7 +547,7 @@ const SPREADS = [
       { name: 'Plain descent', css: ROSE, line: 0xff6b96, bead: 0xd9486e, metal: 0.25, beta: 0 },
       { name: 'Momentum', css: AMBER, line: 0xffab3d, bead: 0xc9973a, metal: 0.75, beta: st.beta },
     ],
-    hint: 'Two beads race from the same start with the same η. Change η or β to see who gets home first.',
+    hint: 'Two beads race from the same start with the same η. Change η or β to see who gets home first. Press ? Guide by the figure for labels.',
     static(c) {
       let y = header(c, '4.4', 'Momentum');
       y = para(c, 'Plain descent forgets each step once it is taken. Momentum keeps a velocity v, a decaying sum of past gradients, and moves along that instead:', y);
@@ -538,7 +580,7 @@ const SPREADS = [
     surf: () => 'valleys', start: () => [-1.3, -1.1],
     stepMs: 55, maxSteps: 200,
     tracks: st => [[1, AMBER, 0xffab3d, 0xc9973a, 0.75], [8, ROSE, 0xff6b96, 0xd9486e, 0.25], [64, GREEN, 0x7be3ad, 0x3fae7c, 0.25]].map(([B, css, line, bead, metal]) => ({ name: `B = ${B}`, css, line, bead, metal, sd: 1.4 / Math.sqrt(B), decay: st.decay, tail: 45 })),
-    hint: 'Three runs of SGD start in the shallow basin. New noise redraws the mini-batches; decay shrinks η as the run goes on.',
+    hint: 'Three runs of SGD start in the shallow basin. New noise redraws the mini-batches; decay shrinks η as the run goes on. Press ? Guide by the figure for labels.',
     static(c) {
       let y = header(c, '4.5', 'Stochastic Gradients');
       y = para(c, 'Real losses often average over millions of examples, so the exact gradient is too costly to compute at every step. SGD estimates it from a random mini-batch of B examples:', y);
@@ -853,11 +895,22 @@ let view = 'book', camTween = null, lastW = 0;
 const BOOKX = 0.12, BOOKW = 2.9;
 function viewPose(name) {
   const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
-  const V = { book: [[BOOKX, 0.05, 0.04], [0, 1.35, 1], BOOKW, 1.72], text: [[-W / 2 - 0.01, 0.03, 0], [0, 1, 0.38], 1.2, 1.5], figure: [[W / 2, 0.08, 0.03], [0.12, 1, 0.85], 1.22, 1.42] }[name];
+  const fig = [[W / 2, 0.08, 0.03], [0.12, 1, 0.85], 1.22, 1.42];
+  let V = { book: [[BOOKX, 0.05, 0.04], [0, 1.35, 1], BOOKW, 1.72], text: [[-W / 2 - 0.01, 0.03, 0], [0, 1, 0.38], 1.2, 1.5], figure: fig, guide: fig }[name], lower = 0;
+  if (name === 'guide') {
+    // the surface seen straight from the front, as in the Book view: room for a column of labels on each side,
+    // or on narrow screens the figure below the guide's list
+    const w = stage.clientWidth, front = [0, 1.35, 1];
+    if (guideNarrow) { lower = clamp((gList.offsetHeight + 16) / Math.max(1, stage.clientHeight), 0, 0.6); V = [[W / 2, 0.08, -0.09], front, 1.02, 1.12 / (1 - lower)]; }
+    else V = [fig[0], front, Math.max(fig[2], (0.98 * w) / Math.max(w - 2 * (GUIDE_W + 64), 240)), fig[3] * 1.06];
+  }
   const target = new THREE.Vector3(...V[0]), dist = Math.max(V[2] / 2 / Math.tan(hf / 2), V[3] / 2 / Math.tan(vf / 2));
-  return { target, pos: target.clone().addScaledVector(new THREE.Vector3(...V[1]).normalize(), dist) };
+  const dir = new THREE.Vector3(...V[1]).normalize();
+  if (lower) target.addScaledVector(new THREE.Vector3(0, 1, 0).addScaledVector(dir, -dir.y).normalize(), lower * dist * Math.tan(vf / 2));
+  return { target, pos: target.clone().addScaledVector(dir, dist) };
 }
 function setView(name, instant) {
+  if (name !== 'guide' && guideOn) { guideOn = false; markGuide(false); gLayer.hidden = true; }
   view = name; const v = viewPose(name);
   document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
   if (instant || reduced) { camTween = null; camera.position.copy(v.pos); controls.target.copy(v.target); controls.update(); }
@@ -868,7 +921,177 @@ function resize() {
   const w = stage.clientWidth, h = Math.max(1, stage.clientHeight);
   renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix();
   lineRes.set(w, h); for (const tr of sim.tracks) tr.line.material.resolution.copy(lineRes);
+  if (guideOn) { guideNarrow = isNarrow(); gLayer.classList.toggle('narrow', guideNarrow); }
   if (w !== lastW) { if (!lastW && w / h < 0.95) view = 'figure'; setView(view, true); lastW = w; }
+}
+
+/* ================= guide: red-pen labels that explain each figure (the ? Guide button) ================= */
+// Wide screens get a column of labels on each side of the figure with arrows to what they explain; narrow ones get
+// numbered badges on the figure and the same text as a list above it. The arrows follow the figure when you orbit.
+const GUIDE_W = 262, gLayer = $('guideLayer'), gSvg = $('guideSvg'), gList = $('guideList'), PEN = '#c8174f';
+let guideOn = false, guideNarrow = false, viewBeforeGuide = 'book', G = [];
+const isNarrow = () => stage.clientWidth < 900 || stage.clientWidth / Math.max(1, stage.clientHeight) < 1.15;
+const pageAt = (x, y, out) => { const [X, Y] = toCanvas(x, y), d = (X / CW) * W; return out.set(d, pageY(d) + LIFT + 0.002, -H / 2 + (Y / CH) * H); };
+const gridPt = (s, score) => { let b = [0, 0], m = -Infinity; for (let j = 0; j <= 26; j++) for (let i = 0; i <= 26; i++) { const x = -2.6 + i * 0.2, y = -2.6 + j * 0.2, v = score(s, x, y); if (v >= m) { m = v; b = [x, y]; } } return b; };   // ties go to the far side, so arrows don't cross the figure's front
+const hiPt = s => s.hiPt || (s.hiPt = gridPt(s, (q, x, y) => (x <= -0.4 ? q.hOf(x, y) : -1)));   // the highest point on the left half (its label sits on the left), a little in from the edge
+const loPt = s => s.loPt || (s.loPt = gridPt(s, (q, x, y) => -q.f(x, y)));     // the lowest point: the (global) minimum
+const startOf = () => st.start || cfg.start(st);
+const beadAt = i => v => v.copy(sim.tracks[i].bead.position);
+const trailMid = i => v => { const h = sim.tracks[i].hist, p = h[Math.min(2, h.length - 1)]; return d2w(p[0], p[1], 0.005, v); };   // an early step: the big ones, away from where the bead ends up
+const hasMoved = i => () => sim.tracks[i] && sim.tracks[i].hist.length > 2;
+const high = body => ({ head: 'Height = loss', col: 'left', slot: 0, body, at: v => d2w(...hiPt(pop.s), 0, v) });
+const ring = (head, body, slot = 0.55, col = 'left') => ({ head, col, slot, body, at: v => d2w(...startOf(), 0.004, v) });
+const GUIDES = {
+  0: [
+    high(() => 'How wrong the model is. Every point is one setting of its two parameters, θ₁ and θ₂.'),
+    ring('Ring = the start', () => 'Where descent begins. Click anywhere on the surface to drop the bead somewhere new.'),
+    { head: 'Bead = the parameters now', col: 'right', slot: 0, at: beadAt(0),
+      body: () => (st.momentum ? 'With momentum, each step also carries 0.9 of the step before it.' : `Each step moves it downhill, against the gradient: η = ${st.eta.toFixed(2)} times the slope.`) },
+    { head: 'Dots = one per step', col: 'right', slot: 0.4, when: hasMoved(0), at: trailMid(0),
+      body: () => (st.surfKey === 'ravine' ? 'Steep walls, almost flat floor: big steps zig-zag across while progress along the floor is slow.'
+        : 'The bead rolls into the nearest basin. The start decides which minimum it finds.') },
+    { head: () => (st.surfKey === 'ravine' ? 'Valley floor = almost flat' : 'Deep basin = the lowest point'), col: 'right', slot: 0.74,
+      at: v => (st.surfKey === 'ravine' ? d2w(1.75, 0.96, 0, v) : d2w(...loPt(pop.s), 0, v)),   // along the ravine's floor, clear of where the bead stops
+      body: () => (st.surfKey === 'ravine' ? 'Barely sloped along its length, so the last stretch to the minimum in the middle is slow.'
+        : 'The better minimum. The shallow basin across the ridge traps a bead that starts near it.') },
+  ],
+  1: [
+    high(() => 'A half-pipe with curvature λ = 1.6. The loss depends on θ₁ alone.'),
+    { head: 'The floor = the minimum', col: 'left', slot: 0.4, at: v => d2w(0, -1.4, 0, v), body: () => 'θ₁ = 0 along the whole bottom of the pipe.' },
+    { head: 'Bead = the parameters now', col: 'right', slot: 0, at: beadAt(0),
+      body: () => `Each landing is |1 − ηλ| = ${Math.abs(1 - st.eta * 1.6).toFixed(2)} times as far from the floor as the last one.` },
+    { head: 'Dots = one per step', col: 'right', slot: 0.42, when: hasMoved(0), at: trailMid(0),
+      body: () => { const r = st.eta * 1.6; return r <= 1 ? 'Small η: it glides in from one side and never crosses the floor.'
+        : r < 2 ? 'Each step overshoots to the other wall, but by less each time, so it settles.'
+        : 'Past η = 1.25 every overshoot is bigger than the last, until the bead flies out.'; } },
+    ring('Ring = the start', () => 'Every run starts here, on one wall of the pipe.', 0.72),
+  ],
+  2: [
+    high(() => 'A narrow ravine: steep across, almost flat along the floor.'),
+    ring('Ring = the shared start', () => 'Both beads leave from here with the same learning rate.'),
+    { head: 'Gold bead = momentum', col: 'right', slot: 0, at: beadAt(1),
+      body: () => `It keeps a velocity, a running sum of past gradients (β = ${st.beta.toFixed(2)}), so it speeds up along the flat floor.` },
+    { head: 'Rose bead = plain descent', col: 'right', slot: 0.45, at: beadAt(0), body: () => 'It forgets each step once it is taken, so it crawls along the floor. The race log on the left page counts the steps.' },
+  ],
+  3: [
+    high(() => 'Two basins: a shallow one where the runs start, and a deeper one across the ridge.'),
+    ring('Ring = the start', () => 'All three runs start in the shallow basin.'),
+    { head: 'Deep basin = the better minimum', col: 'right', slot: 0, at: v => d2w(1.9, 1.4, 0, v), body: () => 'A run gets here only if its noise carries it over the ridge.' },
+    { head: 'Gold = batch size 1', col: 'right', slot: 0.38, at: beadAt(0), body: () => 'The noisiest gradient estimate. It wanders the most and is the likeliest to hop the ridge.' },
+    { head: 'Green = batch size 64', col: 'right', slot: 0.72, at: beadAt(2), body: () => 'Close to the true gradient, so it stays near the bottom of the shallow basin.' },
+  ],
+};
+function buildGuide(list) {
+  gSvg.replaceChildren(); gList.replaceChildren(); gLayer.querySelectorAll('.g-label, .g-badge').forEach(e => e.remove());
+  const svgEl = (tag, attrs) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in attrs) e.setAttribute(k, attrs[k]); gSvg.appendChild(e); return e; };
+  const make = (tag, cls, parent) => { const e = document.createElement(tag); if (cls) e.className = cls; parent.appendChild(e); return e; };
+  G = list.map((g0, i) => {
+    const g = { ...g0 };
+    g.halo = svgEl('path', { fill: 'none', stroke: 'rgba(255,255,255,0.82)', 'stroke-width': 7, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+    g.line = svgEl('path', { fill: 'none', stroke: PEN, 'stroke-width': 3, 'stroke-linecap': 'round' });
+    g.headEl = svgEl('path', { fill: PEN });
+    g.el = make('div', 'g-label', gLayer);
+    g.headEl2 = make('b', '', g.el); g.bodyEl = make('span', '', g.el);
+    g.badge = make('div', 'g-badge', gLayer); g.badge.textContent = String(i + 1); g.badge.setAttribute('aria-hidden', 'true');
+    g.li = make('li', '', gList); const num = make('span', 'g-num', g.li), txt = make('span', '', g.li);
+    num.textContent = String(i + 1); num.setAttribute('aria-hidden', 'true');
+    g.liHead = make('b', '', txt); g.liBody = make('span', '', txt);
+    g.a = new THREE.Vector3(); g.txt = ''; g.hd = ''; g.on = null;
+    return g;
+  });
+}
+const _gp = new THREE.Vector3(), _gb = new THREE.Vector3();
+let gW = 1, gH = 1;
+const scr = v => { _gp.copy(v).project(camera); return [((_gp.x + 1) / 2) * gW, ((1 - _gp.y) / 2) * gH]; };
+const f1 = v => v.toFixed(1);
+function drawArrow(g, x0, y0, x1, y1) {
+  const len0 = Math.hypot(x1 - x0, y1 - y0) || 1; x1 -= ((x1 - x0) / len0) * 6; y1 -= ((y1 - y0) / len0) * 6;   // stop just short, so the target stays visible
+  const len = Math.hypot(x1 - x0, y1 - y0) || 1, ux = (x1 - x0) / len, uy = (y1 - y0) / len, bx = x1 - ux * 16, by = y1 - uy * 16, hw = 7.5;
+  const line = `M${f1(x0)} ${f1(y0)}L${f1(bx)} ${f1(by)}`, head = `M${f1(x1)} ${f1(y1)}L${f1(bx - uy * hw)} ${f1(by + ux * hw)}L${f1(bx + uy * hw)} ${f1(by - ux * hw)}Z`;
+  g.line.setAttribute('d', line); g.headEl.setAttribute('d', head); g.halo.setAttribute('d', line + head);
+}
+const clearArrow = g => { for (const e of [g.line, g.headEl, g.halo]) e.setAttribute('d', ''); };
+function guideTexts() {   // which labels apply right now, and their current wording
+  for (const g of G) {
+    const on = !g.when || g.when();
+    if (on !== g.on) { g.on = on; g.el.style.display = g.badge.style.display = on ? '' : 'none'; g.li.hidden = !on; if (!on) clearArrow(g); }
+    if (!on) continue;
+    const hd = typeof g.head === 'function' ? g.head() : g.head;   // a heading can change with the page's settings
+    if (hd !== g.hd) { g.hd = hd; g.headEl2.textContent = hd; g.liHead.textContent = hd + '. '; }
+    const t = g.body(); if (t !== g.txt) { g.txt = t; g.bodyEl.textContent = t; g.liBody.textContent = t; }
+  }
+}
+// the figure's box on screen: the surface corners on the page and at full height, and its highest point
+const gBox = [0, 0, 0, 0];
+const grow = v => { const p = scr(v); gBox[0] = Math.min(gBox[0], p[0]); gBox[2] = Math.max(gBox[2], p[0]); gBox[1] = Math.min(gBox[1], p[1]); gBox[3] = Math.max(gBox[3], p[1]); return p; };
+function figBox() {
+  gBox[0] = gBox[1] = Infinity; gBox[2] = gBox[3] = -Infinity;
+  for (const x of [-DOM, DOM]) for (const y of [-DOM, DOM]) { grow(d2w(x, y, 0, _gb)); grow(pageAt(x, y, _gb)); }
+  grow(d2w(...hiPt(pop.s), 0, _gb));
+}
+const fab = $('guideFab');
+function markGuide(on) {
+  fab.setAttribute('aria-pressed', String(on)); $('guideFabText').textContent = on ? 'Hide guide' : 'Guide';
+  fab.title = on ? 'Hide the labels' : 'Show labels that explain the figure';
+}
+function placeFab(ready) {   // just above the figure's top-right corner; with the phone list showing, in the list's header
+  const [x0, y0, x1, y1] = gBox, ok = ready && x1 > 0 && x0 < gW && y1 > 0 && y0 < gH;
+  if (fab.hidden === ok) fab.hidden = !ok;
+  if (!ok) return;
+  const w = fab.offsetWidth, h = fab.offsetHeight;
+  let x = x1 - w, y = y0 - h - 12;
+  if (guideOn && guideNarrow) { const r = gList.getBoundingClientRect(); x = r.right - w - 6; y = r.top + 5; }
+  else if (y < 8) { x = x1 + 12; y = y0; }
+  fab.style.transform = `translate(${f1(clamp(x, 8, gW - w - 8))}px, ${f1(clamp(y, 8, gH - h - 8))}px)`;
+}
+function guideFrame() {
+  gW = stage.clientWidth; gH = stage.clientHeight;
+  const ready = !!GUIDES[spread] && !busy && pop.rise > 0.97 && pop.group.visible, show = guideOn && ready;
+  if (ready) figBox();
+  if (gLayer.hidden === show) gLayer.hidden = !show;
+  if (show) drawGuide();
+  placeFab(ready);
+}
+function drawGuide() {
+  guideTexts();
+  const V = G.filter(g => g.on);
+  for (const g of V) g.pa = scr(g.at(g.a));
+  const [x0, y0, x1, y1] = gBox;
+  if (guideNarrow) {
+    const ps = V.map(g => [...g.pa]);
+    for (let j = 1; j < ps.length; j++) for (let i = 0; i < j; i++) {   // badges that land on the same spot step apart
+      const dx = ps[j][0] - ps[i][0], dy = ps[j][1] - ps[i][1], dd = Math.hypot(dx, dy);
+      if (dd < 28) { const ux = dd > 0.5 ? dx / dd : 0, uy = dd > 0.5 ? dy / dd : -1; ps[j][0] += ux * (28 - dd); ps[j][1] += uy * (28 - dd); }
+    }
+    V.forEach((g, i) => { g.badge.style.transform = `translate(${f1(ps[i][0] - 12)}px, ${f1(ps[i][1] - 12)}px)`; clearArrow(g); });
+    return;
+  }
+  for (const g of V) { g.h = g.el.offsetHeight; g.w = g.el.offsetWidth; }   // read every size before moving anything
+  for (const side of ['left', 'right']) {
+    const items = V.filter(g => g.col === side).sort((a, b) => a.slot - b.slot);
+    let floor = 8;
+    for (const g of items) { g.ly = Math.max(y0 + g.slot * (y1 - y0) - 12, floor); floor = g.ly + g.h + 12; }
+    const over = floor - 12 - (gH - 8); if (over > 0) for (const g of items) g.ly = Math.max(8, g.ly - over);
+    const x = side === 'left' ? clamp(x0 - 34 - GUIDE_W, 8, gW - GUIDE_W - 8) : clamp(x1 + 34, 8, gW - GUIDE_W - 8);
+    for (const g of items) g.lx = x;
+  }
+  for (const g of V) {
+    g.el.style.transform = `translate(${f1(g.lx)}px, ${f1(g.ly)}px)`;
+    drawArrow(g, g.col === 'left' ? g.lx + g.w + 2 : g.lx - 2, g.ly + 19, ...g.pa);
+  }
+}
+function setGuide(on) {
+  on = !!on && !!GUIDES[spread];
+  if (on === guideOn) return;
+  if (on) {
+    buildGuide(GUIDES[spread]);
+    guideOn = true; markGuide(true);
+    if (sim.status === 'ready') { play(); stepSim(); }   // a bead that hasn't moved has no path to label yet
+    guideNarrow = isNarrow(); gLayer.classList.toggle('narrow', guideNarrow);
+    guideTexts(); gLayer.hidden = false;         // filled and shown first, so the list can be measured for the camera
+    if (view !== 'guide') viewBeforeGuide = view;
+    setView('guide');
+  } else setView(viewBeforeGuide);              // any other view switches the guide off
 }
 
 /* ================= control flow ================= */
@@ -900,7 +1123,7 @@ const riseUp = then => tween(850, p => applyRise(easeBack(p)), () => { applyRise
 
 function goTo(n) {
   if (busy || n < 0 || n >= SPREADS.length || n === spread) return;
-  busy = true; pause();
+  setGuide(false); busy = true; pause();
   drawLeftLive(); drawRight(P.right.ctx, spread, true); refreshTex('live', 'right');   // print the paths before the model folds flat
   tween(240, p => applyRise(1 - p * p), () => startFlip(n));
 }
@@ -951,6 +1174,8 @@ betaIn.addEventListener('input', () => { st.beta = +betaIn.value; betaOut.textCo
 document.querySelectorAll('[data-eta]').forEach(b => b.addEventListener('click', () => { st.eta = +b.dataset.eta; etaIn.value = etaToSlider(st.eta); etaOut.textContent = st.eta.toFixed(3); restart(); }));
 document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
 $('light').addEventListener('click', () => setLamp(!lampOn));
+$('guideFab').addEventListener('click', () => { if (!busy) setGuide(!guideOn); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && guideOn) setGuide(false); });
 
 // pointer: click the surface to drop the bead, click a page edge to turn, double-click the text to read it
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), cv = renderer.domElement;
@@ -1004,6 +1229,7 @@ function tick(now) {
     if (p >= 1) camTween = null;
   }
   controls.update(); renderer.render(scene, camera);
+  guideFrame();
   requestAnimationFrame(tick);
 }
 
@@ -1015,7 +1241,7 @@ let autoplay = true;
 window.__book = {
   P, sim, SPREADS, SURF, HS, goTo, camera, controls, d2w, applyRise, play, pause, restart,
   dropAt(x, y) { st.start = [x, y]; restart(); },
-  setLamp, get lampOn() { return lampOn; },
+  setLamp, get lampOn() { return lampOn; }, setGuide, get guideOn() { return guideOn; },
   get spread() { return spread; }, get busy() { return busy; }, get st() { return st; },
   get autoplay() { return autoplay; }, set autoplay(v) { autoplay = v; },
 };
