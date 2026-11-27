@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bias and Variance, a 3D Book | Pedram Jahangiry</title>
+<meta name="description" content="An interactive 3D pop-up book on the bias-variance tradeoff, underfitting and overfitting: darts on a board, a fan of fitted curves, an error surface over model complexity and data, and a ridge penalty. Press Guide on any page for labels.">
+<link rel="canonical" href="https://pedramjahangiry.com/Interactive_tools/3d_books/bias-variance-book.html">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Libre+Caslon+Text:wght@700&family=STIX+Two+Text:ital,wght@0,600;1,600;1,700&family=Source+Serif+4:ital,wght@0,600;0,700;1,600&display=swap">
+<style>
+  /* Layout: one full-bleed WebGL desk scene (a single night-desk look, by choice) above a docked control bar. */
+  :root {
+    color-scheme: dark;
+    --desk: #120c08;
+    --panel: rgba(28, 20, 15, 0.94);
+    --panel-edge: rgba(240, 226, 204, 0.16);
+    --text: #f3e9d8;
+    --muted: #bfae94;
+    --lamp: #e8a640;
+    --lamp-ink: #1d1209;
+    --field: rgba(240, 226, 204, 0.09);
+    --font-ui: "IBM Plex Sans", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body {
+    background: var(--desk);
+    color: var(--text);
+    font-family: var(--font-ui);
+    overflow: hidden;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  #stage { position: fixed; inset: 0 0 var(--hud-h, 120px) 0; }
+  #stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .vignette {
+    position: fixed; inset: 0 0 var(--hud-h, 120px) 0; pointer-events: none;
+    background: radial-gradient(120% 95% at 45% 40%, transparent 60%, rgba(6, 4, 2, 0.5) 100%);
+  }
+  .hud {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 11px calc(11px + env(safe-area-inset-bottom, 0px));
+    background: var(--panel);
+    border-top: 1px solid var(--panel-edge);
+  }
+  .hud-inner { max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 9px 20px; }
+  .group { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .label { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .label .sym { text-transform: none; letter-spacing: 0; font-size: 14px; }
+  select, button {
+    font: 500 14px var(--font-ui); color: var(--text);
+    background: var(--field); border: 1px solid var(--panel-edge);
+    border-radius: 6px; padding: 7px 12px; cursor: pointer; white-space: nowrap;
+  }
+  button:hover:not(:disabled) { background: rgba(240, 226, 204, 0.16); }
+  button.primary, button[aria-pressed="true"] { background: var(--lamp); color: var(--lamp-ink); border-color: var(--lamp); }
+  button.primary { min-width: 82px; }
+  button:disabled { opacity: 0.4; cursor: default; }
+  :is(select, button, input):focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+  input[type="range"] { width: 150px; accent-color: var(--lamp); }
+  output { font: 500 14px var(--font-mono); font-variant-numeric: tabular-nums; min-width: 3.4em; }
+  .buttons { display: flex; gap: 8px; }
+  .seg { display: flex; }
+  .seg button { border-radius: 0; margin-left: -1px; }
+  .seg button:first-child { border-radius: 6px 0 0 6px; margin-left: 0; }
+  .seg button:last-child { border-radius: 0 6px 6px 0; }
+  .pager { display: flex; align-items: center; gap: 10px; padding-right: 20px; border-right: 1px solid var(--panel-edge); }
+  .pagelabel { font: 500 13px var(--font-mono); font-variant-numeric: tabular-nums; color: var(--muted); min-width: 9em; text-align: center; }
+  .spacer { flex: 1 1 0; }
+  .hint { flex: 1 1 320px; margin: 0; font-size: 12.5px; color: var(--muted); }
+  .site { flex: 0 1 auto; min-width: 0; font: 600 12.5px/1.5 var(--font-mono); letter-spacing: 0.02em; color: var(--lamp); text-decoration: none; }
+  .site span { white-space: nowrap; }
+  .site:hover { text-decoration: underline; }
+  .site:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+  .book-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; min-width: 0; }
+  .walkthrough { display: inline-flex; align-items: center; gap: 9px; min-height: 40px; box-sizing: border-box; padding: 7px 12px; border: 1px solid var(--panel-edge); border-radius: 6px; color: var(--text); background: var(--field); text-decoration: none; font: 500 13px/1.35 var(--font-ui); }
+  .walkthrough svg { width: 25px; height: 18px; flex: none; }
+  .walkthrough:hover { border-color: var(--lamp); background: rgba(240, 226, 204, 0.12); }
+  .walkthrough:focus-visible { outline: 2px solid var(--lamp); outline-offset: 3px; }
+  @media (max-width: 700px) { .book-links { width: 100%; } .walkthrough { min-height: 44px; } }
+  .rowbreak { flex-basis: 100%; height: 0; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .fallback { position: fixed; inset: 0 0 var(--hud-h, 120px) 0; display: grid; place-items: center; color: var(--muted); padding: 24px; text-align: center; }
+  /* Guide: red-pen labels over the figure, with arrows to what they explain */
+  .guide-layer { position: fixed; inset: 0 0 var(--hud-h, 120px) 0; pointer-events: none; --g-red: #c8174f; }
+  .guide-layer svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .g-label {
+    position: absolute; left: 0; top: 0; box-sizing: border-box; width: 262px; padding: 9px 12px 10px;
+    background: #fbf8f1; color: #1b1511; border-radius: 7px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    font: 400 14px/1.42 var(--font-ui); will-change: transform;
+  }
+  .g-label.wide { width: auto; max-width: 660px; white-space: nowrap; }
+  .g-label b { display: block; font-weight: 600; font-size: 15px; color: var(--g-red); margin-bottom: 2px; }
+  .g-list {
+    position: absolute; top: 8px; left: 16px; right: 16px; margin: 0; padding: 9px 12px; list-style: none;
+    background: #fbf8f1; color: #1b1511; border-radius: 7px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    font: 400 12.5px/1.36 var(--font-ui);
+    max-height: 42%; overflow-y: auto; overscroll-behavior: contain; pointer-events: auto;   /* long lists scroll, so the figure keeps most of the screen */
+  }
+  .g-list li { display: flex; gap: 8px; }
+  .g-list li + li { margin-top: 5px; }
+  .g-list b { font-weight: 600; color: var(--g-red); }
+  .g-num, .g-badge {
+    flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--g-red); color: #fff;
+    font: 600 12px/20px var(--font-ui); text-align: center;
+  }
+  .g-badge { position: absolute; left: 0; top: 0; width: 24px; height: 24px; line-height: 24px; font-size: 13px; box-shadow: 0 0 0 2px #fff, 0 2px 6px rgba(0, 0, 0, 0.4); }
+  .guide-layer.narrow .g-label, .guide-layer:not(.narrow) .g-list, .guide-layer:not(.narrow) .g-badge { display: none; }
+  .g-list::before { content: "Guide"; display: block; margin: -1px 0 10px; line-height: 26px; font: 600 12px/26px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--g-red); }
+  /* the Guide button floats beside the figure, so it is always in the same place relative to the picture */
+  .guide-fab {
+    position: fixed; left: 0; top: 0; z-index: 3; display: inline-flex; align-items: center; gap: 7px;
+    min-height: 36px; padding: 6px 14px 6px 7px; border: 0; border-radius: 999px;
+    background: #fbf8f1; color: #1b1511; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+    font: 600 14px var(--font-ui); will-change: transform;
+  }
+  .guide-fab .q { width: 23px; height: 23px; border-radius: 50%; background: #c8174f; color: #fff; font: 700 14px/23px var(--font-ui); text-align: center; }
+  .guide-fab:hover:not(:disabled) { background: #ffffff; }
+  .guide-fab[aria-pressed="true"], .guide-fab[aria-pressed="true"]:hover { background: #c8174f; color: #fff; }
+  .guide-fab[aria-pressed="true"] .q { background: #fff; color: #c8174f; }
+  .guide-fab:focus-visible { outline: 2px solid var(--lamp); outline-offset: 3px; }
+  @media (max-width: 700px) {
+    input[type="range"] { width: 112px; }
+    .hud-inner { gap: 9px 14px; }
+    .pager { border-right: 0; padding-right: 0; flex-basis: 100%; justify-content: space-between; }
+    .spacer { display: none; }
+  }
+</style>
+
+<div id="stage" role="img" aria-label="An open textbook on a desk about the bias-variance tradeoff. On every spread the left page explains one idea and a pop-up figure rises from the right page: a dartboard, a fan of fitted curves, and a surface of test error."></div>
+<div class="vignette"></div>
+<div id="guideLayer" class="guide-layer" hidden>
+  <svg id="guideSvg" aria-hidden="true"></svg>
+  <ol id="guideList" class="g-list" aria-label="Guide to the figure"></ol>
+</div>
+<button id="guideFab" class="guide-fab" aria-pressed="false" hidden title="Show labels that explain the figure"><span class="q" aria-hidden="true">?</span><span id="guideFabText">Guide</span></button>
+<p id="fallback" class="fallback" hidden>This page needs WebGL to draw the 3D book. Try a recent desktop browser.</p>
+
+<div class="hud" id="hud">
+  <div class="hud-inner">
+    <nav class="pager" aria-label="Book pages">
+      <button id="prev" aria-label="Previous pages">← Prev</button>
+      <span id="pageLabel" class="pagelabel">pp. 101–102 · 1 of 4</span>
+      <button id="next" aria-label="Next pages">Next →</button>
+    </nav>
+    <div class="group" data-spreads="0">
+      <span class="label" id="biasLbl">Bias</span>
+      <div class="seg" role="group" aria-labelledby="biasLbl"><button data-bias="0">Low</button><button data-bias="1">High</button></div>
+    </div>
+    <div class="group" data-spreads="0">
+      <span class="label" id="varLbl">Variance</span>
+      <div class="seg" role="group" aria-labelledby="varLbl"><button data-vari="0">Low</button><button data-vari="1">High</button></div>
+    </div>
+    <div class="group" data-spreads="1 2">
+      <label class="label" for="deg">Degree <span class="sym">d</span></label>
+      <input type="range" id="deg" min="0" max="12" step="1">
+      <output id="degOut" for="deg">3</output>
+    </div>
+    <div class="buttons" data-spreads="1" role="group" aria-label="Degree presets">
+      <button data-deg="1">Underfit</button>
+      <button data-deg="3">Good balance</button>
+      <button data-deg="12">Overfit</button>
+    </div>
+    <div class="group" data-spreads="2">
+      <label class="label" for="nIdx">Data <span class="sym">n</span></label>
+      <input type="range" id="nIdx" min="0" max="23" step="1">
+      <output id="nOut" for="nIdx">15</output>
+    </div>
+    <div class="group" data-spreads="3">
+      <label class="label" for="lam">Penalty <span class="sym">λ</span></label>
+      <input type="range" id="lam" min="-4" max="2" step="0.05">
+      <output id="lamOut" for="lam">0</output>
+    </div>
+    <div class="buttons" data-spreads="3" role="group" aria-label="Penalty presets">
+      <button data-lam="none">None</button>
+      <button data-lam="best">Best</button>
+      <button data-lam="heavy">Heavy</button>
+    </div>
+    <div class="buttons">
+      <button id="play" class="primary">Play</button>
+      <button id="step">Step</button>
+      <button id="reset">Reset</button>
+      <button id="resample" data-spreads="0 1 3">New samples</button>
+    </div>
+    <span class="spacer"></span>
+    <button id="light" aria-pressed="true" title="Switch the reading light on or off">Light</button>
+    <div class="seg" role="group" aria-label="Camera view">
+      <button id="viewBook" data-view="book" aria-pressed="true">Book</button>
+      <button id="viewText" data-view="text" aria-pressed="false">Text</button>
+      <button id="viewFigure" data-view="figure" aria-pressed="false">Figure</button>
+    </div>
+    <span class="rowbreak"></span>
+    <p class="hint" id="hint"></p>
+    <div class="book-links">
+      <a class="walkthrough" id="walkthrough" href="https://www.youtube.com/watch?v=Joy1_FR3Y4c" target="_blank" rel="noopener" aria-label="Watch the bias-variance walkthrough on YouTube (opens in a new tab)">
+        <svg viewBox="0 0 28 20" aria-hidden="true"><rect width="28" height="20" rx="5" fill="#ff0033"/><path d="M11 5.5 19 10 11 14.5Z" fill="#fff"/></svg>
+        <span>Watch the walkthrough on YouTube</span>
+      </a>
+      <a class="site" href="https://pedramjahangiry.com/newsletter.html" target="_blank" rel="noopener">For more tools, sign up for the weekly newsletter at <span>pedramjahangiry.com &rarr;</span></a>
+    </div>
+  </div>
+</div>
+<p id="live" class="sr-only" aria-live="polite"></p>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { Line2 } from 'three/addons/lines/Line2.js';
+import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
+import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
+
+/* ================= constants ================= */
+const W = 1.1, H = 1.45, BASE = 0.03, HS = 0.22, LIFT = 0.004, BEAD_R = 0.02;
+const CW = 1024, CH = 1350, SPLIT = 800;                       // page in logical px; the left page is static above SPLIT, live below
+const SCALE = Math.min(innerWidth, innerHeight) < 600 ? 1.5 : 2; // backing-store scale of the page canvases
+const MX0 = 112, MY0 = 150, MS = 800, DOM = 3;                  // figure box on right pages; the surface domain is [-3, 3]^2
+const X0 = 96, XR = 928, TW = XR - X0;                          // text column on left pages
+const FLIP_MS = 950, PAGE0 = 101;
+const INK = '#000000', INK_SOFT = '#1a2130', PAPER = '#ffffff';
+const AMBER = '#a85300', RED = '#a01a10', BLUE = '#1f44a8', HAND = '#1f44a8', GREEN = '#0a6b3c';   // green is the training error
+const FONT = {
+  head: '"Libre Caslon Text", Georgia, serif',
+  body: '"Source Serif 4", Georgia, serif',
+  math: '"STIX Two Text", "Cambria Math", "Times New Roman", serif',
+  mono: '"IBM Plex Mono", ui-monospace, monospace',
+  hand: 'Caveat, "Segoe Print", cursive',
+};
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const linspace = (a, b, n) => Array.from({ length: n }, (_, i) => a + ((b - a) * i) / (n - 1));
+const pageLift = d => 0.02 * (1 - Math.exp(-d / 0.08)) - 0.006 * (d / W);
+const pageY = d => BASE + pageLift(d);
+const toCanvas = (x, y) => [MX0 + ((x + DOM) / (2 * DOM)) * MS, MY0 + ((DOM - y) / (2 * DOM)) * MS];
+function mulberry32(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const gauss = rng => Math.sqrt(-2 * Math.log(rng() + 1e-12)) * Math.cos(2 * Math.PI * rng());
+const f4 = v => v.toFixed(4), f3 = v => v.toFixed(3);
+
+/* ================= the model: polynomial least squares, with exact bias and variance =================
+   Truth f(x) = sin 2πx + 0.8·exp(−((x − 0.7)/0.1)²) on [0, 1]. A training set is n evenly spaced inputs with
+   y = f(x) + ε, ε ~ N(0, σ²), σ = 0.3. The model is a degree-d polynomial written in Legendre terms (the same
+   fitted curve as plain powers of x; the basis only matters for the ridge penalty, which then treats every
+   degree on the same scale). A least-squares fit is linear in y, f̂ = h(x)ᵀy, so its average and its variance
+   over all training sets are exact: E f̂(x) = h(x)ᵀf and Var f̂(x) = σ²‖h(x)‖². Bias² and variance are averaged
+   over 801 evenly spaced test inputs. The training error is exact too: with fitted values ŷ = Hy at the training
+   inputs, E‖y − ŷ‖²/n = (‖(I − H)f‖² + σ²‖I − H‖²)/n. Nothing here is simulated. */
+const SIG = 0.3, S2 = SIG * SIG, NPTS = 15, DMAX = 12, NT = 801, NE = 161;
+const TRUTH = x => Math.sin(2 * Math.PI * x) + 0.8 * Math.exp(-(((x - 0.7) / 0.1) ** 2));
+function leg(x, d) {
+  const t = 2 * x - 1, p = new Float64Array(d + 1); p[0] = 1; if (d > 0) p[1] = t;
+  for (let k = 2; k <= d; k++) p[k] = ((2 * k - 1) * t * p[k - 1] - (k - 1) * p[k - 2]) / k;
+  return p;
+}
+const XT = linspace(0, 1, NT), FT = XT.map(TRUTH), LT = XT.map(x => leg(x, DMAX));
+const XE = linspace(0, 1, NE), FE = XE.map(TRUTH), LE = XE.map(x => leg(x, DMAX));
+const GRAM = (() => {
+  const k = DMAX + 1, G = Array.from({ length: k }, () => new Float64Array(k));
+  for (const p of LT) for (let i = 0; i < k; i++) for (let j = 0; j < k; j++) G[i][j] += (p[i] * p[j]) / NT;
+  return G;
+})();
+function solve(A, B) {   // Gaussian elimination with partial pivoting: returns X with A X = B (A is k×k, B is k×m)
+  const k = A.length, m = B[0].length, a = A.map(r => Float64Array.from(r)), b = B.map(r => Float64Array.from(r));
+  for (let c = 0; c < k; c++) {
+    let p = c; for (let r = c + 1; r < k; r++) if (Math.abs(a[r][c]) > Math.abs(a[p][c])) p = r;
+    [a[c], a[p]] = [a[p], a[c]]; [b[c], b[p]] = [b[p], b[c]];
+    for (let r = c + 1; r < k; r++) {
+      const f = a[r][c] / a[c][c]; if (!f) continue;
+      for (let j = c; j < k; j++) a[r][j] -= f * a[c][j];
+      for (let j = 0; j < m; j++) b[r][j] -= f * b[c][j];
+    }
+  }
+  for (let c = k - 1; c >= 0; c--) for (let j = 0; j < m; j++) { let s = b[c][j]; for (let r = c + 1; r < k; r++) s -= a[c][r] * b[r][j]; b[c][j] = s / a[c][c]; }
+  return b;
+}
+const MODELS = new Map();
+function model(n, d, lam = 0) {
+  const key = `${n}|${d}|${lam.toPrecision(6)}`;
+  if (MODELS.has(key)) return MODELS.get(key);
+  const k = d + 1, xs = linspace(0, 1, n), Phi = xs.map(x => leg(x, d)), fx = xs.map(TRUTH);
+  const A = Array.from({ length: k }, (_, i) => { const r = new Float64Array(k); for (let j = 0; j < k; j++) { let s = 0; for (const p of Phi) s += p[i] * p[j]; r[j] = s; } return r; });
+  for (let i = 1; i < k; i++) A[i][i] += lam;                       // the intercept is not penalized
+  const M = solve(A, Array.from({ length: k }, (_, i) => Float64Array.from(Phi, p => p[i])));   // k × n: coefficients = M y
+  const c = M.map(r => r.reduce((s, v, j) => s + v * fx[j], 0));   // coefficients of the average fit E f̂
+  let b2 = 0;
+  for (let t = 0; t < NT; t++) { let s = 0; for (let i = 0; i < k; i++) s += LT[t][i] * c[i]; b2 += (s - FT[t]) ** 2; }
+  b2 /= NT;
+  let v = 0;
+  for (let i = 0; i < k; i++) for (let j = 0; j < k; j++) { let s = 0; for (let q = 0; q < n; q++) s += M[i][q] * M[j][q]; v += GRAM[i][j] * s; }
+  v *= S2;
+  let tb = 0, tv = 0;   // expected training error: the average squared residual on the model's own training points
+  for (let q = 0; q < n; q++) {
+    let s = 0;
+    for (let j = 0; j < n; j++) { let h = 0; for (let i = 0; i < k; i++) h += Phi[q][i] * M[i][j]; s += h * fx[j]; const e = (q === j ? 1 : 0) - h; tv += e * e; }
+    tb += (fx[q] - s) ** 2;
+  }
+  const out = { n, d, lam, xs, fx, M, c, b2, v, err: b2 + v, test: b2 + v + S2, train: (tb + S2 * tv) / n };
+  MODELS.set(key, out);
+  return out;
+}
+const evalCoef = (coef, t) => { let s = 0; for (let i = 0; i < coef.length; i++) s += LE[t][i] * coef[i]; return s; };
+function fitValues(m, y) { const coef = m.M.map(r => r.reduce((s, v, j) => s + v * y[j], 0)); return XE.map((_, t) => evalCoef(coef, t)); }
+const meanValues = m => XE.map((_, t) => evalCoef(m.c, t));
+
+// §5.3: expected test error over degree × training-set size (24 sizes, 15 to 300, evenly spaced in log n)
+const NLEV = 24, NL = Array.from({ length: NLEV }, (_, k) => Math.round(15 * 20 ** (k / (NLEV - 1))));
+const ERR = NL.map(n => Array.from({ length: DMAX + 1 }, (_, d) => model(n, d).test));
+const BEST = ERR.map(row => row.indexOf(Math.min(...row)));
+// §5.4: a degree-12 fit with a ridge penalty
+const RD = 12, LAM_MIN = -4, LAM_MAX = 2;
+const LAMS = Array.from({ length: 121 }, (_, i) => LAM_MIN + i * 0.05);
+const lamOf = s => (s <= LAM_MIN + 1e-9 ? 0 : 10 ** s);   // the left end of the slider is λ = 0
+const RIDGE = LAMS.map(s => model(NPTS, RD, lamOf(s)));
+const BEST_LAM = lamOf(LAMS[RIDGE.reduce((b, m, i) => (m.test < RIDGE[b].test ? i : b), 0)]);
+const lamText = l => (l === 0 ? '0' : l < 0.01 ? l.toPrecision(1) : l < 10 ? l.toPrecision(2) : l.toFixed(0));
+
+/* ================= page canvases ================= */
+function makeCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function mk(w, h) { const canvas = makeCanvas(Math.round(w * SCALE), Math.round(h * SCALE)); return { canvas, ctx: canvas.getContext('2d') }; }
+const P = { top: mk(CW, SPLIT), live: mk(CW, CH - SPLIT), right: mk(CW, CH), front: mk(CW, CH), back: mk(CW, CH), card: mk(MS, MS) };
+
+function prep(c, dy = 0) { c.setTransform(SCALE, 0, 0, SCALE, 0, -dy * SCALE); c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.setLineDash([]); }
+function paper(c, gutterRight, y0, y1) {
+  c.fillStyle = PAPER; c.fillRect(0, y0, CW, y1 - y0);
+  const g = c.createLinearGradient(gutterRight ? CW : 0, 0, gutterRight ? CW - 90 : 90, 0);   // a soft shadow in the gutter only: the rest stays pure white
+  g.addColorStop(0, 'rgba(20,24,32,0.22)'); g.addColorStop(1, 'rgba(20,24,32,0)');
+  c.fillStyle = g; c.fillRect(0, y0, CW, y1 - y0);
+}
+function wrap(c, text, x, y, maxW, lh) {
+  let line = '';
+  for (const w of text.split(' ')) {
+    const test = line ? line + ' ' + w : w;
+    if (c.measureText(test).width > maxW && line) { c.fillText(line, x, y); y += lh; line = w; } else line = test;
+  }
+  if (line) { c.fillText(line, x, y); y += lh; }
+  return y;
+}
+function spaced(c, text, x, y, sp) { if ('letterSpacing' in c) { c.letterSpacing = sp + 'px'; c.fillText(text, x, y); c.letterSpacing = '0px'; } else c.fillText(text, x, y); }
+function fitText(c, text, x, y, maxW, style, size, fam) {
+  let s = size; c.font = `${style} ${s}px ${fam}`;
+  while (c.measureText(text).width > maxW && s > 14) { s -= 1; c.font = `${style} ${s}px ${fam}`; }
+  c.fillText(text, x, y);
+}
+const LAYOUT = [];   // the y where each left page's text ended; checked against SPLIT
+function header(c, sec, title) {
+  c.fillStyle = INK_SOFT; c.font = `600 22px ${FONT.mono}`; spaced(c, `§ ${sec}  ·  GENERALIZATION`, X0, 112, 3);
+  c.fillStyle = INK; fitText(c, title, X0, 196, TW, '700', 68, FONT.head);
+  c.fillRect(X0, 224, TW, 3);
+  return 290;
+}
+function para(c, text, y) { c.font = `600 32px ${FONT.body}`; c.fillStyle = INK; return wrap(c, text, X0, y, TW, 46) + 14; }
+const UPRIGHT = /(Bias|Var|E(?=\[)|[∇Σ←√‖=+−~,()[\]²]+|\d+)/;   // words, operators and digits stay upright; single letters are italic
+function mathText(c, text, x, y, size, align) {
+  const parts = text.split(UPRIGHT).filter(Boolean), fonts = parts.map(p => `${UPRIGHT.test(p) ? '' : 'italic '}600 ${size}px ${FONT.math}`), gap = size * 0.06;
+  const ws = parts.map((p, i) => { c.font = fonts[i]; return c.measureText(p).width; });
+  let cx = x - (align === 'center' ? (ws.reduce((a, b) => a + b, 0) + (parts.length - 1) * gap) / 2 : 0);
+  c.textAlign = 'left';
+  parts.forEach((p, i) => { c.font = fonts[i]; c.fillText(p, cx, y); cx += ws[i] + gap; });
+}
+function eqBox(c, lines, label, y) {
+  const top = y - 24, h = 36 + lines.length * 56;
+  c.fillStyle = 'rgba(8,16,34,0.07)'; c.fillRect(X0, top, TW, h);
+  c.strokeStyle = INK; c.lineWidth = 1.5; c.strokeRect(X0 + 0.75, top + 0.75, TW - 1.5, h - 1.5);
+  c.fillStyle = INK;
+  lines.forEach((l, i) => mathText(c, l, X0 + TW / 2 - 30, top + 58 + i * 56, 40, 'center'));
+  c.textAlign = 'right'; c.font = `600 25px ${FONT.body}`; c.fillStyle = INK_SOFT; c.fillText(label, XR - 18, top + h / 2 + 9);
+  c.textAlign = 'left';
+  return top + h + 54;
+}
+function liveHead(c, label) {
+  c.fillStyle = INK; c.fillRect(X0, 820, TW, 1.5);
+  c.fillStyle = INK_SOFT; c.font = `600 19px ${FONT.mono}`; spaced(c, label, X0, 852, 2.5);
+}
+function rows(c, list, x, y, w, pitch = 44) {
+  list.forEach(([k, v, col], i) => {
+    const ry = y + i * pitch;
+    c.font = `600 25px ${FONT.body}`; c.fillStyle = INK_SOFT; c.fillText(k, x, ry);
+    c.font = `600 24px ${FONT.mono}`; c.fillStyle = col || INK; c.textAlign = 'right'; c.fillText(v, x + w, ry); c.textAlign = 'left';
+    c.fillStyle = 'rgba(8,16,34,0.22)'; c.fillRect(x, ry + 13, w, 1.2);
+  });
+}
+function swatch(c, color, x, y, dash) {
+  if (dash) { c.strokeStyle = color; c.lineWidth = 4; c.setLineDash([7, 5]); c.beginPath(); c.moveTo(x, y - 8); c.lineTo(x + 34, y - 8); c.stroke(); c.setLineDash([]); }
+  else { c.fillStyle = color; c.fillRect(x, y - 11, 34, 6); }
+}
+function statusLine(c, text, color, y = 1106) { c.fillStyle = color || INK; fitText(c, text, X0, y, TW, '700', 28, FONT.body); }
+function note(c, text, y = 1176) {
+  c.save(); c.translate(X0 + 4, y); c.rotate(-0.022);
+  c.fillStyle = HAND; fitText(c, text, 0, 0, TW - 20, '700', 40, FONT.hand); c.restore();
+}
+function pageNum(c, n) {
+  c.font = `600 23px ${FONT.body}`; c.fillStyle = INK_SOFT; c.textAlign = 'center'; c.fillText(String(n), CW / 2, 1298);
+  c.font = `600 17px ${FONT.mono}`; c.textAlign = n % 2 ? 'left' : 'right'; spaced(c, 'pedramjahangiry.com', n % 2 ? X0 : XR, 1298, 1.5);   // running footer at the outer corner
+  c.textAlign = 'left';
+}
+// a small line chart: xs are positions in [x0, x1], series values can be shown on a log scale
+function xyChart(c, bx, by, bw, bh, o) {
+  c.font = `600 18px ${FONT.mono}`; c.fillStyle = INK_SOFT; spaced(c, o.title, bx, by + 14, 2);
+  const top = by + 34, bot = by + bh - 30, val = v => (o.lin ? v : Math.log10(Math.max(v, o.floor || 1e-4)));   // o.lin = the top of a plain (not log) scale that starts at 0
+  c.fillStyle = INK; c.fillRect(bx, bot, bw, 2); c.fillRect(bx, top - 4, 2, bot - top + 4);
+  let mn = Infinity, mx = -Infinity;
+  for (const s of o.series) for (const v of s.v) { const q = val(v); mn = Math.min(mn, q); mx = Math.max(mx, q); }
+  if (o.lin) { mn = 0; mx = o.lin; } else { mn = Math.floor(mn * 2) / 2; mx = Math.ceil(mx * 2) / 2; if (mx - mn < 0.5) mx = mn + 0.5; }
+  const X = x => bx + 6 + ((x - o.x0) / (o.x1 - o.x0)) * (bw - 12), Y = v => bot - (o.lin ? 1 : 5) - ((val(v) - mn) / (mx - mn)) * (bot - top - (o.lin ? 2 : 10));
+  c.font = `600 16px ${FONT.mono}`; c.fillStyle = INK_SOFT; c.textAlign = 'center';
+  for (const [x, lab] of o.ticks) { c.fillRect(X(x) - 1, bot, 2, 7); c.fillText(lab, X(x), bot + 24); }
+  c.textAlign = 'right';
+  if (o.lin) for (const [v, lab] of o.yticks || []) { c.fillRect(bx - 7, Y(v) - 1, 7, 2); c.fillText(lab, bx - 11, Y(v) + 6); }
+  else c.fillText('log scale', bx + bw, by + 14);
+  c.textAlign = 'left';
+  if (o.xlabel) { mathText(c, o.xlabel, bx + bw + 8, bot + 6, 24); }
+  for (const s of o.series) {
+    c.beginPath(); s.v.forEach((v, i) => (i ? c.lineTo(X(o.xs[i]), Y(v)) : c.moveTo(X(o.xs[i]), Y(v))));
+    c.strokeStyle = s.color; c.lineWidth = s.w || 3; c.lineJoin = 'round'; c.setLineDash(s.dash ? [8, 6] : []); c.stroke(); c.setLineDash([]);
+  }
+  for (const s of o.series) if (s.label) {   // a name at the line's right end, above or below it
+    const i = s.v.length - 1, lx = X(o.xs[i]) - 2, ly = Y(s.v[i]) + (s.below ? 22 : -9);
+    c.font = `700 17px ${FONT.mono}`; c.textAlign = 'right'; c.lineJoin = 'round';
+    c.strokeStyle = PAPER; c.lineWidth = 5; c.strokeText(s.label, lx, ly);   // a paper halo keeps the name readable where it crosses a line
+    c.fillStyle = s.color; c.fillText(s.label, lx, ly); c.textAlign = 'left';
+  }
+  if (o.mark) {
+    c.strokeStyle = 'rgba(8,16,34,0.35)'; c.lineWidth = 1.5; c.setLineDash([4, 5]); c.beginPath(); c.moveTo(X(o.mark.x), top); c.lineTo(X(o.mark.x), bot); c.stroke(); c.setLineDash([]);
+    for (const [v, col] of o.mark.dots) { c.beginPath(); c.arc(X(o.mark.x), Y(v), 7.5, 0, Math.PI * 2); c.fillStyle = col; c.fill(); c.strokeStyle = PAPER; c.lineWidth = 2; c.stroke(); }
+  }
+  if (o.best !== undefined) { const bxp = X(o.best); c.fillStyle = INK; c.beginPath(); c.moveTo(bxp, bot - 1); c.lineTo(bxp - 8, bot + 12); c.lineTo(bxp + 8, bot + 12); c.closePath(); c.fill(); }
+}
+
+/* ================= figures printed on the right pages (and on the pop-up card) ================= */
+function frame(c) { c.fillStyle = PAPER; c.fillRect(0, 0, MS, MS); c.strokeStyle = INK; c.lineWidth = 2.5; c.strokeRect(1.25, 1.25, MS - 2.5, MS - 2.5); }
+// the dartboard: radius 1 in board units, 330 px on the card
+const BC = 400, BR = 330, bpx = (x, y) => [BC + x * BR, BC - y * BR];
+function dartStats(ds) {
+  const n = ds.length; if (!n) return null;
+  const cx = ds.reduce((s, p) => s + p[0], 0) / n, cy = ds.reduce((s, p) => s + p[1], 0) / n;
+  const b2 = cx * cx + cy * cy, v = ds.reduce((s, p) => s + (p[0] - cx) ** 2 + (p[1] - cy) ** 2, 0) / n;
+  return { n, cx, cy, b2, v, mse: ds.reduce((s, p) => s + p[0] ** 2 + p[1] ** 2, 0) / n };
+}
+function plotBoard(c, darts) {
+  frame(c);
+  [1, 0.8, 0.6, 0.4, 0.2].forEach((r, i) => { c.beginPath(); c.arc(BC, BC, r * BR, 0, Math.PI * 2); c.fillStyle = i % 2 ? '#ffffff' : '#e9ecf2'; c.fill(); c.strokeStyle = INK; c.lineWidth = 2; c.stroke(); });
+  c.strokeStyle = 'rgba(8,16,34,0.3)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(BC - BR, BC); c.lineTo(BC + BR, BC); c.moveTo(BC, BC - BR); c.lineTo(BC, BC + BR); c.stroke();
+  c.beginPath(); c.arc(BC, BC, 0.055 * BR, 0, Math.PI * 2); c.fillStyle = RED; c.fill();
+  c.font = `600 17px ${FONT.mono}`; c.fillStyle = INK_SOFT; c.textAlign = 'center';
+  for (const r of [0.2, 0.4, 0.6, 0.8, 1]) c.fillText(r === 1 ? '1' : String(r), BC + r * BR - 0.1 * BR, BC + 22);
+  c.textAlign = 'left'; c.fillText('BULLSEYE = THE TRUTH', 26, MS - 24);
+  if (!darts || !darts.length) return;
+  for (const [x, y] of darts) { const [px, py] = bpx(x, y); c.beginPath(); c.arc(px, py, 4.5, 0, Math.PI * 2); c.fillStyle = INK; c.fill(); }
+  const s = dartStats(darts);
+  if (s.n < 2) return;
+  const [qx, qy] = bpx(s.cx, s.cy);
+  c.setLineDash([10, 8]); c.strokeStyle = BLUE; c.lineWidth = 4; c.beginPath(); c.arc(qx, qy, Math.sqrt(s.v) * BR, 0, Math.PI * 2); c.stroke(); c.setLineDash([]);
+  const L = Math.hypot(qx - BC, qy - BC);
+  if (L > 26) {
+    const ux = (qx - BC) / L, uy = (qy - BC) / L, ex = qx - ux * 14, ey = qy - uy * 14;
+    c.strokeStyle = AMBER; c.lineWidth = 6; c.lineCap = 'round'; c.beginPath(); c.moveTo(BC + ux * 6, BC + uy * 6); c.lineTo(ex - ux * 14, ey - uy * 14); c.stroke(); c.lineCap = 'butt';
+    c.fillStyle = AMBER; c.beginPath(); c.moveTo(ex, ey); c.lineTo(ex - ux * 26 - uy * 13, ey - uy * 26 + ux * 13); c.lineTo(ex - ux * 26 + uy * 13, ey - uy * 26 - ux * 13); c.closePath(); c.fill();
+  }
+  c.strokeStyle = AMBER; c.lineWidth = 6; c.beginPath(); c.arc(qx, qy, 13, 0, Math.PI * 2); c.stroke();
+}
+// curve plots: x in [0, 1], y in [−2, 2]
+const PX0 = 92, PX1 = 772, PY0 = 36, PY1 = 716, YMIN = -2, YMAX = 2;
+const cX = x => PX0 + x * (PX1 - PX0), cY = y => PY1 - ((y - YMIN) / (YMAX - YMIN)) * (PY1 - PY0);
+function plotAxes(c) {
+  frame(c);
+  c.strokeStyle = 'rgba(8,16,34,0.12)'; c.lineWidth = 1.2;
+  for (let y = -2; y <= 2; y++) { c.beginPath(); c.moveTo(PX0, cY(y)); c.lineTo(PX1, cY(y)); c.stroke(); }
+  for (const x of [0.25, 0.5, 0.75]) { c.beginPath(); c.moveTo(cX(x), PY0); c.lineTo(cX(x), PY1); c.stroke(); }
+  c.fillStyle = INK; c.fillRect(PX0, PY1, PX1 - PX0, 2); c.fillRect(PX0 - 2, PY0, 2, PY1 - PY0 + 2);
+  c.font = `600 19px ${FONT.mono}`; c.fillStyle = INK;
+  c.textAlign = 'center'; for (const x of [0, 0.25, 0.5, 0.75, 1]) { c.fillRect(cX(x) - 1, PY1, 2, 10); c.fillText(String(x), cX(x), PY1 + 33); }
+  c.textAlign = 'right'; for (let y = -2; y <= 2; y++) { c.fillRect(PX0 - 12, cY(y) - 1, 10, 2); c.fillText(String(y).replace('-', '−'), PX0 - 18, cY(y) + 7); }
+  c.textAlign = 'left'; c.font = `italic 600 27px ${FONT.math}`; c.fillText('x', PX1 + 4, PY1 + 34); c.fillText('y', PX0 - 50, PY0 + 10);
+}
+function curvePath(c, vals, color, width, dash) {
+  c.save(); c.beginPath(); c.rect(PX0, PY0, PX1 - PX0, PY1 - PY0); c.clip();
+  c.beginPath(); vals.forEach((v, t) => (t ? c.lineTo(cX(XE[t]), cY(v)) : c.moveTo(cX(XE[t]), cY(v))));
+  c.strokeStyle = color; c.lineWidth = width; c.lineJoin = 'round'; c.setLineDash(dash || []); c.stroke(); c.setLineDash([]); c.restore();
+}
+function plotCurves(c, fits, print) {
+  plotAxes(c);
+  if (print && fits.k) {   // printed before the card folds flat, so the turning page carries the fits
+    for (let i = 0; i < fits.k; i++) curvePath(c, fits.vals[i], 'rgba(31,68,168,0.55)', 2.2);
+    curvePath(c, fits.mean, AMBER, 5);
+  }
+  curvePath(c, FE, INK, 4.5);
+}
+// the error surface (§5.3): degree along θ₁, training size along θ₂ on a log scale
+const dOfX = x => (x + DOM) * (DMAX / (2 * DOM)), xOfD = d => (d * 2 * DOM) / DMAX - DOM;
+const kOfY = y => ((y + DOM) / (2 * DOM)) * (NLEV - 1), yOfK = k => (k / (NLEV - 1)) * 2 * DOM - DOM;
+const yOfN = n => -DOM + (2 * DOM * Math.log(n / 15)) / Math.log(20);
+
+/* ================= simulation state ================= */
+let spread = 0, cfg = null, st = null, playing = false, busy = false, acc = 0, liveDirty = true, cardDirty = true;
+const sim = { status: 'ready', t0: 0 };
+const pop = { rise: 0 };
+
+const DARTS = 20, DART_B = [0, 0.33], DART_S = [0.075, 0.24];
+const FITS = 20;
+function noiseFor(seed, k) { const r = mulberry32(seed * 1009 + k * 101 + 7); return Array.from({ length: NPTS }, () => gauss(r)); }
+function fitState(st, m) {
+  const vals = [], pts = [];
+  for (let i = 0; i < st.k; i++) { const z = noiseFor(st.seed, i), y = m.fx.map((f, j) => f + SIG * z[j]); vals.push(fitValues(m, y)); pts.push(y); }
+  return { k: st.k, vals, mean: meanValues(m), pts };
+}
+
+/* ================= spreads: copy, figures, live read-outs ================= */
+const LEVEL = ['low', 'high'];
+const SPREADS = [
+  {
+    kind: 'darts', stepMs: 230,
+    st: { bias: 1, vari: 0, seed: 1, darts: [], plan: [] },
+    hint: 'Pick the bias and the variance, then press Play to throw 20 darts. Each dart is one model trained on its own sample. Drag to orbit, scroll to zoom. Press ? Guide by the figure for labels.',
+    reset(st) {
+      const r = mulberry32(st.seed * 7919 + st.bias * 131 + st.vari * 37 + 3);
+      st.plan = Array.from({ length: DARTS }, () => { let x, y; do { x = DART_B[st.bias] + DART_S[st.vari] * gauss(r); y = DART_B[st.bias] + DART_S[st.vari] * gauss(r); } while (x * x + y * y > 1.1); return [x, y]; });
+      st.darts = [];
+    },
+    step(st) { if (st.darts.length < DARTS) { st.darts.push(st.plan[st.darts.length]); throwDart(st.darts.length - 1, st.darts[st.darts.length - 1]); } return st.darts.length >= DARTS; },
+    done: st => st.darts.length >= DARTS,
+    static(c) {
+      let y = header(c, '5.1', 'Bias and Variance');
+      y = para(c, 'Train the same model on many fresh samples. Each prediction lands somewhere new, like darts.', y);
+      y = eqBox(c, ['Bias = E[f̂] − f', 'Var = E[(f̂ − E[f̂])²]'], '(5.1)', y);
+      return para(c, 'Model bias is how far the average landing sits from the truth f. Model variance is how widely the landings scatter. A model that is too simple has high bias; one that is too complex has high variance.', y);
+    },
+    live(c) {
+      const s = dartStats(st.darts);
+      liveHead(c, 'DART LOG  ·  BOARD RADIUS = 1');
+      const b2 = s ? +f3(s.b2) : 0, v = s ? +f3(s.v) : 0;   // the miss is printed as the sum of the two printed parts
+      rows(c, [['darts thrown', `${st.darts.length} of ${DARTS}`], ['bias²', s ? f3(b2) : '–', AMBER], ['variance', s ? f3(v) : '–', BLUE], ['mean squared miss', s ? f3(b2 + v) : '–']], X0, 898, 400);
+      missBar(c, 548, 838, 380, 214, s ? s.b2 : 0, s ? s.v : 0);
+      statusLine(c, ...dartsStatus());
+      note(c, 'bias² + variance adds up to the mean squared miss, exactly');
+      pageNum(c, PAGE0);
+    },
+    fig: () => ({ num: '5.1', title: 'Twenty models, twenty darts', caption: 'Each dart is the prediction of one model trained on its own sample. The amber ring is the average landing and the arrow to it from the bullseye is the bias. The dashed circle has radius √variance.', legend: [['average and bias', AMBER], ['spread', BLUE, true]] }),
+    plot(c, mode) { plotBoard(c, mode === 'blank' ? null : this.st.darts); },
+  },
+  {
+    kind: 'fits', stepMs: 380,
+    st: { d: 3, seed: 1, k: 0 },
+    model: st => model(NPTS, st.d),
+    hint: 'Each blue wire is a polynomial of degree d fitted to its own sample of 15 noisy points. Degree 1 underfits, degree 12 overfits: move the degree and watch the fan tighten or spread. Orbit to see the twenty layers. Press ? Guide by the figure for labels.',
+    reset(st) { st.k = 0; },
+    step(st) { if (st.k < FITS) st.k++; return st.k >= FITS; },
+    done: st => st.k >= FITS,
+    static(c) {
+      let y = header(c, '5.2', 'Underfitting and Overfitting');
+      y = para(c, 'We only ever see one sample: n = 15 noisy points from a curve f. Fit a polynomial of degree d to it, and a new sample gives a new fit.', y);
+      y = eqBox(c, ['y = f(x) + ε,     ε ~ N(0, σ²)'], '(5.2)', y);
+      return para(c, 'A low degree is too simple. It underfits: every sample gives nearly the same curve, and all of them miss. A high degree is too complex. It overfits: it memorizes the noise, so no two fits agree.', y);
+    },
+    live(c) {
+      const m = cfg.model(st);
+      liveHead(c, 'FIT LOG  ·  ALL SAMPLES');
+      rows(c, [['samples drawn', `${st.k} of ${FITS}`], ['bias²', f4(m.b2), AMBER], ['variance', f4(m.v), BLUE], ['training error', f4(m.train), GREEN], ['test error', f4(m.test)]], X0, 892, 380, 40);
+      const ms = Array.from({ length: DMAX + 1 }, (_, d) => model(NPTS, d));
+      xyChart(c, 548, 838, 380, 214, { title: 'BY DEGREE  ·  n = 15', xs: ms.map(m => m.d), x0: 0, x1: DMAX, ticks: [[0, '0'], [3, '3'], [6, '6'], [9, '9'], [12, '12']], xlabel: 'd',
+        series: [{ v: ms.map(m => m.b2), color: AMBER }, { v: ms.map(m => m.v), color: BLUE }], mark: { x: st.d, dots: [[m.b2, AMBER], [m.v, BLUE]] } });
+      statusLine(c, ...fitsStatus(m));
+      note(c, 'low training error, high test error = overfitting');
+      pageNum(c, PAGE0 + 2);
+    },
+    fig: st => ({ num: '5.2', title: `Twenty samples, twenty fits of degree ${st.d}`, caption: 'The black curve is the truth f, a wave with a small bump. Each blue wire is fitted to its own 15 noisy points; the newest sample is shown. The amber curve is the average fit over all samples: its gap from f is the bias.', legend: [['truth f', INK], ['fits', BLUE], ['average fit', AMBER]] }),
+    plot(c, mode) { plotCurves(c, mode === 'print' ? fitState(this.st, this.model(this.st)) : null, mode === 'print'); },
+  },
+  {
+    kind: 'surface', stepMs: 330,
+    st: { d: 3, k: 0, from: null, t0: 0 },
+    hint: 'Height is the expected test error for every degree d and training size n. The chart on the left page adds the training error, in green. Press Play to add data and watch the best degree move. Click the surface to move the bead. Press ? Guide by the figure for labels.',
+    reset(st) { setSurfPoint(st, BEST[0], 0, true); },
+    step(st) { if (st.k < NLEV - 1) setSurfPoint(st, BEST[st.k + 1], st.k + 1); return st.k >= NLEV - 1; },
+    done: st => st.k >= NLEV - 1,
+    static(c) {
+      let y = header(c, '5.3', 'The Tradeoff');
+      y = para(c, 'On new data, the expected test error splits into model bias, model variance and the irreducible error σ²:', y);
+      y = eqBox(c, ['E[(y − f̂)²] = Bias² + Var + σ²'], '(5.3)', y);
+      return para(c, 'A more complex model trades bias for variance, so the test error is U-shaped in d: underfitting on the left, overfitting on the right. The training error only falls, so it cannot warn you. More data moves the bottom of the U to higher degrees.', y);
+    },
+    live(c) {
+      const n = NL[st.k], m = model(n, st.d), row = ERR[st.k], ms = row.map((_, d) => model(n, d));
+      liveHead(c, `ERROR LOG  ·  σ² = ${S2.toFixed(2)}`);
+      rows(c, [['data n, degree d', `${n}, ${st.d}`], ['bias²', f4(m.b2), AMBER], ['variance', f4(m.v), BLUE], ['training error', f4(m.train), GREEN], ['test error', f4(m.test)]], X0, 892, 368, 40);
+      // a plain scale here, so the picture is the familiar one: test error is a U, training error only falls
+      xyChart(c, 556, 838, 372, 276, { title: `BY DEGREE  ·  n = ${n}`, xs: ms.map(q => q.d), x0: 0, x1: DMAX, ticks: [[0, '0'], [3, '3'], [6, '6'], [9, '9'], [12, '12']], xlabel: 'd',
+        lin: 0.66, yticks: [[0, '0'], [0.2, '.2'], [0.4, '.4'], [0.6, '.6']],
+        series: [{ v: ms.map(q => q.b2), color: AMBER, w: 2.2 }, { v: ms.map(q => q.v), color: BLUE, w: 2.2 }, { v: ms.map(() => S2), color: INK_SOFT, dash: true, w: 2 },
+          { v: ms.map(q => q.train), color: GREEN, w: 4.5, label: 'train', below: row[DMAX] - ms[DMAX].train < 0.09 },   // with lots of data the two lines meet, so the names step apart
+          { v: row, color: INK, w: 4.5, label: 'test' }],
+        mark: { x: st.d, dots: [[m.train, GREEN], [m.test, INK]] }, best: BEST[st.k] });
+      const b = BEST[st.k];
+      statusLine(c, st.d === b ? `Good balance: d = ${b} is the best degree for n = ${n}` : st.d < b ? `Underfitting: too simple. The best for n = ${n} is d = ${b}` : `Overfitting: too complex. The best for n = ${n} is d = ${b}`, INK, 1164);
+      note(c, 'more data lets a more complex model win', 1228);
+      pageNum(c, PAGE0 + 4);
+    },
+    fig: () => ({ num: '5.3', title: 'Test error over degree and data', caption: 'Height rises with the expected test error, and the page itself is the irreducible error σ². Gold pins mark the best degree for each n. The black line is the U-curve at the bead’s n.', legend: [['best degree', '#b58a1e'], ['U-curve', INK]] }),
+    plot(c, mode) { plotSurfaceMap(c, mode === 'print' ? this.st : null); },
+  },
+  {
+    kind: 'fits', stepMs: 380,
+    st: { lam: 0, seed: 2, k: 0 },
+    model: st => model(NPTS, RD, st.lam),
+    hint: 'The same 15 points and the most complex model, degree 12, with a penalty λ on the size of its weights. Raise λ and watch the overfitting calm down. Press ? Guide by the figure for labels.',
+    reset(st) { st.k = 0; },
+    step(st) { if (st.k < FITS) st.k++; return st.k >= FITS; },
+    done: st => st.k >= FITS,
+    static(c) {
+      let y = header(c, '5.4', 'Regularization');
+      y = para(c, 'A cure for overfitting: keep the complex model, and charge it for large weights. Ridge regression minimizes', y);
+      y = eqBox(c, ['Σ (yᵢ − f̂(xᵢ))² + λ‖w‖²'], '(5.4)', y);
+      return para(c, 'The penalty pulls every fit toward a calmer curve. Variance drops fast, and bias rises only slightly at first. Push λ too far and the model underfits. The best λ sits in between.', y);
+    },
+    live(c) {
+      const m = cfg.model(st);
+      liveHead(c, 'RIDGE LOG  ·  ALL SAMPLES');
+      rows(c, [['penalty λ', lamText(st.lam)], ['bias²', f4(m.b2), AMBER], ['variance', f4(m.v), BLUE], ['training error', f4(m.train), GREEN], ['test error', f4(m.test)]], X0, 892, 380, 40);
+      const xs = LAMS, sNow = st.lam === 0 ? LAM_MIN : Math.log10(st.lam);
+      xyChart(c, 548, 838, 380, 214, { title: 'BY PENALTY λ', xs, x0: LAM_MIN, x1: LAM_MAX, ticks: [[-4, '0'], [-2, '0.01'], [0, '1'], [2, '100']], xlabel: 'λ', floor: 1e-3,
+        series: [{ v: RIDGE.map(q => q.b2), color: AMBER }, { v: RIDGE.map(q => q.v), color: BLUE }, { v: RIDGE.map(() => S2), color: INK_SOFT, dash: true, w: 2 }, { v: RIDGE.map(q => q.test), color: INK, w: 4 }],
+        mark: { x: sNow, dots: [[m.test, INK]] }, best: Math.log10(BEST_LAM) });
+      statusLine(c, ...ridgeStatus(m));
+      note(c, 'push λ all the way and every fit goes flat');
+      pageNum(c, PAGE0 + 6);
+    },
+    fig: () => ({ num: '5.4', title: 'A degree-12 fit with a ridge penalty', caption: 'The setup of Fig. 5.2 with the most complex model. At λ = 0 this is the plain least-squares fan. The polynomial uses Legendre terms, so the penalty treats every degree on the same scale; the intercept is not penalized.', legend: [['truth f', INK], ['fits', BLUE], ['average fit', AMBER]] }),
+    plot(c, mode) { plotCurves(c, mode === 'print' ? fitState(this.st, this.model(this.st)) : null, mode === 'print'); },
+  },
+];
+function dartsStatus() {
+  if (!st.darts.length) return ['Ready: press Play to throw', INK];
+  return [[['Low bias, low variance: the best case, tight and on target', 'Low bias, high variance: too complex. Right on average, scattered'],
+    ['High bias, low variance: too simple. Consistently off', 'High bias, high variance: the worst case, off target and scattered']][st.bias][st.vari], INK];
+}
+function missBar(c, bx, by, bw, bh, b2, v) {
+  c.font = `600 18px ${FONT.mono}`; c.fillStyle = INK_SOFT; spaced(c, 'MEAN SQUARED MISS', bx, by + 14, 2);
+  const top = by + 70, hgt = 58, max = Math.max(0.4, b2 + v), X = q => bx + (q / max) * bw;
+  c.fillStyle = 'rgba(8,16,34,0.06)'; c.fillRect(bx, top, bw, hgt);
+  c.fillStyle = AMBER; c.fillRect(bx, top, X(b2) - bx, hgt);
+  c.fillStyle = BLUE; c.fillRect(X(b2), top, X(b2 + v) - X(b2), hgt);
+  c.fillStyle = INK; c.fillRect(bx, top + hgt, bw, 2);
+  c.font = `600 16px ${FONT.mono}`; c.fillStyle = INK_SOFT; c.textAlign = 'center';
+  for (let q = 0; q <= max + 1e-9; q += 0.1) { c.fillRect(X(q) - 1, top + hgt, 2, 7); c.fillText(q.toFixed(1), X(q), top + hgt + 26); }
+  c.textAlign = 'left';
+  swatch(c, AMBER, bx, top + hgt + 70); c.font = `600 22px ${FONT.body}`; c.fillStyle = INK; c.fillText('bias²', bx + 44, top + hgt + 70);
+  swatch(c, BLUE, bx + 150, top + hgt + 70); c.fillText('variance', bx + 194, top + hgt + 70);
+}
+function fitsStatus(m) {
+  if (m.b2 > 2 * m.v) return ['Underfitting: high bias. The fits agree, and all of them miss', INK];
+  if (m.v > 2 * m.b2) return ['Overfitting: high variance. The fits chase the noise', INK];
+  return ['Good balance: low bias, modest variance', INK];
+}
+function ridgeStatus(m) {
+  const best = model(NPTS, RD, BEST_LAM), r = st.lam / BEST_LAM, none = RIDGE[0];
+  if (st.lam === 0) return [`No penalty: overfitting. Test error ${f3(m.test)}, mostly variance`, INK];
+  if (r < 1 / 3) return ['Too little penalty: still overfitting, the fits chase the noise', INK];
+  if (r > 3) return ['Too much penalty: underfitting, every fit is pulled too flat', INK];
+  return [`Near the best λ (${lamText(BEST_LAM)}): test error ${f3(best.test)}, down from ${f3(none.test)} at λ = 0`, INK];
+}
+
+function drawLeftTop() { const c = P.top.ctx; prep(c); paper(c, true, 0, SPLIT); LAYOUT[spread] = cfg.static(c, st); }
+function drawLeftLive() { const c = P.live.ctx; prep(c, SPLIT); paper(c, true, SPLIT, CH); cfg.live(c); }
+function drawLeftFull(c) { prep(c); paper(c, true, 0, CH); cfg.static(c, st); cfg.live(c); }
+function drawRight(c, i, print) {
+  const sp = SPREADS[i], fg = sp.fig(sp.st);
+  prep(c); paper(c, false, 0, CH);
+  c.fillStyle = INK_SOFT; c.font = `600 22px ${FONT.mono}`; spaced(c, `FIG. ${fg.num}`, MX0, MY0 + MS + 92, 3);
+  c.fillStyle = INK; fitText(c, fg.title, MX0 + 160, MY0 + MS + 92, MS - 160, 'italic 600', 33, FONT.body);
+  c.save(); c.translate(MX0, MY0); sp.plot(c, print && i === spread ? 'print' : 'blank'); c.restore();
+  c.font = `600 25px ${FONT.body}`; c.fillStyle = INK; wrap(c, fg.caption, MX0, MY0 + MS + 138, MS, 35);
+  let lx = MX0;
+  for (const [name, col, dash] of fg.legend || []) { swatch(c, col, lx, 1240, dash); c.font = `600 24px ${FONT.body}`; c.fillStyle = INK; c.fillText(name, lx + 46, 1240); lx += 46 + c.measureText(name).width + 44; }
+  pageNum(c, PAGE0 + 1 + 2 * i);
+}
+function drawCard() { const c = P.card.ctx; prep(c); cfg.plot(c, 'card'); TX.card.needsUpdate = true; cardDirty = false; }
+
+/* ================= three.js scene ================= */
+const stage = $('stage');
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ antialias: true }); }
+catch (e) { $('fallback').hidden = false; throw e; }
+renderer.setPixelRatio(2);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.NoToneMapping;
+stage.appendChild(renderer.domElement);
+renderer.domElement.setAttribute('aria-hidden', 'true');
+const maxAniso = renderer.capabilities.getMaxAnisotropy();
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#120c08');
+scene.fog = new THREE.Fog('#120c08', 5, 11);
+const camera = new THREE.PerspectiveCamera(34, 1, 0.05, 50);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.minDistance = 0.7; controls.maxDistance = 6.5; controls.maxPolarAngle = 1.4;
+
+// Light budget: with the reading light on, a flat page receives almost exactly 1.0, so white paper renders as
+// pure white. With it off only a dim room light is left: dark, but the page can still be read.
+const LIGHT = { key: 2.63, roomOn: 0.75, roomOff: 0.36, fillOn: 0.25, fillOff: 0.12 };
+const room = new THREE.HemisphereLight(0xffffff, 0x241a14, LIGHT.roomOn); scene.add(room);
+const lamp = new THREE.SpotLight(0xffffff, LIGHT.key, 0, 0.8, 0.45, 0);
+lamp.position.set(1.4, 2.9, 0.5); lamp.target.position.set(0, 0, 0.05);
+lamp.castShadow = true; lamp.shadow.mapSize.set(2048, 2048); lamp.shadow.bias = -0.0003; lamp.shadow.normalBias = 0.01;
+lamp.shadow.camera.near = 1; lamp.shadow.camera.far = 7;
+scene.add(lamp, lamp.target);
+const fill = new THREE.DirectionalLight(0xffffff, LIGHT.fillOn); fill.position.set(-2.2, 1.6, 2.6); scene.add(fill);
+
+function canvasTex(canvas, mirror) {
+  const t = new THREE.CanvasTexture(canvas); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = maxAniso;
+  if (mirror) { t.wrapS = THREE.RepeatWrapping; t.repeat.x = -1; t.offset.x = 1; }
+  return t;
+}
+
+// desk
+(() => {
+  const c = makeCanvas(1024, 1024), g = c.getContext('2d');
+  g.fillStyle = '#3a2416'; g.fillRect(0, 0, 1024, 1024);
+  for (let i = 0; i < 280; i++) {
+    const y = Math.random() * 1100 - 40, amp = 3 + Math.random() * 12, fr = 0.002 + Math.random() * 0.006, ph = Math.random() * 6;
+    g.strokeStyle = Math.random() < 0.5 ? `rgba(18,9,4,${0.12 + Math.random() * 0.25})` : `rgba(100,66,38,${0.1 + Math.random() * 0.22})`;
+    g.lineWidth = 1 + Math.random() * 3; g.beginPath();
+    for (let x = 0; x <= 1024; x += 16) { const yy = y + Math.sin(x * fr + ph) * amp; x ? g.lineTo(x, yy) : g.moveTo(x, yy); }
+    g.stroke();
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  const desk = new THREE.Mesh(new THREE.PlaneGeometry(8, 6), new THREE.MeshStandardMaterial({ map: t, roughness: 0.7 }));
+  desk.rotation.x = -Math.PI / 2; desk.position.y = -0.022; desk.receiveShadow = true; scene.add(desk);
+})();
+
+// book: cloth cover, two page blocks with visible page edges, a ribbon
+const cover = new THREE.Mesh(new THREE.BoxGeometry(2 * W + 0.12, 0.022, H + 0.1), new THREE.MeshStandardMaterial({ color: 0x4d525b, roughness: 0.9 }));
+cover.position.y = -0.011; cover.castShadow = cover.receiveShadow = true; scene.add(cover);
+function stripeTex(alongU) {
+  const c = makeCanvas(alongU ? 128 : 4, alongU ? 4 : 128), g = c.getContext('2d');
+  for (let i = 0; i < 128; i++) { const v = 206 + Math.random() * 44; g.fillStyle = `rgb(${v},${v},${v})`; alongU ? g.fillRect(i, 0, 1, 4) : g.fillRect(0, i, 4, 1); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  alongU ? t.repeat.set(9, 1) : t.repeat.set(1, 9); return t;
+}
+const blockMats = [new THREE.MeshStandardMaterial({ map: stripeTex(false), roughness: 1 }), new THREE.MeshStandardMaterial({ map: stripeTex(true), roughness: 1 })];
+for (const side of [-1, 1]) {
+  const sh = new THREE.Shape(); sh.moveTo(0, 0);
+  for (let i = 0; i <= 40; i++) { const d = (i / 40) * W; sh.lineTo(side * d, pageY(d) - 0.0004); }
+  sh.lineTo(side * W, 0); sh.closePath();
+  const g = new THREE.ExtrudeGeometry(sh, { depth: H, bevelEnabled: false }); g.translate(0, 0, -H / 2);
+  const m = new THREE.Mesh(g, blockMats); m.castShadow = m.receiveShadow = true; scene.add(m);
+}
+(() => {
+  const z = H / 2, curve = new THREE.CatmullRomCurve3([[0, 0.016, z - 0.004], [0.003, 0.009, z + 0.02], [0.008, 0.004, z + 0.053], [0.015, -0.012, z + 0.07], [0.03, -0.0205, z + 0.11], [0.07, -0.021, z + 0.21]].map(p => new THREE.Vector3(...p)));
+  const pts = curve.getPoints(28), pos = [], idx = [];
+  pts.forEach((p, i) => { pos.push(p.x - 0.011, p.y, p.z, p.x + 0.011, p.y, p.z); if (i) { const a = (i - 1) * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } });
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x9a1f1a, roughness: 0.55, side: THREE.DoubleSide })); m.castShadow = true; scene.add(m);
+})();
+
+// Page textures are sampled one notch sharper than the default, so small text holds up when the book is far away.
+function crisp(mat) {
+  mat.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#ifdef USE_MAP\n  diffuseColor *= texture2D( map, vMapUv, -0.65 );\n#endif'); };
+  return mat;
+}
+function gridGeo(nu, nv) {
+  const uv = [], idx = [];
+  for (let j = 0; j <= nv; j++) for (let i = 0; i <= nu; i++) uv.push(i / nu, 1 - j / nv);
+  for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { const a = j * (nu + 1) + i, b = a + 1, c = a + nu + 1, d = c + 1; idx.push(a, c, b, b, c, d); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array((nu + 1) * (nv + 1) * 3), 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
+  return g;
+}
+function pageSheet(side, tex, v0, v1) {
+  const nu = 56, nv = 2, g = gridGeo(nu, nv), a = g.attributes.position.array;
+  for (let j = 0; j <= nv; j++) for (let i = 0; i <= nu; i++) {
+    const u = i / nu, d = side > 0 ? u * W : (1 - u) * W, k = (j * (nu + 1) + i) * 3;
+    a[k] = side * d; a[k + 1] = pageY(d) + 0.0006; a[k + 2] = -H / 2 + lerp(v0, v1, j / nv) * H;
+  }
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g, crisp(new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95 }))); m.receiveShadow = true; scene.add(m); return m;
+}
+const TX = { top: canvasTex(P.top.canvas), live: canvasTex(P.live.canvas), right: canvasTex(P.right.canvas), front: canvasTex(P.front.canvas), back: canvasTex(P.back.canvas, true), card: canvasTex(P.card.canvas) };
+pageSheet(-1, TX.top, 0, SPLIT / CH); pageSheet(-1, TX.live, SPLIT / CH, 1); pageSheet(1, TX.right, 0, 1);
+
+// the turning leaf: its front carries the old right page, its back the new left page
+const FNU = 44, FNV = 2, flipGeo = gridGeo(FNU, FNV), flipper = new THREE.Group();
+for (const [tex, sideMode] of [[TX.front, THREE.FrontSide], [TX.back, THREE.BackSide]]) {
+  const m = new THREE.Mesh(flipGeo, crisp(new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95, side: sideMode })));
+  m.castShadow = m.receiveShadow = true; m.frustumCulled = false; flipper.add(m);
+}
+flipper.visible = false; scene.add(flipper);
+function setFlip(phi, dir) {
+  const a = flipGeo.attributes.position.array, D = W / FNU, xs = [0], ys = [0];
+  let x = 0, y = 0;
+  for (let i = 1; i <= FNU; i++) {
+    const ang = clamp(phi - dir * 0.85 * Math.sin(phi) * Math.pow(((i - 0.5) * D) / W, 1.3), 0, Math.PI);
+    x += Math.cos(ang) * D; y += Math.sin(ang) * D; xs.push(x); ys.push(y);
+  }
+  for (let j = 0; j <= FNV; j++) for (let i = 0; i <= FNU; i++) {
+    const k = (j * (FNU + 1) + i) * 3;
+    a[k] = xs[i]; a[k + 1] = BASE + ys[i] + (1 - Math.sin(phi)) * pageLift(i * D) + 0.0016; a[k + 2] = -H / 2 + (j / FNV) * H;
+  }
+  flipGeo.attributes.position.needsUpdate = true; flipGeo.computeVertexNormals();
+}
+
+// reading light: a desk lamp to the right of the book. Click it (or the Light button) to switch it on and off.
+const lampModel = new THREE.Group();
+const lampGlow = { bulb: new THREE.MeshBasicMaterial({ color: 0xfff4dc }), inner: new THREE.MeshBasicMaterial({ color: 0xffe3ad, side: THREE.BackSide }) };
+(() => {
+  const V = (x, y, z) => new THREE.Vector3(x, y, z), UP = V(0, 1, 0);
+  const dark = new THREE.MeshStandardMaterial({ color: 0x3b3f47, roughness: 0.42, metalness: 0.25 });
+  const brass = new THREE.MeshStandardMaterial({ color: 0xb98a3c, roughness: 0.35, metalness: 0.35 });
+  const rod = (p, q, r, mat) => { const d = q.clone().sub(p), m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, d.length(), 14), mat); m.position.copy(p).addScaledVector(d, 0.5); m.quaternion.setFromUnitVectors(UP, d.normalize()); return m; };
+  const ball = (p, r, mat) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 14), mat); m.position.copy(p); return m; };
+  const foot = V(1.46, -0.022, -0.12), elbow = V(1.57, 0.42, -0.32), head = V(1.27, 0.62, -0.14), aimAt = V(0.62, 0, 0.1);
+  const dir = aimAt.clone().sub(head).normalize(), q = new THREE.Quaternion().setFromUnitVectors(V(0, -1, 0), dir);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.108, 0.024, 40), dark); base.position.copy(foot).add(V(0, 0.012, 0));
+  const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.026, 0.03, 20), brass); collar.position.copy(foot).add(V(0, 0.038, 0));
+  const shadeGeo = new THREE.CylinderGeometry(0.032, 0.1, 0.15, 40, 1, true);
+  const shade = new THREE.Mesh(shadeGeo, dark), inner = new THREE.Mesh(shadeGeo, lampGlow.inner);
+  for (const m of [shade, inner]) { m.position.copy(head).addScaledVector(dir, 0.075); m.quaternion.copy(q); }
+  inner.scale.setScalar(0.985);
+  lampModel.add(base, collar, rod(foot.clone().add(V(0, 0.04, 0)), elbow, 0.0085, brass), rod(elbow, head, 0.0085, brass),
+    ball(elbow, 0.017, dark), ball(head, 0.034, dark), shade, inner, ball(head.clone().addScaledVector(dir, 0.1), 0.03, lampGlow.bulb));
+  base.receiveShadow = true;
+  scene.add(lampModel);
+})();
+let lampOn = true, lampLevel = 1;
+function setLampLevel(k) {
+  lampLevel = k; lamp.intensity = LIGHT.key * k; room.intensity = lerp(LIGHT.roomOff, LIGHT.roomOn, k); fill.intensity = lerp(LIGHT.fillOff, LIGHT.fillOn, k);
+  lampGlow.bulb.color.set(0x57534c).lerp(new THREE.Color(0xfff4dc), k); lampGlow.inner.color.set(0x25262a).lerp(new THREE.Color(0xffe3ad), k);
+}
+function setLamp(on, instant) {
+  lampOn = !!on; $('light').setAttribute('aria-pressed', String(lampOn));
+  if (!instant) sfx.lamp(lampOn);
+  const from = lampLevel, to = lampOn ? 1 : 0;
+  if (instant) setLampLevel(to); else tween(260, p => setLampLevel(lerp(from, to, p)));
+  $('live').textContent = lampOn ? 'Reading light on' : 'Reading light off';
+}
+
+/* ================= pop-up 1: a card that stands up off the right page, like a lectern ================= */
+const popRoot = new THREE.Group(); scene.add(popRoot);
+const CARD = { w: (MS / CW) * W, h: (MS / CH) * H }, ALPHA = THREE.MathUtils.degToRad(40), CARD_Y = 0.0032;
+const HINGE = new THREE.Vector3(((MX0 + MS / 2) / CW) * W, pageY(((MX0 + MS / 2) / CW) * W) + LIFT, -H / 2 + ((MY0 + MS) / CH) * H);
+const easel = new THREE.Group(); easel.position.copy(HINGE); popRoot.add(easel);
+const paperMat = new THREE.MeshStandardMaterial({ color: 0xf4f4f2, roughness: 0.95 });
+(() => {
+  const back = new THREE.Mesh(new THREE.BoxGeometry(CARD.w, 0.003, CARD.h), paperMat); back.position.set(0, 0.0015, -CARD.h / 2);
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(CARD.w, CARD.h), crisp(new THREE.MeshStandardMaterial({ map: TX.card, roughness: 0.95 })));
+  face.rotation.x = -Math.PI / 2; face.position.set(0, CARD_Y, -CARD.h / 2);
+  back.receiveShadow = face.receiveShadow = true;   // no cast shadow: a standing card would darken the left page
+  easel.add(back, face);
+})();
+const cardLocal = (px, py, off, out) => (out || new THREE.Vector3()).set((px / MS - 0.5) * CARD.w, CARD_Y + (off || 0), -(1 - py / MS) * CARD.h);
+function cardWorld(px, py, off) { easel.updateMatrixWorld(); return easel.localToWorld(cardLocal(px, py, off)); }
+
+// darts: each one is a model's prediction, thrown at the board on the card
+const dartsG = new THREE.Group(); easel.add(dartsG);
+const DART_DIR = new THREE.Vector3(0.42, 1, 0.3).normalize();
+const dartTemplate = (() => {
+  const g = new THREE.Group(), steel = new THREE.MeshStandardMaterial({ color: 0x9aa0aa, metalness: 0.85, roughness: 0.28 });
+  const barrel = new THREE.MeshStandardMaterial({ color: 0x2a2e35, metalness: 0.4, roughness: 0.4 });
+  const flight = new THREE.MeshStandardMaterial({ color: 0x2f5fd0, roughness: 0.55, side: THREE.DoubleSide });
+  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.0028, 0.016, 12), steel); tip.rotation.x = Math.PI; tip.position.y = 0.008;
+  const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.0042, 0.0036, 0.026, 14), barrel); bar.position.y = 0.029;
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.0018, 0.0018, 0.03, 10), barrel); shaft.position.y = 0.057;
+  const fs = new THREE.Shape(); fs.moveTo(0, 0); fs.lineTo(0.012, 0.007); fs.lineTo(0.012, 0.022); fs.lineTo(0, 0.026); fs.closePath();
+  const fg = new THREE.ShapeGeometry(fs);
+  for (let i = 0; i < 4; i++) { const m = new THREE.Mesh(fg, flight); m.position.y = 0.06; m.rotation.y = (i * Math.PI) / 2; g.add(m); }
+  g.add(tip, bar, shaft);
+  g.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  g.scale.setScalar(1.7);
+  return g;
+})();
+const dartObjs = Array.from({ length: DARTS }, () => { const d = dartTemplate.clone(); d.visible = false; dartsG.add(d); return d; });
+const DART_Q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), DART_DIR);
+function throwDart(i, [x, y]) {
+  const o = dartObjs[i], [px, py] = bpx(x, y);
+  o.userData = { at: cardLocal(px, py, 0.004), t0: performance.now(), spin: (i * 1.7) % 6.28 };
+  o.visible = true; placeDart(o, performance.now());
+}
+const _q = new THREE.Quaternion(), _ax = new THREE.Vector3();
+function placeDart(o, now) {
+  const u = o.userData, t = (now - u.t0) / 1000, fly = clamp(t / 0.2, 0, 1);
+  o.position.copy(u.at).addScaledVector(DART_DIR, 0.75 * (1 - fly) * (1 - fly));
+  const wob = fly < 1 ? 0 : 0.16 * Math.exp(-7 * (t - 0.2)) * Math.sin(42 * (t - 0.2));
+  _ax.set(Math.cos(u.spin), 0, Math.sin(u.spin));
+  o.quaternion.copy(DART_Q).multiply(_q.setFromAxisAngle(_ax, wob));
+  return t < 1.2;
+}
+function clearDarts() { for (const o of dartObjs) o.visible = false; }
+
+// fits: twenty wires, one per training set, each on its own layer in front of the card
+const wiresG = new THREE.Group(); easel.add(wiresG);
+const lineRes = new THREE.Vector2(800, 600), LINE_MATS = [];
+const lineMat = (color, width, extra) => { const m = new LineMaterial({ color, linewidth: width, ...extra }); m.resolution.copy(lineRes); LINE_MATS.push(m); return m; };
+const fitMat = lineMat(0x3a66d6, 2.2, { transparent: true, opacity: 0.8 }), newMat = lineMat(0x1f44a8, 3.4);
+const meanMat = lineMat(0xc2660a, 5, { depthTest: false }), truthMat = lineMat(0x000000, 3.2);
+const wireObjs = Array.from({ length: FITS }, () => { const l = new LineSegments2(new LineSegmentsGeometry(), fitMat); l.frustumCulled = false; l.visible = false; wiresG.add(l); return l; });
+const meanWire = new LineSegments2(new LineSegmentsGeometry(), meanMat); meanWire.frustumCulled = false; meanWire.renderOrder = 5; wiresG.add(meanWire);
+const ptsMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(0.0075, 14, 10), new THREE.MeshStandardMaterial({ color: 0x15181f, roughness: 0.5 }), NPTS);
+ptsMesh.frustumCulled = false; wiresG.add(ptsMesh);
+const LAYER = 0.0052, layerOff = i => 0.006 + i * LAYER;
+function wireSegments(vals, off) {   // clipped to the plot box
+  const out = [], a = new THREE.Vector3(), b = new THREE.Vector3();
+  for (let t = 1; t < NE; t++) {
+    let y0 = vals[t - 1], y1 = vals[t], x0 = XE[t - 1], x1 = XE[t];
+    if ((y0 < YMIN && y1 < YMIN) || (y0 > YMAX && y1 > YMAX)) continue;
+    const cut = (y, ya, yb, xa, xb) => xa + ((y - ya) / (yb - ya)) * (xb - xa);
+    if (y0 < YMIN) { x0 = cut(YMIN, y0, y1, x0, x1); y0 = YMIN; } else if (y0 > YMAX) { x0 = cut(YMAX, y0, y1, x0, x1); y0 = YMAX; }
+    if (y1 < YMIN) { x1 = cut(YMIN, vals[t - 1], vals[t], XE[t - 1], XE[t]); y1 = YMIN; } else if (y1 > YMAX) { x1 = cut(YMAX, vals[t - 1], vals[t], XE[t - 1], XE[t]); y1 = YMAX; }
+    cardLocal(cX(x0), cY(y0), off, a); cardLocal(cX(x1), cY(y1), off, b);
+    out.push(a.x, a.y, a.z, b.x, b.y, b.z);
+  }
+  return out;
+}
+function setWire(l, vals, off) { l.geometry.dispose(); const g = new LineSegmentsGeometry(); const s = wireSegments(vals, off); if (s.length) g.setPositions(s); l.geometry = g; l.visible = s.length > 0; }
+const _m4 = new THREE.Matrix4(), _p = new THREE.Vector3();
+function buildWires() {
+  if (cfg.kind !== 'fits') return;
+  const m = cfg.model(st), fs = fitState(st, m);
+  wireObjs.forEach((l, i) => { if (i < fs.k) { l.material = i === fs.k - 1 ? newMat : fitMat; setWire(l, fs.vals[i], layerOff(i)); } else l.visible = false; });
+  setWire(meanWire, fs.mean, 0.002); meanWire.visible = fs.k > 0;
+  if (fs.k) {
+    const y = fs.pts[fs.k - 1];
+    m.xs.forEach((x, j) => { cardLocal(cX(x), cY(clamp(y[j], YMIN, YMAX)), layerOff(fs.k - 1), _p); _m4.makeTranslation(_p.x, _p.y, _p.z); ptsMesh.setMatrixAt(j, _m4); });
+    ptsMesh.instanceMatrix.needsUpdate = true; ptsMesh.visible = true;
+  } else ptsMesh.visible = false;
+}
+
+/* ================= pop-up 2: the error surface (§5.3) ================= */
+const LMAX = Math.log(7);
+const LR = ERR.map(row => row.map(e => Math.log(e / S2)));
+// Monotone cubic (Fritsch–Carlson) across degrees, on log(error / σ²): smooth, and it never invents a dip or a bump
+// between two neighbouring degrees.
+const SLOPES = LR.map(row => {
+  const n = row.length, dl = row.slice(1).map((v, i) => v - row[i]), m = new Float64Array(n);
+  m[0] = dl[0]; m[n - 1] = dl[n - 2];
+  for (let i = 1; i < n - 1; i++) m[i] = dl[i - 1] * dl[i] <= 0 ? 0 : (dl[i - 1] + dl[i]) / 2;
+  for (let i = 0; i < n - 1; i++) {
+    if (dl[i] === 0) { m[i] = m[i + 1] = 0; continue; }
+    const a = m[i] / dl[i], b = m[i + 1] / dl[i], r = a * a + b * b;
+    if (r > 9) { const t = 3 / Math.sqrt(r); m[i] = t * a * dl[i]; m[i + 1] = t * b * dl[i]; }
+  }
+  return m;
+});
+function lrAt(k, dc) {
+  const row = LR[k], m = SLOPES[k], i = clamp(Math.floor(dc), 0, DMAX - 1), t = clamp(dc - i, 0, 1), t2 = t * t, t3 = t2 * t;
+  return (2 * t3 - 3 * t2 + 1) * row[i] + (t3 - 2 * t2 + t) * m[i] + (-2 * t3 + 3 * t2) * row[i + 1] + (t3 - t2) * m[i + 1];
+}
+const SURF = {
+  hOf(x, y) {
+    const dc = clamp(dOfX(x), 0, DMAX), kc = clamp(kOfY(y), 0, NLEV - 1), k0 = Math.min(Math.floor(kc), NLEV - 2), t = kc - k0;
+    return Math.pow(clamp(lerp(lrAt(k0, dc), lrAt(k0 + 1, dc), t) / LMAX, 0, 1), 0.75);   // a gentle curve lifts the low ground so its shape shows
+  },
+};
+const STOPS = [[0, 18, 44, 110], [0.3, 62, 108, 186], [0.65, 160, 188, 224], [1, 238, 232, 216]];
+SURF.map = (() => {
+  const R = 1200, hA = new Float32Array(R * R);
+  for (let py = 0; py < R; py++) { const y = DOM - ((py + 0.5) / R) * 2 * DOM; for (let px = 0; px < R; px++) hA[py * R + px] = SURF.hOf(-DOM + ((px + 0.5) / R) * 2 * DOM, y); }
+  const c = makeCanvas(R, R), ctx = c.getContext('2d'), img = ctx.createImageData(R, R), d = img.data, STEP = 0.05, lw = (R / 800) * 0.9;
+  for (let py = 0; py < R; py++) for (let px = 0; px < R; px++) {
+    const i = py * R + px, h = hA[i];
+    const gx = (hA[py * R + Math.min(px + 1, R - 1)] - hA[py * R + Math.max(px - 1, 0)]) * 0.5;
+    const gy = (hA[Math.min(py + 1, R - 1) * R + px] - hA[Math.max(py - 1, 0) * R + px]) * 0.5;
+    const gm = Math.hypot(gx, gy);
+    let line = 0;
+    if (gm > 1e-6) { const t = h / STEP, fr = t - Math.floor(t); line = clamp(lw + 0.5 - (Math.min(fr, 1 - fr) * STEP) / gm, 0, 1) * 0.72; }
+    let k = 1; while (k < STOPS.length - 1 && h > STOPS[k][0]) k++;
+    const a = STOPS[k - 1], b = STOPS[k], u = clamp((h - a[0]) / (b[0] - a[0]), 0, 1), p = i * 4;
+    d[p] = lerp(lerp(a[1], b[1], u) * 0.84 + 39, 12, line);
+    d[p + 1] = lerp(lerp(a[2], b[2], u) * 0.84 + 38, 24, line);
+    d[p + 2] = lerp(lerp(a[3], b[3], u) * 0.84 + 36, 66, line);
+    d[p + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  return c;
+})();
+SURF.tex = canvasTex(SURF.map);
+function plotSurfaceMap(c, sst) {
+  c.drawImage(SURF.map, 0, 0, MS, MS);
+  c.strokeStyle = INK; c.lineWidth = 2.5; c.strokeRect(0, 0, MS, MS);
+  c.font = `600 19px ${FONT.mono}`; c.fillStyle = INK;
+  for (let d = 0; d <= DMAX; d += 2) { const X = ((xOfD(d) + DOM) / (2 * DOM)) * MS; c.fillRect(X - 1, MS, 2, 10); c.textAlign = 'center'; c.fillText(String(d), X, MS + 33); }
+  for (const n of [15, 30, 60, 120, 300]) { const Y = ((DOM - yOfN(n)) / (2 * DOM)) * MS; c.fillRect(-10, Y - 1, 10, 2); c.textAlign = 'right'; c.fillText(String(n), -16, Y + 7); }
+  c.textAlign = 'left'; c.font = `italic 600 27px ${FONT.math}`; c.fillText('d', MS + 14, MS + 8); c.fillText('n', -12, -16);
+  if (!sst) return;
+  c.fillStyle = '#b58a1e';
+  BEST.forEach((d, k) => { const [X, Y] = toCanvas(xOfD(d), yOfK(k)); c.beginPath(); c.arc(X - MX0, Y - MY0, 7, 0, Math.PI * 2); c.fill(); });
+  const [bx, by] = toCanvas(xOfD(sst.d), yOfK(sst.k)); c.strokeStyle = INK; c.lineWidth = 3; c.beginPath(); c.arc(bx - MX0, by - MY0, 13, 0, Math.PI * 2); c.stroke();
+}
+const _v = new THREE.Vector3();
+function d2w(x, y, lift, out) {
+  const [X, Y] = toCanvas(x, y), d = (X / CW) * W;
+  return (out || new THREE.Vector3()).set(d, pageY(d) + LIFT + HS * pop.rise * SURF.hOf(x, y) + (lift || 0), -H / 2 + (Y / CH) * H);
+}
+function w2d(p) { const X = (p.x / W) * CW, Y = ((p.z + H / 2) / H) * CH; return [((X - MX0) / MS) * 2 * DOM - DOM, DOM - ((Y - MY0) / MS) * 2 * DOM]; }
+const surfG = new THREE.Group(); popRoot.add(surfG);
+const NS = 128, NV = (NS + 1) * (NS + 1);
+const surfGeo = gridGeo(NS, NS), sPos = surfGeo.attributes.position.array, sBase = new Float32Array(NV), sH = new Float32Array(NV);
+for (let j = 0; j <= NS; j++) for (let i = 0; i <= NS; i++) {
+  const k = j * (NS + 1) + i, x = -DOM + (i / NS) * 2 * DOM, y = DOM - (j / NS) * 2 * DOM, [X, Y] = toCanvas(x, y), d = (X / CW) * W;
+  sPos[3 * k] = d; sPos[3 * k + 2] = -H / 2 + (Y / CH) * H; sBase[k] = pageY(d) + LIFT; sH[k] = SURF.hOf(x, y);
+}
+const surfMesh = new THREE.Mesh(surfGeo, new THREE.MeshStandardMaterial({ map: SURF.tex, roughness: 0.9, side: THREE.DoubleSide }));
+surfMesh.castShadow = surfMesh.receiveShadow = true; surfG.add(surfMesh);
+const EDGE = []; { const M = 96; for (let i = 0; i <= M; i++) EDGE.push([-DOM + (i / M) * 2 * DOM, DOM]); for (let i = 1; i <= M; i++) EDGE.push([DOM, DOM - (i / M) * 2 * DOM]); for (let i = 1; i <= M; i++) EDGE.push([DOM - (i / M) * 2 * DOM, -DOM]); for (let i = 1; i <= M; i++) EDGE.push([-DOM, -DOM + (i / M) * 2 * DOM]); }
+const skGeo = new THREE.BufferGeometry(), skPos = new Float32Array(EDGE.length * 6), skBase = new Float32Array(EDGE.length), skH = new Float32Array(EDGE.length), rimPos = new Float32Array(EDGE.length * 3);
+{ const idx = []; EDGE.forEach(([x, y], k) => {
+    const [X, Y] = toCanvas(x, y), d = (X / CW) * W, z = -H / 2 + (Y / CH) * H;
+    skPos[6 * k] = skPos[6 * k + 3] = rimPos[3 * k] = d; skPos[6 * k + 2] = skPos[6 * k + 5] = rimPos[3 * k + 2] = z;
+    skPos[6 * k + 4] = pageY(d) + 0.0008; skBase[k] = pageY(d) + LIFT; skH[k] = SURF.hOf(x, y);
+    if (k) { const a = (k - 1) * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+  });
+  skGeo.setAttribute('position', new THREE.BufferAttribute(skPos, 3)); skGeo.setIndex(idx); }
+const skirt = new THREE.Mesh(skGeo, new THREE.MeshStandardMaterial({ color: 0xf0f0ee, roughness: 1, side: THREE.DoubleSide })); skirt.castShadow = true; skirt.frustumCulled = false; surfG.add(skirt);
+const rimGeo = new THREE.BufferGeometry(); rimGeo.setAttribute('position', new THREE.BufferAttribute(rimPos, 3));
+const rim = new THREE.Line(rimGeo, new THREE.LineBasicMaterial({ color: 0x0a1630 })); rim.frustumCulled = false; surfG.add(rim);
+const bead = new THREE.Mesh(new THREE.SphereGeometry(BEAD_R, 32, 16), new THREE.MeshStandardMaterial({ color: 0xc9973a, metalness: 0.75, roughness: 0.3 }));
+bead.castShadow = true; surfG.add(bead);
+const pins = new THREE.InstancedMesh(new THREE.SphereGeometry(0.0085, 14, 10), new THREE.MeshStandardMaterial({ color: 0xd9a92e, metalness: 0.6, roughness: 0.35 }), NLEV);
+pins.frustumCulled = false; pins.castShadow = true; surfG.add(pins);
+const valleyLine = new Line2(new LineGeometry(), lineMat(0xd9a92e, 3)), sliceLine = new Line2(new LineGeometry(), lineMat(0x0b0d12, 3.2));
+valleyLine.frustumCulled = sliceLine.frustumCulled = false; surfG.add(valleyLine, sliceLine);
+function setLine(l, pts) { l.geometry.dispose(); const g = new LineGeometry(); g.setPositions(pts); l.geometry = g; }
+function surfOverlay() {
+  BEST.forEach((d, k) => { d2w(xOfD(d), yOfK(k), 0.009, _v); _m4.makeTranslation(_v.x, _v.y, _v.z); pins.setMatrixAt(k, _m4); });
+  pins.instanceMatrix.needsUpdate = true;
+  const vp = [];
+  for (let k = 0; k < NLEV - 1; k++) for (let s = 0; s < 8; s++) { const t = s / 8; d2w(lerp(xOfD(BEST[k]), xOfD(BEST[k + 1]), t), lerp(yOfK(k), yOfK(k + 1), t), 0.005, _v); vp.push(_v.x, _v.y, _v.z); }
+  d2w(xOfD(BEST[NLEV - 1]), yOfK(NLEV - 1), 0.005, _v); vp.push(_v.x, _v.y, _v.z);
+  setLine(valleyLine, vp);
+  const sp = [], ky = yOfK(SPREADS[2].st.k);
+  for (let i = 0; i <= 120; i++) { d2w(xOfD((i / 120) * DMAX), ky, 0.004, _v); sp.push(_v.x, _v.y, _v.z); }
+  setLine(sliceLine, sp);
+}
+function setSurfPoint(sst, d, k, instant) {
+  const now = performance.now(), cur = sst.from && !instant ? beadNow(sst, now) : null;
+  sst.from = cur || [d, k]; sst.d = d; sst.k = k; sst.t0 = now;
+  if (spread === 2) { surfOverlay(); liveDirty = true; syncSurfHud(); }
+}
+function beadNow(sst, now) { const a = reduced ? 1 : easeOut(clamp((now - sst.t0) / 300, 0, 1)); return [lerp(sst.from[0], sst.d, a), lerp(sst.from[1], sst.k, a)]; }
+
+function applyRise(r) {
+  pop.rise = r;
+  if (cfg.kind === 'surface') {
+    for (let k = 0; k < NV; k++) sPos[3 * k + 1] = sBase[k] + HS * r * sH[k];
+    surfGeo.attributes.position.needsUpdate = true; surfGeo.computeVertexNormals(); surfGeo.computeBoundingSphere();
+    for (let k = 0; k < EDGE.length; k++) { const y = skBase[k] + HS * r * skH[k]; skPos[6 * k + 1] = y; rimPos[3 * k + 1] = y + 0.0006; }
+    skGeo.attributes.position.needsUpdate = true; skGeo.computeVertexNormals(); rimGeo.attributes.position.needsUpdate = true;
+    surfOverlay();
+  } else easel.rotation.x = ALPHA * r;
+}
+function showPop() { easel.visible = cfg.kind !== 'surface'; surfG.visible = cfg.kind === 'surface'; dartsG.visible = cfg.kind === 'darts'; wiresG.visible = cfg.kind === 'fits'; }
+
+/* ================= tweens, camera views ================= */
+const tweens = [];
+function tween(dur, fn, done) { if (reduced || dur <= 0) { fn(1); if (done) done(); return; } tweens.push({ t0: performance.now(), dur, fn, done }); }
+const easeOut = t => 1 - Math.pow(1 - t, 3), easeIO = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const easeBack = t => 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2);
+let view = 'book', camTween = null, lastW = 0;
+const BOOKX = 0.12, BOOKW = 2.9;
+function viewPose(name) {
+  const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
+  const cardC = [HINGE.x, HINGE.y + Math.sin(ALPHA) * CARD.h * 0.5, HINGE.z - Math.cos(ALPHA) * CARD.h * 0.5];
+  const fig = cfg.kind === 'surface' ? [[W / 2, 0.08, 0.03], [0.12, 1, 0.85], 1.22, 1.42] : [cardC, [0, Math.cos(ALPHA), Math.sin(ALPHA)], 1.2, 1.18];
+  let V = { book: [[BOOKX, 0.05, 0.04], [0, 1.35, 1], BOOKW, 1.72], text: [[-W / 2 - 0.01, 0.03, 0], [0, 1, 0.38], 1.2, 1.5], figure: fig, guide: fig }[name], lower = 0;
+  if (name === 'guide') {
+    // wide screens: the figure in the middle with a column of labels on each side; narrow ones: the list on top, the figure below it
+    // the surface is seen straight from the front, as in the Book view, so the wall doesn't hide the data axis;
+    // a card is seen square on, as in the Figure view
+    const w = stage.clientWidth, surf = cfg.kind === 'surface', dir = surf ? [0, 1.35, 1] : fig[1];
+    if (guideNarrow) {
+      lower = clamp((gList.offsetHeight + 16) / Math.max(1, stage.clientHeight), 0, 0.6);
+      V = [surf ? [W / 2, 0.08, -0.09] : fig[0], dir, surf ? 1.02 : 0.96, (surf ? 1.12 : 0.98) / (1 - lower)];
+    } else V = [fig[0], dir, Math.max(fig[2], (0.98 * w) / Math.max(w - 2 * (GUIDE_W + 64), 240)), fig[3] * 1.06];
+  }
+  const target = new THREE.Vector3(...V[0]), dist = Math.max(V[2] / 2 / Math.tan(hf / 2), V[3] / 2 / Math.tan(vf / 2));
+  const dir = new THREE.Vector3(...V[1]).normalize();
+  if (lower) target.addScaledVector(new THREE.Vector3(0, 1, 0).addScaledVector(dir, -dir.y).normalize(), lower * dist * Math.tan(vf / 2));
+  return { target, pos: target.clone().addScaledVector(dir, dist) };
+}
+function setView(name, instant) {
+  if (name !== 'guide' && guideOn) { guideOn = false; markGuide(false); gLayer.hidden = true; fadeDarts(false); }
+  view = name; const v = viewPose(name);
+  document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
+  if (instant || reduced) { camTween = null; camera.position.copy(v.pos); controls.target.copy(v.target); controls.update(); }
+  else camTween = { p0: camera.position.clone(), q0: controls.target.clone(), p1: v.pos, q1: v.target, t0: performance.now() };
+}
+controls.addEventListener('start', () => { camTween = null; });
+function resize() {
+  const w = stage.clientWidth, h = Math.max(1, stage.clientHeight);
+  renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix();
+  lineRes.set(w, h); for (const m of LINE_MATS) m.resolution.copy(lineRes);
+  if (guideOn) { guideNarrow = isNarrow(); gLayer.classList.toggle('narrow', guideNarrow); }
+  if (w !== lastW) { if (!lastW && w / h < 0.95) view = 'figure'; setView(view, true); lastW = w; }
+}
+
+/* ================= guide: red-pen labels that explain each figure (the Guide button) ================= */
+// Wide screens get a column of labels on each side of the figure with arrows to what they explain; narrow ones get
+// numbered badges on the figure and the same text as a list above it. The arrows follow the figure when you orbit.
+const GUIDE_W = 262, gLayer = $('guideLayer'), gSvg = $('guideSvg'), gList = $('guideList'), PEN = '#c8174f';
+let guideOn = false, guideNarrow = false, viewBeforeGuide = 'book', G = [];
+const isNarrow = () => stage.clientWidth < 900 || stage.clientWidth / Math.max(1, stage.clientHeight) < 1.15;
+const pageAt = (x, y, out) => { const [X, Y] = toCanvas(x, y), d = (X / CW) * W; return out.set(d, pageY(d) + LIFT + 0.002, -H / 2 + (Y / CH) * H); };
+const surfAt = (d, k, lift, out) => d2w(xOfD(d), yOfK(k), lift, out);
+const cardAt = (px, py, off, out) => easel.localToWorld(cardLocal(px, py, off, out));
+const AXL = -DOM - 0.62, AXB = -DOM - 0.52;   // the two direction arrows of §5.3 lie on the page, just outside the tick numbers
+const nOf = k => NL[k], LASTK = NLEV - 1;
+// the card spreads point at the newest sample, its fit and the average fit: computed once per state
+let gCache = { key: '' };
+function fitsNow() {
+  const m = cfg.model(st), key = `${spread}|${st.k}|${st.seed}|${st.d}|${st.lam}`;
+  if (gCache.key !== key) {
+    const z = st.k ? noiseFor(st.seed, st.k - 1) : null, y = z ? m.fx.map((f, j) => f + SIG * z[j]) : null;
+    gCache = { key, m, y, fit: y ? fitValues(m, y) : null, mean: meanValues(m) };
+  }
+  return gCache;
+}
+const tOf = x => Math.round(x * (NE - 1));
+const curveAt = (vals, t, off, out) => cardAt(cX(XE[t]), cY(clamp(vals[t], YMIN, YMAX)), off, out);
+function newestFitAt(out) {   // a point on the newest wire inside the plot, near its right end
+  const c = fitsNow(); let t = tOf(0.92);
+  while (t > tOf(0.5) && Math.abs(c.fit[t]) > 1.85) t--;
+  return curveAt(c.fit, t, layerOff(st.k - 1), out);
+}
+const dartNow = () => dartStats(st.darts);
+const TRUTH_G = { head: 'Black curve = the truth f', col: 'left', slot: 0.42,
+  body: () => 'The curve the data come from. We never see it, only noisy points.', at: v => curveAt(FE, tOf(0.03), 0, v) };
+const DOTS_G = { head: 'Dots = one sample', col: 'left', slot: 0, when: () => st.k > 0,
+  body: () => `${NPTS} noisy points: f plus noise with σ = ${SIG}. A new sample brings new dots.`,
+  at: v => { const c = fitsNow(); return cardAt(cX(c.m.xs[4]), cY(clamp(c.y[4], YMIN, YMAX)), layerOff(st.k - 1), v); } };
+const GUIDES = {
+  0: [
+    { head: 'Each dart = one trained model', col: 'left', slot: 0.05, when: () => st.darts.length > 0,
+      body: () => 'The same model, trained on a fresh sample each time. Where it lands is its prediction at one input.',
+      at: v => {
+        const p = st.darts.reduce((a, b) => (b[0] < a[0] ? b : a)), [px, py] = bpx(...p);
+        return easel.localToWorld(cardLocal(px, py, 0.004, v).addScaledVector(DART_DIR, 0.05));
+      } },
+    { head: 'Bullseye = the truth', col: 'left', slot: 0.5,
+      body: () => 'The value the model should predict there.', at: v => cardAt(BC - 0.055 * BR, BC, 0, v) },
+    { head: 'Amber ring = average landing', col: 'right', slot: 0.05, when: () => st.darts.length > 1,
+      body: () => 'The mean of all the darts: E[f̂].', at: v => { const s = dartNow(), [qx, qy] = bpx(s.cx, s.cy); return cardAt(qx + 13, qy, 0, v); } },
+    { head: 'Amber arrow = bias', col: 'right', slot: 0.4, when: () => st.darts.length > 1,
+      body: () => (st.bias ? 'From the truth to the average landing: the model misses the same way every time. A model that is too simple does this.'
+        : 'Low bias: the average lands near the bullseye, so the arrow is short or missing.'),
+      at: v => { const s = dartNow(), [qx, qy] = bpx(s.cx, s.cy), far = Math.hypot(qx - BC, qy - BC) > 26; return cardAt(far ? (BC + qx) / 2 : qx, far ? (BC + qy) / 2 : qy, 0, v); } },
+    { head: 'Dashed circle = variance', col: 'right', slot: 0.72, when: () => st.darts.length > 1,
+      body: () => (st.vari ? 'Its radius is √variance: how widely the darts scatter around their average. A model that is too complex scatters like this.'
+        : 'Its radius is √variance: how widely the darts scatter around their average.'),
+      at: v => { const s = dartNow(), [qx, qy] = bpx(s.cx, s.cy), r = Math.sqrt(s.v) * BR * Math.SQRT1_2; return cardAt(qx + r, qy + r, 0, v); } },
+  ],
+  1: [
+    TRUTH_G, DOTS_G,
+    { head: 'Blue wires = the fits', col: 'right', slot: 0, when: () => st.k > 0,
+      body: () => { const m = cfg.model(st), w = m.b2 > 2 * m.v ? ' They barely move, and they all miss: underfitting.' : m.v > 2 * m.b2 ? ' They bend to every point and no two agree: overfitting.' : '';
+        return `One degree-${st.d} polynomial per sample, each on its own layer. How widely they fan out is the variance.${w}`; }, at: newestFitAt },
+    { head: 'Amber curve = average fit', col: 'right', slot: 0.7, when: () => st.k > 0,
+      body: () => 'All the fits averaged: E[f̂]. Its gap from the black curve is the bias.', at: v => curveAt(fitsNow().mean, tOf(0.86), 0.002, v) },
+    { head: 'The bump at x = 0.7', col: 'right', slot: 0.36,
+      body: () => 'A model that is too simple can’t bend into it, so even its average misses it. That miss is bias.', at: v => curveAt(FE, tOf(0.7), 0, v) },
+  ],
+  2: [
+    { head: 'Height = test error', col: 'left', slot: 0,
+      body: () => 'Taller is worse on new data. The tall wall on the left is underfitting: degrees 0 to 2 are too simple, so the bias is big.', at: v => surfAt(0.8, 14, 0, v) },
+    { head: 'Away from you = more data', col: 'left', slot: 0.52,
+      body: () => `Training size n grows from ${nOf(0)} at the near edge to ${nOf(LASTK)} at the far edge.`,
+      axis: (a, b) => { pageAt(AXL, -DOM + 0.1, a); pageAt(AXL, DOM, b); } },
+    { head: 'Left to right = more complex model', col: 'bottom',
+      body: () => `Degree d from 0 to ${DMAX}: underfitting on the left, overfitting on the right.`, axis: (a, b) => { pageAt(-DOM + 0.05, AXB, a); pageAt(DOM, AXB, b); } },
+    { head: 'Gold line = best degree', col: 'right', slot: 0,
+      body: () => `The optimum complexity for each amount of data: the lowest point of its row. It climbs from d = ${BEST[0]} (n = ${nOf(0)}) to d = ${BEST[LASTK]} (n = ${nOf(LASTK)}): more data lets a more complex model win.`,
+      at: v => surfAt(BEST[18], 18, 0.009, v) },
+    { head: 'Black line = one U-curve', col: 'right', slot: 0.42,
+      body: () => `The row at the bead: n = ${nOf(SPREADS[2].st.k)}. Same curve as the small chart on the left page.`,
+      at: v => surfAt(DMAX, SPREADS[2].st.k, 0.004, v) },
+    { head: 'Complex + little data = overfitting', col: 'right', slot: 0.78,
+      body: () => `Degree ${DMAX} with only ${nOf(0)} points: the model fits the noise, and variance makes the error shoot up.`, at: v => surfAt(11.7, 0.4, 0, v) },
+  ],
+  3: [
+    TRUTH_G, DOTS_G,
+    { head: `Blue wires = degree-${RD} fits`, col: 'right', slot: 0, when: () => st.k > 0,
+      body: () => (st.lam === 0 ? 'One fit per sample. With λ = 0 there is no penalty, so they overfit: they swing wildly, with big variance.'
+        : `One fit per sample, with penalty λ = ${lamText(st.lam)}. A bigger λ calms the wires: less variance, less overfitting.`), at: newestFitAt },
+    { head: 'Amber curve = average fit', col: 'right', slot: 0.55, when: () => st.k > 0,
+      body: () => 'Its gap from the black curve is the bias. Too much λ flattens every fit: the bias grows and the model underfits.', at: v => curveAt(fitsNow().mean, tOf(0.86), 0.002, v) },
+  ],
+};
+function buildGuide(list) {
+  gSvg.replaceChildren(); gList.replaceChildren(); gLayer.querySelectorAll('.g-label, .g-badge').forEach(e => e.remove());
+  const svgEl = (tag, attrs) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in attrs) e.setAttribute(k, attrs[k]); gSvg.appendChild(e); return e; };
+  const make = (tag, cls, parent) => { const e = document.createElement(tag); if (cls) e.className = cls; parent.appendChild(e); return e; };
+  G = list.map((g0, i) => {
+    const g = { ...g0 };
+    g.halo = svgEl('path', { fill: 'none', stroke: 'rgba(255,255,255,0.82)', 'stroke-width': g.axis ? 8 : 7, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+    g.line = svgEl('path', { fill: 'none', stroke: PEN, 'stroke-width': g.axis ? 4 : 3, 'stroke-linecap': 'round' });
+    g.headEl = svgEl('path', { fill: PEN });
+    g.el = make('div', 'g-label' + (g.col === 'bottom' ? ' wide' : ''), gLayer);
+    make('b', '', g.el).textContent = g.head; g.bodyEl = make('span', '', g.el);
+    g.badge = make('div', 'g-badge', gLayer); g.badge.textContent = String(i + 1); g.badge.setAttribute('aria-hidden', 'true');
+    g.li = make('li', '', gList); const num = make('span', 'g-num', g.li), txt = make('span', '', g.li);
+    num.textContent = String(i + 1); num.setAttribute('aria-hidden', 'true');
+    make('b', '', txt).textContent = g.head + '. '; g.liBody = make('span', '', txt);
+    g.a = new THREE.Vector3(); g.b = new THREE.Vector3(); g.txt = ''; g.on = null;
+    return g;
+  });
+}
+const _gp = new THREE.Vector3(), _gb = new THREE.Vector3();
+let gW = 1, gH = 1;
+const scr = v => { _gp.copy(v).project(camera); return [((_gp.x + 1) / 2) * gW, ((1 - _gp.y) / 2) * gH]; };
+const f1 = v => v.toFixed(1);
+function arrowD(x0, y0, x1, y1, L, hw) {
+  const len = Math.hypot(x1 - x0, y1 - y0) || 1, ux = (x1 - x0) / len, uy = (y1 - y0) / len, bx = x1 - ux * L, by = y1 - uy * L;
+  const line = `M${f1(x0)} ${f1(y0)}L${f1(bx)} ${f1(by)}`, head = `M${f1(x1)} ${f1(y1)}L${f1(bx - uy * hw)} ${f1(by + ux * hw)}L${f1(bx + uy * hw)} ${f1(by - ux * hw)}Z`;
+  return [line, head];
+}
+function drawArrow(g, x0, y0, x1, y1) {
+  if (!g.axis) { const len = Math.hypot(x1 - x0, y1 - y0) || 1; x1 -= ((x1 - x0) / len) * 6; y1 -= ((y1 - y0) / len) * 6; }   // stop just short, so the target stays visible
+  const [line, head] = arrowD(x0, y0, x1, y1, g.axis ? 20 : 16, g.axis ? 9 : 7.5);
+  g.line.setAttribute('d', line); g.headEl.setAttribute('d', head); g.halo.setAttribute('d', line + head);
+}
+const clearArrow = g => { for (const e of [g.line, g.headEl, g.halo]) e.setAttribute('d', ''); };
+function guideTexts() {   // which labels apply right now, and their current wording
+  for (const g of G) {
+    const on = !g.when || g.when();
+    if (on !== g.on) { g.on = on; g.el.style.display = g.badge.style.display = on ? '' : 'none'; g.li.hidden = !on; if (!on) clearArrow(g); }
+    if (!on) continue;
+    const t = g.body(); if (t !== g.txt) { g.txt = t; g.bodyEl.textContent = t; g.liBody.textContent = t; }
+  }
+}
+// while the guide is on, the darts turn see-through so the printed ring, arrow and circle under them show
+const DART_MATS = [...new Set(dartObjs.flatMap(o => { const a = []; o.traverse(m => { if (m.isMesh) a.push(m.material); }); return a; }))];
+function fadeDarts(on) {
+  for (const m of DART_MATS) { m.transparent = on; m.opacity = on ? 0.38 : 1; m.depthWrite = !on; m.needsUpdate = true; }
+  for (const o of dartObjs) o.traverse(m => { if (m.isMesh) m.castShadow = !on; });
+}
+// the figure's box on screen: the card's corners, or the surface corners on the page and at their heights plus the wall
+const gBox = [0, 0, 0, 0];
+const grow = v => { const p = scr(v); gBox[0] = Math.min(gBox[0], p[0]); gBox[2] = Math.max(gBox[2], p[0]); gBox[1] = Math.min(gBox[1], p[1]); gBox[3] = Math.max(gBox[3], p[1]); return p; };
+function figBox() {
+  gBox[0] = gBox[1] = Infinity; gBox[2] = gBox[3] = -Infinity;
+  if (cfg.kind === 'surface') {
+    for (const d of [0, DMAX]) for (const k of [0, LASTK]) { grow(surfAt(d, k, 0, _gb)); grow(pageAt(xOfD(d), yOfK(k), _gb)); }
+    grow(surfAt(0.5, LASTK, 0, _gb));
+  } else for (const px of [0, MS]) for (const py of [0, MS]) grow(cardAt(px, py, 0, _gb));
+}
+const fab = $('guideFab');
+function markGuide(on) {
+  fab.setAttribute('aria-pressed', String(on)); $('guideFabText').textContent = on ? 'Hide guide' : 'Guide';
+  fab.title = on ? 'Hide the labels' : 'Show labels that explain the figure';
+}
+function placeFab(ready) {   // just above the figure's top-right corner; with the phone list showing, in the list's header
+  const [x0, y0, x1, y1] = gBox, ok = ready && x1 > 0 && x0 < gW && y1 > 0 && y0 < gH;
+  if (fab.hidden === ok) fab.hidden = !ok;
+  if (!ok) return;
+  const w = fab.offsetWidth, h = fab.offsetHeight;
+  let x = x1 - w, y = y0 - h - 12;
+  if (guideOn && guideNarrow) { const r = gList.getBoundingClientRect(); x = r.right - w - 6; y = r.top + 5; }
+  else if (y < 8) { x = x1 + 12; y = y0; }
+  fab.style.transform = `translate(${f1(clamp(x, 8, gW - w - 8))}px, ${f1(clamp(y, 8, gH - h - 8))}px)`;
+}
+function guideFrame() {
+  gW = stage.clientWidth; gH = stage.clientHeight;
+  const ready = !!GUIDES[spread] && !busy && pop.rise > 0.97 && popRoot.visible, show = guideOn && ready;
+  if (ready) figBox();
+  if (gLayer.hidden === show) gLayer.hidden = !show;
+  if (show) drawGuide();
+  placeFab(ready);
+}
+function drawGuide() {
+  guideTexts();
+  const V = G.filter(g => g.on);
+  for (const g of V) { if (g.axis) { g.axis(g.a, g.b); g.pa = grow(g.a); g.pb = grow(g.b); } else g.pa = scr(g.at(g.a)); }
+  const [x0, y0, x1, y1] = gBox;
+  if (guideNarrow) {
+    const ps = V.map(g => (g.axis ? [(g.pa[0] + g.pb[0]) / 2, (g.pa[1] + g.pb[1]) / 2] : [...g.pa]));
+    for (let j = 1; j < ps.length; j++) for (let i = 0; i < j; i++) {   // badges that land on the same spot step apart
+      const dx = ps[j][0] - ps[i][0], dy = ps[j][1] - ps[i][1], dd = Math.hypot(dx, dy);
+      if (dd < 28) { const ux = dd > 0.5 ? dx / dd : 0, uy = dd > 0.5 ? dy / dd : -1; ps[j][0] += ux * (28 - dd); ps[j][1] += uy * (28 - dd); }
+    }
+    V.forEach((g, i) => {
+      g.badge.style.transform = `translate(${f1(ps[i][0] - 12)}px, ${f1(ps[i][1] - 12)}px)`;
+      if (g.axis) drawArrow(g, ...g.pa, ...g.pb); else clearArrow(g);
+    });
+    return;
+  }
+  for (const g of V) { g.h = g.el.offsetHeight; g.w = g.el.offsetWidth; }   // read every size before moving anything
+  for (const side of ['left', 'right']) {
+    const items = V.filter(g => g.col === side).sort((a, b) => a.slot - b.slot);
+    let floor = 8;
+    for (const g of items) { g.ly = Math.max(y0 + g.slot * (y1 - y0) - 12, floor); floor = g.ly + g.h + 12; }
+    const over = floor - 12 - (gH - 8); if (over > 0) for (const g of items) g.ly = Math.max(8, g.ly - over);
+    const x = side === 'left' ? clamp(x0 - 34 - GUIDE_W, 8, gW - GUIDE_W - 8) : clamp(x1 + 34, 8, gW - GUIDE_W - 8);
+    for (const g of items) g.lx = x;
+  }
+  for (const g of V) if (g.col === 'bottom') {
+    g.lx = clamp((g.pa[0] + g.pb[0]) / 2 - g.w / 2, 8, gW - g.w - 8); g.ly = clamp(Math.max(g.pa[1], g.pb[1]) + 16, 8, gH - g.h - 8);
+  }
+  for (const g of V) {
+    g.el.style.transform = `translate(${f1(g.lx)}px, ${f1(g.ly)}px)`;
+    if (g.axis) drawArrow(g, ...g.pa, ...g.pb);
+    else drawArrow(g, g.col === 'left' ? g.lx + g.w + 2 : g.lx - 2, g.ly + 19, ...g.pa);
+  }
+}
+function setGuide(on) {
+  on = !!on && !!GUIDES[spread];
+  if (on === guideOn) return;
+  if (on) {
+    buildGuide(GUIDES[spread]);
+    guideOn = true; markGuide(true);
+    if (sim.status === 'ready' && cfg.kind !== 'surface') { play(); stepSim(); }   // an empty board or plot has nothing to label yet
+    guideNarrow = isNarrow(); gLayer.classList.toggle('narrow', guideNarrow);
+    guideTexts(); gLayer.hidden = false;         // filled and shown first, so the list can be measured for the camera
+    if (view !== 'guide') viewBeforeGuide = view;
+    setView('guide'); fadeDarts(cfg.kind === 'darts');
+  } else setView(viewBeforeGuide);              // any other view switches the guide off
+}
+
+/* ================= sound: page turns and the lamp switch ================= */
+// Synthesised with Web Audio, no files. Browsers allow sound only after a click or key press, so the darts thrown when
+// the page first opens are silent; everything after the first click is heard.
+let soundOn = true, actx = null, master = null, noiseBuf = null;
+function unlockAudio() {
+  if (actx) { if (actx.state === 'suspended') actx.resume(); return; }
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+  actx = new AC(); master = actx.createGain(); master.gain.value = 0.6; master.connect(actx.destination);
+  noiseBuf = actx.createBuffer(1, actx.sampleRate, actx.sampleRate);
+  const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+}
+addEventListener('pointerdown', unlockAudio, true); addEventListener('keydown', unlockAudio, true);
+const sfxReady = () => soundOn && actx && actx.state !== 'closed';
+function noise(t, dur, filters, env, out = master) {   // a noise burst through a filter chain, with a gain envelope [[time, level], ...]
+  const src = actx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+  let node = src; for (const [type, f, q, f2] of filters) {
+    const b = actx.createBiquadFilter(); b.type = type; b.frequency.setValueAtTime(f, t); b.Q.value = q;
+    if (f2) b.frequency.exponentialRampToValueAtTime(f2, t + dur); node.connect(b); node = b;
+  }
+  const g = actx.createGain(); g.gain.setValueAtTime(0, t); for (const [dt, v] of env) g.gain.linearRampToValueAtTime(v, t + dt);
+  node.connect(g); g.connect(out); src.start(t, Math.random() * 0.5); src.stop(t + dur + 0.05);
+  return g;
+}
+function tone(t, f0, f1, dur, level, type = 'sine') {
+  const o = actx.createOscillator(), g = actx.createGain(); o.type = type;
+  o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  g.gain.setValueAtTime(level, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
+}
+// one soft click: a short, rounded blip with the faintest tick on top, nothing harsh
+function click(t, f, level) {
+  tone(t, f, f * 0.7, 0.045, level);
+  noise(t, 0.012, [['bandpass', f * 2, 1.2], ['lowpass', 4000, 0.7]], [[0.002, level * 0.35], [0.012, 0]]);
+}
+const sfx = {
+  page() { if (sfxReady()) click(actx.currentTime + 0.01, 900, 0.16); },                        // a soft click as the page turns
+  lamp(on) { if (sfxReady()) click(actx.currentTime + 0.005, on ? 1400 : 1100, 0.16); },        // on a little higher than off
+};
+async function renderSfx(name, arg) {   // testing: renders one effect offline and returns its peak and loudness per 50 ms
+  const save = [actx, master, noiseBuf, soundOn], R = 48000, off = new OfflineAudioContext(1, R * 1.4, R);
+  actx = off; master = off.createGain(); master.gain.value = 0.6; master.connect(off.destination);
+  noiseBuf = off.createBuffer(1, R, R); const d = noiseBuf.getChannelData(0); for (let i = 0; i < R; i++) d[i] = Math.random() * 2 - 1;
+  soundOn = true; sfx[name](arg); [actx, master, noiseBuf, soundOn] = save;
+  const ch = (await off.startRendering()).getChannelData(0), bins = [];
+  for (let i = 0; i < ch.length; i += R / 20) { let p = 0; for (let j = i; j < i + R / 20 && j < ch.length; j++) p = Math.max(p, Math.abs(ch[j])); bins.push(+p.toFixed(2)); }
+  return { peak: Math.max(...bins), bins };
+}
+
+/* ================= control flow ================= */
+const playBtn = $('play'), stepBtn = $('step'), liveEl = $('live');
+let lastLiveDraw = 0;
+function updateButtons() { playBtn.textContent = playing ? 'Pause' : sim.status === 'done' ? 'Replay' : 'Play'; stepBtn.disabled = sim.status === 'done'; }
+function syncSurfHud() { const s = SPREADS[2].st; $('deg').value = s.d; $('degOut').textContent = String(s.d); $('nIdx').value = s.k; $('nOut').textContent = String(NL[s.k]); }
+function syncHud() {
+  document.querySelectorAll('[data-spreads]').forEach(el => { el.hidden = !el.dataset.spreads.split(' ').includes(String(spread)); });
+  $('pageLabel').textContent = `pp. ${PAGE0 + 2 * spread}–${PAGE0 + 1 + 2 * spread} · ${spread + 1} of ${SPREADS.length}`;
+  $('prev').disabled = spread === 0; $('next').disabled = spread === SPREADS.length - 1;
+  $('hint').textContent = cfg.hint;
+  if (spread === 0) { document.querySelectorAll('[data-bias]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.bias === st.bias))); document.querySelectorAll('[data-vari]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.vari === st.vari))); }
+  if (spread === 1) { $('deg').value = st.d; $('degOut').textContent = String(st.d); }
+  if (spread === 2) syncSurfHud();
+  if (spread === 3) { $('lam').value = st.lam === 0 ? LAM_MIN : Math.log10(st.lam); $('lamOut').textContent = lamText(st.lam); }
+  updateButtons();
+  document.documentElement.style.setProperty('--hud-h', $('hud').offsetHeight + 'px');
+}
+function resetSim() {
+  sim.status = 'ready'; playing = false;
+  clearDarts(); cfg.reset(st); buildWires(); cardDirty = true; liveDirty = true; updateButtons();
+}
+function enterSpread() { cfg = SPREADS[spread]; st = cfg.st; showPop(); resetSim(); }
+function stepSim() {
+  if (sim.status === 'done') return;
+  const fin = cfg.step(st); sim.t0 = performance.now();
+  buildWires(); if (cfg.kind === 'darts') cardDirty = true; liveDirty = true;
+  if (fin) { sim.status = 'done'; playing = false; }
+}
+function play() { if (busy) return; if (sim.status === 'done') resetSim(); playing = true; sim.status = 'running'; acc = cfg.stepMs; updateButtons(); liveDirty = true; }
+function pause() { playing = false; if (sim.status === 'running') sim.status = 'paused'; updateButtons(); liveDirty = true; }
+function restart() { if (busy) return; resetSim(); play(); }
+function refreshTex(...keys) { for (const k of keys) TX[k].needsUpdate = true; }
+function redrawAll() { drawLeftTop(); drawLeftLive(); drawRight(P.right.ctx, spread, false); drawCard(); refreshTex('top', 'live', 'right'); liveDirty = false; }
+const riseUp = then => tween(cfg.kind === 'surface' ? 850 : 900, p => applyRise(easeBack(p)), () => { applyRise(1); if (then) then(); });
+
+function goTo(n) {
+  if (busy || n < 0 || n >= SPREADS.length || n === spread) return;
+  setGuide(false); busy = true; pause();
+  drawLeftLive(); drawRight(P.right.ctx, spread, true); refreshTex('live', 'right');   // print the live figure before the pop-up folds flat
+  dartsG.visible = false;
+  tween(cfg.kind === 'surface' ? 240 : 320, p => applyRise(1 - p * p), () => startFlip(n));
+}
+function startFlip(n) {
+  sfx.page();
+  const dir = n > spread ? 1 : -1, raw = c => c.setTransform(1, 0, 0, 1, 0, 0);
+  popRoot.visible = false;
+  if (dir > 0) { raw(P.front.ctx); P.front.ctx.drawImage(P.right.canvas, 0, 0); }
+  else { raw(P.back.ctx); P.back.ctx.drawImage(P.top.canvas, 0, 0); P.back.ctx.drawImage(P.live.canvas, 0, Math.round(SPLIT * SCALE)); }
+  spread = n; enterSpread(); applyRise(0);
+  if (dir > 0) { drawLeftFull(P.back.ctx); drawRight(P.right.ctx, n, false); }
+  else { drawRight(P.front.ctx, n, false); drawLeftTop(); drawLeftLive(); }
+  if (dir > 0) refreshTex('right', 'front', 'back'); else refreshTex('top', 'live', 'front', 'back');
+  syncHud(); liveEl.textContent = `Pages ${PAGE0 + 2 * n} and ${PAGE0 + 1 + 2 * n}`;
+  if (view === 'figure') setView('figure');
+  setFlip(dir > 0 ? 0 : Math.PI, dir); flipper.visible = true;
+  tween(FLIP_MS, p => { const e = easeIO(p); setFlip(dir > 0 ? e * Math.PI : (1 - e) * Math.PI, dir); }, () => {
+    flipper.visible = false; redrawAll();
+    popRoot.visible = true; busy = false;
+    riseUp(() => { if (!reduced && autoplay) play(); });
+  });
+}
+
+$('prev').addEventListener('click', () => goTo(spread - 1));
+$('next').addEventListener('click', () => goTo(spread + 1));
+addEventListener('keydown', e => {
+  if (['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName)) return;
+  if (e.key === 'ArrowRight') goTo(spread + 1);
+  else if (e.key === 'ArrowLeft') goTo(spread - 1);
+  else if (e.key === ' ') { e.preventDefault(); playing ? pause() : play(); }
+});
+addEventListener('keydown', e => { if (e.key === 'Escape' && guideOn) setGuide(false); });
+playBtn.addEventListener('click', () => (playing ? pause() : play()));
+stepBtn.addEventListener('click', () => { if (busy) return; playing = false; stepSim(); if (sim.status !== 'done') sim.status = 'paused'; updateButtons(); });
+$('reset').addEventListener('click', () => { if (busy) return; resetSim(); });
+$('resample').addEventListener('click', () => { if (busy) return; st.seed++; restart(); });
+document.querySelectorAll('[data-bias]').forEach(b => b.addEventListener('click', () => { if (busy) return; st.bias = +b.dataset.bias; syncHud(); restart(); }));
+document.querySelectorAll('[data-vari]').forEach(b => b.addEventListener('click', () => { if (busy) return; st.vari = +b.dataset.vari; syncHud(); restart(); }));
+function setDegree(d) {
+  if (spread === 1) { st.d = d; $('degOut').textContent = String(d); buildWires(); drawRight(P.right.ctx, spread, false); refreshTex('right'); liveDirty = true; }
+  else if (spread === 2) { pause(); setSurfPoint(st, d, st.k); }
+}
+$('deg').addEventListener('input', e => setDegree(+e.target.value));
+document.querySelectorAll('[data-deg]').forEach(b => b.addEventListener('click', () => { $('deg').value = b.dataset.deg; setDegree(+b.dataset.deg); }));
+$('nIdx').addEventListener('input', e => { pause(); setSurfPoint(st, st.d, +e.target.value); });
+function setLam(l) { st.lam = l; $('lam').value = l === 0 ? LAM_MIN : Math.log10(l); $('lamOut').textContent = lamText(l); buildWires(); liveDirty = true; }
+$('lam').addEventListener('input', e => setLam(lamOf(+e.target.value)));
+document.querySelectorAll('[data-lam]').forEach(b => b.addEventListener('click', () => setLam({ none: 0, best: BEST_LAM, heavy: 30 }[b.dataset.lam])));
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+$('light').addEventListener('click', () => setLamp(!lampOn));
+$('guideFab').addEventListener('click', () => { if (!busy) setGuide(!guideOn); });
+
+// pointer: click the surface to move the bead, click a page edge to turn, double-click the text to read it
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), cv = renderer.domElement;
+function aim(e) { const r = cv.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, camera); }
+function pickSurface() { if (busy || cfg.kind !== 'surface' || pop.rise < 0.9 || !popRoot.visible) return null; const hit = ray.intersectObject(surfMesh)[0]; return hit ? w2d(hit.point) : null; }
+const pickLamp = () => ray.intersectObject(lampModel, true).length > 0;
+function pickPage() { const t = (BASE + 0.012 - ray.ray.origin.y) / ray.ray.direction.y; if (!(t > 0)) return null; const p = ray.ray.at(t, _v); return Math.abs(p.z) <= H / 2 && Math.abs(p.x) <= W ? p.x : null; }
+const edgeOf = x => (x === null ? 0 : x > W * 0.87 ? 1 : x < -W * 0.87 ? -1 : 0);
+let down = null, hoverT = 0;
+cv.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+cv.addEventListener('pointerup', e => {
+  if (!down) return; const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y), quick = performance.now() - down.t < 450; down = null;
+  if (moved > 6 || !quick) return;
+  aim(e); if (pickLamp()) { setLamp(!lampOn); return; }
+  const p = pickSurface();
+  if (p) { pause(); setSurfPoint(st, clamp(Math.round(dOfX(p[0])), 0, DMAX), clamp(Math.round(kOfY(p[1])), 0, NLEV - 1)); return; }
+  const edge = edgeOf(pickPage()); if (edge) goTo(spread + edge);
+});
+cv.addEventListener('dblclick', e => { aim(e); if (pickLamp() || pickSurface()) return; const x = pickPage(); if (x !== null && x < 0) setView(view === 'text' ? 'book' : 'text'); else if (x === null) setView('book'); });
+cv.addEventListener('pointermove', e => {
+  if (e.buttons || performance.now() - hoverT < 60) return; hoverT = performance.now();
+  aim(e); cv.style.cursor = pickLamp() ? 'pointer' : pickSurface() ? 'crosshair' : edgeOf(pickPage()) ? 'pointer' : 'grab';
+});
+
+new ResizeObserver(() => { document.documentElement.style.setProperty('--hud-h', $('hud').offsetHeight + 'px'); resize(); }).observe($('hud'));
+addEventListener('resize', resize);
+
+/* ================= frame loop ================= */
+let prevT = performance.now();
+function tick(now) {
+  const dt = Math.min(100, now - prevT); prevT = now;
+  for (let i = tweens.length - 1; i >= 0; i--) {
+    const tw = tweens[i], p = clamp((now - tw.t0) / tw.dur, 0, 1); tw.fn(p);
+    if (p >= 1) { tweens.splice(i, 1); if (tw.done) tw.done(); }
+  }
+  if (playing && !busy) {
+    acc += dt; let k = 0;
+    while (acc >= cfg.stepMs && playing && k < 4) { acc -= cfg.stepMs; stepSim(); k++; }
+    if (!playing) updateButtons();
+  }
+  if (cfg.kind === 'darts') for (const o of dartObjs) if (o.visible) placeDart(o, now);
+  if (cfg.kind === 'surface') { const [d, k] = beadNow(st, now); d2w(xOfD(d), yOfK(k), BEAD_R, _v); bead.position.copy(_v); }
+  if (cardDirty && !busy) drawCard();
+  if (liveDirty && !busy && now - lastLiveDraw > 90) {
+    drawLeftLive(); TX.live.needsUpdate = true; lastLiveDraw = now; liveDirty = false;
+    if (sim.status === 'done') { const s = cfg.kind === 'darts' ? dartsStatus()[0] : ''; if (s && s !== liveEl.textContent) liveEl.textContent = s; }
+  }
+  if (camTween) {
+    const p = clamp((now - camTween.t0) / 700, 0, 1), e = easeIO(p);
+    camera.position.lerpVectors(camTween.p0, camTween.p1, e); controls.target.lerpVectors(camTween.q0, camTween.q1, e);
+    if (p >= 1) camTween = null;
+  }
+  controls.update(); renderer.render(scene, camera);
+  guideFrame();
+  requestAnimationFrame(tick);
+}
+
+/* ================= start ================= */
+let autoplay = true;
+enterSpread(); syncHud(); resize(); redrawAll(); applyRise(0);
+requestAnimationFrame(tick);
+// scripting hook, used for testing and for recording walkthrough videos
+window.__book = {
+  P, sim, SPREADS, MODEL: { model, ERR, BEST, NL, RIDGE, BEST_LAM, TRUTH, SIG, NPTS }, LAYOUT,
+  goTo, camera, controls, d2w, cardWorld, applyRise, play, pause, restart, resetSim,
+  setDegree, setLam, setSurfPoint: (d, k) => setSurfPoint(SPREADS[2].st, d, k), easel, HINGE, CARD, ALPHA,
+  setLamp, get lampOn() { return lampOn; }, setGuide, get guideOn() { return guideOn; }, sfx, renderSfx, get audioState() { return actx ? actx.state : 'none'; },
+  get spread() { return spread; }, get busy() { return busy; }, get st() { return st; },
+  get autoplay() { return autoplay; }, set autoplay(v) { autoplay = v; },
+};
+Promise.all([
+  `700 68px "Libre Caslon Text"`, `600 30px "Source Serif 4"`, `700 30px "Source Serif 4"`, `italic 600 33px "Source Serif 4"`, `600 22px "IBM Plex Mono"`, `700 40px Caveat`,
+].map(f => document.fonts.load(f, 'Aaσλεd')).concat(document.fonts.load(`italic 600 40px "STIX Two Text"`, 'f̂εσλ‖ᵢ²−'), document.fonts.load(`600 40px "STIX Two Text"`, 'BiasVarE[]()=+−~²')))
+  .catch(() => {}).then(() => document.fonts.ready).catch(() => {}).then(() => {
+    redrawAll();
+    riseUp(() => { if (!reduced && autoplay) setTimeout(() => { if (sim.status === 'ready' && !busy && autoplay) play(); }, 350); });
+  });
+</script>
+
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
