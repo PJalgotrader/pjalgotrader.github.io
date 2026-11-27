@@ -75,6 +75,13 @@
         .yt a:hover span:first-child { text-decoration: underline; text-underline-offset: 3px; }
         .yt a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
         .yt .new { margin-left: 6px; padding: 1px 5px; border-radius: 3px; background: var(--c-ink); color: var(--card); font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase; vertical-align: 1px; }
+        .acts { display: flex; gap: 6px; }
+        .acts .go { width: auto; flex: 1 1 0; min-width: 0; padding: 0 4px; white-space: nowrap; font-size: 12.5px; }
+        .acts .go.course { background: var(--c-ink); color: var(--card); text-decoration: none; }
+        .acts .go.course:hover { background: transparent; color: var(--c-ink); }
+        .pc .name a { color: inherit; text-decoration: none; }
+        .pc .name a:hover { color: var(--c-ink); }
+        .pc .name a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
         .phoneonly { display: none; }
         .spacer { min-height: 44px; }
 
@@ -126,6 +133,8 @@
             .stats { display: none; }
             .keys li { font-size: 12.5px; padding: 4px 0; }
             .go { font-size: 12px; }
+            .acts { flex-direction: column; }
+            .acts .go { min-height: 40px; }
             .phoneonly { display: flex; }
             .spacer { display: none; }
             .yt { min-height: 0; }
@@ -211,19 +220,19 @@
                         <div class="flipper">
                             <div class="face front"><div class="inner">
                                 <div class="top"><span class="tno">No. 01</span><span>DATA 5600</span></div>
-                                <h2 class="name">Machine Learning</h2>
+                                <h2 class="name"><a href="courses/machine-learning.html">Machine Learning</a></h2>
                                 <div class="window"><svg viewBox="0 0 220 110" aria-hidden="true"><path class="ln" d="M10 96C60 92 92 74 118 52S176 16 212 12"></path><circle class="solid" cx="28" cy="82" r="4.5"></circle><circle class="solid" cx="52" cy="96" r="4.5"></circle><circle class="solid" cx="74" cy="70" r="4.5"></circle><circle class="solid" cx="98" cy="78" r="4.5"></circle><circle class="solid" cx="116" cy="42" r="4.5"></circle><circle class="solid" cx="138" cy="56" r="4.5"></circle><circle class="solid" cx="160" cy="22" r="4.5"></circle><circle class="solid" cx="186" cy="32" r="4.5"></circle><circle class="solid" cx="204" cy="8" r="4.5"></circle></svg></div>
                                 <p class="desc">The foundational course of the Data Analytics track. Real-time coding sessions on Google Colab so concepts get applied, and tested, immediately.</p>
                                 <div class="stats"><div class="sr"><span>Home</span><b>DAIS department</b></div><div class="sr"><span>Status</span><b>Ongoing</b></div></div>
                                 <div class="yt" aria-label="Machine Learning on YouTube"><p class="ytl"><i class="fab fa-youtube" aria-hidden="true"></i> On YouTube</p><a href="https://www.youtube.com/playlist?list=PL2GWo47BFyUNeLIH127rVovSqKFm1rk07" target="_blank" rel="noopener noreferrer"><span>Codes and concepts</span><span aria-hidden="true">&#8599;</span></a></div>
-                                <button class="go" type="button" data-flip aria-expanded="false">Key areas &rarr;</button>
+                                <div class="acts"><a class="go course" href="courses/machine-learning.html">Course &rarr;</a><button class="go" type="button" data-flip aria-expanded="false">Key areas</button></div>
                             </div></div>
                             <div class="face back" inert><div class="inner">
                                 <div class="top"><span>Machine Learning</span><span>DATA 5600</span></div>
                                 <p class="desc backdesc">The foundational course of the Data Analytics track. Real-time coding sessions on Google Colab so concepts get applied, and tested, immediately.</p>
                                 <p class="keyt">Key areas</p>
                                 <ul class="keys"><li>Supervised and unsupervised learning</li><li>Model evaluation and validation</li><li>Feature engineering and selection</li><li>Practical implementation, end to end</li></ul>
-                                <button class="go" type="button" data-flip>&larr; Back</button>
+                                <div class="acts"><a class="go course" href="courses/machine-learning.html">Course &rarr;</a><button class="go" type="button" data-flip>&larr; Back</button></div>
                             </div></div>
                         </div>
                     </article>
@@ -231,19 +240,19 @@
                         <div class="flipper">
                             <div class="face front"><div class="inner">
                                 <div class="top"><span class="tno">No. 02</span><span>DATA 5610</span></div>
-                                <h2 class="name">Deep Learning</h2>
+                                <h2 class="name"><a href="courses/deep-learning.html">Deep Learning</a></h2>
                                 <div class="window"><svg viewBox="0 0 220 110" aria-hidden="true"><path class="thin" d="M30 25L110 15M30 25L110 55M30 25L110 95M30 55L110 15M30 55L110 55M30 55L110 95M30 85L110 15M30 85L110 55M30 85L110 95M110 15L190 40M110 55L190 40M110 95L190 40M110 15L190 70M110 55L190 70M110 95L190 70"></path><circle class="solid" cx="30" cy="25" r="7"></circle><circle class="solid" cx="30" cy="55" r="7"></circle><circle class="solid" cx="30" cy="85" r="7"></circle><circle class="solid" cx="110" cy="15" r="7"></circle><circle class="solid" cx="110" cy="55" r="7"></circle><circle class="solid" cx="110" cy="95" r="7"></circle><circle class="solid" cx="190" cy="40" r="7"></circle><circle class="solid" cx="190" cy="70" r="7"></circle></svg></div>
                                 <p class="desc">From fundamentals to the frontier: modern architectures for vision and sequence modeling, taught with working code.</p>
                                 <div class="stats"><div class="sr"><span>Home</span><b>DAIS department</b></div><div class="sr"><span>Status</span><b>Ongoing</b></div></div>
                                 <div class="yt" aria-label="Deep Learning on YouTube"><p class="ytl"><i class="fab fa-youtube" aria-hidden="true"></i> On YouTube</p><a href="https://www.youtube.com/playlist?list=PL2GWo47BFyUO6Fiy2mJCxR8sUrBEfT6BM" target="_blank" rel="noopener noreferrer"><span>Codes and concepts</span><span aria-hidden="true">&#8599;</span></a></div>
-                                <button class="go" type="button" data-flip aria-expanded="false">Key areas &rarr;</button>
+                                <div class="acts"><a class="go course" href="courses/deep-learning.html">Course &rarr;</a><button class="go" type="button" data-flip aria-expanded="false">Key areas</button></div>
                             </div></div>
                             <div class="face back" inert><div class="inner">
                                 <div class="top"><span>Deep Learning</span><span>DATA 5610</span></div>
                                 <p class="desc backdesc">From fundamentals to the frontier: modern architectures for vision and sequence modeling, taught with working code.</p>
                                 <p class="keyt">Key areas</p>
                                 <ul class="keys"><li>Deep neural networks (NN, DNN)</li><li>Convolutional networks (CNN, R-CNN, YOLO, FCN)</li><li>Recurrent networks (RNN, LSTM)</li><li>Transformers and attention</li></ul>
-                                <button class="go" type="button" data-flip>&larr; Back</button>
+                                <div class="acts"><a class="go course" href="courses/deep-learning.html">Course &rarr;</a><button class="go" type="button" data-flip>&larr; Back</button></div>
                             </div></div>
                         </div>
                     </article>
@@ -251,19 +260,19 @@
                         <div class="flipper">
                             <div class="face front"><div class="inner">
                                 <div class="top"><span class="tno">No. 03</span><span>DATA 5630</span></div>
-                                <h2 class="name">Deep Forecasting</h2>
+                                <h2 class="name"><a href="courses/deep-forecasting.html">Deep Forecasting</a></h2>
                                 <div class="window"><svg viewBox="0 0 220 110" aria-hidden="true"><path class="thin dash" d="M128 52L214 12M128 52L214 88"></path><path class="ln" d="M6 82l14-10 12 8 14-16 12 7 14-15 12 6 14-18 12 7 18-9"></path><path class="ln dash" d="M128 52l14-7 12 6 14-11 12 5 14-9 20-4"></path><circle class="solid" cx="128" cy="52" r="4.5"></circle></svg></div>
                                 <p class="desc">Classical time series models meet modern machine learning and deep learning. Launched as a special topic; its success made it a permanent part of the curriculum.</p>
                                 <div class="stats"><div class="sr"><span>Origin</span><b>From scratch</b></div><div class="sr"><span>First run</span><b>Spring 2023</b></div></div>
                                 <div class="yt" aria-label="Deep Forecasting on YouTube"><p class="ytl"><i class="fab fa-youtube" aria-hidden="true"></i> On YouTube</p><a href="https://www.youtube.com/playlist?list=PLG1FN7Dkkeu8" target="_blank" rel="noopener noreferrer"><span>2027 series<span class="new">New</span></span><span aria-hidden="true">&#8599;</span></a><a href="https://www.youtube.com/playlist?list=PL2GWo47BFyUPW_lptTNwpKNrpEQvUZerR" target="_blank" rel="noopener noreferrer"><span>Codes and concepts</span><span aria-hidden="true">&#8599;</span></a></div>
-                                <button class="go" type="button" data-flip aria-expanded="false">Key areas &rarr;</button>
+                                <div class="acts"><a class="go course" href="courses/deep-forecasting.html">Course &rarr;</a><button class="go" type="button" data-flip aria-expanded="false">Key areas</button></div>
                             </div></div>
                             <div class="face back" inert><div class="inner">
                                 <div class="top"><span>Deep Forecasting: Advanced Time Series</span><span>DATA 5630</span></div>
                                 <p class="desc backdesc">Classical time series models meet modern machine learning and deep learning. Launched as a special topic; its success made it a permanent part of the curriculum.</p>
                                 <p class="keyt">Key areas</p>
                                 <ul class="keys"><li>Time series fundamentals and stationarity</li><li>Exponential smoothing and ARIMA/SARIMA</li><li>Machine learning for time series</li><li>Deep sequence models (RNN/LSTM)</li><li>Prophet, NeuralProphet, and AutoML tools</li><li>Production-ready deployment</li></ul>
-                                <button class="go" type="button" data-flip>&larr; Back</button>
+                                <div class="acts"><a class="go course" href="courses/deep-forecasting.html">Course &rarr;</a><button class="go" type="button" data-flip>&larr; Back</button></div>
                             </div></div>
                         </div>
                     </article>

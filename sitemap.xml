@@ -12,7 +12,7 @@
   </url>
   <url>
     <loc>https://pedramjahangiry.com/teaching.html</loc>
-    <lastmod>2026-11-25</lastmod>
+    <lastmod>2026-11-27</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
@@ -134,6 +134,21 @@
     <loc>https://pedramjahangiry.com/Interactive_tools/m7_rnn/rnn-vs-dnn-timeseries-visualization.html</loc>
     <lastmod>2026-09-24</lastmod>
     <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pedramjahangiry.com/courses/machine-learning.html</loc>
+    <lastmod>2026-11-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://pedramjahangiry.com/courses/deep-learning.html</loc>
+    <lastmod>2026-11-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://pedramjahangiry.com/courses/deep-forecasting.html</loc>
+    <lastmod>2026-11-27</lastmod>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://pedramjahangiry.com/projects/cashington.html</loc>
