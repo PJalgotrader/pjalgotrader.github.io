@@ -25,6 +25,7 @@
 
 /* § 01 Start here: Ledger cards */
 .res-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.res-grid:has(> .res:nth-child(6)) { grid-template-columns: repeat(3, minmax(0, 1fr)); }   /* six cards (Deep Forecasting): two rows of three */
 .res { display: flex; flex-direction: column; gap: 7px; min-width: 0; padding: 15px 16px; border: 1px solid var(--line); border-top: 3px solid var(--c-ink); border-radius: 6px; background: var(--card); color: var(--ink); text-decoration: none; transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1.2); }
 .res:hover { transform: translateY(-4px); }
 .res:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
