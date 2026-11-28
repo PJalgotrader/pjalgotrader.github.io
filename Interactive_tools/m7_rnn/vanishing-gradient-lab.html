@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Vanishing and exploding gradients in a recurrent network, measured live: change the weight size and the sequence length, add an LSTM and gradient clipping, and see how much signal survives.">
+<title>Vanishing and Exploding Gradients Lab | Dr. Pedram Jahangiry</title>
+<link rel="canonical" href="https://pedramjahangiry.com/Interactive_tools/m7_rnn/vanishing-gradient-lab.html">
+<script>
+// Apply the saved light/dark choice before first paint; light by default.
+try { const t = localStorage.getItem("lab-theme"); document.documentElement.setAttribute("data-theme", t === "dark" ? "dark" : "light"); } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Lab look shared with the Boosting, Bagging and Learning Curve labs: tokens, header, panels, controls, plots, tiles. */
+:root{
+  --bg:#FFFFFF; --surface:#F6F7F9; --ink:#1C1B18; --muted:#5F6573; --line:#DCE0E7; --grid:#E9ECF1; --band:#EEF0F4; --tile:#F4F6F9;
+  --dense:#1E5BC6; --rnn:#D97A0B; --lstm:#6A5FD1; --truth:#1E8C5A; --bench:#C8213B;
+  --gf:#C8213B; --gi:#1E8C5A; --go:#0E8A9C; --cand:#D97A0B; --belt:#1E5BC6;
+  --pos:#1E5BC6; --neg:#D97A0B; --mark:#D97A0B;
+  --bias-fg:#7A4E00; --bias-bg:#FFF0D2; --var-fg:#A0213B; --var-bg:#FDE3E8; --good-fg:#15623C; --good-bg:#DCF2E5;
+  --f-display:"Fraunces", "Iowan Old Style", Georgia, serif;
+  --f-body:"Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0A1020; --surface:#0F1A31; --ink:#E9E4D4; --muted:#9A9DAB; --line:#263250; --grid:#16203A; --band:#141F3A; --tile:#1B2330;
+  --dense:#70A4FF; --rnn:#FFA53D; --lstm:#9D94FF; --truth:#4CC38A; --bench:#FF5C74;
+  --gf:#FF5C74; --gi:#4CC38A; --go:#45C4D6; --cand:#FFA53D; --belt:#70A4FF;
+  --pos:#70A4FF; --neg:#FFA53D; --mark:#FFA53D;
+  --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0A1020; --surface:#0F1A31; --ink:#E9E4D4; --muted:#9A9DAB; --line:#263250; --grid:#16203A; --band:#141F3A; --tile:#1B2330;
+  --dense:#70A4FF; --rnn:#FFA53D; --lstm:#9D94FF; --truth:#4CC38A; --bench:#FF5C74;
+  --gf:#FF5C74; --gi:#4CC38A; --go:#45C4D6; --cand:#FFA53D; --belt:#70A4FF;
+  --pos:#70A4FF; --neg:#FFA53D; --mark:#FFA53D;
+  --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg); border-top:3px solid var(--ink); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.55; margin:0;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:28px 48px}
+.wrap{max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:20px}
+a{color:var(--dense)}
+:focus-visible{outline:2px solid var(--dense); outline-offset:2px}
+[hidden]{display:none !important}
+
+header{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:12px 24px}
+.eyebrow{font-family:var(--f-mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+h1{font-family:var(--f-display); font-weight:700; font-size:clamp(30px, 5vw, 46px); line-height:1.05; margin:6px 0 8px; letter-spacing:-.01em; text-wrap:balance}
+.lede{margin:0; max-width:68ch; color:var(--muted); font-size:16px}
+.lede b{color:var(--ink); font-weight:600}
+.watch{margin:10px 0 0; font-size:13.5px; color:var(--muted); display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center}
+.watch a{display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--ink); text-decoration:none; font-weight:500}
+.watch a:hover{border-color:var(--muted)}
+.watch a::before{content:""; width:0; height:0; border-left:7px solid var(--bench); border-top:4.5px solid transparent; border-bottom:4.5px solid transparent}
+.byline{font-size:13px; color:var(--muted); display:flex; gap:6px 14px; flex-wrap:wrap; align-items:center}
+.byline strong{color:var(--ink); font-weight:600}
+.theme-btn{width:34px; height:34px; display:grid; place-items:center; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); cursor:pointer; padding:0}
+.theme-btn:hover{border-color:var(--muted)}
+.theme-btn svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r)}
+.controls{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:18px 28px; padding:18px 20px}
+.ctl{display:flex; flex-direction:column; gap:8px; min-width:0}
+.ctl-label{display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.ctl-label output{font-family:var(--f-mono); font-size:13px; text-transform:none; letter-spacing:0; color:var(--ink); font-weight:600; white-space:nowrap}
+input[type=range]{width:100%; accent-color:var(--dense); margin:4px 0}
+.hint{font-size:12.5px; color:var(--muted)}
+.hint b{color:var(--ink); font-weight:600}
+.lbl{font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.seg{display:inline-flex; gap:2px; padding:3px; border:1px solid var(--line); border-radius:9px; background:var(--bg); align-self:flex-start; max-width:100%; flex-wrap:wrap}
+.seg button{font:600 13px var(--f-body); border:0; background:transparent; color:var(--muted); padding:6px 12px; border-radius:6px; cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); outline:1px solid var(--line)}
+.row-actions{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding-top:14px; border-top:1px solid var(--line)}
+.row-actions .lbl{margin-right:4px}
+.chip{font:500 13px var(--f-body); padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+.spacer{flex:1}
+.btn{font:600 13px var(--f-body); padding:7px 14px; border-radius:7px; border:1px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer; display:inline-flex; align-items:center; gap:6px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+.btn:disabled{opacity:.45; cursor:default}
+.btn svg{width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.switch{display:inline-flex; align-items:center; gap:8px; font-size:14px; cursor:pointer}
+.switch input{width:17px; height:17px; accent-color:var(--dense); margin:0}
+
+.bench{display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:20px}
+.bench.even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.inst{padding:16px 18px 14px; display:flex; flex-direction:column; gap:10px; min-width:0}
+.inst h2{font-family:var(--f-display); font-weight:500; font-size:19px; margin:0; display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap}
+.inst h2 small{font-family:var(--f-mono); font-size:12px; color:var(--muted); font-weight:400}
+.plot{position:relative; height:clamp(260px, 30vw, 330px)}
+.plot.short{height:clamp(170px, 18vw, 200px)}
+.plot.tall{height:clamp(300px, 34vw, 380px)}
+.plot canvas{position:absolute; inset:0; width:100%; height:100%; display:block}
+.legend{display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12.5px; color:var(--muted)}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.sw{width:18px; height:0; border-top:3px solid currentColor; display:inline-block}
+.sw.dash{border-top-style:dashed; border-top-width:2px}
+.sw.dot{width:8px; height:8px; border:none; border-radius:50%; background:currentColor}
+.sw.sq{width:10px; height:10px; border:none; border-radius:2px; background:currentColor}
+.c-ink{color:var(--ink)} .c-muted{color:var(--muted)} .c-dense{color:var(--dense)} .c-rnn{color:var(--rnn)} .c-lstm{color:var(--lstm)} .c-truth{color:var(--truth)} .c-bench{color:var(--bench)}
+.c-gf{color:var(--gf)} .c-gi{color:var(--gi)} .c-go{color:var(--go)} .c-cand{color:var(--cand)} .c-belt{color:var(--belt)} .c-mark{color:var(--mark)}
+.caption{font-size:13px; color:var(--muted); margin:0}
+.caption b{color:var(--ink); font-weight:600}
+.note{font-size:13.5px; margin:0; padding:10px 12px; background:var(--tile); border-radius:8px}
+.note b{font-weight:600} .note .m{font-family:var(--f-mono)}
+
+.verdict{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)) minmax(0,2.3fr); align-items:stretch}
+.read{padding:14px 18px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:2px; min-width:0}
+.read .k{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600}
+.read .v{font-family:var(--f-mono); font-size:24px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1.2; white-space:nowrap}
+.read .s{font-size:12px; color:var(--muted)}
+.diag{padding:14px 20px; display:flex; flex-direction:column; gap:6px; min-width:0}
+.pill{align-self:flex-start; font:600 12.5px var(--f-body); letter-spacing:.03em; padding:4px 11px; border-radius:999px}
+.pill.bias{color:var(--bias-fg); background:var(--bias-bg)}
+.pill.var{color:var(--var-fg); background:var(--var-bg)}
+.pill.good{color:var(--good-fg); background:var(--good-bg)}
+.diag p{margin:0; font-size:14px}
+
+.sec-head{display:flex; flex-direction:column; gap:4px}
+.sec-head h2{font-family:var(--f-display); font-weight:700; font-size:clamp(22px, 3vw, 28px); margin:0; letter-spacing:-.01em}
+.sec-head p{margin:0; color:var(--muted); max-width:74ch}
+.tiles{display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px}
+.tile{background:var(--tile); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:2px; min-width:0}
+.tile .k{font-size:12.5px; color:var(--muted)}
+.tile .v{font-family:var(--f-mono); font-size:20px; font-weight:600; font-variant-numeric:tabular-nums}
+.tile .v.good{color:var(--good-fg)} .tile .v.bad{color:var(--var-fg)}
+.tile .s{font-size:12px; color:var(--muted)}
+
+.tablewrap{overflow-x:auto}
+table{width:100%; border-collapse:collapse; font-size:14px}
+th, td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); vertical-align:top}
+thead th{font-size:12px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); font-weight:600}
+tbody th{font-weight:600}
+tbody tr:last-child th, tbody tr:last-child td{border-bottom:none}
+code{font-family:var(--f-mono); font-size:.9em; background:var(--tile); padding:1px 5px; border-radius:4px}
+.codeblock{font-family:var(--f-mono); font-size:13px; background:var(--tile); border-radius:8px; padding:12px 14px; overflow-x:auto; white-space:pre; margin:0}
+
+.keys{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:20px}
+.key{padding:16px 18px}
+.key h3{margin:0 0 4px; font-size:14.5px; font-weight:600}
+.key p{margin:0; color:var(--muted); font-size:14px; max-width:62ch}
+.key p b{color:var(--ink); font-weight:600}
+footer{font-size:12.5px; color:var(--muted); max-width:92ch}
+
+@media (max-width: 980px){
+  .controls{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .bench, .bench.even{grid-template-columns:1fr}
+  .verdict{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .read:nth-child(2n){border-right:none}
+  .read{border-bottom:1px solid var(--line)}
+  .diag{grid-column:1 / -1}
+}
+@media (max-width: 560px){
+  .controls{grid-template-columns:1fr}
+  .keys{grid-template-columns:1fr}
+  .read .v{font-size:20px}
+  .spacer{display:none}
+}
+/* Layout: controls, then the signal chart beside the "where the update comes from" chart, the verdict strip, and key ideas. */
+#sig{cursor:crosshair; touch-action:pan-y}
+.sub{display:flex; flex-direction:column; gap:6px}
+.sub[aria-disabled="true"]{opacity:.45}
+.tiles.two{grid-template-columns:repeat(2, minmax(0,1fr))}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Module 7 · Recurrent Neural Networks for Time Series Forecasting</div>
+      <h1>Vanishing and Exploding Gradients</h1>
+      <p class="lede">A recurrent network learns by sending its error backward through time. At every step back, that signal is multiplied by roughly the same factor. <b>A little below 1 and it vanishes. A little above 1 and it explodes.</b> Change the weights and the length of the sequence, then see what an LSTM does differently.</p>
+      <p class="watch">Explained in <a href="https://youtu.be/TK9to_EfO3s" target="_blank" rel="noopener">Part 2: the RNN</a><a href="https://youtu.be/OackVDsytG4" target="_blank" rel="noopener">Part 3: the LSTM</a></p>
+    </div>
+    <div class="byline"><strong>Dr. Pedram Jahangiry</strong>
+      <a href="https://pedramjahangiry.com/" target="_blank" rel="noopener">Website</a>
+      <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" rel="noopener">YouTube</a>
+      <a href="https://github.com/pjalgotrader" target="_blank" rel="noopener">GitHub</a>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><svg id="themeIcon" viewBox="0 0 24 24"></svg></button></div>
+  </header>
+
+  <section class="panel controls" aria-label="Network settings">
+    <div class="ctl">
+      <label class="ctl-label" for="gain"><span>Recurrent weights</span><output id="gainOut">×1.00</output></label>
+      <input type="range" id="gain" min="0.5" max="3" step="0.05" value="1">
+      <div class="hint">How large the weights from state to state are. ×1 is how Keras starts a simple RNN.</div>
+    </div>
+    <div class="ctl">
+      <label class="ctl-label" for="steps"><span>Steps the network reads</span><output id="stepsOut">120</output></label>
+      <input type="range" id="steps" min="20" max="200" step="10" value="120">
+      <div class="hint">The length of the sequence. The signal has to travel back through every step.</div>
+    </div>
+    <div class="ctl">
+      <div class="ctl-label"><span>Compare with an LSTM</span><output id="fbOut"></output></div>
+      <label class="switch"><input type="checkbox" id="lstmOn"> Show the LSTM</label>
+      <div class="sub" id="fbBox" aria-disabled="true">
+        <input type="range" id="fb" min="-3" max="5" step="0.25" value="1" aria-label="Forget gate start" disabled>
+        <div class="hint" id="fbHint">Where the forget gate starts.</div>
+      </div>
+    </div>
+    <div class="ctl">
+      <div class="ctl-label"><span>Gradient clipping</span><output id="clipOut"></output></div>
+      <label class="switch"><input type="checkbox" id="clipOn"> Put a ceiling of 1 on the update</label>
+      <div class="hint">The standard patch for exploding gradients.</div>
+      <button class="btn" id="reseed" type="button"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>New random weights</button>
+    </div>
+    <div class="row-actions">
+      <span class="lbl">Try</span>
+      <button class="chip" data-preset="keras">The Keras start</button>
+      <button class="chip" data-preset="half">Weights half as large</button>
+      <button class="chip" data-preset="double">Weights twice as large</button>
+      <button class="chip" data-preset="clip">Explode, then clip</button>
+      <button class="chip" data-preset="lstm">Add an LSTM</button>
+      <button class="chip" data-preset="lstmhalf">LSTM, forget gate half closed</button>
+    </div>
+  </section>
+
+  <section class="bench">
+    <div class="panel inst">
+      <h2>How much of the error signal is left <small>16 units, measured on random input</small></h2>
+      <div class="legend">
+        <span class="c-rnn"><i class="sw"></i>Simple RNN</span>
+        <span class="c-lstm" id="lgLstm" hidden><i class="sw"></i>LSTM</span>
+        <span class="c-muted"><i class="sw dash"></i>All of it (100%)</span>
+      </div>
+      <div class="plot tall"><canvas id="sig" aria-label="Share of the error signal left at each step back in time, on a logarithmic scale"></canvas></div>
+      <p class="note" id="hoverOut">Move over the chart to read one step.</p>
+      <p class="caption" id="sigCap"></p>
+    </div>
+
+    <div class="panel inst">
+      <h2>Where the weight update comes from <small>share by step</small></h2>
+      <div class="legend">
+        <span class="c-rnn"><i class="sw sq"></i>Simple RNN</span>
+        <span class="c-lstm" id="lgLstm2" hidden><i class="sw"></i>LSTM</span>
+      </div>
+      <div class="plot short"><canvas id="share" aria-label="Share of the weight update that each time step supplies"></canvas></div>
+      <p class="caption" id="shareCap"></p>
+      <div class="tiles two">
+        <div class="tile"><span class="k">Size of the update</span><span class="v" id="tSize">-</span><span class="s">simple RNN, before clipping</span></div>
+        <div class="tile"><span class="k">After clipping</span><span class="v" id="tClip">-</span><span class="s" id="tClipS">clipping is off</span></div>
+      </div>
+      <p class="note" id="calc"></p>
+    </div>
+  </section>
+
+  <section class="panel verdict" aria-live="polite">
+    <div class="read"><span class="k">Kept per step</span><span class="v" id="rStep">-</span><span class="s" id="rStepS"></span></div>
+    <div class="read"><span class="k">Left after 10 steps</span><span class="v" id="r10">-</span><span class="s" id="r10S"></span></div>
+    <div class="read"><span class="k">Left after 50 steps</span><span class="v" id="r50">-</span><span class="s" id="r50S"></span></div>
+    <div class="read"><span class="k" id="rEndK">Left at the first step</span><span class="v" id="rEnd">-</span><span class="s" id="rEndS"></span></div>
+    <div class="diag"><span class="pill" id="pill">-</span><p id="diagText"></p></div>
+  </section>
+
+  <section class="keys">
+    <div class="panel key"><h3>1 · The same factor, again and again</h3><p>Going back one step multiplies the signal by the slope of tanh times the recurrent weights. That factor is about the same at every step. 0.84 does not sound bad, but 0.84 multiplied by itself 50 times is less than 2 parts in 10,000.</p></div>
+    <div class="panel key"><h3>2 · tanh is only half of the story</h3><p>People blame tanh, because its slope is never more than 1. The weights are the other half, and they can push the other way. Make them twice as large and the signal grows instead of fading.</p></div>
+    <div class="panel key"><h3>3 · Clipping fixes one side</h3><p>For exploding gradients there is a simple patch: put a ceiling on the size of the update. For vanishing gradients there is no patch. <b>You cannot clip a signal back into existence.</b></p></div>
+    <div class="panel key"><h3>4 · What the LSTM changes</h3><p>Along the cell state, one step back multiplies the signal by one thing: the forget gate. Near 1, the signal survives. Half closed, it dies faster than in the simple RNN. An LSTM does not remove the problem. It gives the gradient a path and lets training keep it open. See the gates move in <a href="lstm-conveyor-belt.html">the LSTM conveyor belt</a>.</p></div>
+  </section>
+
+  <footer>How it is measured: a recurrent layer with 16 units and 1 input feature reads a sequence of random numbers (mean 0, standard deviation 1). Starting weights follow Keras: orthogonal recurrent weights (then multiplied by the slider), Glorot uniform input weights, zero biases, and for the LSTM a forget gate bias set by its slider (Keras uses 1). The error signal starts at the last step, and its size is read at every earlier step: the gradient of the last state with respect to that step's input, averaged over many sequences and several sets of starting weights. The update size is the norm of the full gradient with respect to the weights of one simple RNN. These are networks at the start of training, before any learning. Explained in Deep Forecasting, Module 7.</footer>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function gaussian(rng){let u=0,v=0;while(u===0)u=rng();v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const sigm=z=>1/(1+Math.exp(-z));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const MONO='"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace', SANS='"Inter", "Segoe UI", system-ui, sans-serif';
+// A canvas sized to its box at the screen's pixel density; returns the context and the size in CSS pixels.
+function setup(cv){const r=cv.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2.5),w=Math.max(10,r.width),h=Math.max(10,r.height);
+  if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d);}
+  const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);return{c,w,h};}
+function hexA(hex,a){const m=hex.replace('#','');const n=parseInt(m.length===3?m.split('').map(ch=>ch+ch).join(''):m,16);return`rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
+// A value between -1 and 1 as a tint: one colour for positive, another for negative, stronger when larger.
+function tint(v,lim){const a=clamp(Math.abs(v)/(lim||1),0,1);return hexA(cssv(v>=0?'--pos':'--neg'),0.05+0.5*a);}
+function sgn(v,d){const s=Math.abs(v).toFixed(d===undefined?2:d);return(v<0&&+s!==0?'−':'')+s;}
+function pressed(ids,on){ids.forEach(id=>$(id).setAttribute('aria-pressed',String(id===on)));}
+
+const SUN='<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>',MOON='<path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/>';
+const isDark=()=>{const t=document.documentElement.getAttribute('data-theme');return t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;};
+function syncThemeBtn(){const d=isDark(),label=d?'Switch to light theme':'Switch to dark theme';$('themeIcon').innerHTML=d?SUN:MOON;$('themeBtn').setAttribute('aria-label',label);$('themeBtn').title=label;}
+$('themeBtn').onclick=()=>{const next=isDark()?'light':'dark';document.documentElement.setAttribute('data-theme',next);try{localStorage.setItem('lab-theme',next);}catch(e){}syncThemeBtn();};
+// Every drawing function registers here; all of them run again on resize, theme change and font load.
+const DRAWS=[];let rz=0,started=false;
+function redraw(){if(started)DRAWS.forEach(f=>f());}
+function start(){started=true;syncThemeBtn();redraw();
+  new ResizeObserver(()=>{cancelAnimationFrame(rz);rz=requestAnimationFrame(redraw);}).observe(document.querySelector('.wrap'));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{syncThemeBtn();redraw();});
+  new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(redraw);}
+const H=16;
+const S={gain:1,T:120,lstm:false,fb:1,clip:false,seed:8,hover:null};
+let R=null;
+
+/* ---------- numbers as text ---------- */
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const sup=n=>String(n).split('').map(ch=>SUP[ch]).join('');
+function sci(v){let e=Math.floor(Math.log10(v)),m=v/Math.pow(10,e);if(m>=9.95){m=1;e++;}return m.toFixed(1)+'×10'+sup(e);}
+// A share of the signal: a percentage while that is readable, "times" when it has grown, powers of ten when it is tiny.
+function frac(v){if(!isFinite(v))return 'huge';if(v<=0)return '0';if(v>=1e6)return '×'+sci(v);if(v>=10)return '×'+Math.round(v).toLocaleString('en-US');if(v>=1.05)return '×'+v.toFixed(1);
+  if(v>=1e-4){const p=v*100;return(p>=10?p.toFixed(0):p>=1?p.toFixed(1):p>=0.1?p.toFixed(2):p.toFixed(3))+'%';}return sci(v);}
+function times(v){return(v>=1e6?sci(v):v>=10?Math.round(v).toLocaleString('en-US'):v.toFixed(1))+' times';}
+function num(v){if(!isFinite(v))return 'huge';if(v>=1e6)return sci(v);if(v>=100)return Math.round(v).toLocaleString('en-US');if(v>=1)return v.toFixed(1);if(v>=0.01)return v.toFixed(2);if(v>0)return sci(v);return '0';}
+
+/* ---------- the two networks, at the start of training ---------- */
+function orth(rng,n){const A=[];for(let i=0;i<n;i++){const r=new Float64Array(n);for(let j=0;j<n;j++)r[j]=gaussian(rng);A.push(r);}
+  for(let i=0;i<n;i++){for(let k=0;k<i;k++){let d=0;for(let j=0;j<n;j++)d+=A[i][j]*A[k][j];for(let j=0;j<n;j++)A[i][j]-=d*A[k][j];}
+    let s=0;for(let j=0;j<n;j++)s+=A[i][j]*A[i][j];s=Math.sqrt(s);for(let j=0;j<n;j++)A[i][j]/=s;}return A;}
+
+// Simple RNN: h = tanh(W x + U h_prev). Returns, per time step, the size of the gradient of the last state with respect
+// to that step's input (g), the size of that step's contribution to the weight gradient (c), the average tanh slope,
+// and the norm of the whole weight gradient.
+function rnnProfile(seed,gain,T,N){const rng=mulberry(1000+seed*7919),Q=orth(rng,H),U=new Float64Array(H*H),W=new Float64Array(H),lim=Math.sqrt(6/(1+H));
+  for(let i=0;i<H;i++){for(let j=0;j<H;j++)U[i*H+j]=Q[i][j]*gain;W[i]=(rng()*2-1)*lim;}
+  const g=new Float64Array(T),c=new Float64Array(T),hs=new Float64Array((T+1)*H),xs=new Float64Array(T),d=new Float64Array(H),up=new Float64Array(H);
+  const dU=new Float64Array(H*H),dW=new Float64Array(H),db=new Float64Array(H);let slope=0;
+  for(let n=0;n<N;n++){hs.fill(0,0,H);
+    for(let t=0;t<T;t++){const x=gaussian(rng),o=t*H,o2=o+H;xs[t]=x;
+      for(let i=0;i<H;i++){let z=W[i]*x;const r=i*H;for(let j=0;j<H;j++)z+=U[r+j]*hs[o+j];const h=Math.tanh(z);hs[o2+i]=h;slope+=1-h*h;}}
+    up.fill(1);
+    for(let t=T-1;t>=0;t--){const o=t*H,o2=o+H;let gx=0,dn=0,inn=xs[t]*xs[t]+1;
+      for(let i=0;i<H;i++){const h=hs[o2+i];d[i]=(1-h*h)*up[i];gx+=W[i]*d[i];dn+=d[i]*d[i];}
+      for(let j=0;j<H;j++)inn+=hs[o+j]*hs[o+j];
+      g[t]+=Math.abs(gx);c[t]+=Math.sqrt(dn*inn);
+      for(let i=0;i<H;i++){const di=d[i],r=i*H;dW[i]+=di*xs[t];db[i]+=di;for(let j=0;j<H;j++)dU[r+j]+=di*hs[o+j];}
+      for(let j=0;j<H;j++){let s=0;for(let i=0;i<H;i++)s+=U[i*H+j]*d[i];up[j]=s;}}}
+  let gn=0;for(let i=0;i<H*H;i++)gn+=(dU[i]/N)**2;for(let i=0;i<H;i++)gn+=(dW[i]/N)**2+(db[i]/N)**2;
+  for(let t=0;t<T;t++){g[t]/=N;c[t]/=N;}
+  return{g,c,slope:slope/(N*T*H),gnorm:Math.sqrt(gn)};}
+
+// LSTM, gate rows in the order input, forget, candidate, output. Same measurements, plus the average forget gate.
+function lstmProfile(seed,fb,T,N){const rng=mulberry(5000+seed*7919),G4=4*H,U=new Float64Array(G4*H),W=new Float64Array(G4),B=new Float64Array(G4),lim=Math.sqrt(6/(1+G4));
+  for(let b=0;b<4;b++){const Q=orth(rng,H);for(let i=0;i<H;i++)for(let j=0;j<H;j++)U[(b*H+i)*H+j]=Q[i][j];}
+  for(let k=0;k<G4;k++)W[k]=(rng()*2-1)*lim;for(let i=H;i<2*H;i++)B[i]=fb;
+  const g=new Float64Array(T),c=new Float64Array(T),xs=new Float64Array(T),hs=new Float64Array((T+1)*H),cs=new Float64Array((T+1)*H);
+  const I=new Float64Array(T*H),F=new Float64Array(T*H),G=new Float64Array(T*H),O=new Float64Array(T*H),TC=new Float64Array(T*H);
+  const z=new Float64Array(G4),dz=new Float64Array(G4),dh=new Float64Array(H),dc=new Float64Array(H),nh=new Float64Array(H);let fsum=0;
+  for(let n=0;n<N;n++){hs.fill(0,0,H);cs.fill(0,0,H);
+    for(let t=0;t<T;t++){const x=gaussian(rng),o=t*H,o2=o+H;xs[t]=x;
+      for(let k=0;k<G4;k++){let s=W[k]*x+B[k];const r=k*H;for(let j=0;j<H;j++)s+=U[r+j]*hs[o+j];z[k]=s;}
+      for(let i=0;i<H;i++){const ig=sigm(z[i]),fg=sigm(z[H+i]),gg=Math.tanh(z[2*H+i]),og=sigm(z[3*H+i]),cv=fg*cs[o+i]+ig*gg,tc=Math.tanh(cv);
+        I[o+i]=ig;F[o+i]=fg;G[o+i]=gg;O[o+i]=og;TC[o+i]=tc;cs[o2+i]=cv;hs[o2+i]=og*tc;fsum+=fg;}}
+    dh.fill(1);dc.fill(0);
+    for(let t=T-1;t>=0;t--){const o=t*H;let dn=0,inn=xs[t]*xs[t]+1;
+      for(let i=0;i<H;i++){const ig=I[o+i],fg=F[o+i],gg=G[o+i],og=O[o+i],tc=TC[o+i],dcc=dc[i]+dh[i]*og*(1-tc*tc);
+        dz[i]=dcc*gg*ig*(1-ig);dz[H+i]=dcc*cs[o+i]*fg*(1-fg);dz[2*H+i]=dcc*ig*(1-gg*gg);dz[3*H+i]=dh[i]*tc*og*(1-og);dc[i]=dcc*fg;}
+      let gx=0;for(let k=0;k<G4;k++){gx+=W[k]*dz[k];dn+=dz[k]*dz[k];}
+      for(let j=0;j<H;j++)inn+=hs[o+j]*hs[o+j];
+      g[t]+=Math.abs(gx);c[t]+=Math.sqrt(dn*inn);
+      nh.fill(0);for(let k=0;k<G4;k++){const v=dz[k];if(v!==0){const r=k*H;for(let j=0;j<H;j++)nh[j]+=U[r+j]*v;}}
+      dh.set(nh);}}
+  for(let t=0;t<T;t++){g[t]/=N;c[t]/=N;}
+  return{g,c,forget:fsum/(N*T*H)};}
+
+function summarize(g,c,T){const rel=new Float64Array(T),share=new Float64Array(T);let tot=0;for(let t=0;t<T;t++)tot+=c[t];
+  for(let k=0;k<T;k++){rel[k]=g[T-1-k]/g[T-1];share[k]=c[T-1-k]/tot;}
+  const kk=Math.min(50,T-1);return{rel,share,kk,per:Math.pow(rel[kk],1/kk)};}
+
+function compute(full){const nets=full?20:3,N=full?24:10,T=S.T,g=new Float64Array(T),c=new Float64Array(T);let slope=0,gn=0;
+  for(let s=0;s<nets;s++){const p=rnnProfile(S.seed*100+s,S.gain,T,N);for(let t=0;t<T;t++){g[t]+=p.g[t]/nets;c[t]+=p.c[t]/nets;}slope+=p.slope/nets;gn+=p.gnorm/nets;}
+  R={T,rnn:{...summarize(g,c,T),slope,gn},lstm:null};
+  if(S.lstm){const g2=new Float64Array(T),c2=new Float64Array(T);let f=0;const n2=full?10:2,N2=full?16:8;
+    for(let s=0;s<n2;s++){const p=lstmProfile(S.seed*100+s,S.fb,T,N2);for(let t=0;t<T;t++){g2[t]+=p.g[t]/n2;c2[t]+=p.c[t]/n2;}f+=p.forget/n2;}
+    R.lstm={...summarize(g2,c2,T),forget:f};}}
+
+/* ---------- drawing ---------- */
+const FLOOR=-14,CEIL=14;
+const lg=v=>clamp(Math.log10(Math.max(v,1e-300)),FLOOR,CEIL);
+function tickLabel(d){if(d===0)return '100%';if(d===-1)return '10%';if(d===-2)return '1%';if(d===-3)return '0.1%';if(d===-4)return '0.01%';if(d===1)return '×10';if(d===2)return '×100';if(d===3)return '×1,000';return(d>0?'×':'')+'10'+sup(d);}
+let geom=null;
+function drawSig(){if(!R)return;const{c,w,h}=setup($('sig')),pad={l:60,r:14,t:12,b:36},T=R.T,K=T-1;
+  let lo=-2,hi=0.4;const series=[R.rnn.rel];if(R.lstm)series.push(R.lstm.rel);
+  series.forEach(a=>{for(let k=0;k<T;k++){const v=lg(a[k]);if(v<lo)lo=v;if(v>hi)hi=v;}});
+  const grows=hi>0.45;lo=Math.floor(lo-0.2);hi=grows?Math.ceil(hi+0.2):0.35;const span=hi-lo,stepD=span<=9?1:span<=18?2:span<=27?3:5;
+  const X=k=>pad.l+(w-pad.l-pad.r)*k/K,Y=v=>pad.t+(h-pad.t-pad.b)*(hi-v)/span;geom={pad,w,K};
+  $('sigCap').textContent='Left to right: how far back in time we look. Bottom to top: how much of the signal is left there, compared with the last step. Each grid line is '+(stepD===1?'10':stepD===2?'100':stepD===3?'1,000':'100,000')+' times smaller than the one above it.';
+  const ink=cssv('--ink'),muted=cssv('--muted'),grid=cssv('--grid'),line=cssv('--line');
+  if(grows){c.fillStyle=hexA(cssv('--bench'),0.06);c.fillRect(pad.l,pad.t,w-pad.l-pad.r,Y(0)-pad.t);}
+  c.font='11.5px '+MONO;c.textBaseline='middle';c.textAlign='right';
+  for(let d=Math.ceil(lo/stepD)*stepD;d<=hi;d+=stepD){const y=Y(d);c.strokeStyle=grid;c.lineWidth=1;c.beginPath();c.moveTo(pad.l,y);c.lineTo(w-pad.r,y);c.stroke();c.fillStyle=muted;c.fillText(tickLabel(d),pad.l-8,y);}
+  c.strokeStyle=muted;c.setLineDash([5,4]);c.lineWidth=1.3;c.beginPath();c.moveTo(pad.l,Y(0));c.lineTo(w-pad.r,Y(0));c.stroke();c.setLineDash([]);
+  if(grows){c.fillStyle=cssv('--bench');c.textAlign='left';c.textBaseline='top';c.font='11.5px '+SANS;c.fillText('grows',pad.l+6,pad.t+4);}
+  c.textAlign='center';c.textBaseline='top';c.font='11.5px '+MONO;const xs=K<=60?10:K<=120?20:50;
+  for(let k=0;k<=K;k+=xs){c.fillStyle=muted;c.fillText(String(k),X(k),h-pad.b+7);c.strokeStyle=line;c.beginPath();c.moveTo(X(k),h-pad.b);c.lineTo(X(k),h-pad.b+4);c.stroke();}
+  c.font='12px '+SANS;c.fillStyle=muted;c.fillText('steps back in time',pad.l+(w-pad.l-pad.r)/2,h-15);
+  c.strokeStyle=line;c.lineWidth=1;c.strokeRect(pad.l+.5,pad.t+.5,w-pad.l-pad.r-1,h-pad.t-pad.b-1);
+  const curve=(a,col)=>{c.strokeStyle=col;c.lineWidth=2.4;c.lineJoin='round';c.beginPath();for(let k=0;k<T;k++){const x=X(k),y=Y(lg(a[k]));k?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();
+    c.fillStyle=col;[1,10,50].forEach(k=>{if(k<T){c.beginPath();c.arc(X(k),Y(lg(a[k])),3.4,0,6.3);c.fill();}});};
+  if(R.lstm)curve(R.lstm.rel,cssv('--lstm'));curve(R.rnn.rel,cssv('--rnn'));
+  if(S.hover!==null&&S.hover<T){const k=S.hover,x=X(k);c.strokeStyle=ink;c.lineWidth=1;c.beginPath();c.moveTo(x,pad.t);c.lineTo(x,h-pad.b);c.stroke();
+    c.fillStyle=cssv('--rnn');c.beginPath();c.arc(x,Y(lg(R.rnn.rel[k])),4.5,0,6.3);c.fill();if(R.lstm){c.fillStyle=cssv('--lstm');c.beginPath();c.arc(x,Y(lg(R.lstm.rel[k])),4.5,0,6.3);c.fill();}}}
+
+function drawShare(){if(!R)return;const{c,w,h}=setup($('share')),pad={l:44,r:12,t:10,b:34},T=R.T,K=T-1;let mx=0;
+  [R.rnn.share,R.lstm&&R.lstm.share].forEach(a=>{if(a)for(let k=0;k<T;k++)if(a[k]>mx)mx=a[k];});mx=Math.max(mx*1.08,0.02);
+  const pw=w-pad.l-pad.r,X=k=>pad.l+pw*k/T,Y=v=>pad.t+(h-pad.t-pad.b)*(1-v/mx),muted=cssv('--muted'),grid=cssv('--grid'),line=cssv('--line');
+  c.font='11.5px '+MONO;c.textAlign='right';c.textBaseline='middle';
+  for(let i=0;i<=2;i++){const v=mx*i/2,y=Y(v);c.strokeStyle=grid;c.beginPath();c.moveTo(pad.l,y);c.lineTo(w-pad.r,y);c.stroke();c.fillStyle=muted;c.fillText((v*100).toFixed(v<0.1?1:0)+'%',pad.l-7,y);}
+  c.fillStyle=hexA(cssv('--rnn'),0.85);const bw=Math.max(1,pw/T-(T>90?0:1));for(let k=0;k<T;k++){const y=Y(R.rnn.share[k]);c.fillRect(X(k),y,bw,h-pad.b-y);}
+  if(R.lstm){c.strokeStyle=cssv('--lstm');c.lineWidth=2.2;c.beginPath();for(let k=0;k<T;k++){const x=X(k)+bw/2,y=Y(R.lstm.share[k]);k?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();}
+  c.textAlign='center';c.textBaseline='top';const xs=K<=60?10:K<=120?20:50;for(let k=0;k<=K;k+=xs){c.fillStyle=muted;c.fillText(String(k),X(k)+bw/2,h-pad.b+6);}
+  c.font='12px '+SANS;c.fillText('steps back in time',pad.l+pw/2,h-14);
+  c.strokeStyle=line;c.beginPath();c.moveTo(pad.l,h-pad.b+.5);c.lineTo(w-pad.r,h-pad.b+.5);c.stroke();}
+
+function hoverText(){const k=S.hover;if(k===null||!R||k>=R.T){$('hoverOut').textContent='Move over the chart to read one step.';return;}
+  let s=k===0?'The last step: this is where the signal starts, at <b>100%</b>.':`<b>${k} step${k===1?'':'s'} back:</b> the simple RNN has <b class="m">${frac(R.rnn.rel[k])}</b> of the signal left`;
+  if(k>0&&R.lstm)s+=`, the LSTM <b class="m">${frac(R.lstm.rel[k])}</b>`;if(k>0)s+='.';$('hoverOut').innerHTML=s;}
+
+function render(){if(!R)return;const r=R.rnn,T=R.T,K=T-1,L=R.lstm;
+  $('gainOut').textContent='×'+S.gain.toFixed(2);$('stepsOut').textContent=T;
+  $('fbOut').textContent=S.lstm?'bias '+sgn(S.fb,2):'';$('fb').disabled=!S.lstm;$('fbBox').setAttribute('aria-disabled',String(!S.lstm));
+  $('fbHint').innerHTML=S.lstm?`The forget gate starts about <b>${Math.round(sigm(S.fb)*100)}% open</b>${S.fb===1?', as in Keras':''}.`:'Where the forget gate starts.';
+  $('lgLstm').hidden=$('lgLstm2').hidden=!S.lstm;$('clipOut').textContent=S.clip?'on':'off';
+  $('rStep').textContent=r.per.toFixed(2);$('rStepS').textContent=`tanh slope ${r.slope.toFixed(2)} on average`+(L?` · LSTM ${L.per.toFixed(2)}`:'');
+  const put=(id,k)=>{$(id).textContent=k<T?frac(r.rel[k]):'-';$(id+'S').textContent=k<T?(L?'LSTM: '+frac(L.rel[k]):'of the signal at the last step'):'the sequence is shorter';};
+  put('r10',10);put('r50',50);$('rEndK').textContent=`Left after ${K} steps`;put('rEnd',K);
+  const pill=$('pill');let txt;
+  if(r.per<0.97){pill.className='pill bias';pill.textContent='Vanishing';txt=`Each step back keeps about ${Math.round(r.per*100)}% of the signal. After ${K} steps, ${frac(r.rel[K])} is left, so this network learns almost entirely from its last few steps.`;}
+  else if(r.per>1.03){pill.className='pill var';pill.textContent='Exploding';txt=`Each step back multiplies the signal by about ${r.per.toFixed(2)}. After ${K} steps it is ${times(r.rel[K])} larger, and the oldest steps drown out everything else. `+(S.clip?'Clipping keeps the update at the ceiling, so training does not blow up.':'Turn on clipping to put a ceiling on the update.');}
+  else{pill.className='pill good';pill.textContent='Balanced, for now';txt='The factor per step is close to 1, so the signal neither fades nor blows up here. Staying there for a hundred steps is a balancing act, and a simple RNN has nothing that helps it balance. Try new random weights.';}
+  if(L)txt+=L.rel[K]>r.rel[K]*20&&L.rel[K]<1e3?` The LSTM still has ${frac(L.rel[K])}: its forget gate sits near ${L.forget.toFixed(2)}, so the path along the cell state stays open.`
+    :L.rel[K]<r.rel[K]?` The LSTM does worse: with its forget gate near ${L.forget.toFixed(2)}, the signal is cut at every step.`:` The LSTM has ${frac(L.rel[K])} left, with its forget gate near ${L.forget.toFixed(2)}.`;
+  $('diagText').textContent=txt;
+  let near=0,far=0;const m=Math.min(10,T);for(let k=0;k<m;k++){near+=r.share[k];far+=r.share[T-1-k];}
+  $('shareCap').innerHTML=`The update to the weights is a sum of ${T} contributions, one from every step. The ${m} most recent steps supply <b>${near<0.005?'less than 1%':near>0.995?'nearly all':Math.round(near*100)+'%'}</b> of it`+(far>0.3?`, and the ${m} oldest steps <b>${Math.round(far*100)}%</b>.`:'.');
+  $('tSize').textContent=num(r.gn);
+  if(S.clip){$('tClip').textContent=num(Math.min(r.gn,1));$('tClipS').textContent=r.gn>1?'scaled down to the ceiling':'already under the ceiling: nothing changes';$('tClip').className='v '+(r.gn>1?'good':'');}
+  else{$('tClip').textContent='-';$('tClipS').textContent='clipping is off';$('tClip').className='v';}
+  const pk=Math.pow(r.per,r.kk);$('calc').innerHTML=`<span class="m">${r.per.toFixed(2)}</span> multiplied by itself <span class="m">${r.kk}</span> times is <b class="m">${pk>=1e6?sci(pk):pk>=100?Math.round(pk).toLocaleString('en-US'):pk>=0.001?pk.toPrecision(2):pk>=1e-5?pk.toFixed(6).replace(/0+$/,''):sci(pk)}</b>. `+
+    (S.clip&&r.per<0.97?'Clipping does nothing here: the update is already small, and the old steps are still missing from it.':r.per<0.97?'That is why the old steps add almost nothing to the update.':r.per>1.03?'That is why the update is so large.':'');
+  hoverText();drawSig();drawShare();}
+
+/* ---------- controls ---------- */
+let deb=0;
+function refresh(){compute(false);render();clearTimeout(deb);deb=setTimeout(()=>{compute(true);render();},160);}
+function sync(){$('gain').value=S.gain;$('steps').value=S.T;$('fb').value=S.fb;$('lstmOn').checked=S.lstm;$('clipOn').checked=S.clip;}
+$('gain').oninput=e=>{S.gain=+e.target.value;refresh();};
+$('steps').oninput=e=>{S.T=+e.target.value;if(S.hover!==null&&S.hover>=S.T)S.hover=null;refresh();};
+$('fb').oninput=e=>{S.fb=+e.target.value;refresh();};
+$('lstmOn').onchange=e=>{S.lstm=e.target.checked;refresh();};
+$('clipOn').onchange=e=>{S.clip=e.target.checked;render();};
+$('reseed').onclick=()=>{S.seed++;refresh();};
+const PRESETS={keras:{gain:1,T:120,lstm:false,clip:false},half:{gain:0.5,T:120,lstm:false,clip:false},double:{gain:2,T:120,lstm:false,clip:false},
+  clip:{gain:2,T:120,lstm:false,clip:true},lstm:{gain:1,T:120,lstm:true,fb:1,clip:false},lstmhalf:{gain:1,T:120,lstm:true,fb:0,clip:false}};
+document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{Object.assign(S,PRESETS[b.dataset.preset]);S.hover=null;sync();refresh();});
+const cv=$('sig');
+function fromX(e){if(!geom)return;const r=cv.getBoundingClientRect(),x=e.clientX-r.left;S.hover=clamp(Math.round((x-geom.pad.l)/(geom.w-geom.pad.l-geom.pad.r)*geom.K),0,geom.K);hoverText();drawSig();}
+cv.addEventListener('pointermove',fromX);cv.addEventListener('pointerdown',fromX);
+cv.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'){S.hover=null;hoverText();drawSig();}});
+
+DRAWS.push(drawSig,drawShare);
+sync();compute(true);start();render();
+})();
+</script>
+
+<script src="/Interactive_tools/newsletter-signup.js?v=3" defer></script>
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>

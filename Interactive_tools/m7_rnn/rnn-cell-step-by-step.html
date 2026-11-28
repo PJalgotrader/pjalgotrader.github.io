@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Step a recurrent neural network through the airline passengers series one month at a time: check the state update by hand, see why raw data freezes it, and how it links to exponential smoothing.">
+<title>Inside the Recurrent Cell: an RNN Step by Step | Dr. Pedram Jahangiry</title>
+<link rel="canonical" href="https://pedramjahangiry.com/Interactive_tools/m7_rnn/rnn-cell-step-by-step.html">
+<script>
+// Apply the saved light/dark choice before first paint; light by default.
+try { const t = localStorage.getItem("lab-theme"); document.documentElement.setAttribute("data-theme", t === "dark" ? "dark" : "light"); } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Lab look shared with the Boosting, Bagging and Learning Curve labs: tokens, header, panels, controls, plots, tiles. */
+:root{
+  --bg:#FFFFFF; --surface:#F6F7F9; --ink:#1C1B18; --muted:#5F6573; --line:#DCE0E7; --grid:#E9ECF1; --band:#EEF0F4; --tile:#F4F6F9;
+  --dense:#1E5BC6; --rnn:#D97A0B; --lstm:#6A5FD1; --truth:#1E8C5A; --bench:#C8213B;
+  --gf:#C8213B; --gi:#1E8C5A; --go:#0E8A9C; --cand:#D97A0B; --belt:#1E5BC6;
+  --pos:#1E5BC6; --neg:#D97A0B; --mark:#D97A0B;
+  --bias-fg:#7A4E00; --bias-bg:#FFF0D2; --var-fg:#A0213B; --var-bg:#FDE3E8; --good-fg:#15623C; --good-bg:#DCF2E5;
+  --f-display:"Fraunces", "Iowan Old Style", Georgia, serif;
+  --f-body:"Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0A1020; --surface:#0F1A31; --ink:#E9E4D4; --muted:#9A9DAB; --line:#263250; --grid:#16203A; --band:#141F3A; --tile:#1B2330;
+  --dense:#70A4FF; --rnn:#FFA53D; --lstm:#9D94FF; --truth:#4CC38A; --bench:#FF5C74;
+  --gf:#FF5C74; --gi:#4CC38A; --go:#45C4D6; --cand:#FFA53D; --belt:#70A4FF;
+  --pos:#70A4FF; --neg:#FFA53D; --mark:#FFA53D;
+  --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0A1020; --surface:#0F1A31; --ink:#E9E4D4; --muted:#9A9DAB; --line:#263250; --grid:#16203A; --band:#141F3A; --tile:#1B2330;
+  --dense:#70A4FF; --rnn:#FFA53D; --lstm:#9D94FF; --truth:#4CC38A; --bench:#FF5C74;
+  --gf:#FF5C74; --gi:#4CC38A; --go:#45C4D6; --cand:#FFA53D; --belt:#70A4FF;
+  --pos:#70A4FF; --neg:#FFA53D; --mark:#FFA53D;
+  --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg); border-top:3px solid var(--ink); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.55; margin:0;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:28px 48px}
+.wrap{max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:20px}
+a{color:var(--dense)}
+:focus-visible{outline:2px solid var(--dense); outline-offset:2px}
+[hidden]{display:none !important}
+
+header{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:12px 24px}
+.eyebrow{font-family:var(--f-mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+h1{font-family:var(--f-display); font-weight:700; font-size:clamp(30px, 5vw, 46px); line-height:1.05; margin:6px 0 8px; letter-spacing:-.01em; text-wrap:balance}
+.lede{margin:0; max-width:68ch; color:var(--muted); font-size:16px}
+.lede b{color:var(--ink); font-weight:600}
+.watch{margin:10px 0 0; font-size:13.5px; color:var(--muted); display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center}
+.watch a{display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--ink); text-decoration:none; font-weight:500}
+.watch a:hover{border-color:var(--muted)}
+.watch a::before{content:""; width:0; height:0; border-left:7px solid var(--bench); border-top:4.5px solid transparent; border-bottom:4.5px solid transparent}
+.byline{font-size:13px; color:var(--muted); display:flex; gap:6px 14px; flex-wrap:wrap; align-items:center}
+.byline strong{color:var(--ink); font-weight:600}
+.theme-btn{width:34px; height:34px; display:grid; place-items:center; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); cursor:pointer; padding:0}
+.theme-btn:hover{border-color:var(--muted)}
+.theme-btn svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r)}
+.controls{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:18px 28px; padding:18px 20px}
+.ctl{display:flex; flex-direction:column; gap:8px; min-width:0}
+.ctl-label{display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.ctl-label output{font-family:var(--f-mono); font-size:13px; text-transform:none; letter-spacing:0; color:var(--ink); font-weight:600; white-space:nowrap}
+input[type=range]{width:100%; accent-color:var(--dense); margin:4px 0}
+.hint{font-size:12.5px; color:var(--muted)}
+.hint b{color:var(--ink); font-weight:600}
+.lbl{font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.seg{display:inline-flex; gap:2px; padding:3px; border:1px solid var(--line); border-radius:9px; background:var(--bg); align-self:flex-start; max-width:100%; flex-wrap:wrap}
+.seg button{font:600 13px var(--f-body); border:0; background:transparent; color:var(--muted); padding:6px 12px; border-radius:6px; cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); outline:1px solid var(--line)}
+.row-actions{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding-top:14px; border-top:1px solid var(--line)}
+.row-actions .lbl{margin-right:4px}
+.chip{font:500 13px var(--f-body); padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+.spacer{flex:1}
+.btn{font:600 13px var(--f-body); padding:7px 14px; border-radius:7px; border:1px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer; display:inline-flex; align-items:center; gap:6px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+.btn:disabled{opacity:.45; cursor:default}
+.btn svg{width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.switch{display:inline-flex; align-items:center; gap:8px; font-size:14px; cursor:pointer}
+.switch input{width:17px; height:17px; accent-color:var(--dense); margin:0}
+
+.bench{display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:20px}
+.bench.even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.inst{padding:16px 18px 14px; display:flex; flex-direction:column; gap:10px; min-width:0}
+.inst h2{font-family:var(--f-display); font-weight:500; font-size:19px; margin:0; display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap}
+.inst h2 small{font-family:var(--f-mono); font-size:12px; color:var(--muted); font-weight:400}
+.plot{position:relative; height:clamp(260px, 30vw, 330px)}
+.plot.short{height:clamp(170px, 18vw, 200px)}
+.plot.tall{height:clamp(300px, 34vw, 380px)}
+.plot canvas{position:absolute; inset:0; width:100%; height:100%; display:block}
+.legend{display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12.5px; color:var(--muted)}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.sw{width:18px; height:0; border-top:3px solid currentColor; display:inline-block}
+.sw.dash{border-top-style:dashed; border-top-width:2px}
+.sw.dot{width:8px; height:8px; border:none; border-radius:50%; background:currentColor}
+.sw.sq{width:10px; height:10px; border:none; border-radius:2px; background:currentColor}
+.c-ink{color:var(--ink)} .c-muted{color:var(--muted)} .c-dense{color:var(--dense)} .c-rnn{color:var(--rnn)} .c-lstm{color:var(--lstm)} .c-truth{color:var(--truth)} .c-bench{color:var(--bench)}
+.c-gf{color:var(--gf)} .c-gi{color:var(--gi)} .c-go{color:var(--go)} .c-cand{color:var(--cand)} .c-belt{color:var(--belt)} .c-mark{color:var(--mark)}
+.caption{font-size:13px; color:var(--muted); margin:0}
+.caption b{color:var(--ink); font-weight:600}
+.note{font-size:13.5px; margin:0; padding:10px 12px; background:var(--tile); border-radius:8px}
+.note b{font-weight:600} .note .m{font-family:var(--f-mono)}
+
+.verdict{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)) minmax(0,2.3fr); align-items:stretch}
+.read{padding:14px 18px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:2px; min-width:0}
+.read .k{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600}
+.read .v{font-family:var(--f-mono); font-size:24px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1.2; white-space:nowrap}
+.read .s{font-size:12px; color:var(--muted)}
+.diag{padding:14px 20px; display:flex; flex-direction:column; gap:6px; min-width:0}
+.pill{align-self:flex-start; font:600 12.5px var(--f-body); letter-spacing:.03em; padding:4px 11px; border-radius:999px}
+.pill.bias{color:var(--bias-fg); background:var(--bias-bg)}
+.pill.var{color:var(--var-fg); background:var(--var-bg)}
+.pill.good{color:var(--good-fg); background:var(--good-bg)}
+.diag p{margin:0; font-size:14px}
+
+.sec-head{display:flex; flex-direction:column; gap:4px}
+.sec-head h2{font-family:var(--f-display); font-weight:700; font-size:clamp(22px, 3vw, 28px); margin:0; letter-spacing:-.01em}
+.sec-head p{margin:0; color:var(--muted); max-width:74ch}
+.tiles{display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px}
+.tile{background:var(--tile); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:2px; min-width:0}
+.tile .k{font-size:12.5px; color:var(--muted)}
+.tile .v{font-family:var(--f-mono); font-size:20px; font-weight:600; font-variant-numeric:tabular-nums}
+.tile .v.good{color:var(--good-fg)} .tile .v.bad{color:var(--var-fg)}
+.tile .s{font-size:12px; color:var(--muted)}
+
+.tablewrap{overflow-x:auto}
+table{width:100%; border-collapse:collapse; font-size:14px}
+th, td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); vertical-align:top}
+thead th{font-size:12px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); font-weight:600}
+tbody th{font-weight:600}
+tbody tr:last-child th, tbody tr:last-child td{border-bottom:none}
+code{font-family:var(--f-mono); font-size:.9em; background:var(--tile); padding:1px 5px; border-radius:4px}
+.codeblock{font-family:var(--f-mono); font-size:13px; background:var(--tile); border-radius:8px; padding:12px 14px; overflow-x:auto; white-space:pre; margin:0}
+
+.keys{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:20px}
+.key{padding:16px 18px}
+.key h3{margin:0 0 4px; font-size:14.5px; font-weight:600}
+.key p{margin:0; color:var(--muted); font-size:14px; max-width:62ch}
+.key p b{color:var(--ink); font-weight:600}
+footer{font-size:12.5px; color:var(--muted); max-width:92ch}
+
+@media (max-width: 980px){
+  .controls{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .bench, .bench.even{grid-template-columns:1fr}
+  .verdict{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .read:nth-child(2n){border-right:none}
+  .read{border-bottom:1px solid var(--line)}
+  .diag{grid-column:1 / -1}
+}
+@media (max-width: 560px){
+  .controls{grid-template-columns:1fr}
+  .keys{grid-template-columns:1fr}
+  .read .v{font-size:20px}
+  .spacer{display:none}
+}
+/* Layout: the input switch, the series with its one-step forecasts, then the state grid beside one slot's arithmetic,
+   the verdict strip, and a last section that strips the cell down to exponential smoothing. */
+.modebar{display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; padding:14px 18px}
+.modebar .hint{flex:1 1 320px; min-width:0}
+#series{cursor:pointer; touch-action:pan-y}
+#grid{cursor:pointer; touch-action:pan-y}
+.plot.grid{height:384px}
+.plot.mini{height:150px}
+.scrub{display:flex; align-items:center; gap:10px}
+.scrub input{flex:1; min-width:0}
+.scrub output{font-family:var(--f-mono); font-weight:600; font-size:13px; white-space:nowrap; min-width:9ch; text-align:right}
+.play{width:38px; height:34px; flex:none; border-radius:7px; border:1px solid var(--ink); background:var(--ink); color:var(--surface); cursor:pointer; display:grid; place-items:center}
+.play svg{width:14px; height:14px; fill:currentColor}
+.stepb{width:34px; height:34px; flex:none; border-radius:7px; border:1px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer; display:grid; place-items:center}
+.stepb svg{width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+
+.hand{display:flex; flex-direction:column; border:1px solid var(--line); border-radius:8px; background:var(--bg); overflow:hidden}
+.hl{display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:8px 12px; border-bottom:1px solid var(--line); font-size:14px}
+.hl:last-child{border-bottom:none}
+.hl span small{display:block; font-size:12px; color:var(--muted)}
+.hl b{font-family:var(--f-mono); font-weight:600; white-space:nowrap; font-variant-numeric:tabular-nums}
+.hl.sum{background:var(--tile)}
+.hl.out{background:var(--tile); font-weight:600}
+.hl.out b{font-size:17px}
+.map td, .map th{padding:8px 12px}
+.ses-ctl{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:14px 24px; align-items:center}
+@media (max-width: 700px){ .ses-ctl{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Module 7 · Recurrent Neural Networks for Time Series Forecasting</div>
+      <h1>Inside the Recurrent Cell</h1>
+      <p class="lede">A recurrent network reads a series one step at a time and carries a <b>state</b>: a short list of numbers, its memory. Follow that state through 12 months of the airline data, check one slot's arithmetic by hand, and see why the same network is stuck on raw passenger counts and works once the data is prepared.</p>
+      <p class="watch">Explained in <a href="https://youtu.be/_yhw1uck6vc" target="_blank" rel="noopener">Part 1: dense network vs RNN</a><a href="https://youtu.be/TK9to_EfO3s" target="_blank" rel="noopener">Part 2: the RNN</a></p>
+    </div>
+    <div class="byline"><strong>Dr. Pedram Jahangiry</strong>
+      <a href="https://pedramjahangiry.com/" target="_blank" rel="noopener">Website</a>
+      <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" rel="noopener">YouTube</a>
+      <a href="https://github.com/pjalgotrader" target="_blank" rel="noopener">GitHub</a>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><svg id="themeIcon" viewBox="0 0 24 24"></svg></button></div>
+  </header>
+
+  <section class="panel modebar" aria-label="What the network reads">
+    <span class="lbl">What the network reads</span>
+    <div class="seg" role="group" aria-label="What the network reads">
+      <button id="pRaw" aria-pressed="true">1 · Raw passenger counts</button>
+      <button id="pStd" aria-pressed="false">2 · Rescaled counts</button>
+      <button id="pDiff" aria-pressed="false">3 · Log, then difference</button>
+    </div>
+    <span class="hint" id="prepHint"></span>
+  </section>
+
+  <section class="panel inst">
+    <h2>One month ahead, every month <small id="seriesSub"></small></h2>
+    <div class="legend">
+      <span class="c-ink"><i class="sw dot"></i>Actual passengers</span>
+      <span class="c-rnn"><i class="sw"></i>The RNN's forecast</span>
+      <span class="c-dense"><i class="sw sq"></i>The 12 months it reads</span>
+      <span class="c-muted"><i class="sw sq"></i>Test year, never seen in training</span>
+    </div>
+    <div class="plot"><canvas id="series" aria-label="Airline passengers with the recurrent network's one-month-ahead forecasts"></canvas></div>
+    <p class="caption"><b>Click a month</b> to forecast it. The network reads the 12 months before it, one at a time, and the grid below shows what happens inside.</p>
+  </section>
+
+  <section class="bench">
+    <div class="panel inst">
+      <h2>The state, one step at a time <small>16 slots of memory, 12 steps</small></h2>
+      <div class="scrub">
+        <button class="play" id="play" type="button" aria-label="Play: read the 12 months one at a time"><svg viewBox="0 0 14 14" id="playIcon"></svg></button>
+        <button class="stepb" id="prev" type="button" aria-label="One step back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <button class="stepb" id="fwd" type="button" aria-label="One step forward"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+        <input type="range" id="step" min="0" max="12" step="1" value="12" aria-label="Time step">
+        <output id="stepOut"></output>
+      </div>
+      <div class="plot grid"><canvas id="grid" aria-label="The value of each of the 16 state slots after every time step"></canvas></div>
+      <p class="caption" id="gridCap"></p>
+    </div>
+
+    <div class="panel inst">
+      <h2>One slot, by hand <small id="handSub"></small></h2>
+      <div class="hand" id="hand">
+        <div class="hl"><span>The new input<small id="hxS"></small></span><b id="hx">-</b></div>
+        <div class="hl"><span>Input part<small id="hinS">its weight × the input</small></span><b id="hin">-</b></div>
+        <div class="hl"><span>State part<small>16 weights × the 16 slots of the previous state, added up</small></span><b id="hst">-</b></div>
+        <div class="hl"><span>Bias</span><b id="hb">-</b></div>
+        <div class="hl sum"><span>Together</span><b id="hz">-</b></div>
+        <div class="hl out"><span>tanh of that: the slot's new value</span><b id="hh">-</b></div>
+      </div>
+      <div class="plot mini"><canvas id="tanh" aria-label="The tanh curve with this slot's sum marked on it"></canvas></div>
+      <p class="note" id="handNote"></p>
+    </div>
+  </section>
+
+  <section class="panel verdict" aria-live="polite">
+    <div class="read"><span class="k">Test year error</span><span class="v" id="rErr">-</span><span class="s">average miss, 12 months of 1960</span></div>
+    <div class="read"><span class="k">Naive forecast</span><span class="v" id="rNaive">-</span><span class="s">next month = this month</span></div>
+    <div class="read"><span class="k">Slots stuck</span><span class="v" id="rStuck">-</span><span class="s">at 1 or −1, at every step</span></div>
+    <div class="read"><span class="k" id="rOneK">Forecast</span><span class="v" id="rOne">-</span><span class="s" id="rOneS"></span></div>
+    <div class="diag"><span class="pill" id="pill">-</span><p id="diagText"></p></div>
+  </section>
+
+  <div class="sec-head">
+    <h2>You have used a recurrent cell before</h2>
+    <p>Simple exponential smoothing keeps one number, the level. The new level is a fraction α of the new observation, plus the rest of the old level. That is a weight times the input, plus a weight times the previous state: the recurrent cell with one slot, no tanh, and the two weights tied together.</p>
+  </div>
+  <section class="bench even">
+    <div class="panel inst">
+      <h2>Exponential smoothing as a cell <small id="sesSub"></small></h2>
+      <div class="ses-ctl">
+        <div class="ctl">
+          <label class="ctl-label" for="alpha"><span>Smoothing weight</span><output id="alphaOut">α = 0.30</output></label>
+          <input type="range" id="alpha" min="0.05" max="1" step="0.05" value="0.3">
+        </div>
+        <div class="tiles">
+          <div class="tile"><span class="k">Error on the test year</span><span class="v" id="sesErr">-</span></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="c-ink"><i class="sw dot"></i>Actual passengers</span>
+        <span class="c-truth"><i class="sw"></i>The level: its forecast for next month</span>
+      </div>
+      <div class="plot short"><canvas id="ses" aria-label="Airline passengers with the exponential smoothing level"></canvas></div>
+      <p class="note" id="sesNote"></p>
+    </div>
+    <div class="panel inst">
+      <h2>The same formula, with the limits taken off</h2>
+      <div class="tablewrap">
+        <table class="map">
+          <thead><tr><th scope="col"></th><th scope="col">Exponential smoothing</th><th scope="col">Recurrent cell</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Memory</th><td>1 number: the level</td><td>Many slots (16 here)</td></tr>
+            <tr><th scope="row">Weight on the input</th><td id="mapA">α</td><td>W, free to learn</td></tr>
+            <tr><th scope="row">Weight on the old state</th><td id="mapB">1 − α</td><td>U, free to learn</td></tr>
+            <tr><th scope="row">Squashing</th><td>None</td><td>tanh, keeps every slot between −1 and 1</td></tr>
+            <tr><th scope="row">Trained to</th><td>Smooth the series</td><td>Do whatever helps the forecast</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="caption">Slide α and you are changing both weights at once. An RNN learns its weights separately for every slot, which is why it needs far more data than smoothing does. To explore smoothing on its own, open the <a href="../m3_ets/ses/ses_interactive_visualization.html">simple exponential smoothing tool</a>.</p>
+    </div>
+  </section>
+
+  <section class="keys">
+    <div class="panel key"><h3>1 · The state is a short list of numbers</h3><p>Think of each number as a slot of memory. One slot might follow the recent level, one the trend, one the season. Nobody assigns those jobs. Training does.</p></div>
+    <div class="panel key"><h3>2 · One formula, used at every step</h3><p><b>New state = tanh(W × input + U × old state + bias).</b> The same weights are used for month 1 and month 12. That is why an RNN can read a short window or a long one with the same number of weights.</p></div>
+    <div class="panel key"><h3>3 · Big numbers freeze the state</h3><p>tanh is flat beyond about 3. A raw count like 112, times an ordinary weight, lands far out on the flat part, so every slot answers 1 or −1 whatever the month. Rescale the data, always, with the mean and standard deviation of the training data only.</p></div>
+    <div class="panel key"><h3>4 · A trend is a second problem</h3><p>A state made of numbers between −1 and 1 does not reach far beyond what it saw in training, and the test year is higher than every training year. Taking logs and differences removes the trend, and the same network becomes a good forecaster. Next: <a href="rnn-vs-dnn-timeseries-visualization.html">how a dense network sees the same data</a>.</p></div>
+  </section>
+
+  <footer>Data: Box and Jenkins monthly international airline passengers, January 1949 to December 1960, thousands. The network is a simple RNN with 16 units (tanh) and one output unit, 305 weights, reading 12 time steps with 1 feature each, trained on the months before 1960 and tested on the 12 months of 1960, always one month ahead from real data. It was trained three times, once for each kind of input: raw counts, counts rescaled to mean 0 and standard deviation 1 (using the training months only), and the monthly change in the logarithm. Each version shown here is the run with the middle test error out of 10. Their weights are stored in this page and the forecasts are computed in your browser. Errors are mean absolute percentage errors. Explained in Deep Forecasting, Module 7.</footer>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function gaussian(rng){let u=0,v=0;while(u===0)u=rng();v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const sigm=z=>1/(1+Math.exp(-z));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const MONO='"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace', SANS='"Inter", "Segoe UI", system-ui, sans-serif';
+// A canvas sized to its box at the screen's pixel density; returns the context and the size in CSS pixels.
+function setup(cv){const r=cv.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2.5),w=Math.max(10,r.width),h=Math.max(10,r.height);
+  if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d);}
+  const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);return{c,w,h};}
+function hexA(hex,a){const m=hex.replace('#','');const n=parseInt(m.length===3?m.split('').map(ch=>ch+ch).join(''):m,16);return`rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
+// A value between -1 and 1 as a tint: one colour for positive, another for negative, stronger when larger.
+function tint(v,lim){const a=clamp(Math.abs(v)/(lim||1),0,1);return hexA(cssv(v>=0?'--pos':'--neg'),0.05+0.5*a);}
+function sgn(v,d){const s=Math.abs(v).toFixed(d===undefined?2:d);return(v<0&&+s!==0?'−':'')+s;}
+function pressed(ids,on){ids.forEach(id=>$(id).setAttribute('aria-pressed',String(id===on)));}
+
+const SUN='<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>',MOON='<path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/>';
+const isDark=()=>{const t=document.documentElement.getAttribute('data-theme');return t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;};
+function syncThemeBtn(){const d=isDark(),label=d?'Switch to light theme':'Switch to dark theme';$('themeIcon').innerHTML=d?SUN:MOON;$('themeBtn').setAttribute('aria-label',label);$('themeBtn').title=label;}
+$('themeBtn').onclick=()=>{const next=isDark()?'light':'dark';document.documentElement.setAttribute('data-theme',next);try{localStorage.setItem('lab-theme',next);}catch(e){}syncThemeBtn();};
+// Every drawing function registers here; all of them run again on resize, theme change and font load.
+const DRAWS=[];let rz=0,started=false;
+function redraw(){if(started)DRAWS.forEach(f=>f());}
+function start(){started=true;syncThemeBtn();redraw();
+  new ResizeObserver(()=>{cancelAnimationFrame(rz);rz=requestAnimationFrame(redraw);}).observe(document.querySelector('.wrap'));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{syncThemeBtn();redraw();});
+  new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(redraw);}
+const AIR=[112,118,132,129,121,135,148,148,136,119,104,118,115,126,141,135,125,149,170,170,158,133,114,140,145,150,178,163,172,178,199,199,184,162,146,166,171,180,193,181,183,218,230,242,209,191,172,194,196,196,236,235,229,243,264,272,237,211,180,201,204,188,235,227,234,264,302,293,259,229,203,229,242,233,267,269,270,315,364,347,312,274,237,278,284,277,317,313,318,374,413,405,355,306,271,306,315,301,356,348,355,422,465,467,404,347,305,336,340,318,362,348,363,435,491,505,404,359,310,337,360,342,406,396,420,472,548,559,463,407,362,405,417,391,419,461,472,535,622,606,508,461,390,432];
+const MODELS={"rnn16_raw":{"W":[-0.088,-0.4048,-0.55044,-0.53412,0.17905,0.0941,-0.44476,-0.07787,0.6385,0.62047,0.32083,0.57101,0.36976,0.27629,0.36353,-0.29657],"U":[-0.02636,0.20177,-0.08275,-0.08813,0.06074,0.01136,-0.07986,0.07611,-0.1637,0.00507,-0.46804,-0.26013,0.52631,-0.25089,0.22543,-0.47294,0.31607,0.1727,0.29484,-0.25465,0.39251,0.16158,0.10088,0.32977,0.24595,-0.14789,-0.10906,-0.24414,0.12246,-0.15948,-0.27101,0.38944,-0.12402,0.61144,-0.03425,0.348,-0.17919,0.05423,0.07615,0.00856,-0.00744,-0.00522,-0.3812,0.37832,-0.09283,-0.15363,0.05506,0.35184,-0.35736,0.09434,0.01629,-0.13864,0.39019,-0.28351,0.23644,0.23563,0.28137,-0.05568,0.27943,0.36202,-0.05426,-0.31138,0.23222,-0.23371,-0.00487,0.06208,-0.05403,-0.42425,-0.42532,0.10321,-0.14232,0.38018,0.06192,0.49507,0.13612,-0.06705,-0.04822,-0.10503,0.35857,0.20735,0.25314,0.10677,0.2738,-0.08232,0.34303,0.05397,-0.56753,-0.29529,-0.1512,0.17897,0.14823,0.40043,0.17787,0.02018,0.19949,0.06216,0.12252,-0.27742,-0.02948,0.043,0.32491,-0.13357,0.22415,-0.03673,-0.44995,0.41655,-0.27663,-0.04594,-0.37563,-0.34913,0.03156,0.1082,-0.30506,0.12202,0.38693,-0.06887,-0.08985,-0.25296,-0.5016,-0.02526,0.08685,-0.08615,-0.16212,-0.28531,-0.46369,-0.16175,-0.16744,-0.14644,-0.2143,-0.43516,-0.43422,-0.32452,0.56983,0.78598,-0.39886,-0.91049,1.04049,0.76699,0.70976,0.34954,0.36925,0.4631,0.93321,-0.86189,-0.21425,-0.34947,-0.72828,-0.97561,0.59452,0.67102,-0.53486,-0.43076,0.35995,0.27897,0.49633,0.79843,0.15433,0.86259,0.68534,-0.9266,-0.1748,-0.05856,0.0112,0.26756,0.36125,0.07297,-0.10897,0.35003,0.17939,0.24407,-0.2718,-0.07744,-0.10133,0.6248,0.22583,-0.02864,0.06318,0.37398,-0.424,-0.24516,0.15488,-0.50192,0.01817,-0.32345,0.16743,0.27699,0.01452,-0.19473,0.03307,0.22023,-0.18155,0.0998,-0.27414,-0.02413,0.09131,-0.35078,0.01296,0.48311,0.16375,-0.27178,0.19262,0.32721,-0.22858,0.24886,-0.03467,0.05612,-0.37999,-0.22704,0.37237,-0.34722,-0.25002,0.09427,-0.13643,-0.21246,-0.26435,0.17891,0.45112,0.04076,-0.3159,0.3399,0.00655,-0.18128,-0.19479,-0.11133,-0.18614,-0.22718,-0.33945,-0.24527,0.14962,0.21664,-0.13589,-0.32512,0.19969,-0.37025,-0.23324,-0.09329,-0.13817,-0.09955,0.41631,0.32013,0.05249,-0.18214,0.51611,-0.23038,-0.22147,-0.4159,0.32436,-0.18028,0.06789,-0.06065,-0.31467,0.13407,0.14861,0.24338,0.25275,0.12003],"b":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.20101,1.2011,0.0,0.0,0.0,0.0,0.0,0.0],"v":[-15.88868,-15.82838,-16.58233,-15.97017,16.6119,16.35718,-15.77411,-16.29403,16.31936,16.22098,15.71218,15.52154,16.60866,16.26827,16.1372,-16.38389],"c":16.02731},"rnn16_standardized":{"W":[-0.10927,-0.13451,-0.11355,0.23592,-0.23326,-0.2964,0.2032,-0.37557,-0.17531,0.32935,0.24631,0.37569,-0.38918,0.05271,-0.13036,-0.36699],"U":[-0.12423,-0.25905,-0.0888,0.25148,-0.00338,0.16445,-0.56017,-0.0151,0.12688,0.49096,0.34407,0.15445,-0.41664,0.23412,-0.18375,-0.00815,0.25441,0.1753,-0.34828,-0.20314,-0.35682,0.24004,-0.04065,-0.06867,-0.08712,-0.2312,0.13193,-0.34321,-0.21093,0.57582,0.38276,-0.13231,0.31013,-0.15639,-0.38509,-0.26964,0.27525,0.11504,-0.1428,0.01171,-0.31603,0.36824,-0.32785,0.0695,-0.17334,-0.45589,0.44953,-0.26503,-0.02151,0.58932,-0.29273,0.2205,-0.217,0.15643,0.03878,0.33904,0.22232,-0.02392,0.15037,0.08351,-0.14025,-0.59098,0.04518,0.177,-0.33508,-0.25004,-0.09592,-0.25852,0.00651,-0.08844,0.06669,0.33266,0.23611,-0.11297,-0.17497,-0.43474,-0.21874,-0.07104,-0.36148,-0.39354,0.12437,-0.23208,0.14893,-0.02493,-0.69852,-0.27527,-0.36513,-0.22315,-0.10585,0.1665,0.1285,-0.38809,0.10379,-0.48807,0.08183,-0.01141,0.53058,0.38896,0.12924,-0.55772,0.00447,-0.29016,-0.23623,0.21268,0.03083,-0.05079,0.08228,0.01358,0.00441,0.21955,-0.47368,-0.17541,0.14287,0.13637,0.02189,-0.08426,0.23187,0.68485,-0.00032,-0.51186,0.10657,-0.03861,0.31463,-0.2214,0.10315,-0.22559,-0.2412,-0.05828,0.3551,-0.0288,0.40798,0.49125,-0.02225,0.11663,0.19111,0.01395,-0.19201,0.05195,-0.41044,-0.22227,-0.43907,-0.04153,-0.20588,-0.22191,0.04248,-0.17888,-0.2389,0.26338,0.15083,-0.17349,-0.00489,0.35278,-0.50606,-0.32253,0.64654,-0.10133,0.00445,-0.05454,-0.11391,-0.01266,0.10463,-0.04752,0.3691,0.12146,-0.13618,0.46488,-0.09698,0.37463,0.22888,0.12119,0.24448,0.1064,0.38916,0.04927,0.39015,-0.36551,0.34877,-0.34583,0.14769,0.04226,0.28973,-0.04333,-0.5079,0.24322,0.45604,-0.56454,-0.34094,-0.18404,0.04548,-0.21758,0.00729,0.36631,-0.30395,0.36326,0.25428,0.16218,0.12538,-0.04502,-0.04614,0.12507,-0.31709,0.40869,-0.15617,-0.73379,0.10764,0.15569,0.22642,0.26337,0.37971,-0.05258,-0.58074,0.34889,-0.01633,-0.08765,0.16856,-0.01198,0.23983,0.41798,-0.09677,-0.2469,0.4617,0.17156,-0.2526,0.05247,-0.20541,0.371,-0.23186,0.33606,0.11664,-0.28708,-0.45368,-0.3735,0.02151,-0.28739,-0.09085,-0.01057,0.14324,0.01929,0.2102,-0.50992,0.106,0.06018,0.16335,-0.08344,0.34377,-0.36675,0.37742,-0.12971,0.30221,0.21119,0.38123,-0.27735,-0.20651,-0.19681,0.3053,-0.02627],"b":[-0.04079,0.05094,-0.00587,-0.00541,-0.01065,0.01184,-0.00371,0.03246,0.00225,-0.05639,-0.03258,-0.15367,0.15391,-0.00479,0.04823,0.01923],"v":[0.22309,-0.0892,0.53264,0.16131,-0.19398,-0.06215,0.62917,0.3618,-0.02682,0.5906,0.30745,-0.26826,-0.57788,0.4018,0.58246,-0.41799],"c":0.00256,"mu":262.49242424242425,"sd":106.22114554451818},"rnn16_logdiff":{"W":[-0.06249,-0.37569,0.52084,-0.48302,-0.37065,0.6067,-0.4473,-0.44507,0.29751,0.48688,0.34155,-0.39241,-0.54953,-0.488,0.05777,0.10062],"U":[0.14337,0.42375,0.08465,-0.20604,0.04292,-0.38765,-0.23757,-0.44421,0.02858,-0.21872,0.00519,-0.15214,-0.36186,0.14202,0.13453,-0.31777,0.22946,-0.05574,0.29668,0.52129,-0.04803,0.17193,-0.124,-0.11239,0.4984,0.00585,-0.16493,-0.23768,0.13986,0.47917,-0.11739,-0.02094,0.15078,-0.73848,-0.10333,0.23314,0.24604,-0.21411,0.0665,-0.27495,-0.24068,0.10608,0.10958,-0.15163,-0.20035,-0.03904,-0.06465,-0.31021,-0.07919,0.31816,-0.04827,0.35358,0.03294,-0.06833,0.39708,0.33773,0.04934,0.19619,-8e-05,-0.2632,-0.09232,-0.21645,0.25195,-0.47679,0.46811,0.05663,-0.06665,0.00212,-0.28283,-0.2928,-0.05586,0.08207,-0.30029,0.2878,-0.50576,-0.05141,-0.00324,-0.01373,0.08269,0.32475,0.44701,0.0658,-0.19883,-0.18459,-0.10983,0.01246,0.6115,0.00576,-0.04285,-0.17193,0.2492,0.12668,0.2132,0.40432,-0.10704,-0.09542,0.27869,0.33892,0.03741,0.24063,0.62994,0.06119,-0.07253,0.05114,-0.13234,0.25396,0.17055,0.31482,-0.12186,0.02085,-0.21945,0.16192,-0.21065,0.12049,0.00338,0.34171,-0.42794,-0.19902,0.274,-0.30514,0.05098,0.24521,0.13956,0.17058,-0.29794,0.00147,-0.31852,0.2371,-0.09599,0.20085,0.1782,-0.03241,-0.1524,0.16003,-0.0172,-0.34382,-0.3322,0.23844,-0.1702,0.09776,0.50301,-0.05927,-0.21955,-0.48778,-0.29616,-0.02708,0.19342,0.11562,0.1274,0.05135,0.21391,-0.06151,-0.20571,-0.18888,-0.41397,0.42039,-0.13397,0.41543,0.43213,0.00399,0.20709,-0.10072,0.62973,0.00974,-0.04541,-0.29745,0.10032,-0.09405,0.11248,-0.01189,0.31663,0.21863,0.25323,-0.31781,0.39078,0.16159,-0.39551,0.03242,-0.05507,-0.01455,0.13862,-0.53946,-0.05254,0.12954,-0.12063,0.22286,0.20802,-0.20302,0.29083,0.52389,0.01825,0.13911,0.01673,-0.11204,0.48247,-0.43276,-0.00188,0.18312,0.04052,0.23915,0.02193,0.45608,0.00303,0.04415,-0.34525,0.19959,-0.14666,-0.11298,-0.0753,-0.0684,0.14986,-0.08757,0.23405,-0.43195,0.28967,0.16939,0.18694,-0.29924,-0.44165,0.04809,0.06049,-0.16738,-0.54234,-0.11264,-0.07404,-0.0153,-0.09521,-0.2417,0.39925,0.17238,0.38146,-0.41796,0.1737,0.26197,-0.20295,-0.36261,0.13717,-0.10023,0.1564,0.27125,-0.05161,0.04253,0.42683,0.10519,-0.00696,0.18557,0.11389,0.01063,-0.51755,-0.3974,0.10856,-0.54813,-0.13377,-0.04225,-0.14959,0.27189],"b":[-0.00355,-0.00905,-0.00524,0.00498,-0.00509,0.08109,0.00842,0.00678,0.00708,0.01242,0.03951,0.00081,0.00246,-0.00471,0.03691,0.00107],"v":[0.20096,-0.07465,-0.12184,0.30536,-0.59816,0.63454,-0.38099,0.50117,-0.04184,-0.36493,-0.3032,0.16459,0.08885,0.33708,0.28416,-0.25246],"c":0.0035}};
+const N=AIR.length,H=16,TX=12,T0=N-12,MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const LG=AIR.map(Math.log),DIFF=LG.slice(1).map((v,i)=>v-LG[i]);          // DIFF[j] = change in the log from month j to month j+1
+const PREP={raw:{m:MODELS.rnn16_raw,first:12,btn:'pRaw'},std:{m:MODELS.rnn16_standardized,first:12,btn:'pStd'},diff:{m:MODELS.rnn16_logdiff,first:13,btn:'pDiff'}};
+const S={prep:'raw',t:T0,step:12,slot:0,alpha:0.3};
+const mon=i=>MN[i%12]+' '+(1949+Math.floor(i/12));
+const nf=v=>{const a=Math.abs(v),s=a>=100?a.toFixed(0):a>=10?a.toFixed(1):a.toFixed(2);return(v<0&&+s!==0?'−':'')+s;};
+const fin=(p,v)=>p==='raw'?String(v):p==='std'?sgn(v,2):sgn(v,3);
+const pc=v=>(Math.round(v*1000+1e-6)/10).toFixed(1)+'%';
+
+function inputs(p,t){if(p==='raw')return AIR.slice(t-12,t);if(p==='std'){const{mu,sd}=PREP.std.m;return AIR.slice(t-12,t).map(v=>(v-mu)/sd);}return DIFF.slice(t-13,t-1);}
+function back(p,t,y){if(p==='raw')return y;if(p==='std'){const{mu,sd}=PREP.std.m;return y*sd+mu;}return AIR[t-1]*Math.exp(y);}
+// Read the 12 inputs one at a time. hs[k] is the state after k steps (hs[0] is all zeros), zs[k] the sums before tanh.
+function run(p,t){const m=PREP[p].m,x=inputs(p,t),hs=[new Float64Array(H)],zs=[null];
+  for(let k=0;k<TX;k++){const hp=hs[k],h=new Float64Array(H),z=new Float64Array(H);
+    for(let i=0;i<H;i++){let s=m.W[i]*x[k]+m.b[i];const r=i*H;for(let j=0;j<H;j++)s+=m.U[r+j]*hp[j];z[i]=s;h[i]=Math.tanh(s);}hs.push(h);zs.push(z);}
+  let y=m.c;for(let i=0;i<H;i++)y+=m.v[i]*hs[TX][i];return{x,hs,zs,y,pred:back(p,t,y)};}
+const ALL={};
+Object.keys(PREP).forEach(p=>{const f=new Array(N).fill(null);let e=0,low=0;for(let t=PREP[p].first;t<N;t++){f[t]=run(p,t).pred;if(t>=T0){e+=Math.abs(f[t]-AIR[t])/AIR[t];if(f[t]<AIR[t])low++;}}ALL[p]={f,mape:e/12,low};});
+let NAIVE=0;for(let t=T0;t<N;t++)NAIVE+=Math.abs(AIR[t-1]-AIR[t])/AIR[t];NAIVE/=12;
+let R=null;
+
+/* ---------- the series ---------- */
+let sg=null;
+function drawSeries(){const{c,w,h}=setup($('series')),pad={l:44,r:12,t:10,b:30},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b,f=ALL[S.prep].f;
+  const X=i=>pad.l+pw*i/(N-1),Y=v=>pad.t+ph*(1-(v-80)/(660-80)),ink=cssv('--ink'),muted=cssv('--muted'),grid=cssv('--grid'),line=cssv('--line');sg={pad,pw};
+  c.fillStyle=hexA(muted,0.12);c.fillRect(X(T0)-pw/(N-1)/2,pad.t,X(N-1)-X(T0)+pw/(N-1)/2,ph);
+  const w0=S.prep==='diff'?S.t-13:S.t-12;c.fillStyle=hexA(cssv('--dense'),0.16);c.fillRect(X(w0),pad.t,X(S.t-1)-X(w0),ph);
+  c.font='11px '+MONO;c.textAlign='right';c.textBaseline='middle';[100,200,300,400,500,600].forEach(v=>{c.strokeStyle=grid;c.lineWidth=1;c.beginPath();c.moveTo(pad.l,Y(v));c.lineTo(w-pad.r,Y(v));c.stroke();c.fillStyle=muted;c.fillText(String(v),pad.l-6,Y(v));});
+  c.textAlign='center';c.textBaseline='top';for(let y=0;y<12;y+=(w<520?2:1)){c.fillStyle=muted;c.fillText(String(1949+y),X(y*12),h-pad.b+7);c.strokeStyle=line;c.beginPath();c.moveTo(X(y*12),h-pad.b);c.lineTo(X(y*12),h-pad.b+4);c.stroke();}
+  c.strokeStyle=hexA(ink,0.45);c.lineWidth=1.2;c.beginPath();AIR.forEach((v,i)=>i?c.lineTo(X(i),Y(v)):c.moveTo(X(i),Y(v)));c.stroke();
+  c.fillStyle=ink;AIR.forEach((v,i)=>{c.beginPath();c.arc(X(i),Y(v),1.7,0,6.3);c.fill();});
+  c.strokeStyle=cssv('--rnn');c.lineWidth=2.2;c.lineJoin='round';c.beginPath();let on=false;for(let i=0;i<N;i++){if(f[i]===null)continue;const y=Y(clamp(f[i],60,680));on?c.lineTo(X(i),y):c.moveTo(X(i),y);on=true;}c.stroke();
+  const x=X(S.t);c.strokeStyle=ink;c.lineWidth=1;c.setLineDash([3,3]);c.beginPath();c.moveTo(x,pad.t);c.lineTo(x,h-pad.b);c.stroke();c.setLineDash([]);
+  c.fillStyle=ink;c.beginPath();c.arc(x,Y(AIR[S.t]),4.6,0,6.3);c.fill();c.fillStyle=cssv('--rnn');c.strokeStyle=cssv('--surface');c.lineWidth=1.5;c.beginPath();c.arc(x,Y(clamp(R.pred,60,680)),5.2,0,6.3);c.fill();c.stroke();}
+
+/* ---------- the state grid ---------- */
+let gg=null;
+function drawGrid(){const{c,w,h}=setup($('grid')),small=w<520,lw=small?28:50,cols=TX+1,cw=(w-lw-2)/cols,inH=30,top=inH+34,rh=(h-top-22)/H,ink=cssv('--ink'),muted=cssv('--muted'),line=cssv('--line');
+  let lim=0.2;for(let k=1;k<=TX;k++)for(let i=0;i<H;i++)lim=Math.max(lim,Math.abs(R.hs[k][i]));gg={lw,cw,top,rh,lim};
+  const X=k=>lw+k*cw;
+  c.font='600 11px '+SANS;c.fillStyle=muted;c.textAlign='left';c.textBaseline='middle';c.fillText(small?'in':'input',0,16+inH/2);
+  c.textAlign='center';c.font='10.5px '+MONO;
+  const m0=S.t-12;for(let k=1;k<=TX;k++){c.fillStyle=muted;c.textBaseline='alphabetic';c.fillText(small?MN[(m0+k-1)%12][0]:MN[(m0+k-1)%12],X(k)+cw/2,11);
+    const done=k<=S.step;c.fillStyle=done?hexA(cssv('--dense'),0.14):'transparent';c.fillRect(X(k)+1,16,cw-2,inH);c.strokeStyle=k===S.step?ink:line;c.lineWidth=k===S.step?1.5:1;c.strokeRect(X(k)+1.5,16.5,cw-3,inH-1);
+    c.textBaseline='middle';if(!small){c.fillStyle=done?ink:muted;c.fillText(fin(S.prep,R.x[k-1]),X(k)+cw/2,16+inH/2+0.5);}}
+  if(small&&S.step>0){const k=S.step,tx=clamp(X(k)+cw/2,lw+22,w-22);c.font='600 11px '+MONO;c.fillStyle=ink;c.textBaseline='alphabetic';c.fillText(fin(S.prep,R.x[k-1]),tx,16+inH+13);c.font='10.5px '+MONO;}
+  c.fillStyle=muted;c.textBaseline='alphabetic';c.fillText(small?'0':'start',X(0)+cw/2,11);
+  for(let i=0;i<H;i++){const y=top+i*rh;c.font=(i===S.slot?'600 ':'')+'10.5px '+MONO;c.fillStyle=i===S.slot?ink:muted;c.textAlign='left';c.textBaseline='middle';c.fillText(small?String(i+1):'slot '+(i+1),0,y+rh/2);
+    for(let k=0;k<cols;k++){if(k<=S.step){c.fillStyle=k===0?hexA(muted,0.07):tint(R.hs[k][i],lim);c.fillRect(X(k)+1,y+1,cw-2,rh-2);}else{c.strokeStyle=line;c.lineWidth=1;c.strokeRect(X(k)+1.5,y+1.5,cw-3,rh-3);}}
+    if(i===S.slot&&!small){c.font='10px '+MONO;c.textAlign='center';c.fillStyle=ink;for(let k=0;k<=S.step;k++)c.fillText(k===0?'0':sgn(R.hs[k][i],2),X(k)+cw/2,y+rh/2+0.5);}}
+  c.strokeStyle=ink;c.lineWidth=1.5;c.strokeRect(lw-1,top+S.slot*rh+.5,w-lw,rh-1);
+  if(S.step>0)c.strokeRect(X(S.step)+.75,top+.75,cw-1.5,H*rh-1.5);
+  c.font='11px '+SANS;c.fillStyle=muted;c.textAlign='left';c.textBaseline='alphabetic';const sx=lw,sy=h-5;
+  c.fillText('colour:',sx,sy);const bx=sx+46;for(let q=0;q<40;q++){const v=-lim+2*lim*q/39;c.fillStyle=tint(v,lim);c.fillRect(bx+q*2.5,sy-9,2.6,10);}
+  c.fillStyle=muted;c.font='10.5px '+MONO;c.fillText('−'+lim.toFixed(2),bx+104,sy);c.fillText('to  +'+lim.toFixed(2),bx+150,sy);}
+
+/* ---------- one slot by hand ---------- */
+function drawTanh(){const{c,w,h}=setup($('tanh')),pad={l:30,r:10,t:10,b:20},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b,R0=5,X=z=>pad.l+pw*(z+R0)/(2*R0),Y=v=>pad.t+ph*(1-(v+1.15)/2.3);
+  const ink=cssv('--ink'),muted=cssv('--muted'),grid=cssv('--grid');c.strokeStyle=grid;c.lineWidth=1;[-1,0,1].forEach(v=>{c.beginPath();c.moveTo(pad.l,Y(v));c.lineTo(w-pad.r,Y(v));c.stroke();});
+  c.beginPath();c.moveTo(X(0),pad.t);c.lineTo(X(0),h-pad.b);c.stroke();
+  c.font='10.5px '+MONO;c.fillStyle=muted;c.textAlign='right';c.textBaseline='middle';c.fillText('1',pad.l-5,Y(1));c.fillText('−1',pad.l-5,Y(-1));c.fillText('0',pad.l-5,Y(0));
+  c.textAlign='center';c.textBaseline='top';[-4,-2,2,4].forEach(z=>c.fillText(z<0?'−'+(-z):String(z),X(z),h-pad.b+4));
+  c.strokeStyle=hexA(ink,0.55);c.lineWidth=2;c.beginPath();for(let q=0;q<=100;q++){const z=-R0+2*R0*q/100;q?c.lineTo(X(z),Y(Math.tanh(z))):c.moveTo(X(z),Y(Math.tanh(z)));}c.stroke();
+  c.font='11px '+SANS;c.fillStyle=muted;c.textAlign='left';c.textBaseline='top';c.fillText('tanh',pad.l+4,pad.t);
+  if(S.step<1)return;const z=R.zs[S.step][S.slot],zc=clamp(z,-R0,R0),col=cssv('--rnn');
+  c.strokeStyle=col;c.setLineDash([3,3]);c.lineWidth=1.2;c.beginPath();c.moveTo(X(zc),Y(-1.15));c.lineTo(X(zc),Y(Math.tanh(z)));c.lineTo(pad.l,Y(Math.tanh(z)));c.stroke();c.setLineDash([]);
+  c.fillStyle=col;c.beginPath();c.arc(X(zc),Y(Math.tanh(z)),5,0,6.3);c.fill();
+  if(Math.abs(z)>R0){c.font='600 11px '+SANS;c.textAlign=z>0?'right':'left';c.textBaseline='bottom';c.fillText(z>0?'far off the chart →':'← far off the chart',z>0?w-pad.r-10:pad.l+8,Y(Math.tanh(z))+ (z>0?22:-6));}}
+
+function renderHand(){const k=S.step,j=S.slot,m=PREP[S.prep].m;$('handSub').textContent=k?`slot ${j+1}, step ${k}`:`slot ${j+1}`;
+  if(k<1){['hx','hin','hst','hb','hz'].forEach(id=>$(id).textContent='-');$('hh').textContent='0';$('hxS').textContent='';$('hinS').textContent='its weight × the input';
+    $('handNote').textContent='Before the first month, every slot is 0. Press play, or step forward, and the network reads one month at a time.';return;}
+  const x=R.x[k-1],inP=m.W[j]*x,z=R.zs[k][j],stP=z-inP-m.b[j],hv=R.hs[k][j],mi=S.t-12+k-1;
+  $('hx').textContent=fin(S.prep,x);$('hxS').textContent=S.prep==='raw'?mon(mi)+', thousands of passengers':S.prep==='std'?`${mon(mi)}: ${AIR[mi]} passengers, rescaled`:`change in the log from ${MN[(mi+11)%12]} to ${mon(mi)}`;
+  $('hin').textContent=nf(inP);$('hinS').textContent=`its weight × the input: ${nf(m.W[j])} × ${fin(S.prep,x)}`;$('hst').textContent=nf(stP);$('hb').textContent=nf(m.b[j]);$('hz').textContent=nf(z);$('hh').textContent=sgn(hv,2);
+  const flat=Math.abs(z)>3;
+  $('handNote').innerHTML=flat?`A sum of <b class="m">${nf(z)}</b> is on the flat part of tanh. The slot answers <b class="m">${sgn(hv,2)}</b> and would give the same answer for a very different month. It is stuck.`
+    :Math.abs(z)<0.5?`A sum of <b class="m">${nf(z)}</b> is on the steep middle of tanh, where small changes in the input still change the slot. The slot is alive.`
+    :`A sum of <b class="m">${nf(z)}</b> is on the bend of tanh: the slot still responds, but it is starting to flatten.`;}
+
+/* ---------- exponential smoothing ---------- */
+function ses(a){const f=new Array(N).fill(null);let level=AIR[0],e=0;for(let t=1;t<N;t++){f[t]=level;if(t>=T0)e+=Math.abs(level-AIR[t])/AIR[t];level=a*AIR[t]+(1-a)*level;}return{f,mape:e/12};}
+function drawSes(){const{c,w,h}=setup($('ses')),pad={l:44,r:12,t:8,b:26},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b,r=ses(S.alpha),X=i=>pad.l+pw*i/(N-1),Y=v=>pad.t+ph*(1-(v-80)/(660-80)),ink=cssv('--ink'),muted=cssv('--muted'),grid=cssv('--grid');
+  c.fillStyle=hexA(muted,0.12);c.fillRect(X(T0),pad.t,X(N-1)-X(T0),ph);
+  c.font='11px '+MONO;c.textAlign='right';c.textBaseline='middle';[200,400,600].forEach(v=>{c.strokeStyle=grid;c.lineWidth=1;c.beginPath();c.moveTo(pad.l,Y(v));c.lineTo(w-pad.r,Y(v));c.stroke();c.fillStyle=muted;c.fillText(String(v),pad.l-6,Y(v));});
+  c.textAlign='center';c.textBaseline='top';for(let y=0;y<12;y+=2){c.fillStyle=muted;c.fillText(String(1949+y),X(y*12),h-pad.b+6);}
+  c.strokeStyle=hexA(ink,0.45);c.lineWidth=1.2;c.beginPath();AIR.forEach((v,i)=>i?c.lineTo(X(i),Y(v)):c.moveTo(X(i),Y(v)));c.stroke();
+  c.strokeStyle=cssv('--truth');c.lineWidth=2.2;c.lineJoin='round';c.beginPath();for(let i=1;i<N;i++)i>1?c.lineTo(X(i),Y(r.f[i])):c.moveTo(X(i),Y(r.f[i]));c.stroke();}
+function renderSes(){const a=S.alpha,r=ses(a);$('alphaOut').textContent='α = '+a.toFixed(2);$('sesErr').textContent=pc(r.mape);$('sesSub').textContent='one slot, no tanh';
+  $('mapA').textContent='α = '+a.toFixed(2);$('mapB').textContent='1 − α = '+(1-a).toFixed(2);
+  $('sesNote').innerHTML=`new level = <span class="m">${a.toFixed(2)}</span> × new observation + <span class="m">${(1-a).toFixed(2)}</span> × old level. `+
+    (a>=0.999?'With α at 1 the level is just the last observation: the naive forecast.':a<=0.15?'A small α trusts the old level, so the memory is long and the line is slow to follow the series.':'A larger α trusts the newest observation more, so the memory is shorter.');
+  drawSes();}
+
+/* ---------- everything else ---------- */
+const HINTS={raw:'The 12 monthly counts exactly as they are: 112, 118, 132 and so on.',std:'The same counts, minus the training mean and divided by the training standard deviation. 112 becomes −1.42.',diff:'The change in the logarithm from one month to the next: roughly the percentage growth. The trend is gone.'};
+function render(){const p=S.prep,a=ALL[p];R=run(p,S.t);pressed(['pRaw','pStd','pDiff'],PREP[p].btn);$('prepHint').textContent=HINTS[p];
+  $('seriesSub').textContent='forecasting '+mon(S.t);$('step').value=S.step;$('stepOut').textContent=S.step?`step ${S.step} of 12`:'before step 1';
+  let stuck=0;for(let i=0;i<H;i++){let all=true;for(let k=1;k<=TX;k++)if(Math.abs(R.hs[k][i])<0.995)all=false;if(all)stuck++;}
+  $('rErr').textContent=pc(a.mape);$('rNaive').textContent=pc(NAIVE);$('rStuck').textContent=stuck+' of 16';
+  $('rOneK').textContent='Forecast, '+mon(S.t);$('rOne').textContent=Math.round(R.pred);$('rOneS').textContent=`actual ${AIR[S.t]}, off by ${pc(Math.abs(R.pred-AIR[S.t])/AIR[S.t])}`;
+  const pill=$('pill');
+  if(p==='raw'){pill.className='pill var';pill.textContent='Stuck';$('diagText').textContent=`A count like 112, times an ordinary weight, is far out on the flat part of tanh. Every slot sits at 1 or −1 for every month, so the state never changes and the forecast is the same number all year: about ${Math.round(a.f[N-1])}, off by ${Math.round(a.mape*100)}% on the test year.`;}
+  else if(p==='std'){pill.className='pill bias';pill.textContent='Alive, but behind';$('diagText').textContent=`Different months now give different states, and the error drops to ${pc(a.mape)}. That is barely ahead of the naive forecast. The forecast is too low in ${a.low} of the 12 test months: the test year is higher than anything the network saw in training. That is the trend.`;}
+  else{pill.className='pill good';pill.textContent='Working';$('diagText').textContent=`With the trend taken out, the network forecasts next month's change instead of next month's level, and the error is ${pc(a.mape)}: well ahead of the naive forecast. Same network, same 305 weights. Only the preparation changed.`;}
+  $('gridCap').innerHTML=p==='raw'?'Every row is one slot, every column one time step. <b>Every row keeps the same colour from step 1 on</b>: the state is frozen. Click a row to check that slot by hand.'
+    :'Every row is one slot, every column one time step. The colours change from step to step: the state is moving with the data. Click a row to check that slot by hand.';
+  renderHand();drawSeries();drawGrid();drawTanh();}
+
+const PLAY='<path d="M3 1.5v11l9-5.5z"/>',PAUSE='<path d="M2.5 1.5h3v11h-3zM8.5 1.5h3v11h-3z"/>';let timer=null;
+function stop(){if(timer){clearInterval(timer);timer=null;}$('playIcon').innerHTML=PLAY;$('play').setAttribute('aria-label','Play: read the 12 months one at a time');}
+$('play').onclick=()=>{if(timer){stop();return;}S.step=0;render();$('playIcon').innerHTML=PAUSE;$('play').setAttribute('aria-label','Pause');
+  timer=setInterval(()=>{if(S.step>=TX){stop();return;}S.step++;render();},matchMedia('(prefers-reduced-motion: reduce)').matches?900:520);};
+$('prev').onclick=()=>{stop();S.step=Math.max(0,S.step-1);render();};$('fwd').onclick=()=>{stop();S.step=Math.min(TX,S.step+1);render();};
+$('step').oninput=e=>{stop();S.step=+e.target.value;render();};
+[['pRaw','raw'],['pStd','std'],['pDiff','diff']].forEach(([id,p])=>$(id).onclick=()=>{S.prep=p;S.t=Math.max(S.t,PREP[p].first);render();});
+$('alpha').oninput=e=>{S.alpha=+e.target.value;renderSes();};
+const sc=$('series');let drag=false;
+function pick(e){if(!sg)return;const r=sc.getBoundingClientRect(),i=Math.round((e.clientX-r.left-sg.pad.l)/sg.pw*(N-1));S.t=clamp(i,PREP[S.prep].first,N-1);render();}
+sc.addEventListener('pointerdown',e=>{drag=true;sc.setPointerCapture(e.pointerId);pick(e);});sc.addEventListener('pointermove',e=>{if(drag)pick(e);});
+sc.addEventListener('pointerup',()=>drag=false);sc.addEventListener('pointercancel',()=>drag=false);
+$('grid').addEventListener('click',e=>{if(!gg)return;stop();const r=$('grid').getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,k=Math.floor((x-gg.lw)/gg.cw),i=Math.floor((y-gg.top)/gg.rh);
+  if(i>=0&&i<H)S.slot=i;if(k>=0&&k<=TX&&(y<gg.top||i>=0))S.step=k;render();});
+
+DRAWS.push(drawSeries,drawGrid,drawTanh,drawSes);
+stop();R=run(S.prep,S.t);start();render();renderSes();
+})();
+</script>
+
+<script src="/Interactive_tools/newsletter-signup.js?v=3" defer></script>
+<!-- Cloudflare Web Analytics -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>

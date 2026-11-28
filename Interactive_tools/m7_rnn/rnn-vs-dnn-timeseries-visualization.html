@@ -1,1058 +1,493 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Train a DNN and an RNN side by side, in your browser, on the airline passenger series. Toggle preprocessing and see why RNNs need it and DNNs mostly don't.">
-    <title>RNN vs DNN for Time Series | Dr. Pedram Jahangiry</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <script>
-    // Theme: light by default; the button switches it, and the choice is shared by these tools.
-    try { const t = localStorage.getItem("lab-theme"); document.documentElement.setAttribute("data-theme", t === "dark" ? "dark" : "light"); } catch (e) {}
-    </script>
-    <style>
-        /* Neutral tones of the tool panel. In dark mode the whole panel is flipped by a filter
-           (see "Lab dark mode" below), so the dark values here are the colours that come out
-           as navy #0F1A31 / #141F3A / #263250 after the flip. */
-        :root { --lab-surface: #F6F7F9; --lab-band: #EEF0F4; --lab-line: #DCE0E7; }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="A dense network sees a time series as a table, an RNN as a sequence. Shuffle rows, scramble columns and mix up time steps on the airline data to see what each network really depends on.">
+<title>Table or Sequence? Dense Network vs RNN for Time Series | Dr. Pedram Jahangiry</title>
+<link rel="canonical" href="https://pedramjahangiry.com/Interactive_tools/m7_rnn/rnn-vs-dnn-timeseries-visualization.html">
+<script>
+// Apply the saved light/dark choice before first paint; light by default.
+try { const t = localStorage.getItem("lab-theme"); document.documentElement.setAttribute("data-theme", t === "dark" ? "dark" : "light"); } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Lab look shared with the Boosting, Bagging and Learning Curve labs: tokens, header, panels, controls, plots, tiles. */
+:root{
+  --bg:#FFFFFF; --surface:#F6F7F9; --ink:#1C1B18; --muted:#5F6573; --line:#DCE0E7; --grid:#E9ECF1; --band:#EEF0F4; --tile:#F4F6F9;
+  --dense:#1E5BC6; --rnn:#D97A0B; --lstm:#6A5FD1; --truth:#1E8C5A; --bench:#C8213B;
+  --gf:#C8213B; --gi:#1E8C5A; --go:#0E8A9C; --cand:#D97A0B; --belt:#1E5BC6;
+  --pos:#1E5BC6; --neg:#D97A0B; --mark:#D97A0B;
+  --bias-fg:#7A4E00; --bias-bg:#FFF0D2; --var-fg:#A0213B; --var-bg:#FDE3E8; --good-fg:#15623C; --good-bg:#DCF2E5;
+  --f-display:"Fraunces", "Iowan Old Style", Georgia, serif;
+  --f-body:"Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0A1020; --surface:#0F1A31; --ink:#E9E4D4; --muted:#9A9DAB; --line:#263250; --grid:#16203A; --band:#141F3A; --tile:#1B2330;
+  --dense:#70A4FF; --rnn:#FFA53D; --lstm:#9D94FF; --truth:#4CC38A; --bench:#FF5C74;
+  --gf:#FF5C74; --gi:#4CC38A; --go:#45C4D6; --cand:#FFA53D; --belt:#70A4FF;
+  --pos:#70A4FF; --neg:#FFA53D; --mark:#FFA53D;
+  --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0A1020; --surface:#0F1A31; --ink:#E9E4D4; --muted:#9A9DAB; --line:#263250; --grid:#16203A; --band:#141F3A; --tile:#1B2330;
+  --dense:#70A4FF; --rnn:#FFA53D; --lstm:#9D94FF; --truth:#4CC38A; --bench:#FF5C74;
+  --gf:#FF5C74; --gi:#4CC38A; --go:#45C4D6; --cand:#FFA53D; --belt:#70A4FF;
+  --pos:#70A4FF; --neg:#FFA53D; --mark:#FFA53D;
+  --bias-fg:#F3C46B; --bias-bg:#382A0F; --var-fg:#FF93A6; --var-bg:#3A1520; --good-fg:#80DCA8; --good-bg:#123120;
+  color-scheme:dark }
 
-        body {
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #1C1B18;
-            border-top: 3px solid #D0603F;
-            min-height: 100vh;
-            padding: 20px;
-        }
+*{box-sizing:border-box}
+body{background:var(--bg); border-top:3px solid var(--ink); color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.55; margin:0;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:28px 48px}
+.wrap{max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:20px}
+a{color:var(--dense)}
+:focus-visible{outline:2px solid var(--dense); outline-offset:2px}
+[hidden]{display:none !important}
 
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            background: var(--lab-surface);
-            border-radius: 6px;
-            padding: 40px;
-        }
+header{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:12px 24px}
+.eyebrow{font-family:var(--f-mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+h1{font-family:var(--f-display); font-weight:700; font-size:clamp(30px, 5vw, 46px); line-height:1.05; margin:6px 0 8px; letter-spacing:-.01em; text-wrap:balance}
+.lede{margin:0; max-width:68ch; color:var(--muted); font-size:16px}
+.lede b{color:var(--ink); font-weight:600}
+.watch{margin:10px 0 0; font-size:13.5px; color:var(--muted); display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center}
+.watch a{display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--ink); text-decoration:none; font-weight:500}
+.watch a:hover{border-color:var(--muted)}
+.watch a::before{content:""; width:0; height:0; border-left:7px solid var(--bench); border-top:4.5px solid transparent; border-bottom:4.5px solid transparent}
+.byline{font-size:13px; color:var(--muted); display:flex; gap:6px 14px; flex-wrap:wrap; align-items:center}
+.byline strong{color:var(--ink); font-weight:600}
+.theme-btn{width:34px; height:34px; display:grid; place-items:center; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); cursor:pointer; padding:0}
+.theme-btn:hover{border-color:var(--muted)}
+.theme-btn svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
 
-        .intro {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: var(--lab-band);
-            border-radius: 6px;
-            border-left: 4px solid #2C5AA0;
-        }
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r)}
+.controls{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:18px 28px; padding:18px 20px}
+.ctl{display:flex; flex-direction:column; gap:8px; min-width:0}
+.ctl-label{display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.ctl-label output{font-family:var(--f-mono); font-size:13px; text-transform:none; letter-spacing:0; color:var(--ink); font-weight:600; white-space:nowrap}
+input[type=range]{width:100%; accent-color:var(--dense); margin:4px 0}
+.hint{font-size:12.5px; color:var(--muted)}
+.hint b{color:var(--ink); font-weight:600}
+.lbl{font-size:12px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.seg{display:inline-flex; gap:2px; padding:3px; border:1px solid var(--line); border-radius:9px; background:var(--bg); align-self:flex-start; max-width:100%; flex-wrap:wrap}
+.seg button{font:600 13px var(--f-body); border:0; background:transparent; color:var(--muted); padding:6px 12px; border-radius:6px; cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); outline:1px solid var(--line)}
+.row-actions{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding-top:14px; border-top:1px solid var(--line)}
+.row-actions .lbl{margin-right:4px}
+.chip{font:500 13px var(--f-body); padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+.spacer{flex:1}
+.btn{font:600 13px var(--f-body); padding:7px 14px; border-radius:7px; border:1px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer; display:inline-flex; align-items:center; gap:6px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+.btn:disabled{opacity:.45; cursor:default}
+.btn svg{width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.switch{display:inline-flex; align-items:center; gap:8px; font-size:14px; cursor:pointer}
+.switch input{width:17px; height:17px; accent-color:var(--dense); margin:0}
 
-        .intro h2 {
-            color: #2C5AA0;
-            margin-bottom: 10px;
-        }
+.bench{display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:20px}
+.bench.even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.inst{padding:16px 18px 14px; display:flex; flex-direction:column; gap:10px; min-width:0}
+.inst h2{font-family:var(--f-display); font-weight:500; font-size:19px; margin:0; display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap}
+.inst h2 small{font-family:var(--f-mono); font-size:12px; color:var(--muted); font-weight:400}
+.plot{position:relative; height:clamp(260px, 30vw, 330px)}
+.plot.short{height:clamp(170px, 18vw, 200px)}
+.plot.tall{height:clamp(300px, 34vw, 380px)}
+.plot canvas{position:absolute; inset:0; width:100%; height:100%; display:block}
+.legend{display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12.5px; color:var(--muted)}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.sw{width:18px; height:0; border-top:3px solid currentColor; display:inline-block}
+.sw.dash{border-top-style:dashed; border-top-width:2px}
+.sw.dot{width:8px; height:8px; border:none; border-radius:50%; background:currentColor}
+.sw.sq{width:10px; height:10px; border:none; border-radius:2px; background:currentColor}
+.c-ink{color:var(--ink)} .c-muted{color:var(--muted)} .c-dense{color:var(--dense)} .c-rnn{color:var(--rnn)} .c-lstm{color:var(--lstm)} .c-truth{color:var(--truth)} .c-bench{color:var(--bench)}
+.c-gf{color:var(--gf)} .c-gi{color:var(--gi)} .c-go{color:var(--go)} .c-cand{color:var(--cand)} .c-belt{color:var(--belt)} .c-mark{color:var(--mark)}
+.caption{font-size:13px; color:var(--muted); margin:0}
+.caption b{color:var(--ink); font-weight:600}
+.note{font-size:13.5px; margin:0; padding:10px 12px; background:var(--tile); border-radius:8px}
+.note b{font-weight:600} .note .m{font-family:var(--f-mono)}
 
-        .intro p {
-            line-height: 1.6;
-            color: #5F6573;
-            margin-bottom: 10px;
-        }
+.verdict{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)) minmax(0,2.3fr); align-items:stretch}
+.read{padding:14px 18px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:2px; min-width:0}
+.read .k{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600}
+.read .v{font-family:var(--f-mono); font-size:24px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1.2; white-space:nowrap}
+.read .s{font-size:12px; color:var(--muted)}
+.diag{padding:14px 20px; display:flex; flex-direction:column; gap:6px; min-width:0}
+.pill{align-self:flex-start; font:600 12.5px var(--f-body); letter-spacing:.03em; padding:4px 11px; border-radius:999px}
+.pill.bias{color:var(--bias-fg); background:var(--bias-bg)}
+.pill.var{color:var(--var-fg); background:var(--var-bg)}
+.pill.good{color:var(--good-fg); background:var(--good-bg)}
+.diag p{margin:0; font-size:14px}
 
-        .controls {
-            background: var(--lab-band);
-            padding: 25px;
-            border-radius: 6px;
-            margin-bottom: 30px;
-        }
+.sec-head{display:flex; flex-direction:column; gap:4px}
+.sec-head h2{font-family:var(--f-display); font-weight:700; font-size:clamp(22px, 3vw, 28px); margin:0; letter-spacing:-.01em}
+.sec-head p{margin:0; color:var(--muted); max-width:74ch}
+.tiles{display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px}
+.tile{background:var(--tile); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:2px; min-width:0}
+.tile .k{font-size:12.5px; color:var(--muted)}
+.tile .v{font-family:var(--f-mono); font-size:20px; font-weight:600; font-variant-numeric:tabular-nums}
+.tile .v.good{color:var(--good-fg)} .tile .v.bad{color:var(--var-fg)}
+.tile .s{font-size:12px; color:var(--muted)}
 
-        .controls-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
+.tablewrap{overflow-x:auto}
+table{width:100%; border-collapse:collapse; font-size:14px}
+th, td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); vertical-align:top}
+thead th{font-size:12px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); font-weight:600}
+tbody th{font-weight:600}
+tbody tr:last-child th, tbody tr:last-child td{border-bottom:none}
+code{font-family:var(--f-mono); font-size:.9em; background:var(--tile); padding:1px 5px; border-radius:4px}
+.codeblock{font-family:var(--f-mono); font-size:13px; background:var(--tile); border-radius:8px; padding:12px 14px; overflow-x:auto; white-space:pre; margin:0}
 
-        .control-group {
-            margin-bottom: 0;
-        }
+.keys{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:20px}
+.key{padding:16px 18px}
+.key h3{margin:0 0 4px; font-size:14.5px; font-weight:600}
+.key p{margin:0; color:var(--muted); font-size:14px; max-width:62ch}
+.key p b{color:var(--ink); font-weight:600}
+footer{font-size:12.5px; color:var(--muted); max-width:92ch}
 
-        .control-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #1C1B18;
-            font-size: 0.95em;
-        }
-
-        .control-row {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        input[type="range"] {
-            flex: 1;
-            height: 8px;
-            border-radius: 5px;
-            background: var(--lab-line);
-            outline: none;
-            -webkit-appearance: none;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #2C5AA0;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        input[type="range"]::-webkit-slider-thumb:hover {
-            background: #1C1B18;
-            transform: scale(1.2);
-        }
-
-        input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #2C5AA0;
-            cursor: pointer;
-            border: none;
-        }
-
-        .value-display {
-            min-width: 50px;
-            text-align: center;
-            font-weight: 600;
-            color: #2C5AA0;
-            font-size: 1.1em;
-        }
-
-        select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid var(--lab-line);
-            border-radius: 6px;
-            font-size: 1em;
-            background: var(--lab-surface);
-            cursor: pointer;
-            transition: border-color 0.3s ease;
-        }
-
-        select:hover, select:focus {
-            border-color: #2C5AA0;
-            outline: none;
-        }
-
-        .preprocessing-toggle {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: var(--lab-surface);
-            border-radius: 6px;
-            border: 2px solid var(--lab-line);
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-            background: #ccc;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .toggle-switch.active {
-            background: #2C5AA0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 24px;
-            height: 24px;
-            background: var(--lab-surface);
-            border-radius: 50%;
-            transition: transform 0.3s;
-        }
-
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(30px);
-        }
-
-        .toggle-switch.locked {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .train-button {
-            width: 100%;
-            padding: 15px;
-            background: #1C1B18;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-        }
-
-        .train-button:hover {
-            transform: translateY(-2px);
-            box-shadow: none;
-        }
-
-        .train-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .chart-container {
-            margin-bottom: 40px;
-        }
-
-        .chart-title {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #1C1B18;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #2C5AA0;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .metric-card {
-            background: var(--lab-band);
-            padding: 20px;
-            border-radius: 6px;
-            border-left: 4px solid #2C5AA0;
-        }
-
-        .metric-card h3 {
-            color: #2C5AA0;
-            margin-bottom: 15px;
-            font-size: 1.1em;
-        }
-
-        .metric-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.95em;
-        }
-
-        .metric-label {
-            font-weight: 600;
-            color: #5F6573;
-        }
-
-        .metric-value {
-            color: #1C1B18;
-            font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
-        }
-
-        .metric-value.better {
-            color: #10b981;
-            font-weight: 600;
-        }
-
-        .explanation {
-            background: #fff3cd;
-            padding: 20px;
-            border-radius: 6px;
-            margin-top: 30px;
-            border-left: 4px solid #ffc107;
-        }
-
-        .explanation h3 {
-            color: #856404;
-            margin-bottom: 10px;
-        }
-
-        .explanation ul {
-            margin-left: 20px;
-            line-height: 1.8;
-            color: #856404;
-        }
-
-        .explanation li {
-            margin-bottom: 8px;
-        }
-
-        .status-message {
-            padding: 15px;
-            border-radius: 6px;
-            margin: 15px 0;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .status-message.info {
-            background: #cfe2ff;
-            color: #084298;
-            border: 1px solid #b6d4fe;
-        }
-
-        .status-message.success {
-            background: #d1e7dd;
-            color: #0f5132;
-            border: 1px solid #badbcc;
-        }
-
-        .status-message.warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffecb5;
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.8em;
-            }
-
-            .container {
-                padding: 20px;
-            }
-
-            .controls-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Lab chrome, the same page as the Boosting, Bagging, Learning Curve and Histogram labs:
-           paper page with an ink top rule, header on the paper (mono top line, serif title, lede,
-           byline with text links), then the tool in a flat surface panel. */
-        body { background: #FFFFFF; border-top: 3px solid #1C1B18; color: #1C1B18; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 0; min-height: 0;
-               padding: 28px max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)); }
-        .lab-head { max-width: 1180px; margin: 0 auto 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px 24px; text-align: left; }
-        .lab-head .eyebrow { margin: 0; font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 11.5px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: #5F6573; }
-        .lab-head h1 { margin: 6px 0 8px; font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.05; letter-spacing: -.01em; text-align: left; text-wrap: balance; color: #1C1B18; }
-        .lab-head .lede { margin: 0; max-width: 66ch; font-size: 16px; line-height: 1.55; text-align: left; color: #5F6573; }
-        .lab-head .byline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: #5F6573; }
-        .lab-head .byline strong { color: #1C1B18; font-weight: 600; }
-        .lab-head .byline a { color: #1E5BC6; }
-        .container { max-width: 1180px; margin: 0 auto; background: var(--lab-surface); border: 1px solid var(--lab-line); border-radius: 6px; box-shadow: none; }
-        .container :is(h2, h3, h4) { font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; }
-        .container :is(.value-display, .val) { background: transparent; color: #1C1B18; font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-weight: 600; }
-
-        /* Lab density: tighter panels, controls and gaps, in the manner of the Boosting lab.
-           Appended last so it wins over the older spacing rules above. */
-        body { padding-top: 20px; }
-        .lab-head { margin-bottom: 14px; }
-        .lab-head .lede { max-width: 78ch; font-size: 15px; }
-        :where(.container) button { padding: 8px 16px; font-size: 13.5px; }
-        :where(.container) select { padding: 6px 8px; }
-        :where(.container) :is(.controls, .intro, .info-panel, .explanation, .chart-container, .chart-section, .tabs, .model-tabs, .button-group, .warning-box, .pipeline, .key-insight, .description, .usage-info, .stats-panel, .metrics-row, .charts-grid, .model-strip, .eq-box, .status-row, .lr-indicator, .complexity-bar, .equation-bar) { margin-bottom: 14px; }
-        :where(.container) :is(.controls, .intro, .info-panel, .explanation, .warning-box, .pipeline, .key-insight, .usage-info, .description, .chart-section) { padding: 14px 18px; }
-        :where(.container) :is(.intro, .info-panel, .explanation, .warning-box, .key-insight) :is(p, li) { margin-bottom: 6px; font-size: 14px; line-height: 1.55; }
-        :where(.container) :is(.intro, .info-panel, .explanation) :is(h2, h3) { margin-bottom: 8px; font-size: 18px; }
-        :where(.container) .control-group label { margin-bottom: 4px; font-size: 13px; }
-        input[type="range"]::-webkit-slider-thumb { width: 16px; height: 16px; }
-        input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; }
-        .train-button { margin-top: 12px; padding: 10px 16px; font-size: 14px; }
-        .container { padding: 20px; }
-        .controls h3 { margin-bottom: 10px; }
-        .controls-grid { grid-template-columns: repeat(auto-fit, minmax(min(165px, 100%), 1fr)); gap: 10px 18px; }
-        .controls :is(h2, h3) { margin-bottom: 6px !important; }
-        .controls h3 { font-size: 15px !important; }
-        .controls > div { margin-bottom: 10px !important; }
-        @media (min-width: 900px) {
-            .controls { display: grid; grid-template-columns: 3fr 2fr; gap: 6px 28px; align-items: start; }
-            .controls > * { grid-column: 1 / -1; }
-            .controls > div:has(> .controls-grid):not(:has(.preprocessing-toggle)) { grid-column: auto; }
-            .controls .controls-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px 18px; }
-        }
-        /* end lab density */
-
-        /* Lab dark mode. The header and page use the site's dark tones directly. The tool panel
-           has hundreds of hard-coded colours in its styles, charts and scripts, so it is flipped
-           as one piece: invert lightness, then rotate hue back, which keeps every colour's hue
-           and every text/background contrast. Follows the system unless data-theme is set. */
-        .theme-btn { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 1px solid #DCE0E7; border-radius: 8px; background: #F6F7F9; color: #1C1B18; cursor: pointer; }
-        .theme-btn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-        /* Text inside the panel must not inherit the page colour, which turns light in dark mode and would be flipped back to dark. */
-        .container { color: #1C1B18; }
-        @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) { --lab-surface: #DBE6FD; --lab-band: #D6E1FC; --lab-line: #C2CEEC; }
-        :root:not([data-theme="light"]) body { background: #0A1020; border-top-color: #E9E4D4; color: #E9E4D4; }
-        :root:not([data-theme="light"]) .lab-head h1, :root:not([data-theme="light"]) .lab-head .byline strong { color: #E9E4D4; }
-        :root:not([data-theme="light"]) .lab-head :is(.eyebrow, .lede, .byline) { color: #9A9DAB; }
-        :root:not([data-theme="light"]) .lab-head .byline a { color: #70A4FF; }
-        :root:not([data-theme="light"]) .theme-btn { background: #0F1A31; border-color: #263250; color: #E9E4D4; }
-        :root:not([data-theme="light"]) .container { filter: invert(1) hue-rotate(180deg); }
-        :root:not([data-theme="light"]) .js-plotly-plot .main-svg { background: transparent !important; }
-        :root:not([data-theme="light"]) .js-plotly-plot rect.bg { fill: transparent !important; }
-        }
-        :root[data-theme="dark"] { --lab-surface: #DBE6FD; --lab-band: #D6E1FC; --lab-line: #C2CEEC; }
-        :root[data-theme="dark"] body { background: #0A1020; border-top-color: #E9E4D4; color: #E9E4D4; }
-        :root[data-theme="dark"] .lab-head h1, :root[data-theme="dark"] .lab-head .byline strong { color: #E9E4D4; }
-        :root[data-theme="dark"] .lab-head :is(.eyebrow, .lede, .byline) { color: #9A9DAB; }
-        :root[data-theme="dark"] .lab-head .byline a { color: #70A4FF; }
-        :root[data-theme="dark"] .theme-btn { background: #0F1A31; border-color: #263250; color: #E9E4D4; }
-        :root[data-theme="dark"] .container { filter: invert(1) hue-rotate(180deg); }
-        :root[data-theme="dark"] .js-plotly-plot .main-svg { background: transparent !important; }
-        :root[data-theme="dark"] .js-plotly-plot rect.bg { fill: transparent !important; }
-        
-    </style>
+@media (max-width: 980px){
+  .controls{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .bench, .bench.even{grid-template-columns:1fr}
+  .verdict{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .read:nth-child(2n){border-right:none}
+  .read{border-bottom:1px solid var(--line)}
+  .diag{grid-column:1 / -1}
+}
+@media (max-width: 560px){
+  .controls{grid-template-columns:1fr}
+  .keys{grid-template-columns:1fr}
+  .read .v{font-size:20px}
+  .spacer{display:none}
+}
+/* Layout: table controls, the lag table beside the series and the dense network's scores, then the two "what does it lean on"
+   charts, the weight counter, and the side-by-side comparison. */
+.controls.c3{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr)}
+.tblwrap{overflow-x:auto}
+.plot.tbl{height:318px; min-width:640px}
+.bench.wide{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}
+.plot.mini{height:150px}
+.inst-bar{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 16px}
+.count{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); gap:20px 32px; padding:18px 20px}
+.count .sliders{display:flex; flex-direction:column; gap:14px}
+.bars{display:flex; flex-direction:column; gap:14px; justify-content:center; min-width:0}
+.barrow{display:flex; flex-direction:column; gap:4px; min-width:0}
+.barrow .bl{display:flex; justify-content:space-between; gap:10px; font-size:13.5px; font-weight:600}
+.barrow .bl b{font-family:var(--f-mono); font-size:15px}
+.barrow .track{height:18px; background:var(--tile); border-radius:5px; overflow:hidden}
+.barrow .fill{height:100%; border-radius:5px; min-width:3px; transition:width .18s ease}
+.barrow .fill.d{background:var(--dense)} .barrow .fill.r{background:var(--rnn)}
+.barrow .how{font-family:var(--f-mono); font-size:12px; color:var(--muted); overflow-wrap:anywhere}
+.cmp td b{font-family:var(--f-mono); font-weight:600}
+@media (prefers-reduced-motion: reduce){ .barrow .fill{transition:none} }
+@media (max-width: 980px){ .controls.c3{grid-template-columns:1fr} .count{grid-template-columns:1fr} .bench.wide{grid-template-columns:1fr} }
+</style>
 </head>
 <body>
-<header class="lab-head">
+<div class="wrap">
+  <header>
     <div>
-        <p class="eyebrow">Interactive tool &middot; Deep learning</p>
-        <h1>RNN vs DNN for Time Series Forecasting</h1>
-        <p class="lede">You control both networks' hyperparameters (lag length, hidden units, training epochs) and can flip the input data between its raw form and a log-transformed, differenced version, then retrain and compare test MAPE and RMSE side by side to see firsthand why the recurrent model needs stationary data and the dense model largely shrugs it off.</p>
+      <div class="eyebrow">Module 7 · Recurrent Neural Networks for Time Series Forecasting</div>
+      <h1>Table or Sequence?</h1>
+      <p class="lede">A dense network does not see a time series. It sees a table: rows and columns. A recurrent network gets the same numbers as a sequence, one step at a time. <b>Shuffle the rows, scramble the columns, mix up one time step</b>, and see what each network really depends on.</p>
+      <p class="watch">Explained in <a href="https://youtu.be/_yhw1uck6vc" target="_blank" rel="noopener">Part 1: dense network vs RNN</a></p>
     </div>
     <div class="byline"><strong>Dr. Pedram Jahangiry</strong>
-        <a href="https://pedramjahangiry.com/" target="_blank" rel="noopener">Website</a>
-        <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" rel="noopener">YouTube</a>
-        <a href="https://github.com/pjalgotrader" target="_blank" rel="noopener">GitHub</a>
-        <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><svg id="themeIcon" viewBox="0 0 24 24"></svg></button></div>
-</header>
-    <div class="container">
-        <div class="intro">
-            <h2>Understanding RNN vs DNN for Time Series</h2>
-            <p>
-                This interactive visualization demonstrates a critical concept in time series forecasting:
-                <strong>Dense Neural Networks (DNNs) can work well on raw time series data by treating lags as independent features,
-                while Recurrent Neural Networks (RNNs) require data preprocessing to effectively capture temporal patterns.</strong>
-            </p>
-            <p>
-                Using the classic airline passenger dataset, you'll see how DNNs achieve good performance on raw data,
-                while RNNs initially struggle but excel after log transformation and differencing (making data stationary).
-            </p>
-            <p>
-                <strong>Key Learning:</strong> Model choice matters, but so does understanding what preprocessing each architecture needs!
-            </p>
-        </div>
+      <a href="https://pedramjahangiry.com/" target="_blank" rel="noopener">Website</a>
+      <a href="https://www.youtube.com/@pedramjahangiry" target="_blank" rel="noopener">YouTube</a>
+      <a href="https://github.com/pjalgotrader" target="_blank" rel="noopener">GitHub</a>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><svg id="themeIcon" viewBox="0 0 24 24"></svg></button></div>
+  </header>
 
-        <div class="explanation" style="margin-bottom: 30px;">
-            <h3>🤔 What's Going On? Is RNN Failing?</h3>
-            <p style="line-height: 1.8; color: #856404; margin-bottom: 15px;">
-                Note that the Dense Neural Network (DNN) model works well on the unprocessed airline passenger data,
-                even without preprocessing steps like differencing or logarithmic transformation, while the Recurrent Neural
-                Network (RNN) requires these preprocessing steps to perform effectively.
-            </p>
-            <p style="line-height: 1.8; color: #856404; margin-bottom: 15px;">
-                This can be attributed to several factors related to the nature of DNNs and how they process information compared to RNNs:
-            </p>
+  <section class="panel controls c3" aria-label="Table settings">
+    <div class="ctl">
+      <label class="ctl-label" for="row"><span>Which rows to look at</span><output id="rowOut"></output></label>
+      <input type="range" id="row" min="0" max="124" step="1" value="109">
+      <div class="hint">One row is 12 months in a row, plus the month that follows: the target. 132 rows in all.</div>
+    </div>
+    <div class="ctl">
+      <div class="ctl-label"><span>Columns</span></div>
+      <div class="seg" role="group" aria-label="Order of the columns">
+        <button id="cOrder" aria-pressed="true">In time order</button>
+        <button id="cScr" aria-pressed="false">Scrambled</button>
+      </div>
+      <div class="hint">The same scramble in every row.</div>
+    </div>
+    <div class="ctl">
+      <div class="ctl-label"><span>Rows</span></div>
+      <div class="seg" role="group" aria-label="Order of the rows">
+        <button id="rOrder" aria-pressed="true">In time order</button>
+        <button id="rShuf" aria-pressed="false">Shuffled</button>
+      </div>
+      <div class="hint">Training shuffles the rows before every pass.</div>
+    </div>
+  </section>
 
-            <h4 style="color: #856404; margin: 15px 0 10px 0;">📊 DNNs and Feature Representation</h4>
-            <ul style="line-height: 1.8; color: #856404;">
-                <li><strong>Independent Features:</strong> Treat lags as independent features, capturing trend and seasonality without understanding sequential data.</li>
-                <li><strong>Pattern Mapping:</strong> Learn patterns from raw data without requiring stationarity.</li>
-                <li><strong>No Temporal Dynamics:</strong> Perform well if input-output relationships are straightforward, even without sequential understanding.</li>
-            </ul>
-
-            <h4 style="color: #856404; margin: 15px 0 10px 0;">🔄 RNNs and Sequential Data</h4>
-            <ul style="line-height: 1.8; color: #856404;">
-                <li><strong>Sequential Processing:</strong> Capture temporal dependencies but can struggle with non-stationary data.</li>
-                <li><strong>Need for Stationarity:</strong> Preprocessing (e.g., differencing) helps reveal patterns by stabilizing mean and variance.</li>
-            </ul>
-
-            <h4 style="color: #856404; margin: 15px 0 10px 0;">💡 Conclusion</h4>
-            <ul style="line-height: 1.8; color: #856404;">
-                <li>DNNs excel with raw data by leveraging absolute lag values.</li>
-                <li>RNNs require preprocessing to focus on temporal relationships effectively.</li>
-                <li>Model choice and preprocessing depend on data characteristics and forecasting goals.</li>
-            </ul>
-        </div>
-
-        <div class="controls">
-            <h2 style="margin-bottom: 20px; color: #2C5AA0;">Configuration</h2>
-
-            <!-- Shared Configuration -->
-            <div style="margin-bottom: 25px;">
-                <h3 style="color: #5F6573; font-size: 1em; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
-                    🔧 Shared Configuration
-                </h3>
-                <div class="controls-grid">
-                    <div class="control-group">
-                        <label>Data Preprocessing</label>
-                        <div class="preprocessing-toggle">
-                            <span style="font-weight: 600; color: #5F6573;">Raw Data</span>
-                            <div class="toggle-switch" id="preprocessToggle" onclick="togglePreprocessing()">
-                                <div class="toggle-slider"></div>
-                            </div>
-                            <span style="font-weight: 600; color: #2C5AA0;">Log + Differencing</span>
-                        </div>
-                    </div>
-
-                    <div class="control-group">
-                        <label>Training Epochs</label>
-                        <div class="control-row">
-                            <input type="range" id="epochs" min="50" max="300" step="50" value="100"
-                                   oninput="document.getElementById('epochsValue').textContent = this.value">
-                            <span class="value-display" id="epochsValue">100</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- DNN Configuration -->
-            <div style="margin-bottom: 25px;">
-                <h3 style="color: #3b82f6; font-size: 1em; margin-bottom: 15px; border-bottom: 2px solid #3b82f6; padding-bottom: 8px;">
-                    🔷 DNN Configuration
-                </h3>
-                <div class="controls-grid">
-                    <div class="control-group">
-                        <label>Number of Lags (Input Features)</label>
-                        <div class="control-row">
-                            <input type="range" id="dnnLags" min="3" max="24" value="12"
-                                   oninput="document.getElementById('dnnLagsValue').textContent = this.value">
-                            <span class="value-display" id="dnnLagsValue">12</span>
-                        </div>
-                    </div>
-
-                    <div class="control-group">
-                        <label>Hidden Layer 1 Units</label>
-                        <div class="control-row">
-                            <input type="range" id="dnnLayer1" min="8" max="64" step="8" value="32"
-                                   oninput="document.getElementById('dnnLayer1Value').textContent = this.value">
-                            <span class="value-display" id="dnnLayer1Value">32</span>
-                        </div>
-                    </div>
-
-                    <div class="control-group">
-                        <label>Hidden Layer 2 Units</label>
-                        <div class="control-row">
-                            <input type="range" id="dnnLayer2" min="8" max="64" step="8" value="16"
-                                   oninput="document.getElementById('dnnLayer2Value').textContent = this.value">
-                            <span class="value-display" id="dnnLayer2Value">16</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- RNN Configuration -->
-            <div style="margin-bottom: 25px;">
-                <h3 style="color: #f97316; font-size: 1em; margin-bottom: 15px; border-bottom: 2px solid #f97316; padding-bottom: 8px;">
-                    🔶 RNN Configuration
-                </h3>
-                <div class="controls-grid">
-                    <div class="control-group">
-                        <label>Sequence Length (Memory Window)</label>
-                        <div class="control-row">
-                            <input type="range" id="rnnSeqLength" min="3" max="24" value="12"
-                                   oninput="document.getElementById('rnnSeqLengthValue').textContent = this.value">
-                            <span class="value-display" id="rnnSeqLengthValue">12</span>
-                        </div>
-                    </div>
-
-                    <div class="control-group">
-                        <label>RNN Units (Memory Depth)</label>
-                        <div class="control-row">
-                            <input type="range" id="rnnUnits" min="8" max="64" step="8" value="16"
-                                   oninput="document.getElementById('rnnUnitsValue').textContent = this.value">
-                            <span class="value-display" id="rnnUnitsValue">16</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <button class="train-button" id="trainBtn" onclick="trainModels()">
-                🚀 Train Both Models
-            </button>
-
-            <div id="statusMessage"></div>
-        </div>
-
-        <div id="results" style="display: none;">
-            <h2 style="margin-bottom: 20px; color: #2C5AA0;">Results</h2>
-
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <h3>🔷 DNN Performance</h3>
-                    <div class="metric-row">
-                        <span class="metric-label">Test MAPE:</span>
-                        <span class="metric-value" id="dnnMAPE">-</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Test RMSE:</span>
-                        <span class="metric-value" id="dnnRMSE">-</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Training Time:</span>
-                        <span class="metric-value" id="dnnTime">-</span>
-                    </div>
-                </div>
-
-                <div class="metric-card">
-                    <h3>🔶 RNN Performance</h3>
-                    <div class="metric-row">
-                        <span class="metric-label">Test MAPE:</span>
-                        <span class="metric-value" id="rnnMAPE">-</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Test RMSE:</span>
-                        <span class="metric-value" id="rnnRMSE">-</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Training Time:</span>
-                        <span class="metric-value" id="rnnTime">-</span>
-                    </div>
-                </div>
-
-                <div class="metric-card">
-                    <h3>🏆 Winner</h3>
-                    <div id="winnerText" style="font-size: 1.2em; text-align: center; padding: 20px 0; color: #2C5AA0; font-weight: 600;">
-                        -
-                    </div>
-                </div>
-            </div>
-
-            <div class="chart-container">
-                <div class="chart-title">Model Architectures</div>
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <h3>🔷 DNN Architecture</h3>
-                        <div id="dnnSummary" style="font-family: 'Courier New', monospace; font-size: 0.85em; color: #1C1B18; line-height: 1.6;">
-                            <!-- DNN summary will be inserted here -->
-                        </div>
-                    </div>
-                    <div class="metric-card">
-                        <h3>🔶 RNN Architecture</h3>
-                        <div id="rnnSummary" style="font-family: 'Courier New', monospace; font-size: 0.85em; color: #1C1B18; line-height: 1.6;">
-                            <!-- RNN summary will be inserted here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="chart-container">
-                <div class="chart-title">Training Loss</div>
-                <div id="lossChart"></div>
-            </div>
-
-            <div class="chart-container">
-                <div class="chart-title">One-step test predictions (true lags, not a recursive path)</div>
-                <div id="forecastChart"></div>
-            </div>
-
-            <div class="explanation">
-                <h3>🎓 Key Insights</h3>
-                <ul>
-                    <li><strong>DNNs treat each lag as an independent feature</strong>, so they can learn patterns directly from absolute values (levels). This works well even without preprocessing.</li>
-                    <li><strong>RNNs process sequences temporally</strong>, expecting to learn from changes and patterns over time. Non-stationary data (with trends/seasonality) confuses the sequential learning process.</li>
-                    <li><strong>Preprocessing (log + differencing) makes data stationary</strong> by removing trends and stabilizing variance, which helps RNNs focus on temporal dependencies rather than absolute levels.</li>
-                    <li><strong>After preprocessing, RNNs can match or exceed DNN performance</strong> because they properly capture the sequential nature of time series data.</li>
-                    <li><strong>Trade-off:</strong> DNNs are simpler and work out-of-the-box, while RNNs require more careful data preparation but offer better sequence modeling capabilities.</li>
-                </ul>
-            </div>
-        </div>
+  <section class="bench wide">
+    <div class="panel inst">
+      <h2>The table a dense network trains on <small>8 of 132 rows</small></h2>
+      <div class="legend">
+        <span class="c-dense"><i class="sw sq"></i>12 inputs, darker = more passengers</span>
+        <span class="c-ink"><i class="sw sq" style="background:none;outline:2px solid currentColor"></i><span id="trackLbl">one month, wherever it appears</span></span>
+        <span class="c-rnn"><i class="sw sq"></i>Target</span>
+      </div>
+      <div class="tblwrap"><div class="plot tbl"><canvas id="tbl" aria-label="Eight rows of the lag table: twelve input months, the target month, and the dense network's forecast"></canvas></div></div>
+      <p class="caption" id="tblCap"></p>
     </div>
 
-    <script>
-        // Airline passenger data (1949-1960)
-        const airlineData = [
-            112, 118, 132, 129, 121, 135, 148, 148, 136, 119, 104, 118,
-            115, 126, 141, 135, 125, 149, 170, 170, 158, 133, 114, 140,
-            145, 150, 178, 163, 172, 178, 199, 199, 184, 162, 146, 166,
-            171, 180, 193, 181, 183, 218, 230, 242, 209, 191, 172, 194,
-            196, 196, 236, 235, 229, 243, 264, 272, 237, 211, 180, 201,
-            204, 188, 235, 227, 234, 264, 302, 293, 259, 229, 203, 229,
-            242, 233, 267, 269, 270, 315, 364, 347, 312, 274, 237, 278,
-            284, 277, 317, 313, 318, 374, 413, 405, 355, 306, 271, 306,
-            315, 301, 356, 348, 355, 422, 465, 467, 404, 347, 305, 336,
-            340, 318, 362, 348, 363, 435, 491, 505, 404, 359, 310, 337,
-            360, 342, 406, 396, 420, 472, 548, 559, 463, 407, 362, 405,
-            417, 391, 419, 461, 472, 535, 622, 606, 508, 461, 390, 432
-        ];
+    <div class="panel inst">
+      <h2>Where those rows come from</h2>
+      <div class="plot mini"><canvas id="mini" aria-label="The airline series with the months used by the rows on the left"></canvas></div>
+      <div class="tiles">
+        <div class="tile"><span class="k" id="t1K">Dense network, test year</span><span class="v" id="t1">-</span><span class="s" id="t1S"></span></div>
+        <div class="tile"><span class="k" id="t2K">Naive forecast</span><span class="v" id="t2">-</span><span class="s" id="t2S"></span></div>
+      </div>
+      <p class="note" id="tblNote"></p>
+    </div>
+  </section>
 
-        let usePreprocessing = false;
-        let modelDNN = null;
-        let modelRNN = null;
-        let trainData = {};
+  <div class="sec-head">
+    <h2>What does each network lean on?</h2>
+    <p>Here is a way to find out. Take one column, or one time step, and mix up its values between the rows. Every row keeps everything else. Then let the trained network forecast again. If the error barely moves, the network was not using that piece. If it doubles or triples, the network depended on it.</p>
+  </div>
+  <section class="bench even">
+    <div class="panel inst">
+      <h2>Dense network: which lags? <small>extra error, percentage points</small></h2>
+      <div class="legend">
+        <span class="c-dense"><i class="sw sq"></i>Trained on columns in time order</span>
+        <span class="c-lstm"><i class="sw sq"></i>Trained on scrambled columns</span>
+      </div>
+      <div class="plot short"><canvas id="lagc" aria-label="How much the dense network's error grows when each lag is mixed up between rows"></canvas></div>
+      <p class="caption" id="lagCap"></p>
+    </div>
+    <div class="panel inst">
+      <h2>RNN: which time steps? <small>error, times the normal</small></h2>
+      <div class="legend">
+        <span class="c-rnn"><i class="sw sq"></i>Error with that one step mixed up</span>
+        <span class="c-muted"><i class="sw dash"></i>1 = nothing changed</span>
+      </div>
+      <div class="plot short"><canvas id="stepc" aria-label="How much the RNN's error grows when each time step is mixed up between rows"></canvas></div>
+      <p class="caption" id="stepCap"></p>
+    </div>
+  </section>
+  <div class="inst-bar"><span class="hint">Each bar is the average of 20 random mixes. The networks are not trained again: this tests what they already learned.</span>
+    <button class="btn" id="remix" type="button"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>Mix again</button></div>
 
-        function togglePreprocessing() {
-            // Ignore clicks while training; a run keeps the setting it started with
-            if (document.getElementById('trainBtn').disabled) return;
-            const toggle = document.getElementById('preprocessToggle');
-            toggle.classList.toggle('active');
-            usePreprocessing = !usePreprocessing;
-        }
+  <div class="sec-head">
+    <h2>Count the weights</h2>
+    <p>A dense network needs a weight from every input to every unit of its first layer, so it grows with the window. A recurrent network uses the same weights at every time step, so the window can be any length.</p>
+  </div>
+  <section class="panel count">
+    <div class="sliders">
+      <div class="ctl">
+        <label class="ctl-label" for="win"><span>Time steps in the window</span><output id="winOut">12</output></label>
+        <input type="range" id="win" min="3" max="240" step="1" value="12">
+      </div>
+      <div class="ctl">
+        <label class="ctl-label" for="feat"><span>Features at each step</span><output id="featOut">1</output></label>
+        <input type="range" id="feat" min="1" max="14" step="1" value="1">
+      </div>
+      <div class="ctl">
+        <label class="ctl-label" for="units"><span>RNN units (slots of memory)</span><output id="unitsOut">16</output></label>
+        <input type="range" id="units" min="4" max="64" step="4" value="16">
+      </div>
+      <div class="row-actions" style="border-top:none;padding-top:0">
+        <span class="lbl">Try</span>
+        <button class="chip" data-count="air" type="button">Airline: 12 months, 1 feature</button>
+        <button class="chip" data-count="weather" type="button">Weather: 120 hours, 14 features</button>
+      </div>
+    </div>
+    <div class="bars">
+      <div class="barrow"><div class="bl"><span id="dName">Dense network</span><b id="dN">-</b></div><div class="track"><div class="fill d" id="dBar"></div></div><div class="how" id="dHow"></div></div>
+      <div class="barrow"><div class="bl"><span>Simple RNN</span><b id="rN">-</b></div><div class="track"><div class="fill r" id="rBar"></div></div><div class="how" id="rHow"></div></div>
+      <p class="note" id="countNote"></p>
+    </div>
+  </section>
 
-        function createSequences(data, numLags) {
-            const X = [];
-            const Y = [];
-            for (let i = numLags; i < data.length; i++) {
-                X.push(data.slice(i - numLags, i));
-                Y.push(data[i]);
-            }
-            return { X, Y };
-        }
+  <section class="panel inst">
+    <h2>Side by side <small>airline passengers, test year 1960, one month ahead</small></h2>
+    <div class="tablewrap">
+      <table class="cmp">
+        <thead><tr><th scope="col"></th><th scope="col">Dense network</th><th scope="col">Recurrent network</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Input</th><td>A table of lags: 12 separate features</td><td>A sequence: 1 feature at 12 time steps</td></tr>
+          <tr><th scope="row">Order of time</th><td>Not known. It has to learn which column matters.</td><td>Built in: it reads the steps in order</td></tr>
+          <tr><th scope="row">Memory</th><td>None. It sees its window and nothing else.</td><td>A state, with a length (time steps) and a depth (slots)</td></tr>
+          <tr><th scope="row">Weights</th><td>Grow with the window</td><td>Shared across time, the same for any window</td></tr>
+          <tr><th scope="row">Raw data</th><td>Forgiving: <b id="sDenseRaw"></b> on raw counts</td><td>Stuck: <b id="sRnnRaw"></b> on raw counts, <b id="sRnnStd"></b> rescaled</td></tr>
+          <tr><th scope="row">Prepared data</th><td><b id="sDenseDiff"></b> on log differences</td><td><b id="sRnnDiff"></b> on log differences</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">Each number is the middle result of 10 training runs. For reference, the naive forecast (next month = this month) misses by <b id="sNaive"></b>. On this small, well-behaved series the two networks tie. So do not expect a recurrent network to win just because your data is a time series.</p>
+  </section>
 
-        function preprocessData(data) {
-            // Log transformation
-            const logData = data.map(x => Math.log(x));
-            // Differencing
-            const diffData = [];
-            for (let i = 1; i < logData.length; i++) {
-                diffData.push(logData[i] - logData[i-1]);
-            }
-            return { logData, diffData };
-        }
+  <section class="keys">
+    <div class="panel key"><h3>1 · A dense network sees 12 separate columns</h3><p>It has no idea that the last column is the most recent month. Scramble the columns, train again, and it does just as well. Whatever order there is, it has to learn from the data.</p></div>
+    <div class="panel key"><h3>2 · Shuffling the rows is fine</h3><p>Every row carries its own 12 months of history inside it. So the time order is preserved, but only indirectly: inside each row, not between the rows.</p></div>
+    <div class="panel key"><h3>3 · The RNN really carries its first step</h3><p>The month it leans on most is the one from 12 months back: the same month last year. That is the first value it reads, so it has to hold it in its state for 11 more steps. See that state move in <a href="rnn-cell-step-by-step.html">Inside the recurrent cell</a>.</p></div>
+    <div class="panel key"><h3>4 · Memory has a length and a depth</h3><p>The length is the number of time steps the network reads. The depth is the number of slots in the state, which Keras calls units. A longer window costs an RNN no extra weights, but how far back it can really remember is another matter: see <a href="vanishing-gradient-lab.html">the gradient lab</a>.</p></div>
+  </section>
 
-        function invertPreprocessing(predictions, originalData, startIdx) {
-            // predictions[i] estimates diff[startIdx + i] = log(y[startIdx+i+1]) - log(y[startIdx+i]).
-            // The anchor is y[startIdx], and the reconstructed level is y[startIdx+1].
-            const result = [];
-            for (let i = 0; i < predictions.length; i++) {
-                const prevLog = Math.log(originalData[startIdx + i]);
-                const currentLog = prevLog + predictions[i];
-                result.push(Math.exp(currentLog));
-            }
-            return result;
-        }
+  <footer>Data: Box and Jenkins monthly international airline passengers, January 1949 to December 1960, thousands. Every row holds 12 consecutive months and the month after them, 132 rows, the last 12 (targets in 1960) kept for testing. The dense network is 12 inputs, then 32 and 16 units (ReLU), then 1 output, 961 weights, trained on the raw table for 100 passes. One copy was trained with the columns in time order and one with the columns scrambled the same way in every row. The recurrent network is a simple RNN with 16 units (tanh), 305 weights, trained on the monthly change in the logarithm. Each stored network is the run with the middle test error out of 10, its weights are in this page, and the forecasts and the mixing tests are computed in your browser. The mixing tests use the training rows: the dense network's error is a mean absolute percentage error, and the RNN's is the mean absolute error of the predicted monthly change, shown as a multiple of its normal value. This page replaces an earlier version that trained both networks in the browser. Explained in Deep Forecasting, Module 7.</footer>
+</div>
 
-        function buildDNNModel(inputShape, layer1Units, layer2Units) {
-            const model = tf.sequential();
-            model.add(tf.layers.dense({ inputShape: [inputShape], units: layer1Units, activation: 'relu' }));
-            model.add(tf.layers.dense({ units: layer2Units, activation: 'relu' }));
-            model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
-            model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
-            return model;
-        }
-
-        function buildRNNModel(inputShape, rnnUnits, learningRate) {
-            const model = tf.sequential();
-            model.add(tf.layers.simpleRNN({
-                inputShape: [inputShape, 1],
-                units: rnnUnits,
-                returnSequences: false
-            }));
-            model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
-            model.compile({ optimizer: tf.train.adam(learningRate), loss: 'meanSquaredError' });
-            return model;
-        }
-
-        function generateModelSummary(model, modelType) {
-            let summary = '';
-            let totalParams = 0;
-
-            summary += '<div style="border-bottom: 2px solid #2C5AA0; padding-bottom: 8px; margin-bottom: 10px; font-weight: 600;">Layer (type) → Output Shape → Params</div>';
-
-            model.layers.forEach((layer, idx) => {
-                const layerName = layer.name;
-                const layerType = layer.getClassName();
-                const outputShape = layer.outputShape;
-                const params = layer.countParams();
-                totalParams += params;
-
-                const shapeStr = Array.isArray(outputShape) ?
-                    `[${outputShape.filter(x => x !== null).join(', ')}]` :
-                    outputShape;
-
-                summary += `<div style="padding: 5px 0; border-bottom: 1px solid #e5e7eb;">`;
-                summary += `<strong>${layerType}</strong><br/>`;
-                summary += `Shape: ${shapeStr}<br/>`;
-                summary += `Params: ${params.toLocaleString()}`;
-                summary += `</div>`;
-            });
-
-            summary += `<div style="margin-top: 10px; padding-top: 10px; border-top: 2px solid #2C5AA0; font-weight: 600; color: #2C5AA0;">`;
-            summary += `Total Parameters: ${totalParams.toLocaleString()}`;
-            summary += `</div>`;
-
-            return summary;
-        }
-
-        function displayModelSummaries(modelDNN, modelRNN) {
-            document.getElementById('dnnSummary').innerHTML = generateModelSummary(modelDNN, 'DNN');
-            document.getElementById('rnnSummary').innerHTML = generateModelSummary(modelRNN, 'RNN');
-        }
-
-        function calculateMAPE(actual, predicted) {
-            let sum = 0;
-            for (let i = 0; i < actual.length; i++) {
-                sum += Math.abs((actual[i] - predicted[i]) / actual[i]);
-            }
-            return (sum / actual.length * 100).toFixed(2);
-        }
-
-        function calculateRMSE(actual, predicted) {
-            let sum = 0;
-            for (let i = 0; i < actual.length; i++) {
-                sum += Math.pow(actual[i] - predicted[i], 2);
-            }
-            return Math.sqrt(sum / actual.length).toFixed(2);
-        }
-
-        async function trainModels() {
-            const trainBtn = document.getElementById('trainBtn');
-            const statusMsg = document.getElementById('statusMessage');
-            const results = document.getElementById('results');
-            // Snapshot the toggle so the whole run uses one preprocessing setting
-            const preprocess = usePreprocessing;
-
-            trainBtn.disabled = true;
-            document.getElementById('preprocessToggle').classList.add('locked');   // the setting is fixed for this run
-            results.style.display = 'none';
-            statusMsg.innerHTML = '<div class="status-message info">🔄 Training models... This may take a minute.</div>';
-
-            let XTrainDNN, YTrainDNN, XTestDNN, XTrainRNN, YTrainRNN, XTestRNN;
-            try {
-                // Get parameters
-                const dnnLags = parseInt(document.getElementById('dnnLags').value);
-                const rnnSeqLength = parseInt(document.getElementById('rnnSeqLength').value);
-                const epochs = parseInt(document.getElementById('epochs').value);
-                const rnnUnits = parseInt(document.getElementById('rnnUnits').value);
-                const dnnLayer1 = parseInt(document.getElementById('dnnLayer1').value);
-                const dnnLayer2 = parseInt(document.getElementById('dnnLayer2').value);
-
-                // Prepare data
-                let processedData = airlineData;
-                let originalData = [...airlineData];
-
-                if (preprocess) {
-                    const { diffData } = preprocessData(airlineData);
-                    processedData = diffData;
-                }
-
-                const testSize = 12;
-                const trainSize = processedData.length - testSize;
-
-                // Create sequences for DNN (using dnnLags)
-                const { X: XDNN, Y: YDNN } = createSequences(processedData, dnnLags);
-                const XTrainDNN_data = XDNN.slice(0, trainSize - dnnLags);
-                const YTrainDNN_data = YDNN.slice(0, trainSize - dnnLags);
-                const XTestDNN_data = XDNN.slice(trainSize - dnnLags);
-                const YTestDNN_data = YDNN.slice(trainSize - dnnLags);
-
-                // Create sequences for RNN (using rnnSeqLength)
-                const { X: XRNN, Y: YRNN } = createSequences(processedData, rnnSeqLength);
-                const XTrainRNN_data = XRNN.slice(0, trainSize - rnnSeqLength);
-                const YTrainRNN_data = YRNN.slice(0, trainSize - rnnSeqLength);
-                const XTestRNN_data = XRNN.slice(trainSize - rnnSeqLength);
-                const YTestRNN_data = YRNN.slice(trainSize - rnnSeqLength);
-
-                // Train DNN
-                statusMsg.innerHTML = '<div class="status-message info">🔄 Training DNN model...</div>';
-                const startDNN = Date.now();
-
-                XTrainDNN = tf.tensor2d(XTrainDNN_data);
-                YTrainDNN = tf.tensor2d(YTrainDNN_data, [YTrainDNN_data.length, 1]);
-                XTestDNN = tf.tensor2d(XTestDNN_data);
-
-                // Free the previous run's weights and optimizer state
-                if (modelDNN) modelDNN.dispose();
-                modelDNN = buildDNNModel(dnnLags, dnnLayer1, dnnLayer2);
-                const historyDNN = await modelDNN.fit(XTrainDNN, YTrainDNN, {
-                    epochs: epochs,
-                    batchSize: 16,
-                    verbose: 0
-                });
-
-                const timeDNN = ((Date.now() - startDNN) / 1000).toFixed(1);
-
-                // Train RNN
-                statusMsg.innerHTML = '<div class="status-message info">🔄 Training RNN model...</div>';
-                const startRNN = Date.now();
-
-                XTrainRNN = tf.tensor3d(XTrainRNN_data.map(x => x.map(v => [v])));
-                YTrainRNN = tf.tensor2d(YTrainRNN_data, [YTrainRNN_data.length, 1]);
-                XTestRNN = tf.tensor3d(XTestRNN_data.map(x => x.map(v => [v])));
-
-                // A tf.train.adam() optimizer isn't owned by its model, so free it explicitly
-                if (modelRNN) { modelRNN.optimizer.dispose(); modelRNN.dispose(); }
-                // Same optimizer settings as the companion notebook: Adam(learning_rate=0.1)
-                // for the raw-data RNN, default Adam (0.001) after log + differencing
-                modelRNN = buildRNNModel(rnnSeqLength, rnnUnits, preprocess ? 0.001 : 0.1);
-                const historyRNN = await modelRNN.fit(XTrainRNN, YTrainRNN, {
-                    epochs: epochs,
-                    batchSize: 16,
-                    verbose: 0
-                });
-
-                const timeRNN = ((Date.now() - startRNN) / 1000).toFixed(1);
-
-                // Display model summaries
-                displayModelSummaries(modelDNN, modelRNN);
-
-                // Make predictions
-                const predDNN = tf.tidy(() => modelDNN.predict(XTestDNN).arraySync()).map(x => x[0]);
-                const predRNN = tf.tidy(() => modelRNN.predict(XTestRNN).arraySync()).map(x => x[0]);
-
-                // One-step test predictions. With preprocessing, undo log and differencing
-                // from the correct anchor so the levels line up with Jan–Dec 1960.
-                let finalPredDNN = predDNN;
-                let finalPredRNN = predRNN;
-                let actualTest;
-                // plotTrainEnd is how many original observations sit before the test levels.
-                let plotTrainEnd = trainSize;
-
-                if (preprocess) {
-                    // First test difference is diff[trainSize] = log(y[trainSize+1]) - log(y[trainSize]).
-                    const nPred = Math.min(predDNN.length, predRNN.length);
-                    finalPredDNN = invertPreprocessing(predDNN, originalData, trainSize);
-                    finalPredRNN = invertPreprocessing(predRNN, originalData, trainSize);
-                    actualTest = originalData.slice(trainSize + 1, trainSize + 1 + nPred);
-                    plotTrainEnd = trainSize + 1;
-                } else {
-                    actualTest = originalData.slice(trainSize, trainSize + Math.min(predDNN.length, predRNN.length));
-                }
-
-                // Calculate metrics (trim to minimum length for fair comparison)
-                const minLength = Math.min(finalPredDNN.length, finalPredRNN.length, actualTest.length);
-                const actualTestTrimmed = actualTest.slice(0, minLength);
-                const predDNNTrimmed = finalPredDNN.slice(0, minLength);
-                const predRNNTrimmed = finalPredRNN.slice(0, minLength);
-
-                const mapeDNN = calculateMAPE(actualTestTrimmed, predDNNTrimmed);
-                const mapeRNN = calculateMAPE(actualTestTrimmed, predRNNTrimmed);
-                const rmseDNN = calculateRMSE(actualTestTrimmed, predDNNTrimmed);
-                const rmseRNN = calculateRMSE(actualTestTrimmed, predRNNTrimmed);
-
-                // Display metrics
-                document.getElementById('dnnMAPE').textContent = mapeDNN + '%';
-                document.getElementById('dnnRMSE').textContent = rmseDNN;
-                document.getElementById('dnnTime').textContent = timeDNN + 's';
-                document.getElementById('rnnMAPE').textContent = mapeRNN + '%';
-                document.getElementById('rnnRMSE').textContent = rmseRNN;
-                document.getElementById('rnnTime').textContent = timeRNN + 's';
-
-                // Determine winner
-                const winner = parseFloat(mapeDNN) < parseFloat(mapeRNN) ? 'DNN' : 'RNN';
-                const winnerEmoji = winner === 'DNN' ? '🔷' : '🔶';
-                document.getElementById('winnerText').innerHTML = `${winnerEmoji} ${winner} wins with ${winner === 'DNN' ? mapeDNN : mapeRNN}% MAPE`;
-
-                // Highlight better values
-                if (parseFloat(mapeDNN) < parseFloat(mapeRNN)) {
-                    document.getElementById('dnnMAPE').classList.add('better');
-                    document.getElementById('rnnMAPE').classList.remove('better');
-                } else {
-                    document.getElementById('rnnMAPE').classList.add('better');
-                    document.getElementById('dnnMAPE').classList.remove('better');
-                }
-
-                // Show results before plotting so Plotly sizes the charts to the full width
-                results.style.display = 'block';
-
-                // Plot loss curves
-                plotLossCurves(historyDNN.history, historyRNN.history, preprocess);
-
-                // Plot forecasts (using trimmed data for fair comparison)
-                plotForecasts(originalData, plotTrainEnd, actualTestTrimmed, predDNNTrimmed, predRNNTrimmed);
-
-                statusMsg.innerHTML = '<div class="status-message success">✅ Training complete! Check out the results below.</div>';
-
-            } catch (error) {
-                console.error('Training error:', error);
-                statusMsg.innerHTML = `<div class="status-message warning">⚠️ Error: ${error.message}</div>`;
-            } finally {
-                // Cleanup tensors
-                tf.dispose([XTrainDNN, YTrainDNN, XTestDNN, XTrainRNN, YTrainRNN, XTestRNN]);
-                trainBtn.disabled = false;
-                document.getElementById('preprocessToggle').classList.remove('locked');
-            }
-        }
-
-        function plotLossCurves(historyDNN, historyRNN, preprocess) {
-            const epochsDNN = historyDNN.loss.map((_, i) => i + 1);
-            const epochsRNN = historyRNN.loss.map((_, i) => i + 1);
-
-            const traceDNNTrain = {
-                x: epochsDNN,
-                y: historyDNN.loss,
-                name: 'DNN Training Loss',
-                mode: 'lines',
-                line: { color: '#3b82f6', width: 2 }
-            };
-
-            const traceRNNTrain = {
-                x: epochsRNN,
-                y: historyRNN.loss,
-                name: 'RNN Training Loss',
-                mode: 'lines',
-                line: { color: '#f97316', width: 2 }
-            };
-
-            const layout = {
-                xaxis: { title: 'Epoch' },
-                yaxis: { title: preprocess ? 'Loss (MSE of log-differences)' : 'Loss (MSE)', type: 'log' },
-                hovermode: 'x unified',
-                showlegend: true,
-                legend: { x: 0.7, y: 1 }
-            };
-
-            Plotly.newPlot('lossChart', [traceDNNTrain, traceRNNTrain], layout, { responsive: true });
-        }
-
-        function plotForecasts(originalData, trainSize, actualTest, predDNN, predRNN) {
-            const allIndices = Array.from({ length: originalData.length }, (_, i) => i + 1);
-            const testIndices = Array.from({ length: actualTest.length }, (_, i) => trainSize + i + 1);
-
-            const traceActualAll = {
-                x: allIndices.slice(0, trainSize),
-                y: originalData.slice(0, trainSize),
-                name: 'Training Data',
-                mode: 'lines',
-                line: { color: '#94a3b8', width: 2 }
-            };
-
-            const traceActualTest = {
-                x: testIndices,
-                y: actualTest,
-                name: 'Actual Test Data',
-                mode: 'lines',
-                line: { color: '#1e293b', width: 3 }
-            };
-
-            const tracePredDNN = {
-                x: testIndices,
-                y: predDNN,
-                name: 'DNN one-step',
-                mode: 'lines',
-                line: { color: '#3b82f6', width: 3 }
-            };
-
-            const tracePredRNN = {
-                x: testIndices,
-                y: predRNN,
-                name: 'RNN one-step',
-                mode: 'lines',
-                line: { color: '#f97316', width: 3 }
-            };
-
-            const layout = {
-                xaxis: { title: 'Time (Months)' },
-                yaxis: { title: 'Number of Passengers' },
-                hovermode: 'x unified',
-                showlegend: true,
-                legend: { x: 0.01, y: 0.99 }
-            };
-
-            Plotly.newPlot('forecastChart', [traceActualAll, traceActualTest, tracePredDNN, tracePredRNN], layout, { responsive: true });
-        }
-    </script>
 <script>
-(function () {
-    var SUN = '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>';
-    var MOON = '<path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/>';
-    var root = document.documentElement, btn = document.getElementById('themeBtn'), icon = document.getElementById('themeIcon');
-    function isDark() { var t = root.getAttribute('data-theme'); return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; }
-    function sync() { var d = isDark(), label = d ? 'Switch to light theme' : 'Switch to dark theme'; icon.innerHTML = d ? SUN : MOON; btn.setAttribute('aria-label', label); btn.title = label; }
-    btn.onclick = function () { var next = isDark() ? 'light' : 'dark'; root.setAttribute('data-theme', next); try { localStorage.setItem('lab-theme', next); } catch (e) {} sync(); };
-    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', sync);
-    sync();
+(function(){
+const $=id=>document.getElementById(id);
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function gaussian(rng){let u=0,v=0;while(u===0)u=rng();v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const sigm=z=>1/(1+Math.exp(-z));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const MONO='"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace', SANS='"Inter", "Segoe UI", system-ui, sans-serif';
+// A canvas sized to its box at the screen's pixel density; returns the context and the size in CSS pixels.
+function setup(cv){const r=cv.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2.5),w=Math.max(10,r.width),h=Math.max(10,r.height);
+  if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d);}
+  const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);return{c,w,h};}
+function hexA(hex,a){const m=hex.replace('#','');const n=parseInt(m.length===3?m.split('').map(ch=>ch+ch).join(''):m,16);return`rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
+// A value between -1 and 1 as a tint: one colour for positive, another for negative, stronger when larger.
+function tint(v,lim){const a=clamp(Math.abs(v)/(lim||1),0,1);return hexA(cssv(v>=0?'--pos':'--neg'),0.05+0.5*a);}
+function sgn(v,d){const s=Math.abs(v).toFixed(d===undefined?2:d);return(v<0&&+s!==0?'−':'')+s;}
+function pressed(ids,on){ids.forEach(id=>$(id).setAttribute('aria-pressed',String(id===on)));}
+
+const SUN='<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>',MOON='<path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/>';
+const isDark=()=>{const t=document.documentElement.getAttribute('data-theme');return t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;};
+function syncThemeBtn(){const d=isDark(),label=d?'Switch to light theme':'Switch to dark theme';$('themeIcon').innerHTML=d?SUN:MOON;$('themeBtn').setAttribute('aria-label',label);$('themeBtn').title=label;}
+$('themeBtn').onclick=()=>{const next=isDark()?'light':'dark';document.documentElement.setAttribute('data-theme',next);try{localStorage.setItem('lab-theme',next);}catch(e){}syncThemeBtn();};
+// Every drawing function registers here; all of them run again on resize, theme change and font load.
+const DRAWS=[];let rz=0,started=false;
+function redraw(){if(started)DRAWS.forEach(f=>f());}
+function start(){started=true;syncThemeBtn();redraw();
+  new ResizeObserver(()=>{cancelAnimationFrame(rz);rz=requestAnimationFrame(redraw);}).observe(document.querySelector('.wrap'));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{syncThemeBtn();redraw();});
+  new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(redraw);}
+const AIR=[112,118,132,129,121,135,148,148,136,119,104,118,115,126,141,135,125,149,170,170,158,133,114,140,145,150,178,163,172,178,199,199,184,162,146,166,171,180,193,181,183,218,230,242,209,191,172,194,196,196,236,235,229,243,264,272,237,211,180,201,204,188,235,227,234,264,302,293,259,229,203,229,242,233,267,269,270,315,364,347,312,274,237,278,284,277,317,313,318,374,413,405,355,306,271,306,315,301,356,348,355,422,465,467,404,347,305,336,340,318,362,348,363,435,491,505,404,359,310,337,360,342,406,396,420,472,548,559,463,407,362,405,417,391,419,461,472,535,622,606,508,461,390,432];
+const NETS={"dense":{"layers":[{"w":[0.05545,0.27368,0.08622,-0.14949,0.16143,0.34802,-0.24512,0.36338,0.28319,0.31137,0.08516,-0.0993,-0.11367,-0.03935,-0.23661,0.15777,0.18761,-0.06071,0.33594,0.1242,0.3633,0.31859,-0.07261,-0.30274,-0.24411,0.3559,-0.22416,0.02597,0.23855,-0.11951,0.21234,-0.24798,0.07331,0.1693,-0.30815,-0.13501,-0.21119,-0.09412,0.32764,0.29937,0.16418,-0.19703,-0.09147,0.01193,0.33195,-0.3329,-0.11423,-0.3406,0.13755,-0.0483,-0.16531,-0.33767,-0.1217,-0.31971,0.12362,-0.3362,-0.18924,0.36856,-0.35669,-0.30384,-0.32257,-0.25421,0.29026,-0.12376,-0.28606,0.2116,0.31472,0.1728,0.05107,0.05829,0.13208,0.30382,0.21177,-0.28776,-0.28634,-0.23263,-0.16093,0.32756,-0.36804,-0.05376,0.27992,0.14063,-0.18802,-0.00437,-0.30051,-0.23492,-0.30809,-0.26981,0.35761,-0.05727,-0.20309,-0.18055,-0.29621,-0.19948,0.03703,-0.22606,0.10246,0.15716,0.2657,-0.21278,-0.08004,0.35812,-0.03043,-0.31452,-0.13356,0.13592,-0.05145,0.16093,-0.31877,0.16116,-0.16387,-0.11318,-0.00716,0.37665,0.28233,0.30704,-0.0565,0.2337,-0.0232,0.2214,-0.12632,-0.18486,-0.26454,-0.01796,-0.16052,0.29219,-0.19178,0.19493,-0.19037,0.20175,0.01311,-0.22041,0.01849,-0.34238,-0.03441,-0.21914,-0.33394,0.33286,0.21998,0.08885,0.21783,-0.29637,-0.19389,-0.17513,-0.19266,-0.05972,0.27561,-0.22916,0.07068,0.15793,-0.18113,0.16046,-0.11817,0.17034,0.3421,0.11875,-0.23797,-0.23586,0.28929,-0.10821,0.3514,-0.2805,-0.20055,0.36201,0.01545,-0.18282,0.02964,-0.02773,-0.28493,0.16021,0.2261,0.00922,-0.32453,-0.13599,0.1472,-0.1343,0.26282,-0.1165,-0.08854,0.23271,0.00544,0.19714,-0.25324,0.2629,-0.11923,0.00398,0.17903,0.10637,-0.12101,0.21136,-0.0406,0.15193,-0.11735,0.04752,-0.08775,0.2409,0.30313,0.10717,0.3273,0.12097,-0.29512,-0.24371,-0.02368,-0.29075,0.13877,0.32747,-0.23719,-0.14211,-0.33178,0.06864,-0.00147,0.25712,-0.15239,-0.30556,0.33131,0.36593,-0.2558,-0.13969,-0.09484,-0.23763,-0.34898,0.26852,0.21405,0.16923,-0.32804,-0.08106,0.22663,0.18841,-0.05288,0.02075,0.16244,0.32315,0.34,0.33679,0.33325,-0.16381,0.33251,-0.00638,-0.08528,0.33464,-0.0754,0.03912,-0.03207,-0.28661,-0.29315,0.3163,0.34218,-0.03806,-0.22073,0.37356,0.0828,0.19064,-0.27756,0.1656,0.02903,0.32779,0.27876,0.21157,0.09808,0.149,0.10998,0.3513,0.21253,0.01101,0.13581,-0.12473,0.29448,-0.17919,0.33771,0.27842,-0.2813,-0.33166,-0.02654,0.17011,0.29634,-0.30279,-0.12807,0.07341,-0.12311,-0.30409,0.10446,0.16444,-0.05037,0.18339,0.07489,0.28829,0.08683,0.06746,-0.02879,-0.14645,0.16811,0.3288,0.12352,-0.33878,0.26605,0.38253,0.00934,-0.20171,-0.07285,0.29929,0.19631,-0.04015,0.06469,-0.00772,-0.34097,0.25634,-0.04396,-0.3059,0.08423,0.1998,-0.31851,-0.01799,-0.33988,0.09273,0.04163,0.1813,-0.08515,0.33819,-0.35727,-0.09275,-0.27614,-0.28322,0.29753,0.19144,0.39164,0.20385,-0.19652,-0.05559,-0.31184,0.32936,-0.02524,0.00652,0.11115,-0.03724,-0.24305,0.06444,0.34367,0.28396,-0.31999,0.35989,0.17336,-0.33457,-0.00554,-0.19773,0.03482,-0.29642,-0.05064,0.33493,-0.08948,0.06708,-0.17914,0.2695,0.3039,0.02497,0.02449,0.3476,-0.32537,0.17603,-0.24421,-0.16744,-0.37965,0.10596,0.35775,-0.03347,0.1993,0.00129,-0.27942,-0.28922,0.06939,0.2937,0.29655,-0.13371,0.0753,0.32522,-0.29256,-0.36664,-0.36823,0.21045,-0.30257,-0.31657,0.12241,0.21099,0.16766,-0.33029],"b":[0.06152,-0.02515,0.0,-0.02228,0.0,-0.07181,0.0,0.0,0.0776,-0.05115,0.0,0.0,0.06248,0.0,0.10065,-0.05412,-0.04813,0.04044,0.0,0.06158,-0.02984,0.05919,0.04277,-0.06293,0.07021,0.0,-0.00991,0.12774,0.13735,-0.05798,-0.07681,0.0],"in":12,"out":32},{"w":[0.32513,0.26309,-0.12032,-0.22503,-0.20477,-0.19568,-0.30532,0.18158,0.23243,0.12007,0.17155,-0.20362,0.19545,0.2946,0.09989,0.25927,-0.15868,0.10268,-0.13475,-0.08964,0.31797,-0.02606,0.04244,0.02023,0.02745,-0.15382,0.27022,0.21144,-0.30846,-0.36046,0.05959,-0.16881,0.2284,-0.14608,0.25167,0.06044,-0.12594,-0.18732,0.07278,-0.28447,-0.02905,-0.34604,-0.31124,-0.21719,0.18057,-0.27155,0.42821,-0.32185,-0.32787,0.20194,0.01094,0.257,-0.06395,0.14181,0.25237,-0.24574,-0.24465,0.30805,0.29322,0.06635,0.31207,-0.2422,0.15068,-0.10322,0.18498,-0.11174,-0.28284,-0.1426,-0.06169,0.0123,0.08228,-0.30494,-0.16742,-0.13692,0.07919,-0.22891,0.29526,-0.15507,0.40833,0.1159,0.16199,-0.05039,0.15245,-0.16612,0.04333,0.22393,-0.06507,-0.03203,0.04385,-0.21843,-0.26636,0.0339,0.15395,0.32023,-0.14368,-0.05454,0.08729,0.06734,-0.03445,0.13513,0.35203,-0.1347,-0.16784,-0.01666,0.36512,0.1381,-0.30454,0.26397,0.28614,0.30428,0.22168,-0.30286,0.05471,0.03324,-0.19896,-0.24059,-0.00828,0.30438,0.0716,0.0346,0.1459,-0.31738,0.17696,0.16996,-0.09557,-0.27839,-0.36642,0.10706,0.10636,0.04427,-0.06991,0.13753,-0.22628,0.17988,-0.18061,-0.18213,-0.24436,0.10204,-0.18812,0.21651,0.18666,-0.00952,0.25432,0.21141,0.13231,-0.24623,-0.07218,-0.0606,0.19782,-0.13951,0.06196,0.14088,0.23294,0.338,-0.08912,-0.21621,-0.23371,-0.11525,0.14779,-0.06793,-0.29096,-0.25743,-0.19938,-0.21877,0.01263,-0.03942,-0.19245,-0.06342,-0.15814,-0.0123,0.15115,-0.02681,-0.08995,0.07691,0.31708,0.32963,-0.14819,-0.25635,0.07919,0.14074,0.06362,0.34223,0.15125,0.02863,0.24673,0.25214,-0.20575,-0.17676,0.09718,-0.08462,-0.36479,-0.26266,0.22661,-0.14456,-0.19577,0.2266,0.03173,0.06784,-0.11041,0.08672,0.22516,-0.24399,-0.06674,0.02568,0.28748,0.28418,0.24219,-0.12775,0.00056,-0.00658,-0.25311,-0.25496,-0.06888,-0.04812,0.12137,-0.31784,-0.16944,0.28206,0.06023,-0.25059,0.16855,-0.13777,-0.19838,-0.16584,-0.19796,-0.1745,0.06086,0.19092,0.18512,0.35491,0.28771,-0.18704,0.27606,-0.08875,0.2022,-0.16606,0.30045,-0.02502,0.03002,0.28187,-0.08064,0.094,0.09902,-0.12651,-0.01611,0.29301,0.10662,0.25409,0.16311,0.16635,-0.1405,-0.16744,0.10792,0.05262,0.31104,0.26933,0.14873,0.15951,-0.14798,0.13488,-0.00266,0.23649,0.13638,-0.22049,0.19775,-0.04922,0.13885,-0.15837,-0.30842,0.14353,0.0854,0.2512,0.21021,0.11952,0.18645,0.0929,-0.18343,0.0775,-0.24464,-0.21597,0.31112,0.13711,0.14989,-0.12555,-0.45477,-0.13118,0.0009,-0.12786,0.069,-0.226,-0.19361,-0.07578,-0.30543,-0.05827,-0.0066,-0.0238,-0.13615,-0.09745,0.27788,0.19765,0.08218,-0.245,-0.22361,0.16133,-0.00285,-0.01822,-0.11253,-0.24741,-0.19526,0.20328,0.27039,0.20598,-0.22232,-0.00905,-0.29974,-0.21283,-0.25228,0.10704,-0.33364,0.25722,0.28656,-0.04828,0.08953,0.10367,0.31995,0.01679,0.32359,0.13168,-0.08366,0.27128,0.10102,0.14649,0.04236,-0.18216,0.41197,0.10134,-0.04553,0.13356,-0.18069,0.10934,-0.32037,0.20369,0.20556,-0.20338,0.15793,0.0304,-0.12571,0.42549,0.10972,-0.19646,-0.47297,0.01888,-0.17935,-0.32468,-0.26041,0.26046,-0.19123,-0.22427,-0.19198,0.02356,-0.08577,-0.28076,-0.21634,-0.24475,0.07569,4e-05,0.30254,0.13597,0.07085,0.29839,0.06902,-0.17205,0.29378,-0.16245,-0.23823,0.27313,0.31478,0.20084,-0.08385,0.33046,0.18422,0.05176,0.02871,0.17069,-0.16033,-0.13752,0.2,0.02571,-0.01941,-0.01858,0.01533,0.35043,0.33172,-0.32169,-0.27526,-0.27196,-0.0035,0.08727,-0.08964,0.18499,-0.43042,0.3014,-0.00825,0.11115,0.28575,0.03871,-0.20658,-0.07834,0.32486,-0.07213,-0.02713,-0.21004,-0.13552,-0.04384,-0.00836,-0.21569,0.02026,0.30429,0.3317,-0.00574,0.35081,0.33662,0.17242,0.28451,0.08451,-0.13171,0.28505,0.11101,0.07,-0.00864,0.05169,-0.27271,-0.16699,-0.18758,-0.05867,0.19272,-0.15744,0.02405,-0.16406,-0.1352,0.1189,0.1369,0.30323,0.01883,0.37734,-0.22961,-0.0834,0.01529,0.34143,0.163,-0.18486,0.15506,0.00282,-0.27891,-0.20407,-0.25633,0.31212,0.30002,-0.26741,0.17198,0.33317,-0.03709,0.33583,0.29812,0.18943,-0.10601,0.29777,0.09233,0.19337,-0.31792,0.09973,0.21725,-0.23264,-0.24846,-0.14717,0.2604,-0.02818,-0.01742,-0.48183,-0.10248,-0.13212,-0.34455,0.14467,0.03069,-0.32115,0.16327,0.22535,-0.22133,-0.13461,-0.15681,-0.11341,0.07619,0.24565,0.2802,-0.26663,0.32764,0.00795,-0.32945,0.19678,0.2702,-0.05478,-0.32873,0.25011,-0.19923,-0.26179,-0.10455,-0.00715,0.05637,0.12728,0.11379,-0.04658,-0.21165],"b":[-0.06518,0.05959,0.06613,0.0649,-0.00333,0.06435,0.0,-0.06407,-0.06609,0.0,0.06627,0.0,0.06638,0.0639,0.06654,0.0],"in":32,"out":16},{"w":[-0.18483,0.34608,0.13974,0.3578,-0.00131,0.05539,-0.57183,-0.096,-0.31965,-0.57398,0.46581,0.32113,0.60587,0.43976,0.39633,-0.32189],"b":[0.06606],"in":16,"out":1}]},"densePerm":{"layers":[{"w":[0.06925,0.32438,-0.3682,-0.38214,0.02762,0.25615,-0.22264,0.06148,0.24446,0.11784,0.0765,0.37186,0.24057,-0.20769,0.03192,0.18865,0.32567,-0.3674,0.19996,-0.10721,-0.3616,0.08197,-0.20104,0.05233,-0.26584,-0.3355,0.0306,-0.15294,0.21642,0.01713,0.30988,0.07245,-0.13513,0.263,0.00297,0.03614,-0.11877,0.00133,-0.071,-0.03139,-0.28799,-0.00227,-0.30651,-0.07944,0.21401,-0.25678,-0.24891,-0.09017,-0.09034,0.06604,0.10816,0.19783,-0.2407,-0.00841,0.23748,0.33516,-0.01982,-0.18763,0.12321,0.21836,-0.20983,-0.21427,0.29374,0.00018,-0.31119,-0.16989,0.23636,-0.08069,0.2689,0.35963,0.09726,-0.01607,-0.11722,-0.01867,0.06722,-0.28207,-0.08825,-0.30716,0.22664,-0.23517,0.33735,-0.09519,-0.21155,0.17742,0.06713,0.26135,0.19513,-0.34496,0.24627,-0.05335,-0.1349,0.24827,0.27736,-0.29994,-0.01652,0.31391,0.15706,0.31661,-0.08636,-0.19218,0.3314,0.16742,0.38183,-0.13914,-0.22925,-0.01992,-0.33181,0.15464,0.2596,0.08539,-0.05464,0.17491,-0.24594,0.35197,-0.37721,-0.3666,-0.09327,0.29602,0.02902,0.14321,-0.29254,0.12328,-0.06882,0.13736,0.24897,0.1609,-0.04306,-0.03078,-0.23003,-0.14304,0.23491,-0.15308,0.22933,-0.14643,-0.086,0.00786,-0.33887,-0.00369,-0.03722,-0.03317,-0.07382,0.29113,0.27252,-0.25028,0.17154,-0.28965,-0.31437,0.11288,0.00543,-0.17227,-0.35617,-0.14296,0.12334,-0.3418,-0.35874,0.04685,-0.26603,-0.32351,-0.14228,-0.05945,-0.33556,-0.24657,0.02421,-0.34822,-0.0519,-0.23844,-0.25599,0.14514,-0.28423,-0.27985,0.21059,0.06904,0.3363,-0.09871,-0.17837,-0.03418,0.00187,0.28163,-0.36783,-0.02629,0.16335,-0.20335,-0.18764,0.17846,-0.35383,0.0875,-0.28589,0.18355,-0.31574,0.22703,-0.34957,-0.3104,0.01707,0.29706,-0.27676,-0.15414,0.33625,-0.04754,0.18093,-0.34196,-0.10854,-0.16253,0.32796,0.16482,-0.26945,0.05954,-0.00424,-0.15172,-0.21088,-0.12254,0.29107,-0.26472,-0.26305,-0.11393,0.00642,0.10052,0.01108,-0.08889,-0.22391,-0.06626,-0.14865,0.29835,-0.35946,-0.23555,-0.30044,-0.06749,0.28777,0.32368,-0.30903,-0.01147,0.26033,0.17392,0.31653,0.00615,-0.21915,0.25995,-0.11888,0.2157,-0.07448,0.16567,0.33214,0.34337,-0.33606,-0.24427,-0.15268,-0.23549,0.35432,-0.03261,-0.24495,-0.16432,-0.20397,0.15066,-0.3221,-0.34431,-0.36402,0.15898,0.18259,-0.22935,0.09157,0.27259,0.05366,-0.07813,0.02728,-0.0396,0.1713,-0.27198,0.17138,0.19168,-0.23677,0.28027,0.3432,-0.15793,-0.12285,0.16142,-0.31037,0.12122,0.08615,0.23276,-0.32075,-0.30679,0.16585,0.13302,-0.34371,-0.20593,-0.33788,-0.26456,-0.16662,0.30559,-0.08654,0.20202,0.31449,0.15542,-0.34418,0.16702,0.11355,0.2721,-0.37582,0.20197,0.2835,-0.35832,0.04811,0.31764,-0.22079,0.13059,0.17563,0.11431,0.39867,0.31716,0.3228,-0.0195,0.32662,-0.33659,-0.19527,-0.08162,-0.05782,0.34516,0.1806,0.25428,0.28389,-0.26825,-0.04175,0.08089,0.11106,0.19495,-0.14694,-0.11135,0.30899,-0.09911,-0.25651,0.25038,0.25006,-0.11579,-0.07383,-0.27248,-0.30838,0.13887,-0.1628,0.30651,-0.32289,-0.04029,0.01672,0.21022,0.29936,0.26749,0.19654,-0.15014,-0.25051,-0.30167,0.02718,0.3561,-0.00417,-0.00743,-0.25435,0.13341,0.27485,-0.34878,-0.25436,0.30724,0.10689,-0.01796,0.06601,-0.05615,-0.25811,-0.34506,0.24287,-0.04392,-0.13714,-0.09532,-0.20141,-0.10937,-0.31699,0.27634,0.1409,-0.18992,-0.15046,0.15351,-0.14692,0.09481,0.08385,-0.24989,0.08826,0.0069,0.3157,-0.13973],"b":[-0.03114,0.0,0.02369,0.0,0.03883,0.1169,0.0,0.03324,0.0334,-0.02303,-0.03579,0.0,0.0,0.0,0.0,0.0,0.02986,0.0,0.0,0.03703,0.0,0.0,-0.00882,0.0,-0.02844,0.03872,0.03988,0.0,-0.05131,0.05167,0.0,-0.02349],"in":12,"out":32},{"w":[-0.10094,0.30462,-0.21893,0.02554,0.35895,0.01348,0.33895,0.31918,0.34235,-0.03213,0.3153,-0.15405,-0.12102,0.13373,0.07469,0.19491,0.29198,-0.22132,0.18764,0.14226,0.18652,0.16765,-0.09073,-0.27943,0.32205,-0.18937,0.24356,-0.33681,-0.14282,0.03908,0.06117,0.02267,0.14563,-0.03937,-0.01455,0.34987,-0.23331,-0.01004,-0.13496,0.31173,0.32553,0.15199,0.09384,-0.21845,0.25298,-0.02435,0.33298,0.20162,0.39773,0.27963,-0.22975,0.07093,-0.1466,0.1774,-0.00662,0.03061,-0.27861,-0.32422,0.14611,0.08216,-0.01051,0.33495,-0.14763,0.37593,-0.19472,0.07326,-0.08072,0.2476,0.30918,0.30707,0.0159,0.20849,-0.35325,-0.20739,0.06319,0.00197,-0.27757,-0.15649,-0.16513,-0.35029,0.03372,0.24102,0.14349,-0.16798,-0.32466,-0.28524,0.00656,0.24321,-0.14318,-0.19238,-0.18861,-0.03061,-0.33575,-0.31199,0.34803,-0.16862,-0.06819,-0.09459,-0.31259,-0.06233,0.09322,0.04387,-0.01507,-0.01993,-0.36586,0.27758,0.28018,0.24105,-0.11611,0.18475,-0.33125,-0.08746,-0.07013,-0.12486,0.14849,-0.1793,-0.04098,-0.10209,-0.33804,-0.05839,-0.31188,0.19105,0.18246,0.33121,-0.12877,0.11601,0.06926,0.3505,0.31453,-0.18298,-0.23174,-0.31865,-0.15188,0.46912,0.11874,0.34684,0.27565,0.0071,-0.22323,0.34525,0.28361,0.15307,-0.19313,0.27852,-0.01116,0.23378,0.14756,0.21171,-0.31023,-0.19604,0.25319,-0.07366,-0.26886,0.33391,0.00995,0.28521,-0.35683,0.15699,-0.13317,-0.15418,-0.08359,-0.13087,0.26348,-0.06717,0.28645,0.25316,-0.05463,-0.19853,-0.31019,-0.10145,-0.33177,-0.0655,0.00578,-0.02278,-0.17367,0.24539,0.15492,-0.08711,-0.13969,0.24641,0.3076,-0.32373,-0.03504,-0.03281,-0.08904,0.31423,-0.03462,0.29976,-0.07911,-0.00333,-0.20623,-0.12349,0.11393,0.15639,-0.01258,0.33688,-0.24471,0.13556,0.31844,-0.06148,0.28069,0.00583,-0.26476,-0.19397,0.1316,-0.153,0.08503,0.34799,0.1201,-0.03309,0.08837,-0.2037,-0.29707,-0.26577,-0.29667,0.07256,0.06887,-0.15025,-0.34583,0.19152,-0.20061,-0.05902,-0.29645,-0.19946,0.15629,-0.32942,-0.27032,0.26507,-0.2,-0.32063,-0.09927,0.14475,-0.24591,0.03322,0.14791,-0.02567,0.06393,-0.26971,0.15984,0.13213,-0.00092,-0.29234,0.14141,0.20629,-0.06184,0.16664,0.09057,-0.14141,-0.06285,0.33906,-0.01621,-0.28147,0.05227,0.1412,-0.11541,-0.18014,0.29951,0.18703,-0.12758,0.01806,-0.05599,-0.09013,0.01257,-0.22042,0.05148,0.00647,0.02592,-0.13473,0.09059,-0.2859,0.10569,0.19159,0.00312,-0.27464,-0.00129,-0.0236,-0.30554,-0.25007,0.28695,0.26439,0.1581,0.23207,0.11827,0.19898,0.31121,-0.11732,-0.04494,0.25642,-0.02036,-0.23005,-0.18818,0.19773,0.31038,0.45497,0.05884,0.24585,-0.31356,-0.26217,-0.35457,0.28485,-0.0032,-0.1628,0.11963,-0.13235,-0.28687,0.13636,0.06474,-0.22734,-0.23287,0.16577,0.31844,0.02878,-0.13065,0.18109,0.07818,-0.30953,-0.32956,0.11173,0.21877,-0.13355,0.15936,-0.21896,0.4108,0.25192,0.08452,0.33101,0.12309,-0.20371,0.01007,0.09458,-0.08568,0.33904,-0.13634,-0.31575,-0.16832,-0.32813,0.24457,-0.15871,-0.24875,-0.01383,-0.23823,-0.18469,0.223,-0.26545,0.20702,0.26984,0.01667,0.15699,-0.28288,0.31121,0.34346,0.07632,0.32218,-0.35114,-0.03882,0.07025,-0.3073,0.17205,-0.13474,-0.12787,-0.28051,0.14454,-0.25726,-0.07503,0.15706,0.26635,0.07995,-0.13189,-0.15378,0.19844,0.0656,0.29762,0.13314,0.28482,-0.2849,0.28423,-0.16244,-0.09464,0.00212,-0.0663,0.06993,0.31505,-0.21124,0.10924,-0.28415,0.05551,0.29126,0.2384,0.30277,0.19139,-0.02925,0.09231,-0.14773,0.3001,0.17703,-0.25877,0.3057,-0.00525,-0.01572,-0.09676,-0.09328,0.0177,-0.1726,-0.32888,-0.18212,-0.07036,0.26698,0.26009,-0.21183,-0.01358,-0.10204,-0.18914,-0.06217,-0.12267,0.19762,-0.17534,0.0544,-0.19952,-0.11035,0.27833,-0.17357,-0.02126,0.33766,0.12101,-0.17996,-0.21227,-0.12398,-0.11071,0.15393,-0.0786,0.29818,-0.19399,-0.11056,0.12872,0.28237,0.33821,0.05659,0.0149,-0.1584,0.19976,-0.20494,-0.09293,-0.2955,-0.33989,0.19762,0.02402,0.28184,0.28133,0.19327,0.14149,-0.15903,0.18778,0.15118,-0.05103,-0.01021,0.04586,-0.01276,-0.25953,0.08476,-0.25991,0.17154,-0.21065,-0.11549,-0.16767,0.32114,-0.24898,0.18053,0.15288,0.24999,0.08858,0.15309,0.27948,0.03206,0.107,-0.2945,-0.09483,0.10747,0.00846,-0.12491,-0.34641,-0.10449,0.13535,0.29213,-0.31927,0.15598,-0.34297,-0.3381,-0.23422,-0.05958,0.08709,-0.27957,0.27239,0.31972,0.02175,0.28779,-0.16006,-0.15156,-0.04562,0.03863,-0.25903,-0.2831,0.13967,0.08965,0.34587,-0.15654,0.11217,-0.15531,0.17453,-0.02514,0.24936,0.19642,0.28208],"b":[0.0355,-0.01836,0.0,-0.02393,0.03525,0.03571,0.0,-0.03545,-0.03483,0.04379,0.03673,0.0,0.0,0.0,-0.035,-0.01296],"in":32,"out":16},{"w":[0.31801,-0.16514,0.51197,-0.35216,0.56782,0.60759,0.56751,-0.27435,-0.30002,0.07229,0.21139,0.29801,0.24162,0.50586,-0.14027,-0.18516],"b":[0.03524],"in":16,"out":1}]},"rnn":{"W":[-0.06249,-0.37569,0.52084,-0.48302,-0.37065,0.6067,-0.4473,-0.44507,0.29751,0.48688,0.34155,-0.39241,-0.54953,-0.488,0.05777,0.10062],"U":[0.14337,0.42375,0.08465,-0.20604,0.04292,-0.38765,-0.23757,-0.44421,0.02858,-0.21872,0.00519,-0.15214,-0.36186,0.14202,0.13453,-0.31777,0.22946,-0.05574,0.29668,0.52129,-0.04803,0.17193,-0.124,-0.11239,0.4984,0.00585,-0.16493,-0.23768,0.13986,0.47917,-0.11739,-0.02094,0.15078,-0.73848,-0.10333,0.23314,0.24604,-0.21411,0.0665,-0.27495,-0.24068,0.10608,0.10958,-0.15163,-0.20035,-0.03904,-0.06465,-0.31021,-0.07919,0.31816,-0.04827,0.35358,0.03294,-0.06833,0.39708,0.33773,0.04934,0.19619,-8e-05,-0.2632,-0.09232,-0.21645,0.25195,-0.47679,0.46811,0.05663,-0.06665,0.00212,-0.28283,-0.2928,-0.05586,0.08207,-0.30029,0.2878,-0.50576,-0.05141,-0.00324,-0.01373,0.08269,0.32475,0.44701,0.0658,-0.19883,-0.18459,-0.10983,0.01246,0.6115,0.00576,-0.04285,-0.17193,0.2492,0.12668,0.2132,0.40432,-0.10704,-0.09542,0.27869,0.33892,0.03741,0.24063,0.62994,0.06119,-0.07253,0.05114,-0.13234,0.25396,0.17055,0.31482,-0.12186,0.02085,-0.21945,0.16192,-0.21065,0.12049,0.00338,0.34171,-0.42794,-0.19902,0.274,-0.30514,0.05098,0.24521,0.13956,0.17058,-0.29794,0.00147,-0.31852,0.2371,-0.09599,0.20085,0.1782,-0.03241,-0.1524,0.16003,-0.0172,-0.34382,-0.3322,0.23844,-0.1702,0.09776,0.50301,-0.05927,-0.21955,-0.48778,-0.29616,-0.02708,0.19342,0.11562,0.1274,0.05135,0.21391,-0.06151,-0.20571,-0.18888,-0.41397,0.42039,-0.13397,0.41543,0.43213,0.00399,0.20709,-0.10072,0.62973,0.00974,-0.04541,-0.29745,0.10032,-0.09405,0.11248,-0.01189,0.31663,0.21863,0.25323,-0.31781,0.39078,0.16159,-0.39551,0.03242,-0.05507,-0.01455,0.13862,-0.53946,-0.05254,0.12954,-0.12063,0.22286,0.20802,-0.20302,0.29083,0.52389,0.01825,0.13911,0.01673,-0.11204,0.48247,-0.43276,-0.00188,0.18312,0.04052,0.23915,0.02193,0.45608,0.00303,0.04415,-0.34525,0.19959,-0.14666,-0.11298,-0.0753,-0.0684,0.14986,-0.08757,0.23405,-0.43195,0.28967,0.16939,0.18694,-0.29924,-0.44165,0.04809,0.06049,-0.16738,-0.54234,-0.11264,-0.07404,-0.0153,-0.09521,-0.2417,0.39925,0.17238,0.38146,-0.41796,0.1737,0.26197,-0.20295,-0.36261,0.13717,-0.10023,0.1564,0.27125,-0.05161,0.04253,0.42683,0.10519,-0.00696,0.18557,0.11389,0.01063,-0.51755,-0.3974,0.10856,-0.54813,-0.13377,-0.04225,-0.14959,0.27189],"b":[-0.00355,-0.00905,-0.00524,0.00498,-0.00509,0.08109,0.00842,0.00678,0.00708,0.01242,0.03951,0.00081,0.00246,-0.00471,0.03691,0.00107],"v":[0.20096,-0.07465,-0.12184,0.30536,-0.59816,0.63454,-0.38099,0.50117,-0.04184,-0.36493,-0.3032,0.16459,0.08885,0.33708,0.28416,-0.25246],"c":0.0035}};
+const STATS={"dense_raw":0.0405,"dense_raw_noshuffle":0.0421,"dense_raw_permuted":0.0387,"rnn_standardized":0.0872,"rnn_logdiff":0.0344,"rnn_logdiff_permuted":0.0341,"dense_logdiff":0.0361,"rnn_raw":0.4104,"naive_last":0.0946};
+const PERM=[3,4,0,5,7,9,11,6,8,1,10,2];
+const N=AIR.length,TX=12,H=16,NR=N-TX,TRAIN=NR-12,SHOW=8,MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const LG=AIR.map(Math.log),DIFF=LG.slice(1).map((v,i)=>v-LG[i]);
+const S={row:109,scr:false,shuf:false,seed:1,win:12,feat:1,units:16,arch:'air'};
+const mon=i=>MN[i%12]+' '+(1949+Math.floor(i/12));
+const pc=v=>(Math.round(v*1000+1e-6)/10).toFixed(1)+'%';
+const rowX=r=>AIR.slice(r,r+TX),scramble=x=>PERM.map(c=>x[c]);
+function dense(net,x){let a=x;const n=net.layers.length;for(let l=0;l<n;l++){const L=net.layers[l],o=new Float64Array(L.out);
+  for(let i=0;i<L.out;i++){let s=L.b[i];const r=i*L.in;for(let j=0;j<L.in;j++)s+=L.w[r+j]*a[j];o[i]=l<n-1&&s<0?0:s;}a=o;}return a[0];}
+function rnn(x){const m=NETS.rnn;let h=new Float64Array(H),q=new Float64Array(H);for(let k=0;k<TX;k++){for(let i=0;i<H;i++){let s=m.W[i]*x[k]+m.b[i];const r=i*H;for(let j=0;j<H;j++)s+=m.U[r+j]*h[j];q[i]=Math.tanh(s);}const t=h;h=q;q=t;}
+  let y=m.c;for(let i=0;i<H;i++)y+=m.v[i]*h[i];return y;}
+const dpred=r=>S.scr?dense(NETS.densePerm,scramble(rowX(r))):dense(NETS.dense,rowX(r));
+function testMape(f){let e=0;for(let r=TRAIN;r<NR;r++){const t=AIR[r+TX];e+=Math.abs(f(r)-t)/t;}return e/12;}
+function shuffled(n,rng){const a=Array.from({length:n},(_,i)=>i);for(let i=n-1;i>0;i--){const j=Math.floor(rng()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
+const ORDER=shuffled(NR,mulberry(20261128));
+const shown=()=>{const o=[];for(let k=0;k<SHOW;k++)o.push(S.shuf?ORDER[S.row+k]:S.row+k);return o;};
+
+/* ---------- the table ---------- */
+function drawTable(){const{c,w}=setup($('tbl')),rows=shown(),lw=86,u=(w-lw-12)/15.3,cw=u,top=40,rh=32,ink=cssv('--ink'),muted=cssv('--muted'),line=cssv('--line'),dn=cssv('--dense'),rn=cssv('--rnn');
+  const track=rows[0]+TX-1,xT=lw+12*cw+12,xF=xT+1.15*cw,xE=xF+1.15*cw;
+  c.font='10.5px '+MONO;c.fillStyle=muted;c.textAlign='center';c.textBaseline='alphabetic';
+  for(let k=0;k<TX;k++){const lag=S.scr?TX-PERM[k]:TX-k;c.fillText('t−'+lag,lw+k*cw+cw/2,top-9);}
+  c.font='600 10.5px '+SANS;c.fillText('target',xT+cw*0.55,top-9);c.fillText('forecast',xF+cw*0.55,top-9);c.fillText('miss',xE+cw*0.5,top-9);
+  c.font='600 10.5px '+SANS;c.textAlign='left';c.fillText('12 inputs',lw,top-25);c.textAlign='center';
+  rows.forEach((r,ri)=>{const y=top+ri*rh,x0=rowX(r),xs=S.scr?scramble(x0):x0,t=r+TX,tgt=AIR[t],f=dpred(r),miss=Math.abs(f-tgt)/tgt;
+    c.font='11px '+MONO;c.fillStyle=t>=N-12?ink:muted;c.textAlign='left';c.textBaseline='middle';c.fillText(mon(t),0,y+rh/2-(t>=N-12?5:0));if(t>=N-12){c.font='10px '+SANS;c.fillStyle=muted;c.fillText('test row',0,y+rh/2+7);}
+    c.textAlign='center';c.font='11.5px '+MONO;
+    for(let k=0;k<TX;k++){const v=xs[k],x=lw+k*cw,mi=r+(S.scr?PERM[k]:k);c.fillStyle=hexA(dn,0.06+0.5*clamp((v-100)/520,0,1));c.fillRect(x+1,y+1,cw-2,rh-2);
+      c.fillStyle=ink;c.fillText(String(v),x+cw/2,y+rh/2+0.5);if(mi===track){c.strokeStyle=ink;c.lineWidth=2;c.strokeRect(x+2,y+2,cw-4,rh-4);}}
+    c.fillStyle=hexA(rn,0.2);c.fillRect(xT+1,y+1,cw*1.1-2,rh-2);c.strokeStyle=rn;c.lineWidth=1.2;c.strokeRect(xT+1.5,y+1.5,cw*1.1-3,rh-3);
+    c.fillStyle=ink;c.font='600 11.5px '+MONO;c.fillText(String(tgt),xT+cw*0.55,y+rh/2+0.5);
+    c.font='11.5px '+MONO;c.fillText(String(Math.round(f)),xF+cw*0.55,y+rh/2+0.5);c.fillStyle=miss>0.1?cssv('--var-fg'):muted;c.fillText((miss*100).toFixed(1)+'%',xE+cw*0.5,y+rh/2+0.5);});
+  c.strokeStyle=line;c.lineWidth=1;c.beginPath();c.moveTo(xT-6,top-4);c.lineTo(xT-6,top+SHOW*rh+2);c.stroke();}
+
+function drawMini(){const{c,w,h}=setup($('mini')),pad={l:34,r:8,t:6,b:22},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b,X=i=>pad.l+pw*i/(N-1),Y=v=>pad.t+ph*(1-(v-80)/(660-80)),ink=cssv('--ink'),muted=cssv('--muted'),grid=cssv('--grid');
+  c.fillStyle=hexA(muted,0.12);c.fillRect(X(N-12),pad.t,X(N-1)-X(N-12),ph);
+  shown().forEach(r=>{c.fillStyle=hexA(cssv('--dense'),S.shuf?0.1:0.07);c.fillRect(X(r),pad.t,X(r+TX-1)-X(r),ph);});
+  c.font='10.5px '+MONO;c.textAlign='right';c.textBaseline='middle';[200,400,600].forEach(v=>{c.strokeStyle=grid;c.lineWidth=1;c.beginPath();c.moveTo(pad.l,Y(v));c.lineTo(w-pad.r,Y(v));c.stroke();c.fillStyle=muted;c.fillText(String(v),pad.l-5,Y(v));});
+  c.textAlign='center';c.textBaseline='top';for(let y=0;y<12;y+=3){c.fillStyle=muted;c.fillText(String(1949+y),X(y*12),h-pad.b+5);}
+  c.strokeStyle=hexA(ink,0.6);c.lineWidth=1.2;c.beginPath();AIR.forEach((v,i)=>i?c.lineTo(X(i),Y(v)):c.moveTo(X(i),Y(v)));c.stroke();
+  c.fillStyle=cssv('--rnn');shown().forEach(r=>{c.beginPath();c.arc(X(r+TX),Y(AIR[r+TX]),3.4,0,6.3);c.fill();});}
+
+/* ---------- mixing tests ---------- */
+let IMP=null;
+function denseImp(net,scr,rng){const X=[],Y=[];for(let r=0;r<TRAIN;r++){const x=rowX(r);X.push(scr?scramble(x):x);Y.push(AIR[r+TX]);}
+  const err=XX=>{let e=0;for(let r=0;r<TRAIN;r++)e+=Math.abs(dense(net,XX[r])-Y[r])/Y[r];return e/TRAIN;},base=err(X),lag=new Array(TX).fill(0);
+  for(let j=0;j<TX;j++){let inc=0;for(let s=0;s<20;s++){const id=shuffled(TRAIN,rng),XS=X.map((x,r)=>{const y=x.slice();y[j]=X[id[r]][j];return y;});inc+=err(XS)-base;}lag[TX-1-(scr?PERM[j]:j)]=inc/20*100;}
+  return lag;}                                                // lag[0] = last month ... lag[11] = 12 months back
+function rnnImp(rng){const n=DIFF.length-TX-12,X=[],Y=[];for(let k=0;k<n;k++){X.push(DIFF.slice(k,k+TX));Y.push(DIFF[k+TX]);}
+  const err=XX=>{let e=0;for(let k=0;k<n;k++)e+=Math.abs(rnn(XX[k])-Y[k]);return e/n;},base=err(X),out=[];
+  for(let j=0;j<TX;j++){let tot=0;for(let s=0;s<20;s++){const id=shuffled(n,rng),XS=X.map((x,k)=>{const y=x.slice();y[j]=X[id[k]][j];return y;});tot+=err(XS);}out.push(tot/20/base);}
+  return out;}                                                // out[0] = the first step it reads (12 months back)
+function computeImp(){const rng=mulberry(777+S.seed*31);IMP={a:denseImp(NETS.dense,false,rng),b:denseImp(NETS.densePerm,true,rng),r:rnnImp(rng)};}
+function axes(c,w,h,pad,mx,ticks,fmt){const muted=cssv('--muted'),grid=cssv('--grid'),Y=v=>pad.t+(h-pad.t-pad.b)*(1-v/mx);c.font='10.5px '+MONO;c.textAlign='right';c.textBaseline='middle';
+  ticks.forEach(v=>{c.strokeStyle=grid;c.lineWidth=1;c.beginPath();c.moveTo(pad.l,Y(v));c.lineTo(w-pad.r,Y(v));c.stroke();c.fillStyle=muted;c.fillText(fmt(v),pad.l-5,Y(v));});return Y;}
+const nice=mx=>{const st=mx<=2?0.5:mx<=4?1:mx<=10?2:mx<=20?5:10,t=[];for(let v=0;v<=mx+1e-9;v+=st)t.push(v);return t;};
+function drawLag(){const{c,w,h}=setup($('lagc'));if(!IMP)return;const pad={l:32,r:8,t:10,b:34},pw=w-pad.l-pad.r,mx=Math.max(...IMP.a,...IMP.b,1)*1.12,Y=axes(c,w,h,pad,mx,nice(mx),v=>String(v)),gw=pw/TX,bw=Math.min(13,gw*0.36),muted=cssv('--muted');
+  for(let l=0;l<TX;l++){const cx=pad.l+gw*(l+0.5);[[IMP.a[l],'--dense',-bw-1],[IMP.b[l],'--lstm',1]].forEach(([v,col,dx])=>{c.fillStyle=cssv(col);const y=Y(Math.max(v,0));c.fillRect(cx+dx,y,bw,h-pad.b-y);});
+    c.fillStyle=muted;c.font='10.5px '+MONO;c.textAlign='center';c.textBaseline='top';c.fillText(String(l+1),cx,h-pad.b+5);}
+  c.font='11.5px '+SANS;c.fillStyle=muted;c.textAlign='center';c.fillText('months back',pad.l+pw/2,h-14);}
+function drawStep(){const{c,w,h}=setup($('stepc'));if(!IMP)return;const pad={l:32,r:8,t:16,b:34},pw=w-pad.l-pad.r,mx=Math.max(...IMP.r,1.5)*1.14,Y=axes(c,w,h,pad,mx,nice(mx),v=>String(v)),gw=pw/TX,bw=Math.min(26,gw*0.62),muted=cssv('--muted'),ink=cssv('--ink');
+  let top=0;IMP.r.forEach((v,j)=>{if(v>IMP.r[top])top=j;});
+  IMP.r.forEach((v,j)=>{const cx=pad.l+gw*(j+0.5),y=Y(v);c.fillStyle=hexA(cssv('--rnn'),j===top?1:0.55);c.fillRect(cx-bw/2,y,bw,h-pad.b-y);
+    c.fillStyle=j===top?ink:muted;c.font=(j===top?'600 ':'')+'10.5px '+MONO;c.textAlign='center';c.textBaseline='bottom';c.fillText('×'+v.toFixed(1),cx,y-2);
+    c.fillStyle=muted;c.font='10.5px '+MONO;c.textBaseline='top';c.fillText(String(TX-j),cx,h-pad.b+5);});
+  c.strokeStyle=muted;c.setLineDash([5,4]);c.lineWidth=1.2;c.beginPath();c.moveTo(pad.l,Y(1));c.lineTo(w-pad.r,Y(1));c.stroke();c.setLineDash([]);
+  c.font='11.5px '+SANS;c.fillStyle=muted;c.textAlign='center';c.textBaseline='top';c.fillText('months back, in the order the network reads them',pad.l+pw/2,h-14);}
+function renderImp(){if(!IMP)return;const top2=a=>a.map((v,l)=>[v,l+1]).sort((p,q)=>q[0]-p[0]).slice(0,2).map(p=>p[1]).sort((p,q)=>p-q),ta=top2(IMP.a),tb=top2(IMP.b),same=ta.join()===tb.join();
+  const say=t=>`${t[0]} and ${t[1]} months back`;
+  $('lagCap').innerHTML=same?`Both networks lean most on the same two columns: <b>${say(ta)}</b>. One had them in time order, the other in a scrambled position. If a month matters, the network picks it up wherever you put that column.`
+    :`Trained in time order, the network leans most on ${say(ta)}. Trained on scrambled columns: ${say(tb)}. The pattern by lag is similar, wherever the columns sit.`;
+  let top=0;IMP.r.forEach((v,j)=>{if(v>IMP.r[top])top=j;});const others=IMP.r.filter((_,j)=>j!==top),om=Math.max(...others);
+  $('stepCap').innerHTML=`Mix up the step from <b>${TX-top} months back</b> and the error is <b>${IMP.r[top].toFixed(1)} times</b> as large. For the other 11 steps it grows to at most ${om.toFixed(1)} times.`+
+    (top===0?' And that step is the very first one the network reads. So it has to carry that value in its state through 11 more steps: that is memory at work.':'');
+  drawLag();drawStep();}
+
+/* ---------- weights ---------- */
+function renderCount(){const w=S.win,f=S.feat,u=S.units,inp=w*f,air=S.arch==='air',fmt=v=>v.toLocaleString('en-US');
+  const d=air?inp*32+32+32*16+16+17:inp*16+16+17,r=u*(f+u+1)+u+1,mx=Math.max(d,r);
+  $('winOut').textContent=w;$('featOut').textContent=f;$('unitsOut').textContent=u;$('win').value=w;$('feat').value=f;$('units').value=u;
+  $('dName').textContent=air?'Dense network (32, then 16 units)':'Dense network (16 units)';$('dN').textContent=fmt(d);$('rN').textContent=fmt(r);
+  $('dBar').style.width=(d/mx*100)+'%';$('rBar').style.width=(r/mx*100)+'%';
+  $('dHow').textContent=air?`${w} × ${f} = ${fmt(inp)} inputs. First layer ${fmt(inp)} × 32 + 32 = ${fmt(inp*32+32)}, then 32 × 16 + 16 = 528, then 16 + 1 = 17.`:`${w} × ${f} = ${fmt(inp)} inputs. First layer ${fmt(inp)} × 16 + 16 = ${fmt(inp*16+16)}, then 16 + 1 = 17.`;
+  $('rHow').textContent=`${u} × (${f} + ${u} + 1) = ${fmt(u*(f+u+1))}: from the features, from the previous state, and the biases. Then the output, ${u} + 1 = ${u+1}. The window length is not in the formula.`;
+  $('countNote').innerHTML=d>r?`At this size the dense network has <b>${(d/r)>=10?Math.round(d/r):(d/r).toFixed(1)} times</b> as many weights as the RNN. Make the window longer and only the dense network grows.`
+    :'At this size the dense network is the smaller one. Make the window longer and watch which bar grows.';}
+
+/* ---------- everything else ---------- */
+function render(){const rows=shown();pressed(['cOrder','cScr'],S.scr?'cScr':'cOrder');pressed(['rOrder','rShuf'],S.shuf?'rShuf':'rOrder');$('row').value=S.row;
+  $('rowOut').textContent=S.shuf?`${SHOW} rows, shuffled`:`rows ${S.row+1} to ${S.row+SHOW}`;$('trackLbl').textContent=mon(rows[0]+TX-1)+', wherever it appears';
+  const cap=[];
+  if(!S.scr&&!S.shuf)cap.push('<b>Follow the outlined month.</b> From one row to the next it moves one column to the left: each row is the row before it, shifted by a month.');
+  if(S.scr)cap.push('<b>The same columns, in a scrambled order.</b> The outlined month now jumps around. But inside every column the numbers are what they were, and to a dense network these were always 12 separate columns.');
+  if(S.shuf)cap.push('<b>The rows are in a random order</b>, the way training sees them. Each row still holds its own 12 months and its own target, so nothing is lost.');
+  $('tblCap').innerHTML=cap.join(' ');
+  $('t1').textContent=pc(testMape(dpred));$('t1S').textContent=S.scr?'trained on the scrambled columns':'trained on columns in time order';
+  if(S.scr){$('t2K').textContent='Scrambled, not trained again';$('t2').textContent=pc(testMape(r=>dense(NETS.dense,scramble(rowX(r)))));$('t2S').textContent='the network that learned the time order';$('t2').className='v bad';}
+  else{$('t2K').textContent='Naive forecast';$('t2').textContent=pc(STATS.naive_last);$('t2S').textContent='next month = this month';$('t2').className='v';}
+  $('tblNote').innerHTML=S.scr?`Over 10 training runs, the middle result is <b>${pc(STATS.dense_raw)}</b> with the columns in time order and <b>${pc(STATS.dense_raw_permuted)}</b> scrambled. No real difference. The network only needs the order it was trained with.`
+    :S.shuf?`Shuffling the rows changes no forecast: every row is scored on its own. In training it makes no real difference either: <b>${pc(STATS.dense_raw)}</b> with shuffling, <b>${pc(STATS.dense_raw_noshuffle)}</b> without, each the middle of 10 runs.`
+    :'Every row is scored on its own: 12 numbers in, one forecast out. Now scramble the columns, or shuffle the rows, and watch the test error.';
+  drawTable();drawMini();}
+
+$('row').oninput=e=>{S.row=+e.target.value;render();};
+$('cOrder').onclick=()=>{S.scr=false;render();};$('cScr').onclick=()=>{S.scr=true;render();};
+$('rOrder').onclick=()=>{S.shuf=false;render();};$('rShuf').onclick=()=>{S.shuf=true;render();};
+$('remix').onclick=()=>{S.seed++;computeImp();renderImp();};
+$('win').oninput=e=>{S.win=+e.target.value;renderCount();};$('feat').oninput=e=>{S.feat=+e.target.value;renderCount();};$('units').oninput=e=>{S.units=+e.target.value;renderCount();};
+document.querySelectorAll('[data-count]').forEach(b=>b.onclick=()=>{Object.assign(S,b.dataset.count==='air'?{win:12,feat:1,units:16,arch:'air'}:{win:120,feat:14,units:16,arch:'weather'});renderCount();});
+[['sDenseRaw','dense_raw'],['sRnnRaw','rnn_raw'],['sRnnStd','rnn_standardized'],['sDenseDiff','dense_logdiff'],['sRnnDiff','rnn_logdiff'],['sNaive','naive_last']].forEach(([id,k])=>$(id).textContent=pc(STATS[k]));
+
+DRAWS.push(drawTable,drawMini,drawLag,drawStep);
+start();render();renderCount();
+$('lagCap').textContent=$('stepCap').textContent='Running the mixing tests…';
+setTimeout(()=>{computeImp();renderImp();},60);
 })();
 </script>
+
 <script src="/Interactive_tools/newsletter-signup.js?v=3" defer></script>
 <!-- Cloudflare Web Analytics -->
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"0e2de75cdba1455c80ef84d688b526f3"}'></script>
