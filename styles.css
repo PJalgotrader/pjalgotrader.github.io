@@ -1966,7 +1966,7 @@ main > section:last-child { padding-bottom: 52px; }
 .plate .proj-mark img.wordmark { height: 44px; }
 .plate .plate-desc { order: 4; display: block; font-size: 13.5px; line-height: 1.4; font-weight: 500; color: var(--ink-soft); }
 
-/* ---- Home index: four section cards ---- */
+/* ---- Home index: six section cards in two rows; the newsletter signup is a wide card that closes the second row ---- */
 .index-section:not(.toc) .container { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .index-section:not(.toc) .section-label { grid-column: 1 / -1; margin-bottom: 0; }
 .index-section:not(.toc) .index-body { display: contents; }
@@ -1980,6 +1980,8 @@ main > section:last-child { padding-bottom: 52px; }
 .index-section:not(.toc) :is(.spark-pt, .spark-dot) { fill: var(--c-ink); opacity: 1; }
 .index-section:not(.toc) .index-arrow { display: none; }
 .index-section:not(.toc) .index-desc { order: 4; max-width: none; font-size: 13.5px; line-height: 1.4; font-weight: 500; color: var(--ink-soft); }
+.index-section:not(.toc) .index-subscribe { grid-column: span 2; grid-row: span 5; grid-template-columns: minmax(0, 1fr); align-content: space-between; gap: 16px; padding: 17px 20px; }
+.index-subscribe .subscribe-lede { max-width: 56ch; }
 
 /* ---- Tools "at a glance": one card per category, tools as ledger rows ---- */
 .glance-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
@@ -2021,6 +2023,7 @@ main > section:last-child { padding-bottom: 52px; }
     .page-header .container:not(:has(.detail-hero, .back-link)) p:not(.eyebrow) { grid-column: 1; grid-row: auto; }
     :is(.plates-grid, .proj-grid, .glance-grid, .newsletter-list),
     .index-section:not(.toc) .container { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .index-section:not(.toc) .index-subscribe { grid-column: 1 / -1; grid-row: auto; }
     .glance-feature { grid-column: 1 / -1; grid-row: auto; }
     .glance-art { max-width: 300px; }
 }
