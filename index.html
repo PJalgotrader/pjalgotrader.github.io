@@ -19,7 +19,7 @@
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#0A1020">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1020'/%3E%3Cpolyline points='5,23 11,16 15,19 21,9 27,13' fill='none' stroke='%23E8C468' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="styles.css?v=27">
+    <link rel="stylesheet" href="styles.css?v=28">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -112,11 +112,25 @@
                         <span class="index-desc">Standalone visualizations that make the math move: random walks, exponential smoothing, SARIMA, cross&#8209;validation, gradient descent, and the gates of an LSTM.</span>
                     </span>
                     <span class="index-meta">
-                        <svg class="index-spark" viewBox="0 0 64 28" aria-hidden="true">
-                            <polyline class="spark-ln" points="2,20 10,14 18,17 26,8 34,12 42,6 50,10 58,4"/>
-                            <circle class="spark-dot" cx="58" cy="4" r="2.5"/>
+                        <svg class="index-art" viewBox="0 0 220 110" aria-hidden="true">
+                            <!-- A real seeded random walk inside its forecast fan, and the knobs that move it -->
+                            <polygon class="ia-fill" points="9.3,88.3 13,80.5 16.8,76.5 20.6,73.3 24.4,70.2 28.2,67.5 31.9,64.9 35.7,62.4 39.4,60 43.2,57.7 47,55.5 50.8,53.2 54.6,51.1 58.3,49 62.1,46.8 65.8,44.9 69.6,42.8 73.4,40.8 77.2,38.8 81,36.9 84.7,34.9 88.5,33 92.2,31.1 96,29.3 99.8,27.4 103.6,25.5 107.4,23.7 111.1,21.8 114.9,20 118.6,18.3 122.4,16.5 126.2,14.7 130,12.9 133.8,11.1 137.5,9.4 141.3,7.6 141.3,86.5 137.5,87.2 133.8,87.7 130,88.3 126.2,88.9 122.4,89.5 118.6,90.1 114.9,90.6 111.1,91.1 107.4,91.7 103.6,92.2 99.8,92.7 96,93.2 92.2,93.6 88.5,94.1 84.7,94.6 81,95 77.2,95.4 73.4,95.8 69.6,96.1 65.8,96.5 62.1,96.8 58.3,97 54.6,97.3 50.8,97.5 47,97.6 43.2,97.7 39.4,97.8 35.7,97.7 31.9,97.6 28.2,97.3 24.4,96.9 20.6,96.4 16.8,95.4 13,93.8 9.3,88.3"/>
+                            <polyline class="ia-soft" points="9.3,88.3 141.3,47.1"/>
+                            <polyline class="ia-ln" points="9.3,88.3 11.2,90.5 13,92.6 15,90.5 16.8,95.2 18.7,95.1 20.6,99.8 22.5,96.6 24.4,95.5 26.2,91.7 28.2,92.3 30,90.8 31.9,90.9 33.8,92.1 35.7,91.1 37.6,93.5 39.4,93.7 41.4,91.5 43.2,90.7 45.1,91.1 47,85.4 48.9,84.6 50.8,85.5 52.6,84.5 54.6,85.1 56.4,85.5 58.3,85.7 60.2,80.3 62.1,79.6 64,78.7 65.8,76.5 67.8,71.2 69.6,71.1 71.5,71.9 73.4,65.5 75.3,68.4 77.2,68.6 79,66.5 81,60.6 82.8,62.2 84.7,67.3 86.6,65.2 88.5,65.8 90.4,66.1 92.2,64.5 94.2,63.4 96,62.1 97.9,62.5 99.8,58.9 101.7,54.7 103.6,54.1 105.4,54.5 107.4,52.2 109.2,50.5 111.1,52.4 113,52.9 114.9,49.8 116.8,49.5 118.6,49.7 120.6,48.5 122.4,48.1 124.3,47.5 126.2,51.4 128.1,46.7 130,45.6 131.8,47.1 133.8,44.2 135.6,42.9 137.5,42.3 139.4,39.2 141.3,33.3"/>
+                            <circle class="ia-dot" cx="141.3" cy="33.3" r="3"/>
+                            <text class="ia-mute" x="158" y="18">μ</text>
+                            <line class="ia-track" x1="158" y1="26" x2="212" y2="26"/>
+                            <line class="ia-bold" x1="158" y1="26" x2="176.4" y2="26"/>
+                            <circle class="ia-knob" cx="176.4" cy="26" r="4.6"/>
+                            <text class="ia-mute" x="158" y="47">σ</text>
+                            <line class="ia-track" x1="158" y1="55" x2="212" y2="55"/>
+                            <line class="ia-bold" x1="158" y1="55" x2="196.9" y2="55"/>
+                            <circle class="ia-knob" cx="196.9" cy="55" r="4.6"/>
+                            <text class="ia-mute" x="158" y="76">n</text>
+                            <line class="ia-track" x1="158" y1="84" x2="212" y2="84"/>
+                            <line class="ia-bold" x1="158" y1="84" x2="185" y2="84"/>
+                            <circle class="ia-knob" cx="185" cy="84" r="4.6"/>
                         </svg>
-                        <span class="index-arrow">&rarr;</span>
                     </span>
                 </a>
                 <a class="index-row" href="visualizations.html#books">
@@ -126,13 +140,25 @@
                         <span class="index-desc">Pop-up books you can play with. A surface rises off the open page, and the math runs on it as you turn the knobs.</span>
                     </span>
                     <span class="index-meta">
-                        <svg class="index-spark" viewBox="0 0 64 28" aria-hidden="true">
-                            <path class="spark-ln" d="M32,26 L8,22 V11 L32,15 L56,11 V22 Z"/>
-                            <line class="spark-ln" x1="32" y1="15" x2="32" y2="26"/>
-                            <path class="spark-ln" d="M20,2 Q32,17 44,2"/>
-                            <circle class="spark-dot" cx="32" cy="9.5" r="2.5"/>
+                        <svg class="index-art" viewBox="0 0 220 112" aria-hidden="true">
+                            <!-- The open book under its reading lamp, with a surface rising off the page -->
+                            <path class="ia-fill" d="M110 72 L30 77 L12 106 L110 101 Z"/>
+                            <path class="ia-fill" d="M110 72 L190 77 L208 106 L110 101 Z"/>
+                            <path class="ia-ln" d="M110 72 L30 77 L12 106 L110 101 Z M110 72 L190 77 L208 106 L110 101 Z"/>
+                            <path class="ia-soft" d="M40 83 L100 79 M36 89 L100 85 M32 95 L100 91 M28 101 L78 98"/>
+                            <path class="ia-soft" d="M122 80 L196 100 M150 76 L122 98 M178 78 L150 102"/>
+                            <path class="ia-ln" d="M118 30 Q160 96 202 24"/>
+                            <path class="ia-ln" d="M126 18 Q160 70 194 12"/>
+                            <path class="ia-soft" d="M118 30 L126 18 M202 24 L194 12 M139 55 L144 39 M181 52 L177 36 M160 62 L160 41"/>
+                            <path class="ia-bold" d="M130 34 L141 44 L147 54 L155 55 L160 58"/>
+                            <circle class="ia-dot" cx="160" cy="58" r="3.2"/>
+                            <ellipse class="ia-ln" cx="24" cy="70" rx="10" ry="3.2"/>
+                            <path class="ia-ln" d="M24 68 L15 38 L40 21"/>
+                            <path class="ia-fill" d="M36 24 L43 17 L62 27 L47 42 Z"/>
+                            <path class="ia-ln" d="M36 24 L43 17 L62 27 L47 42 Z"/>
+                            <circle class="ia-dot" cx="55" cy="35" r="2.6"/>
+                            <path class="ia-soft" d="M52 40 L44 62 M60 34 L84 60"/>
                         </svg>
-                        <span class="index-arrow">&rarr;</span>
                     </span>
                 </a>
                 <a class="index-row" href="teaching.html">
@@ -142,11 +168,14 @@
                         <span class="index-desc">Courses in machine learning, deep learning, and time series forecasting that pair theoretical foundations with the tools practitioners actually use.</span>
                     </span>
                     <span class="index-meta">
-                        <svg class="index-spark" viewBox="0 0 64 28" aria-hidden="true">
-                            <path class="spark-ln" d="M2,4 Q14,22 30,24 T62,26"/>
-                            <circle class="spark-dot" cx="62" cy="26" r="2.5"/>
+                        <svg class="index-art" viewBox="0 0 220 110" aria-hidden="true">
+                            <!-- The five course cards of the Teaching page, in their colours -->
+                            <g class="k5"><rect class="ia-card" x="7" y="16" width="36" height="78" rx="3"/><rect class="kf" x="7" y="16" width="36" height="3.5" rx="1.5"/><text x="25" y="43" text-anchor="middle">ML</text><line class="ia-faint" x1="13" y1="55" x2="37" y2="55"/><line class="ia-faint" x1="13" y1="62" x2="31" y2="62"/><rect class="ks" x="12" y="74" width="26" height="11" rx="2"/></g>
+                            <g class="k1"><rect class="ia-card" x="49.5" y="16" width="36" height="78" rx="3"/><rect class="kf" x="49.5" y="16" width="36" height="3.5" rx="1.5"/><text x="67.5" y="43" text-anchor="middle">DL</text><line class="ia-faint" x1="55.5" y1="55" x2="79.5" y2="55"/><line class="ia-faint" x1="55.5" y1="62" x2="73.5" y2="62"/><rect class="ks" x="54.5" y="74" width="26" height="11" rx="2"/></g>
+                            <g class="k2"><rect class="ia-card" x="92" y="16" width="36" height="78" rx="3"/><rect class="kf" x="92" y="16" width="36" height="3.5" rx="1.5"/><text x="110" y="43" text-anchor="middle">DF</text><line class="ia-faint" x1="98" y1="55" x2="122" y2="55"/><line class="ia-faint" x1="98" y1="62" x2="116" y2="62"/><rect class="ks" x="97" y="74" width="26" height="11" rx="2"/></g>
+                            <g class="k3"><rect class="ia-card" x="134.5" y="16" width="36" height="78" rx="3"/><rect class="kf" x="134.5" y="16" width="36" height="3.5" rx="1.5"/><text x="152.5" y="43" text-anchor="middle">DQT</text><line class="ia-faint" x1="140.5" y1="55" x2="164.5" y2="55"/><line class="ia-faint" x1="140.5" y1="62" x2="158.5" y2="62"/><rect class="ks" x="139.5" y="74" width="26" height="11" rx="2"/></g>
+                            <g class="k4"><rect class="ia-card" x="177" y="16" width="36" height="78" rx="3"/><rect class="kf" x="177" y="16" width="36" height="3.5" rx="1.5"/><text x="195" y="43" text-anchor="middle">1010</text><line class="ia-faint" x1="183" y1="55" x2="207" y2="55"/><line class="ia-faint" x1="183" y1="62" x2="201" y2="62"/><rect class="ks" x="182" y="74" width="26" height="11" rx="2"/></g>
                         </svg>
-                        <span class="index-arrow">&rarr;</span>
                     </span>
                 </a>
                 <a class="index-row" href="projects.html">
@@ -155,17 +184,13 @@
                         <span class="index-title">Projects</span>
                         <span class="index-desc">Apps I design, build and ship: Cashington for household money, Eisenhour for planning the day, and more.</span>
                     </span>
-                    <span class="index-meta">
-                        <svg class="index-spark" viewBox="0 0 64 28" aria-hidden="true">
-                            <line class="spark-fit" x1="2" y1="22" x2="62" y2="4"/>
-                            <circle class="spark-pt" cx="6" cy="20" r="2"/>
-                            <circle class="spark-pt" cx="16" cy="12" r="2"/>
-                            <circle class="spark-pt" cx="26" cy="16" r="2"/>
-                            <circle class="spark-pt" cx="36" cy="8" r="2"/>
-                            <circle class="spark-pt" cx="46" cy="14" r="2"/>
-                            <circle class="spark-dot" cx="56" cy="6" r="2.5"/>
-                        </svg>
-                        <span class="index-arrow">&rarr;</span>
+                    <span class="index-meta index-icons">
+                        <!-- The real marks from the Projects page -->
+                        <img src="images/projects/cashington-icon.png" alt="" width="256" height="256">
+                        <img class="sq" src="images/projects/eisenhour-icon.png" alt="" width="256" height="256">
+                        <span class="pad"><img src="images/projects/pad-logo.png" alt="" width="320" height="320"></span>
+                        <svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="96" height="96" rx="22" fill="#0F1A31" stroke="#D0A63C" stroke-width="2"/><polyline points="16,52 30,46 42,58 56,40 70,48 80,34" fill="none" stroke="#D0A63C" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="16" y1="62" x2="80" y2="62" stroke="#8B8FA0" stroke-width="1.5" stroke-dasharray="3 3"/><text x="48" y="80" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#8B8FA0" letter-spacing="2">PAPER</text></svg>
+                        <svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="96" height="96" rx="22" fill="#1B2F4E"/><rect x="28" y="20" width="40" height="52" rx="4" fill="#F7F4EC"/><rect x="35" y="30" width="18" height="3" rx="1.5" fill="#1B2F4E"/><rect x="35" y="39" width="26" height="3" rx="1.5" fill="#9AA3B5"/><rect x="35" y="47" width="26" height="3" rx="1.5" fill="#9AA3B5"/><rect x="35" y="55" width="20" height="3" rx="1.5" fill="#9AA3B5"/><rect x="35" y="63" width="26" height="3" rx="1.5" fill="#E07A2A"/></svg>
                     </span>
                 </a>
                 <a class="index-row" href="polls.html">
@@ -175,14 +200,20 @@
                         <span class="index-desc">Live classroom pulse checks: vote from your phone, watch the bars move on screen, and track how the room feels module by module across a course.</span>
                     </span>
                     <span class="index-meta">
-                        <svg class="index-spark" viewBox="0 0 64 28" aria-hidden="true">
-                            <line class="spark-ln" x1="10" y1="26" x2="10" y2="14"/>
-                            <line class="spark-ln" x1="24" y1="26" x2="24" y2="6"/>
-                            <line class="spark-ln" x1="38" y1="26" x2="38" y2="11"/>
-                            <line class="spark-ln" x1="52" y1="26" x2="52" y2="18"/>
-                            <circle class="spark-dot" cx="24" cy="6" r="2.5"/>
+                        <svg class="index-art" viewBox="0 0 220 110" aria-hidden="true">
+                            <!-- All-time answers to "how do you feel about this module" in the Deep Learning poll, and the QR code of the polls page -->
+                            <rect class="ia-fill" x="8" y="12" width="122" height="11" rx="2"/>
+                            <rect class="ia-tint" x="8" y="12" width="48.8" height="11" rx="2"/>
+                            <rect class="ia-fill" x="8" y="30.5" width="122" height="11" rx="2"/>
+                            <rect class="ia-solid" x="8" y="30.5" width="122" height="11" rx="2"/>
+                            <rect class="ia-fill" x="8" y="49" width="122" height="11" rx="2"/>
+                            <rect class="ia-tint" x="8" y="49" width="81.3" height="11" rx="2"/>
+                            <rect class="ia-fill" x="8" y="67.5" width="122" height="11" rx="2"/>
+                            <rect class="ia-tint" x="8" y="67.5" width="24.4" height="11" rx="2"/>
+                            <rect class="ia-fill" x="8" y="86" width="122" height="11" rx="2"/>
+                            <rect class="ia-card" x="144" y="22" width="66" height="66" rx="3"/>
+                            <path class="ia-solid" shape-rendering="crispEdges" d="M148,26h14v2h-14zM164,26h2v2h-2zM170,26h2v2h-2zM174,26h2v2h-2zM180,26h4v2h-4zM186,26h4v2h-4zM192,26h14v2h-14zM148,28h2v2h-2zM160,28h2v2h-2zM164,28h6v2h-6zM182,28h2v2h-2zM188,28h2v2h-2zM192,28h2v2h-2zM204,28h2v2h-2zM148,30h2v2h-2zM152,30h6v2h-6zM160,30h2v2h-2zM170,30h2v2h-2zM174,30h4v2h-4zM184,30h2v2h-2zM192,30h2v2h-2zM196,30h6v2h-6zM204,30h2v2h-2zM148,32h2v2h-2zM152,32h6v2h-6zM160,32h2v2h-2zM164,32h8v2h-8zM174,32h12v2h-12zM188,32h2v2h-2zM192,32h2v2h-2zM196,32h6v2h-6zM204,32h2v2h-2zM148,34h2v2h-2zM152,34h6v2h-6zM160,34h2v2h-2zM168,34h2v2h-2zM174,34h8v2h-8zM186,34h2v2h-2zM192,34h2v2h-2zM196,34h6v2h-6zM204,34h2v2h-2zM148,36h2v2h-2zM160,36h2v2h-2zM166,36h4v2h-4zM172,36h6v2h-6zM180,36h10v2h-10zM192,36h2v2h-2zM204,36h2v2h-2zM148,38h14v2h-14zM164,38h2v2h-2zM168,38h2v2h-2zM172,38h2v2h-2zM176,38h2v2h-2zM180,38h2v2h-2zM184,38h2v2h-2zM188,38h2v2h-2zM192,38h14v2h-14zM164,40h8v2h-8zM176,40h2v2h-2zM182,40h2v2h-2zM188,40h2v2h-2zM148,42h2v2h-2zM152,42h4v2h-4zM158,42h6v2h-6zM166,42h2v2h-2zM174,42h2v2h-2zM178,42h8v2h-8zM192,42h2v2h-2zM198,42h2v2h-2zM202,42h4v2h-4zM148,44h8v2h-8zM162,44h2v2h-2zM166,44h2v2h-2zM170,44h4v2h-4zM180,44h2v2h-2zM184,44h14v2h-14zM204,44h2v2h-2zM148,46h6v2h-6zM156,46h12v2h-12zM172,46h2v2h-2zM176,46h2v2h-2zM194,46h4v2h-4zM200,46h4v2h-4zM148,48h2v2h-2zM158,48h2v2h-2zM174,48h2v2h-2zM178,48h2v2h-2zM184,48h2v2h-2zM188,48h6v2h-6zM204,48h2v2h-2zM148,50h6v2h-6zM158,50h4v2h-4zM170,50h2v2h-2zM182,50h2v2h-2zM194,50h2v2h-2zM198,50h4v2h-4zM148,52h12v2h-12zM162,52h2v2h-2zM166,52h4v2h-4zM174,52h6v2h-6zM186,52h2v2h-2zM192,52h2v2h-2zM200,52h6v2h-6zM152,54h6v2h-6zM160,54h2v2h-2zM170,54h4v2h-4zM176,54h2v2h-2zM182,54h6v2h-6zM190,54h2v2h-2zM200,54h6v2h-6zM152,56h6v2h-6zM162,56h10v2h-10zM174,56h2v2h-2zM186,56h4v2h-4zM194,56h4v2h-4zM202,56h2v2h-2zM152,58h4v2h-4zM160,58h6v2h-6zM168,58h4v2h-4zM180,58h2v2h-2zM184,58h8v2h-8zM194,58h6v2h-6zM202,58h2v2h-2zM150,60h2v2h-2zM156,60h4v2h-4zM166,60h4v2h-4zM174,60h2v2h-2zM178,60h2v2h-2zM182,60h2v2h-2zM188,60h2v2h-2zM194,60h2v2h-2zM198,60h6v2h-6zM148,62h2v2h-2zM156,62h6v2h-6zM164,62h2v2h-2zM168,62h2v2h-2zM178,62h2v2h-2zM188,62h10v2h-10zM200,62h2v2h-2zM152,64h2v2h-2zM156,64h4v2h-4zM164,64h2v2h-2zM170,64h4v2h-4zM180,64h6v2h-6zM188,64h2v2h-2zM192,64h2v2h-2zM200,64h2v2h-2zM150,66h4v2h-4zM158,66h4v2h-4zM164,66h8v2h-8zM174,66h2v2h-2zM178,66h6v2h-6zM186,66h16v2h-16zM164,68h14v2h-14zM180,68h6v2h-6zM188,68h2v2h-2zM196,68h10v2h-10zM148,70h14v2h-14zM164,70h2v2h-2zM168,70h8v2h-8zM184,70h6v2h-6zM192,70h2v2h-2zM196,70h4v2h-4zM202,70h2v2h-2zM148,72h2v2h-2zM160,72h2v2h-2zM164,72h4v2h-4zM170,72h4v2h-4zM184,72h2v2h-2zM188,72h2v2h-2zM196,72h4v2h-4zM148,74h2v2h-2zM152,74h6v2h-6zM160,74h2v2h-2zM166,74h2v2h-2zM170,74h4v2h-4zM176,74h2v2h-2zM182,74h2v2h-2zM188,74h10v2h-10zM200,74h2v2h-2zM148,76h2v2h-2zM152,76h6v2h-6zM160,76h2v2h-2zM164,76h2v2h-2zM168,76h2v2h-2zM172,76h2v2h-2zM176,76h10v2h-10zM188,76h4v2h-4zM194,76h6v2h-6zM204,76h2v2h-2zM148,78h2v2h-2zM152,78h6v2h-6zM160,78h2v2h-2zM164,78h4v2h-4zM172,78h2v2h-2zM186,78h4v2h-4zM194,78h2v2h-2zM200,78h2v2h-2zM204,78h2v2h-2zM148,80h2v2h-2zM160,80h2v2h-2zM166,80h2v2h-2zM172,80h6v2h-6zM180,80h2v2h-2zM184,80h2v2h-2zM188,80h4v2h-4zM196,80h4v2h-4zM202,80h2v2h-2zM148,82h14v2h-14zM164,82h2v2h-2zM170,82h6v2h-6zM178,82h2v2h-2zM184,82h8v2h-8zM194,82h2v2h-2zM198,82h2v2h-2zM202,82h2v2h-2z"/>
                         </svg>
-                        <span class="index-arrow">&rarr;</span>
                     </span>
                 </a>
                 <a class="index-row" href="newsletter.html">
@@ -192,12 +223,19 @@
                         <span class="index-desc">The ten things that mattered in AI each week, picked for people who build with AI or are learning it. A new issue every Saturday.</span>
                     </span>
                     <span class="index-meta">
-                        <svg class="index-spark" viewBox="0 0 64 28" aria-hidden="true">
-                            <path class="spark-ln" d="M12,5 H52 V24 H12 Z"/>
-                            <path class="spark-ln" d="M12,5 L32,17 L52,5"/>
-                            <circle class="spark-dot" cx="52" cy="5" r="2.5"/>
+                        <svg class="index-art" viewBox="0 0 220 110" aria-hidden="true">
+                            <!-- The ten lines of the latest issue: each bar is as long as that line -->
+                            <text class="" x="8" y="20.4">01</text><line class="ia-bar1" x1="27" y1="17" x2="89.7" y2="17"/>
+                            <text class="ia-mute" x="8" y="39.4">02</text><line class="ia-bar" x1="27" y1="36" x2="93.5" y2="36"/>
+                            <text class="ia-mute" x="8" y="58.4">03</text><line class="ia-bar" x1="27" y1="55" x2="88.5" y2="55"/>
+                            <text class="ia-mute" x="8" y="77.4">04</text><line class="ia-bar" x1="27" y1="74" x2="85.9" y2="74"/>
+                            <text class="ia-mute" x="8" y="96.4">05</text><line class="ia-bar" x1="27" y1="93" x2="101" y2="93"/>
+                            <text class="ia-mute" x="116" y="20.4">06</text><line class="ia-bar" x1="135" y1="17" x2="191.4" y2="17"/>
+                            <text class="ia-mute" x="116" y="39.4">07</text><line class="ia-bar" x1="135" y1="36" x2="201.5" y2="36"/>
+                            <text class="ia-mute" x="116" y="58.4">08</text><line class="ia-bar" x1="135" y1="55" x2="201.5" y2="55"/>
+                            <text class="ia-mute" x="116" y="77.4">09</text><line class="ia-bar" x1="135" y1="74" x2="199" y2="74"/>
+                            <text class="ia-mute" x="116" y="96.4">10</text><line class="ia-bar" x1="135" y1="93" x2="191.4" y2="93"/>
                         </svg>
-                        <span class="index-arrow">&rarr;</span>
                     </span>
                 </a>
                 <div class="subscribe-card index-subscribe">

@@ -1974,12 +1974,38 @@ main > section:last-child { padding-bottom: 52px; }
 .index-section:not(.toc) .index-num::before { content: 'No. '; }
 .index-section:not(.toc) .index-row:hover .index-title { color: var(--ink); }
 .index-section:not(.toc) .index-title { order: 2; margin: 0; font-family: var(--serif); font-weight: 800; font-size: 23px; line-height: 1.06; letter-spacing: -0.01em; color: var(--ink); }
-.index-section:not(.toc) .index-meta { order: 3; display: flex; align-items: center; justify-content: center; height: 78px; border-radius: 5px; background: var(--paper-deep); }
+.index-section:not(.toc) .index-meta { order: 3; display: flex; align-items: center; justify-content: center; height: 112px; padding: 9px 10px; border-radius: 5px; background: var(--paper-deep); color: var(--c-ink); }
 .index-section:not(.toc) .index-spark { width: auto; height: 46px; }
 .index-section:not(.toc) :is(.spark-ln, .spark-fit) { stroke: var(--c-ink); opacity: 1; }
 .index-section:not(.toc) :is(.spark-pt, .spark-dot) { fill: var(--c-ink); opacity: 1; }
 .index-section:not(.toc) .index-arrow { display: none; }
 .index-section:not(.toc) .index-desc { order: 4; max-width: none; font-size: 13.5px; line-height: 1.4; font-weight: 500; color: var(--ink-soft); }
+/* Card thumbnails: each is a miniature of the page its card opens, drawn in the card's colour */
+.index-art { display: block; width: 100%; height: 100%; overflow: visible; }
+.index-art :is(.ia-ln, .ia-bold, .ia-soft, .ia-faint, .ia-track, .ia-bar, .ia-bar1) { fill: none; stroke: var(--c-ink); stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.index-art .ia-ln { stroke-width: 1.5; opacity: 0.85; }
+.index-art .ia-bold { stroke-width: 2.2; }
+.index-art .ia-soft { stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.55; }
+.index-art .ia-faint { stroke-width: 1.2; opacity: 0.3; }
+.index-art .ia-track { stroke-width: 2.2; opacity: 0.2; }
+.index-art .ia-bar { stroke-width: 4; opacity: 0.32; }
+.index-art .ia-bar1 { stroke-width: 4; }
+.index-art .ia-fill { fill: var(--c-ink); opacity: 0.09; }
+.index-art .ia-tint { fill: var(--c-ink); opacity: 0.38; }
+.index-art :is(.ia-solid, .ia-dot) { fill: var(--c-ink); }
+.index-art .ia-knob { fill: var(--card); stroke: var(--c-ink); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.index-art .ia-card { fill: var(--card); stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.index-art text { font: 600 10px var(--mono); fill: var(--ink); }
+.index-art text.ia-mute { fill: var(--ink-mute); }
+.index-art .k1 { --k: var(--p1); } .index-art .k2 { --k: var(--p2); } .index-art .k3 { --k: var(--p3); } .index-art .k4 { --k: var(--p4); } .index-art .k5 { --k: var(--p5); }
+[data-theme="light"] .index-art .k1 { --k: color-mix(in srgb, var(--p1) 60%, #0A1020); } [data-theme="light"] .index-art .k2 { --k: color-mix(in srgb, var(--p2) 60%, #0A1020); }
+[data-theme="light"] .index-art .k3 { --k: color-mix(in srgb, var(--p3) 60%, #0A1020); } [data-theme="light"] .index-art .k5 { --k: color-mix(in srgb, var(--p5) 60%, #0A1020); }
+.index-art .kf { fill: var(--k); }
+.index-art .ks { fill: none; stroke: var(--k); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.index-icons { gap: 7px; }
+.index-icons > :is(img, svg, .pad) { flex: 0 1 40px; width: 40px; min-width: 0; height: auto; aspect-ratio: 1; border-radius: 22%; box-shadow: 0 0 0 1px var(--line); }
+.index-icons .pad { display: grid; place-items: center; background: #0F1A31; }
+.index-icons .pad img { width: 62%; height: auto; }
 .index-section:not(.toc) .index-subscribe { grid-column: span 2; grid-row: span 5; grid-template-columns: minmax(0, 1fr); align-content: space-between; gap: 16px; padding: 17px 20px; }
 .index-subscribe .subscribe-lede { max-width: 56ch; }
 
@@ -2038,7 +2064,9 @@ main > section:last-child { padding-bottom: 52px; }
     .newsletter-list-thumb { height: 70px; }
     .plate .proj-mark :is(img, svg) { height: 44px; }
     .plate .proj-mark img.wordmark { height: 26px; }
-    .index-section:not(.toc) .index-meta { height: 56px; }
+    .index-section:not(.toc) .index-meta { height: 78px; padding: 6px 7px; }
+    .index-icons { gap: 8px; }
+    .index-icons > :nth-child(n+4) { display: none; }   /* phones: the three apps, larger */
     :is(.plate .plate-desc, .index-section:not(.toc) .index-desc, .newsletter-list-desc) { display: none; }
     .glance-item { font-size: 12.5px; }
 }
